@@ -12,6 +12,7 @@ the project uses Semantic Versioning for published packages.
 - Zero-runtime-dependency plugin microkernel and native ESM Profiles.
 - Provider-neutral Agent, Model, Session, Tool, Policy, Context and Telemetry contracts.
 - Pi Agent runtime and Pi AI Provider adapters.
+- Fully replaceable scripted Runtime with no Pi or ModelService dependency.
 - JSONL, Memory and SQLite Session stores with fork and recovery semantics.
 - Policy-routed workspace and MCP tools.
 - Headless CLI, JSONL RPC, filesystem Skills and offline scripted model.

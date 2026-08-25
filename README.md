@@ -94,6 +94,7 @@ node apps/cli/dist/bin.js \
 | `packages/core` | Provider-neutral Agent 能力契约 |
 | `packages/host` | Profile 发现、校验和启动 |
 | `plugins/runtime-pi` | Pi Agent Runtime 适配 |
+| `plugins/runtime-scripted` | 不依赖 Pi/Provider 的替代 Runtime |
 | `plugins/provider-pi-ai` | Pi AI ModelService |
 | `plugins/agent-core` | Context/Session/Runtime 编排 |
 | `plugins/tools-core` | 强制 Policy 的工具执行管线 |

@@ -37,6 +37,9 @@
 
 ## M2：领域契约与测试替身
 
+当前状态：已完成。Memory Session、Scripted Model 与完全不依赖 Pi/ModelService 的
+Scripted Runtime 均可作为独立 Profile 插件运行。
+
 交付物：
 
 - Runtime、Model、Session、Tool Registry、Policy、Context、Credential 的窄接口；
@@ -126,7 +129,7 @@ JSONL RPC 和默认无网络 Telemetry 均为独立插件/入口；离线最小 
 ## M7：发布准备
 
 当前状态：本地交付物已完成。用户/API/安全/版本文档、Changelog、Dependabot、CI、
-手动 Release Candidate 工作流和 24 包 tarball clean-install smoke 均已验证；GitHub
+手动 Release Candidate 工作流和 25 包 tarball clean-install smoke 均已验证；GitHub
 远端创建、首次 push 和远端 Actions 结果仍等待外部创建确认。
 
 交付物：
