@@ -130,7 +130,7 @@ JSONL RPC 和默认无网络 Telemetry 均为独立插件/入口；离线最小 
 
 当前状态：本地交付物已完成。用户/API/安全/版本文档、Changelog、Dependabot、CI、
 手动 Release Candidate 工作流和 25 包 tarball clean-install smoke 均已验证；GitHub
-远端创建、首次 push 和远端 Actions 结果仍等待外部创建确认。
+私有空仓库和 `origin` 已建立，首次 push 与远端 Actions 按阶段性检查要求暂缓。
 
 交付物：
 

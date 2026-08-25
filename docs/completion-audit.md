@@ -3,15 +3,16 @@
 审计日期：2026-08-25
 
 本文件按 [`development-plan.md`](development-plan.md) 的 M0–M7 逐项核对当前证据。
-结论：本地实现与发布准备完成；GitHub 空仓库创建、`origin`、首次 push 和远端 CI
-尚未完成，因此整个用户目标不能标记为完成。
+结论：本地实现与发布准备完成；GitHub 私有空仓库和本地 `origin` 已建立。按用户要求
+暂不 push，首次同步和远端 CI 尚未完成，因此整个目标暂不能标记为完成。
 
 ## M0：仓库与决策基线
 
 | 要求 | 证据 | 状态 |
 |---|---|---|
 | 本地 Git 仓库 | `main` 上存在完整 Conventional Commit 历史，工作区 clean | 完成 |
-| GitHub 私有仓库 | GitHub 连接搜索 `PiHarness` 返回空；浏览器创建表单等待最终确认 | **未完成** |
+| GitHub 私有仓库 | 浏览器显示 `ASunYC/PiHarness`、`Private` 和空仓库 Quick setup | 完成 |
+| 本地 `origin` | fetch/push URL 均为 `https://github.com/ASunYC/PiHarness.git` | 完成 |
 | Node/pnpm workspace | 根 manifest、lockfile、25 个可发布包 | 完成 |
 | 架构与 ADR | `architecture.md`、ADR-0001 | 完成 |
 | CI 基线 | Node 22.19/24、pack smoke workflow 已定义 | 本地完成，远端未运行 |
@@ -96,13 +97,11 @@ pnpm audit --prod  No known vulnerabilities found
 pnpm pack:smoke  Packed 25 packages and verified a clean install
 ```
 
-## 唯一剩余外部条件
+## 剩余同步条件
 
-1. 在 GitHub 账户 `ASunYC` 创建私有空仓库 `PiHarness`；
-2. 配置本地 `origin`；
-3. 首次 push `main`；
-4. 等待并核对 GitHub Actions；
-5. 确认本地/远端 commit 一致。
+1. 用户检查并确认空仓库创建稳定；
+2. 首次 push `main`；
+3. 等待并核对 GitHub Actions；
+4. 确认本地/远端 commit 一致。
 
-浏览器安全策略要求在点击最终“Create repository”前获得即时确认。用户确认后即可继续，
-无需新的技术决策。
+当前暂停 push 是用户要求的阶段性检查点，不是技术阻塞。
