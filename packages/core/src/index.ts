@@ -1,4 +1,5 @@
 export * from "./agent.js";
+export * from "./compaction.js";
 export * from "./content.js";
 export * from "./context.js";
 export * from "./credential.js";

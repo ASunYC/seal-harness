@@ -16,6 +16,7 @@
     { "path": "./plugins/workspace-tools/tsconfig.build.json" },
     { "path": "./plugins/approval-stdio/tsconfig.build.json" },
     { "path": "./plugins/model-scripted/tsconfig.build.json" },
+    { "path": "./plugins/compaction-window/tsconfig.build.json" },
     { "path": "./apps/cli/tsconfig.build.json" }
   ]
 }

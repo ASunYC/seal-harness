@@ -9,6 +9,10 @@ export interface SessionEventMap {
     readonly cwd: string;
     readonly metadata?: JsonObject;
   };
+  "session.forked": {
+    readonly sourceSessionId: SessionId;
+    readonly sourceVersion: number;
+  };
   "run.started": {
     readonly runId: RunId;
     readonly model: ModelRef;
@@ -50,6 +54,11 @@ export interface SessionEventMap {
   "session.metadata": {
     readonly patch: JsonObject;
   };
+  "context.compacted": {
+    readonly summaryMessage: AgentMessage;
+    readonly sourceMessageCount: number;
+    readonly retainedMessageCount: number;
+  };
 }
 
 export type SessionEventType = keyof SessionEventMap;
@@ -82,6 +91,12 @@ export interface AppendSessionRequest {
   readonly id: SessionId;
   readonly expectedVersion: number;
   readonly events: readonly SessionEvent[];
+}
+
+export interface ForkSessionRequest {
+  readonly sourceId: SessionId;
+  readonly targetId: SessionId;
+  readonly throughVersion?: number;
 }
 
 export class SessionConflictError extends Error {
@@ -118,5 +133,22 @@ export interface SessionStore {
   create(request: CreateSessionRequest): Promise<SessionSnapshot>;
   read(id: SessionId): Promise<SessionSnapshot | undefined>;
   append(request: AppendSessionRequest): Promise<SessionSnapshot>;
+  fork(request: ForkSessionRequest): Promise<SessionSnapshot>;
   list(): Promise<readonly SessionSnapshot[]>;
+}
+
+export function deriveSessionMessages(session: SessionSnapshot): AgentMessage[] {
+  let messages: AgentMessage[] = [];
+  for (const stored of session.events) {
+    if (stored.event.type === "message.appended") {
+      messages.push(stored.event.payload.message);
+    } else if (stored.event.type === "context.compacted") {
+      const { summaryMessage, retainedMessageCount } = stored.event.payload;
+      messages = [
+        summaryMessage,
+        ...(retainedMessageCount === 0 ? [] : messages.slice(-retainedMessageCount)),
+      ];
+    }
+  }
+  return messages;
 }

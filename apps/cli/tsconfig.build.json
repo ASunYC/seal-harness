@@ -10,6 +10,7 @@
     { "path": "../../plugins/agent-core/tsconfig.build.json" },
     { "path": "../../plugins/approval-stdio/tsconfig.build.json" },
     { "path": "../../plugins/context-files/tsconfig.build.json" },
+    { "path": "../../plugins/compaction-window/tsconfig.build.json" },
     { "path": "../../plugins/credentials-env/tsconfig.build.json" },
     { "path": "../../plugins/policy-basic/tsconfig.build.json" },
     { "path": "../../plugins/provider-pi-ai/tsconfig.build.json" },

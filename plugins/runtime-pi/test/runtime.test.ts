@@ -303,6 +303,32 @@ describe("PiAgentRuntime", () => {
       content: [{ type: "text", text: "recovered" }],
     });
   });
+
+  it("normalizes provider stream failures as an error result", async () => {
+    const model = scriptedModel(async function* () {
+      yield { type: "text_delta", delta: "partial" };
+      throw new Error("provider exploded");
+    });
+    const run = new PiAgentRuntime(model, undefined).start({
+      runId: runId("run-provider-error"),
+      sessionId: sessionId("session-provider-error"),
+      cwd: process.cwd(),
+      model: MODEL,
+      systemPrompt: "test",
+      messages: [userMessage("trigger error")],
+    });
+
+    const events = await collect(run);
+    const result = await run.result;
+
+    expect(events.at(-1)).toEqual({ type: "run_end", stopReason: "error" });
+    expect(result.stopReason).toBe("error");
+    expect(result.errorMessage).toContain("provider exploded");
+    expect(result.messages.at(-1)).toMatchObject({
+      role: "assistant",
+      content: [{ type: "text", text: "partial" }],
+    });
+  });
 });
 
 function scriptedModel(

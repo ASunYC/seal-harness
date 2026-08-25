@@ -85,6 +85,9 @@
 
 ## M5：可恢复性与上下文管理
 
+当前状态：Session resume/fork、JSONL 事务尾行恢复、增量持久化屏障、中断工具
+非重放恢复、基础 Compaction 和工具输出截断已完成；附件与基于 LLM 的摘要仍待实现。
+
 交付物：
 
 - Session resume/fork；

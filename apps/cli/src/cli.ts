@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { modelServiceToken, sessionId } from "@piharness/core";
+import { agentServiceToken, modelServiceToken, sessionId, type SessionId } from "@piharness/core";
 import { loadProfile, startProfile } from "@piharness/host";
 import type { PiAiBuiltinProvider } from "@piharness/provider-pi-ai";
 import { createDefaultProfile } from "./default-profile.js";
@@ -55,13 +55,27 @@ export async function runCli(
       ? args.prompt.join(" ")
       : await readStandardInput(environment.stdin);
     if (prompt.trim().length === 0) throw new Error("Prompt is required");
+    let activeSessionId: SessionId | undefined = args.session === undefined
+      ? undefined
+      : sessionId(args.session);
+    if (args.fork !== undefined) {
+      const forked = await kernel.use(agentServiceToken).fork({
+        sourceSessionId: sessionId(args.fork),
+        ...(args.forkTarget === undefined
+          ? {}
+          : { targetSessionId: sessionId(args.forkTarget) }),
+        ...(args.forkVersion === undefined ? {} : { throughVersion: args.forkVersion }),
+      });
+      activeSessionId = forked.id;
+      environment.io.stderr.write(`forked session: ${forked.id}\n`);
+    }
     const model = args.model
       ?? environment.env.PIHARNESS_MODEL
       ?? await firstModel(kernel.use(modelServiceToken), provider);
     const result = await runHeadless(
       kernel,
       promptRequest(cwd, provider, model, prompt, {
-        ...(args.session === undefined ? {} : { sessionId: sessionId(args.session) }),
+        ...(activeSessionId === undefined ? {} : { sessionId: activeSessionId }),
         ...(args.reasoning === undefined ? {} : { reasoning: args.reasoning }),
         signal: abortController.signal,
       }),
@@ -85,6 +99,9 @@ interface ParsedArgs {
   model?: string;
   cwd?: string;
   session?: string;
+  fork?: string;
+  forkTarget?: string;
+  forkVersion?: number;
   sessions?: string;
   config?: string;
   reasoning?: "off" | "low" | "medium" | "high" | "max";
@@ -120,6 +137,15 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
     else if (arg === "--model") result.model = takeValue(argv, ++index, arg);
     else if (arg === "--cwd") result.cwd = takeValue(argv, ++index, arg);
     else if (arg === "--session") result.session = takeValue(argv, ++index, arg);
+    else if (arg === "--fork") result.fork = takeValue(argv, ++index, arg);
+    else if (arg === "--fork-target") result.forkTarget = takeValue(argv, ++index, arg);
+    else if (arg === "--fork-version") {
+      const value = Number(takeValue(argv, ++index, arg));
+      if (!Number.isInteger(value) || value <= 0) {
+        throw new Error("--fork-version must be a positive integer");
+      }
+      result.forkVersion = value;
+    }
     else if (arg === "--sessions") result.sessions = takeValue(argv, ++index, arg);
     else if (arg === "--config") result.config = takeValue(argv, ++index, arg);
     else if (arg === "--reasoning") {
@@ -134,6 +160,12 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
   }
   if (result.yes && result.denyApprovals) {
     throw new Error("--yes and --deny-approvals cannot be used together");
+  }
+  if (result.session !== undefined && result.fork !== undefined) {
+    throw new Error("--session and --fork cannot be used together");
+  }
+  if ((result.forkTarget !== undefined || result.forkVersion !== undefined) && result.fork === undefined) {
+    throw new Error("--fork-target and --fork-version require --fork");
   }
   return result;
 }
@@ -166,4 +198,4 @@ async function readStandardInput(input: NodeJS.ReadableStream): Promise<string> 
   return Buffer.concat(chunks).toString("utf8");
 }
 
-const HELP = `PiHarness\n\nUsage:\n  piharness [options] <prompt>\n\nOptions:\n  --provider <name>       Built-in Pi AI provider (default: deepseek)\n  --model <id>            Model id (default: first provider model)\n  --reasoning <level>     off|low|medium|high|max\n  --cwd <path>            Workspace directory\n  --session <id>          Continue an existing session\n  --sessions <path>       Session storage root\n  --config <path>         Native ESM Profile\n  --yes                   Auto-approve ask decisions\n  --deny-approvals        Reject all ask decisions\n  --no-shell              Do not register the shell tool\n  --list-models           List configured models\n  -h, --help              Show help\n`;
+const HELP = `PiHarness\n\nUsage:\n  piharness [options] <prompt>\n\nOptions:\n  --provider <name>       Built-in Pi AI provider (default: deepseek)\n  --model <id>            Model id (default: first provider model)\n  --reasoning <level>     off|low|medium|high|max\n  --cwd <path>            Workspace directory\n  --session <id>          Continue an existing session\n  --fork <id>             Fork an existing session before prompting\n  --fork-target <id>      Explicit target id for --fork\n  --fork-version <n>      Fork through a selected event version\n  --sessions <path>       Session storage root\n  --config <path>         Native ESM Profile\n  --yes                   Auto-approve ask decisions\n  --deny-approvals        Reject all ask decisions\n  --no-shell              Do not register the shell tool\n  --list-models           List configured models\n  -h, --help              Show help\n`;

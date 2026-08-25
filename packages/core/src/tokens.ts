@@ -1,5 +1,6 @@
 import { createServiceToken } from "@piharness/kernel";
 import type { AgentService } from "./agent.js";
+import type { CompactionService } from "./compaction.js";
 import type { ContextService } from "./context.js";
 import type { CredentialService } from "./credential.js";
 import type { ModelService } from "./model.js";
@@ -17,3 +18,4 @@ export const approvalServiceToken = createServiceToken<ApprovalService>("piharne
 export const contextServiceToken = createServiceToken<ContextService>("piharness.context");
 export const credentialServiceToken = createServiceToken<CredentialService>("piharness.credentials");
 export const agentServiceToken = createServiceToken<AgentService>("piharness.agent");
+export const compactionServiceToken = createServiceToken<CompactionService>("piharness.compaction");

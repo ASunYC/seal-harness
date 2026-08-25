@@ -40,6 +40,30 @@ describe("JsonlSessionStore", () => {
 
     await expect(store.read(id)).resolves.toEqual(created);
   });
+
+  it("persists a fork with lineage and selected model-visible history", async () => {
+    const root = await directory();
+    const sourceId = sessionId("source");
+    const targetId = sessionId("target");
+    const store = new JsonlSessionStore(root);
+    await store.create({ id: sourceId, cwd: "/workspace" });
+    await store.append({
+      id: sourceId,
+      expectedVersion: 1,
+      events: [
+        { type: "message.appended", payload: { messageId: messageId("one"), message: userMessage("one") } },
+        { type: "message.appended", payload: { messageId: messageId("two"), message: userMessage("two") } },
+      ],
+    });
+
+    const fork = await store.fork({ sourceId, targetId, throughVersion: 2 });
+    expect(fork.events.map((entry) => entry.event.type)).toEqual([
+      "session.created",
+      "session.forked",
+      "message.appended",
+    ]);
+    await expect(new JsonlSessionStore(root).read(targetId)).resolves.toEqual(fork);
+  });
 });
 
 async function directory(): Promise<string> {

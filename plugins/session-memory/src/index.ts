@@ -5,6 +5,7 @@ import {
   sessionStoreToken,
   type AppendSessionRequest,
   type CreateSessionRequest,
+  type ForkSessionRequest,
   type PiHarnessEvents,
   type SessionId,
   type SessionSnapshot,
@@ -69,6 +70,50 @@ export class MemorySessionStore implements SessionStore {
     };
     this.#sessions.set(request.id, clone(next));
     return clone(next);
+  }
+
+  async fork(request: ForkSessionRequest): Promise<SessionSnapshot> {
+    if (this.#sessions.has(request.targetId)) {
+      throw new SessionAlreadyExistsError(request.targetId);
+    }
+    const source = this.#sessions.get(request.sourceId);
+    if (source === undefined) throw new SessionNotFoundError(request.sourceId);
+    const throughVersion = request.throughVersion ?? source.version;
+    if (throughVersion < 1 || throughVersion > source.version) {
+      throw new RangeError(`Invalid fork version ${throughVersion} for session ${request.sourceId}`);
+    }
+    const selected = source.events.slice(0, throughVersion);
+    const created = selected.find((entry) => entry.event.type === "session.created");
+    if (created?.event.type !== "session.created") {
+      throw new Error(`Source session has no creation event: ${request.sourceId}`);
+    }
+    const events = [
+      {
+        type: "session.created" as const,
+        payload: created.event.payload,
+      },
+      {
+        type: "session.forked" as const,
+        payload: { sourceSessionId: request.sourceId, sourceVersion: throughVersion },
+      },
+      ...selected.flatMap((entry) =>
+        entry.event.type === "message.appended" || entry.event.type === "context.compacted"
+          ? [entry.event]
+          : [],
+      ),
+    ];
+    const stored = events.map((event, index): StoredSessionEvent => ({
+      sequence: index + 1,
+      timestamp: this.now().toISOString(),
+      event,
+    }));
+    const target: SessionSnapshot = {
+      id: request.targetId,
+      version: stored.length,
+      events: stored,
+    };
+    this.#sessions.set(request.targetId, clone(target));
+    return clone(target);
   }
 
   async list(): Promise<readonly SessionSnapshot[]> {

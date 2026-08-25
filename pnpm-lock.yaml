@@ -26,6 +26,9 @@ importers:
       '@piharness/approval-stdio':
         specifier: workspace:^
         version: link:../../plugins/approval-stdio
+      '@piharness/compaction-window':
+        specifier: workspace:^
+        version: link:../../plugins/compaction-window
       '@piharness/context-files':
         specifier: workspace:^
         version: link:../../plugins/context-files
@@ -116,6 +119,15 @@ importers:
         version: link:../session-memory
 
   plugins/approval-stdio:
+    dependencies:
+      '@piharness/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@piharness/kernel':
+        specifier: workspace:^
+        version: link:../../packages/kernel
+
+  plugins/compaction-window:
     dependencies:
       '@piharness/core':
         specifier: workspace:^

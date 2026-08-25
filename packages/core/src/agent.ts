@@ -29,4 +29,11 @@ export interface AgentExecution extends AsyncIterable<RuntimeEvent> {
 
 export interface AgentService {
   prompt(request: AgentPromptRequest): Promise<AgentExecution>;
+  fork(request: AgentForkRequest): Promise<SessionSnapshot>;
+}
+
+export interface AgentForkRequest {
+  readonly sourceSessionId: SessionId;
+  readonly targetSessionId?: SessionId;
+  readonly throughVersion?: number;
 }

@@ -42,6 +42,7 @@ class PiAgentRun implements AgentRun {
   readonly #abortController = new AbortController();
   readonly #pendingSteering: AgentMessage[] = [];
   readonly #pendingFollowUps: AgentMessage[] = [];
+  readonly #listeners = new Set<(event: RuntimeEvent) => void | Promise<void>>();
   #agent?: Agent;
   readonly result: Promise<RuntimeResult>;
 
@@ -77,6 +78,11 @@ class PiAgentRun implements AgentRun {
     else this.#agent.followUp(toPiMessage(message, this.#agent.state.model));
   }
 
+  subscribe(listener: (event: RuntimeEvent) => void | Promise<void>): () => void {
+    this.#listeners.add(listener);
+    return () => this.#listeners.delete(listener);
+  }
+
   async #execute(
     modelService: ModelService,
     toolService: ToolService | undefined,
@@ -85,7 +91,7 @@ class PiAgentRun implements AgentRun {
     let messages: readonly AgentMessage[] = this.request.messages;
     try {
       if (this.#abortController.signal.aborted) {
-        this.#channel.push({ type: "run_end", stopReason: "aborted" });
+        await this.#publish({ type: "run_end", stopReason: "aborted" });
         return { messages, stopReason: "aborted" };
       }
 
@@ -131,36 +137,36 @@ class PiAgentRun implements AgentRun {
         ...(lastAssistant === undefined ? {} : { usage: fromPiUsage(lastAssistant.usage) }),
         ...(agent.state.errorMessage === undefined ? {} : { errorMessage: agent.state.errorMessage }),
       };
-      this.#channel.push({ type: "run_end", stopReason });
+      await this.#publish({ type: "run_end", stopReason });
       return result;
     } catch (error) {
       const stopReason = this.#abortController.signal.aborted ? "aborted" : "error";
       const errorMessage = error instanceof Error ? error.message : String(error);
       if (this.#agent !== undefined) messages = fromPiMessages(this.#agent.state.messages);
-      this.#channel.push({ type: "run_end", stopReason });
+      await this.#publish({ type: "run_end", stopReason });
       return { messages, stopReason, errorMessage };
     } finally {
       this.#channel.close();
     }
   }
 
-  #handleEvent(event: AgentEvent): void {
+  async #handleEvent(event: AgentEvent): Promise<void> {
     switch (event.type) {
       case "agent_start":
-        this.#channel.push({ type: "run_start", runId: this.request.runId });
+        await this.#publish({ type: "run_start", runId: this.request.runId });
         break;
       case "turn_start":
         this.#turnIndex += 1;
-        this.#channel.push({ type: "turn_start", index: this.#turnIndex });
+        await this.#publish({ type: "turn_start", index: this.#turnIndex });
         break;
       case "message_update":
         if (event.assistantMessageEvent.type === "text_delta") {
-          this.#channel.push({ type: "text_delta", delta: event.assistantMessageEvent.delta });
+          await this.#publish({ type: "text_delta", delta: event.assistantMessageEvent.delta });
         } else if (event.assistantMessageEvent.type === "thinking_delta") {
-          this.#channel.push({ type: "reasoning_delta", delta: event.assistantMessageEvent.delta });
+          await this.#publish({ type: "reasoning_delta", delta: event.assistantMessageEvent.delta });
         } else if (event.assistantMessageEvent.type === "toolcall_end") {
           const call = event.assistantMessageEvent.toolCall;
-          this.#channel.push({
+          await this.#publish({
             type: "tool_call",
             call: {
               type: "tool_call",
@@ -173,23 +179,28 @@ class PiAgentRun implements AgentRun {
         break;
       case "message_end":
         if (event.message.role === "assistant") {
-          this.#channel.push({
+          await this.#publish({
             type: "assistant_message",
             message: fromPiAssistantMessage(event.message),
           });
+        } else if (event.message.role === "user") {
+          const message = fromPiMessages([event.message])[0];
+          if (message?.role === "user") {
+            await this.#publish({ type: "user_message", message });
+          }
         }
         break;
       case "tool_execution_start":
         break;
       case "tool_execution_update":
-        this.#channel.push({
+        await this.#publish({
           type: "tool_progress",
           callId: toolCallId(event.toolCallId),
           content: fromPiToolContent(event.partialResult?.content ?? []),
         });
         break;
       case "tool_execution_end":
-        this.#channel.push({
+        await this.#publish({
           type: "tool_result",
           callId: toolCallId(event.toolCallId),
           name: event.toolName,
@@ -198,7 +209,7 @@ class PiAgentRun implements AgentRun {
         break;
       case "turn_end": {
         const assistant = event.message.role === "assistant" ? event.message : undefined;
-        this.#channel.push({
+        await this.#publish({
           type: "turn_end",
           index: this.#turnIndex,
           ...(assistant === undefined ? {} : { usage: fromPiUsage(assistant.usage) }),
@@ -212,6 +223,11 @@ class PiAgentRun implements AgentRun {
   }
 
   #turnIndex = -1;
+
+  async #publish(event: RuntimeEvent): Promise<void> {
+    for (const listener of this.#listeners) await listener(event);
+    this.#channel.push(event);
+  }
 }
 
 function createPiTools(toolService: ToolService, request: RuntimeStartRequest): AgentTool[] {

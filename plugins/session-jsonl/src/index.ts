@@ -1,4 +1,5 @@
-import { open, mkdir, readdir, readFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { link, mkdir, open, readdir, readFile, unlink } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import {
   SessionAlreadyExistsError,
@@ -8,6 +9,7 @@ import {
   sessionStoreToken,
   type AppendSessionRequest,
   type CreateSessionRequest,
+  type ForkSessionRequest,
   type PiHarnessEvents,
   type SessionEvent,
   type SessionId,
@@ -17,8 +19,15 @@ import {
 } from "@piharness/core";
 import { definePlugin } from "@piharness/kernel";
 
-interface JsonlRecord extends StoredSessionEvent {
+interface JsonlTransactionRecord {
+  readonly timestamp: string;
+  readonly event: SessionEvent;
+}
+
+interface JsonlTransaction {
   readonly sessionId: SessionId;
+  readonly startSequence: number;
+  readonly records: readonly JsonlTransactionRecord[];
 }
 
 export interface JsonlSessionConfig {
@@ -39,34 +48,16 @@ export class JsonlSessionStore implements SessionStore {
 
   async create(request: CreateSessionRequest): Promise<SessionSnapshot> {
     return this.#serialized(request.id, async () => {
-      await mkdir(this.root, { recursive: true });
-      const path = this.#path(request.id);
-      const record: JsonlRecord = {
-        sessionId: request.id,
-        sequence: 1,
-        timestamp: this.now().toISOString(),
-        event: {
-          type: "session.created",
-          payload: {
-            cwd: request.cwd,
-            ...(request.metadata === undefined ? {} : { metadata: request.metadata }),
-          },
+      const transaction = this.#transaction(request.id, 1, [{
+        type: "session.created",
+        payload: {
+          cwd: request.cwd,
+          ...(request.metadata === undefined ? {} : { metadata: request.metadata }),
         },
-      };
-      let handle;
-      try {
-        handle = await open(path, "wx");
-        await handle.writeFile(`${JSON.stringify(record)}\n`, "utf8");
-        await handle.sync();
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === "EEXIST") {
-          throw new SessionAlreadyExistsError(request.id);
-        }
-        throw error;
-      } finally {
-        await handle?.close();
-      }
-      return snapshot(request.id, [record]);
+      }]);
+      await mkdir(this.root, { recursive: true });
+      await this.#writeExclusive(this.#path(request.id), transaction, request.id);
+      return snapshot(request.id, expandTransactions(request.id, [transaction]));
     });
   }
 
@@ -88,23 +79,78 @@ export class JsonlSessionStore implements SessionStore {
       }
       if (request.events.length === 0) return current;
 
-      const records = request.events.map((event, index): JsonlRecord => ({
-        sessionId: request.id,
-        sequence: current.version + index + 1,
-        timestamp: this.now().toISOString(),
-        event,
-      }));
+      const transaction = this.#transaction(
+        request.id,
+        current.version + 1,
+        request.events,
+      );
       const handle = await open(this.#path(request.id), "a");
       try {
-        await handle.writeFile(records.map((record) => JSON.stringify(record)).join("\n") + "\n", "utf8");
+        // One logical append is one physical JSONL line. A torn final write is
+        // ignored as a whole transaction during recovery.
+        await handle.writeFile(`${JSON.stringify(transaction)}\n`, "utf8");
         await handle.sync();
       } finally {
         await handle.close();
       }
       return snapshot(request.id, [
-        ...current.events.map((entry): JsonlRecord => ({ sessionId: request.id, ...entry })),
-        ...records,
+        ...current.events,
+        ...expandTransactions(request.id, [transaction], current.version + 1),
       ]);
+    });
+  }
+
+  async fork(request: ForkSessionRequest): Promise<SessionSnapshot> {
+    const source = await this.read(request.sourceId);
+    if (source === undefined) throw new SessionNotFoundError(request.sourceId);
+    const throughVersion = request.throughVersion ?? source.version;
+    if (throughVersion < 1 || throughVersion > source.version) {
+      throw new RangeError(`Invalid fork version ${throughVersion} for session ${request.sourceId}`);
+    }
+    const selected = source.events.slice(0, throughVersion);
+    const created = selected.find((entry) => entry.event.type === "session.created");
+    if (created?.event.type !== "session.created") {
+      throw new Error(`Source session has no creation event: ${request.sourceId}`);
+    }
+    const events: SessionEvent[] = [
+      {
+        type: "session.created",
+        payload: created.event.payload,
+      },
+      {
+        type: "session.forked",
+        payload: { sourceSessionId: request.sourceId, sourceVersion: throughVersion },
+      },
+      ...selected.flatMap((entry) =>
+        entry.event.type === "message.appended" || entry.event.type === "context.compacted"
+          ? [entry.event]
+          : [],
+      ),
+    ];
+
+    return this.#serialized(request.targetId, async () => {
+      await mkdir(this.root, { recursive: true });
+      const transaction = this.#transaction(request.targetId, 1, events);
+      const targetPath = this.#path(request.targetId);
+      const temporaryPath = `${targetPath}.tmp-${randomUUID()}`;
+      try {
+        await this.#writeExclusive(temporaryPath, transaction, request.targetId);
+        try {
+          // Publishing a hard link is atomic and fails when the target exists.
+          await link(temporaryPath, targetPath);
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code === "EEXIST") {
+            throw new SessionAlreadyExistsError(request.targetId);
+          }
+          throw error;
+        }
+      } finally {
+        await unlink(temporaryPath).catch(() => {});
+      }
+      return snapshot(
+        request.targetId,
+        expandTransactions(request.targetId, [transaction]),
+      );
     });
   }
 
@@ -126,23 +172,60 @@ export class JsonlSessionStore implements SessionStore {
     }
   }
 
-  async #readRecords(id: SessionId): Promise<JsonlRecord[]> {
+  async #readRecords(id: SessionId): Promise<StoredSessionEvent[]> {
     const content = await readFile(this.#path(id), "utf8");
     const lines = content.split("\n");
-    const records: JsonlRecord[] = [];
+    const transactions: JsonlTransaction[] = [];
+    let expectedSequence = 1;
     for (const [index, line] of lines.entries()) {
       if (line.length === 0) continue;
       try {
-        const record = JSON.parse(line) as JsonlRecord;
-        validateRecord(record, id, records.length + 1);
-        records.push(record);
+        const transaction = JSON.parse(line) as JsonlTransaction;
+        validateTransaction(transaction, id, expectedSequence);
+        transactions.push(transaction);
+        expectedSequence += transaction.records.length;
       } catch (error) {
         const isLastContentLine = lines.slice(index + 1).every((candidate) => candidate.length === 0);
         if (isLastContentLine) break;
         throw error;
       }
     }
-    return records;
+    return expandTransactions(id, transactions);
+  }
+
+  #transaction(
+    id: SessionId,
+    startSequence: number,
+    events: readonly SessionEvent[],
+  ): JsonlTransaction {
+    return {
+      sessionId: id,
+      startSequence,
+      records: events.map((event) => ({
+        timestamp: this.now().toISOString(),
+        event,
+      })),
+    };
+  }
+
+  async #writeExclusive(
+    path: string,
+    transaction: JsonlTransaction,
+    id: SessionId,
+  ): Promise<void> {
+    let handle;
+    try {
+      handle = await open(path, "wx");
+      await handle.writeFile(`${JSON.stringify(transaction)}\n`, "utf8");
+      await handle.sync();
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "EEXIST") {
+        throw new SessionAlreadyExistsError(id);
+      }
+      throw error;
+    } finally {
+      await handle?.close();
+    }
   }
 
   #path(id: SessionId): string {
@@ -169,18 +252,44 @@ export const jsonlSessionPlugin = definePlugin<JsonlSessionConfig, PiHarnessEven
   },
 });
 
-function validateRecord(record: JsonlRecord, id: SessionId, sequence: number): void {
-  if (record.sessionId !== id) throw new Error(`Session id mismatch at sequence ${sequence}`);
-  if (record.sequence !== sequence) throw new Error(`Session sequence mismatch: expected ${sequence}`);
-  if (typeof record.timestamp !== "string" || typeof record.event !== "object") {
-    throw new Error(`Invalid session record at sequence ${sequence}`);
+function validateTransaction(
+  transaction: JsonlTransaction,
+  id: SessionId,
+  expectedSequence: number,
+): void {
+  if (transaction.sessionId !== id) {
+    throw new Error(`Session id mismatch at sequence ${expectedSequence}`);
+  }
+  if (transaction.startSequence !== expectedSequence) {
+    throw new Error(`Session sequence mismatch: expected ${expectedSequence}`);
+  }
+  if (!Array.isArray(transaction.records) || transaction.records.length === 0) {
+    throw new Error(`Empty session transaction at sequence ${expectedSequence}`);
+  }
+  for (const [index, record] of transaction.records.entries()) {
+    if (typeof record?.timestamp !== "string" || typeof record.event !== "object") {
+      throw new Error(`Invalid session record at sequence ${expectedSequence + index}`);
+    }
   }
 }
 
-function snapshot(id: SessionId, records: readonly JsonlRecord[]): SessionSnapshot {
-  return {
-    id,
-    version: records.length,
-    events: records.map(({ sequence, timestamp, event }) => ({ sequence, timestamp, event })),
-  };
+function expandTransactions(
+  id: SessionId,
+  transactions: readonly JsonlTransaction[],
+  initialSequence = 1,
+): StoredSessionEvent[] {
+  const events: StoredSessionEvent[] = [];
+  let sequence = initialSequence;
+  for (const transaction of transactions) {
+    validateTransaction(transaction, id, sequence);
+    for (const record of transaction.records) {
+      events.push({ sequence, timestamp: record.timestamp, event: record.event });
+      sequence += 1;
+    }
+  }
+  return events;
+}
+
+function snapshot(id: SessionId, records: readonly StoredSessionEvent[]): SessionSnapshot {
+  return { id, version: records.length, events: records };
 }

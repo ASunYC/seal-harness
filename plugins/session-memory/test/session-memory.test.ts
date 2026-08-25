@@ -43,4 +43,29 @@ describe("MemorySessionStore", () => {
     await expect(store.append({ id, expectedVersion: 0, events: [] }))
       .rejects.toBeInstanceOf(SessionConflictError);
   });
+
+  it("forks model-visible history through a selected version", async () => {
+    const store = new MemorySessionStore();
+    const sourceId = sessionId("source");
+    const targetId = sessionId("target");
+    await store.create({ id: sourceId, cwd: "/workspace" });
+    await store.append({
+      id: sourceId,
+      expectedVersion: 1,
+      events: [
+        { type: "message.appended", payload: { messageId: messageId("one"), message: userMessage("one") } },
+        { type: "message.appended", payload: { messageId: messageId("two"), message: userMessage("two") } },
+      ],
+    });
+
+    const fork = await store.fork({ sourceId, targetId, throughVersion: 2 });
+    expect(fork.events.map((entry) => entry.event.type)).toEqual([
+      "session.created",
+      "session.forked",
+      "message.appended",
+    ]);
+    expect(fork.events[1]).toMatchObject({
+      event: { payload: { sourceSessionId: sourceId, sourceVersion: 2 } },
+    });
+  });
 });

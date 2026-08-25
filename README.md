@@ -10,12 +10,14 @@ PiHarness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 - `@earendil-works/pi-agent-core` Runtime；
 - 可选择加载的 Pi AI Provider；
 - JSONL/Memory Session；
+- Session resume/fork、事务尾行恢复和中断工具的非重放恢复；
+- 可重放的滑动窗口 Compaction；
 - 强制 Policy/Approval 的工具执行管线；
 - 防路径和符号链接逃逸的工作区工具；
 - 分层 `AGENTS.md` 上下文；
 - Headless CLI。
 
-项目仍处于早期开发阶段，Session 崩溃恢复、Compaction、Skills、MCP 和发布流程
+项目仍处于早期开发阶段，附件、LLM 摘要 Compaction、Skills、MCP 和发布流程
 正在按 [`docs/development-plan.md`](docs/development-plan.md) 实施。
 
 ## 环境
@@ -94,6 +96,7 @@ node apps/cli/dist/bin.js \
 插件开发从 [`docs/plugin-development.md`](docs/plugin-development.md) 开始。安全模型见
 [`docs/security.md`](docs/security.md)，总体架构见
 [`docs/architecture.md`](docs/architecture.md)。
+Session 物理格式和恢复语义见 [`docs/session-format.md`](docs/session-format.md)。
 
 ## 验证
 

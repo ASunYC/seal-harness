@@ -1,4 +1,4 @@
-import type { AgentMessage, AssistantMessage, ContentBlock, ToolCall } from "./content.js";
+import type { AgentMessage, AssistantMessage, ContentBlock, ToolCall, UserMessage } from "./content.js";
 import type { RunId, SessionId, ToolCallId } from "./ids.js";
 import type { ModelRef, ModelStopReason, ModelUsage } from "./model.js";
 import type { ToolResult } from "./tool.js";
@@ -19,6 +19,7 @@ export type RuntimeEvent =
   | { readonly type: "turn_start"; readonly index: number }
   | { readonly type: "text_delta"; readonly delta: string }
   | { readonly type: "reasoning_delta"; readonly delta: string }
+  | { readonly type: "user_message"; readonly message: UserMessage }
   | { readonly type: "assistant_message"; readonly message: AssistantMessage }
   | { readonly type: "tool_call"; readonly call: ToolCall }
   | { readonly type: "tool_progress"; readonly callId: ToolCallId; readonly content: readonly ContentBlock[] }
@@ -38,6 +39,8 @@ export interface AgentRun extends AsyncIterable<RuntimeEvent> {
   abort(reason?: unknown): void;
   steer(message: AgentMessage): void;
   followUp(message: AgentMessage): void;
+  /** Awaited in registration order; use for durability barriers, not passive UI rendering. */
+  subscribe(listener: (event: RuntimeEvent) => void | Promise<void>): () => void;
 }
 
 export interface AgentRuntime {
