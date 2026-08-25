@@ -1,0 +1,29 @@
+{
+  "name": "@piharness/core",
+  "version": "0.1.0",
+  "description": "Provider-neutral Agent capability contracts for PiHarness",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "node -e \"for(const p of ['dist','tsconfig.tsbuildinfo','tsconfig.build.tsbuildinfo'])require('node:fs').rmSync(p,{recursive:true,force:true})\"",
+    "test": "vitest run test",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@piharness/kernel": "workspace:^"
+  },
+  "license": "MIT"
+}
