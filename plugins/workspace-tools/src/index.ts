@@ -272,12 +272,16 @@ async function runShell(
     child.stdout?.on("data", (chunk: Buffer) => { stdout = collect(stdout, chunk); });
     child.stderr?.on("data", (chunk: Buffer) => { stderr = collect(stderr, chunk); });
 
-    const terminate = (): void => terminateTree(child);
-    const onAbort = (): void => terminate();
+    let termination: Promise<void> | undefined;
+    const terminate = (): Promise<void> => {
+      termination ??= terminateTree(child);
+      return termination;
+    };
+    const onAbort = (): void => { void terminate(); };
     signal.addEventListener("abort", onAbort, { once: true });
     const timeout = setTimeout(() => {
       timedOut = true;
-      terminate();
+      void terminate();
     }, timeoutMs);
 
     child.once("error", (error) => {
@@ -285,10 +289,11 @@ async function runShell(
       signal.removeEventListener("abort", onAbort);
       reject(error);
     });
-    child.once("close", (exitCode) => {
+    child.once("close", async (exitCode) => {
       clearTimeout(timeout);
       signal.removeEventListener("abort", onAbort);
       if (signal.aborted) {
+        await termination;
         reject(signal.reason instanceof Error ? signal.reason : new Error("Shell command aborted"));
         return;
       }
@@ -303,17 +308,24 @@ async function runShell(
   });
 }
 
-function terminateTree(child: ChildProcess): void {
+async function terminateTree(child: ChildProcess): Promise<void> {
   if (child.pid === undefined) return;
   if (process.platform === "win32") {
-    const killer = spawn("taskkill", ["/pid", String(child.pid), "/T", "/F"], {
-      windowsHide: true,
-      stdio: "ignore",
+    await new Promise<void>((resolvePromise) => {
+      const killer = spawn("taskkill", ["/pid", String(child.pid), "/T", "/F"], {
+        windowsHide: true,
+        stdio: "ignore",
+      });
+      killer.once("error", () => {
+        if (child.exitCode === null && child.signalCode === null) child.kill();
+        resolvePromise();
+      });
+      killer.once("close", () => {
+        if (child.exitCode === null && child.signalCode === null) child.kill();
+        resolvePromise();
+      });
+      killer.unref();
     });
-    killer.once("close", () => {
-      if (child.exitCode === null && child.signalCode === null) child.kill();
-    });
-    killer.unref();
     return;
   }
   try { process.kill(-child.pid, "SIGTERM"); } catch { child.kill("SIGTERM"); }

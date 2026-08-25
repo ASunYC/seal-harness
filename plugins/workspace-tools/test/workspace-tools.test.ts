@@ -1,4 +1,4 @@
-import { access, mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -57,7 +57,9 @@ describe("workspace tools", () => {
     const cwd = await directory();
     await writeFile(join(cwd, "parent.cjs"), `
 const { spawn } = require("node:child_process");
-spawn(process.execPath, ["-e", "setTimeout(()=>require('node:fs').writeFileSync('orphan.txt','bad'),700)"], { stdio: "ignore" });
+const { writeFileSync } = require("node:fs");
+const child = spawn(process.execPath, ["-e", "setInterval(()=>{},1000)"], { stdio: "ignore" });
+writeFileSync("child.pid", String(child.pid));
 setInterval(() => {}, 1000);
 `);
     const tool = createWorkspaceTools({ shellTimeoutMs: 5_000 })
@@ -71,10 +73,17 @@ setInterval(() => {}, 1000);
       signal: controller.signal,
       reportProgress() {},
     });
-    setTimeout(() => controller.abort(new Error("test abort")), 100);
-    await expect(running).rejects.toThrow("test abort");
-    await new Promise((resolve) => setTimeout(resolve, 1_000));
-    await expect(access(join(cwd, "orphan.txt"))).rejects.toMatchObject({ code: "ENOENT" });
+    const childPid = await waitForChildPid(join(cwd, "child.pid"));
+    try {
+      controller.abort(new Error("test abort"));
+      await expect(running).rejects.toThrow("test abort");
+      await waitForProcessExit(childPid);
+      expect(isProcessAlive(childPid)).toBe(false);
+    } finally {
+      if (isProcessAlive(childPid)) {
+        try { process.kill(childPid, "SIGKILL"); } catch {}
+      }
+    }
   }, 10_000);
 });
 
@@ -99,4 +108,32 @@ async function execute(
     signal: new AbortController().signal,
     reportProgress() {},
   });
+}
+
+async function waitForChildPid(path: string): Promise<number> {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    try {
+      const value = Number(await readFile(path, "utf8"));
+      if (Number.isInteger(value) && value > 0) return value;
+    } catch {}
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  throw new Error("Timed out waiting for child process pid");
+}
+
+async function waitForProcessExit(pid: number): Promise<void> {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline && isProcessAlive(pid)) {
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+}
+
+function isProcessAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code !== "ESRCH";
+  }
 }
