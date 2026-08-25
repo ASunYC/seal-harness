@@ -130,6 +130,179 @@ describe("PiAgentRuntime", () => {
       content: [{ type: "text", text: "finished" }],
     });
   });
+
+  it("aborts an active Pi model stream", async () => {
+    let streamStarted!: () => void;
+    const started = new Promise<void>((resolve) => { streamStarted = resolve; });
+    const model = scriptedModel(async function* (request) {
+      streamStarted();
+      await new Promise<void>((resolve) => {
+        request.signal.addEventListener("abort", () => resolve(), { once: true });
+      });
+      yield { type: "done", stopReason: "aborted" };
+    });
+    const runtime = new PiAgentRuntime(model, undefined);
+    const run = runtime.start({
+      runId: runId("run-abort"),
+      sessionId: sessionId("session-abort"),
+      cwd: process.cwd(),
+      model: MODEL,
+      systemPrompt: "test",
+      messages: [userMessage("wait")],
+    });
+
+    await started;
+    run.abort(new Error("test abort"));
+    const events = await collect(run);
+    const result = await run.result;
+
+    expect(events.at(-1)).toEqual({ type: "run_end", stopReason: "aborted" });
+    expect(result.stopReason).toBe("aborted");
+  });
+
+  it("processes queued steering before follow-up messages", async () => {
+    const requests: ModelRequest[] = [];
+    const model = scriptedModel(async function* (request) {
+      requests.push(request);
+      yield { type: "text_delta", delta: `turn-${requests.length}` };
+      yield { type: "done", stopReason: "stop" };
+    });
+    const runtime = new PiAgentRuntime(model, undefined);
+    const run = runtime.start({
+      runId: runId("run-queues"),
+      sessionId: sessionId("session-queues"),
+      cwd: process.cwd(),
+      model: MODEL,
+      systemPrompt: "test",
+      messages: [userMessage("initial")],
+    });
+    run.steer(userMessage("steering"));
+    run.followUp(userMessage("follow-up"));
+
+    await collect(run);
+    const result = await run.result;
+
+    expect(requests).toHaveLength(2);
+    const queuedUserMessages = requests[1]?.messages
+      .filter((message) => message.role === "user")
+      .map(messageText)
+      .slice(-2);
+    expect(queuedUserMessages).toEqual(["steering", "follow-up"]);
+    expect(result.messages.filter((message) => message.role === "assistant")).toHaveLength(2);
+  });
+
+  it("executes independent tool calls in parallel", async () => {
+    const requests: ModelRequest[] = [];
+    let active = 0;
+    let maxActive = 0;
+    const tools: ToolService = {
+      register: () => () => {},
+      definitions: () => [{
+        name: "parallel",
+        description: "Parallel test",
+        inputSchema: {
+          type: "object",
+          properties: { value: { type: "string" } },
+          required: ["value"],
+        },
+      }],
+      async execute(request) {
+        active += 1;
+        maxActive = Math.max(maxActive, active);
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        active -= 1;
+        return { content: [text(String(request.input.value))] };
+      },
+    };
+    const model = scriptedModel(async function* (request) {
+      requests.push(request);
+      if (requests.length === 1) {
+        yield {
+          type: "tool_call",
+          call: {
+            type: "tool_call",
+            id: toolCallId("parallel-1"),
+            name: "parallel",
+            arguments: { value: "one" },
+          },
+        };
+        yield {
+          type: "tool_call",
+          call: {
+            type: "tool_call",
+            id: toolCallId("parallel-2"),
+            name: "parallel",
+            arguments: { value: "two" },
+          },
+        };
+        yield { type: "done", stopReason: "tool_call" };
+      } else {
+        yield { type: "text_delta", delta: "done" };
+        yield { type: "done", stopReason: "stop" };
+      }
+    });
+    const run = new PiAgentRuntime(model, tools).start({
+      runId: runId("run-parallel"),
+      sessionId: sessionId("session-parallel"),
+      cwd: process.cwd(),
+      model: MODEL,
+      systemPrompt: "test",
+      messages: [userMessage("parallel")],
+    });
+
+    await collect(run);
+    await run.result;
+    expect(maxActive).toBe(2);
+    expect(requests).toHaveLength(2);
+  });
+
+  it("returns tool failures to the model so it can recover", async () => {
+    const requests: ModelRequest[] = [];
+    const tools: ToolService = {
+      register: () => () => {},
+      definitions: () => [{
+        name: "fail",
+        description: "Always fail",
+        inputSchema: { type: "object", additionalProperties: false },
+      }],
+      async execute() { throw new Error("expected failure"); },
+    };
+    const model = scriptedModel(async function* (request) {
+      requests.push(request);
+      if (requests.length === 1) {
+        yield {
+          type: "tool_call",
+          call: {
+            type: "tool_call",
+            id: toolCallId("failure-1"),
+            name: "fail",
+            arguments: {},
+          },
+        };
+        yield { type: "done", stopReason: "tool_call" };
+      } else {
+        yield { type: "text_delta", delta: "recovered" };
+        yield { type: "done", stopReason: "stop" };
+      }
+    });
+    const run = new PiAgentRuntime(model, tools).start({
+      runId: runId("run-failure"),
+      sessionId: sessionId("session-failure"),
+      cwd: process.cwd(),
+      model: MODEL,
+      systemPrompt: "test",
+      messages: [userMessage("fail then recover")],
+    });
+
+    await collect(run);
+    const result = await run.result;
+    const toolMessage = requests[1]?.messages.find((message) => message.role === "tool");
+    expect(toolMessage).toMatchObject({ role: "tool", isError: true });
+    expect(result.messages.at(-1)).toMatchObject({
+      role: "assistant",
+      content: [{ type: "text", text: "recovered" }],
+    });
+  });
 });
 
 function scriptedModel(
@@ -148,4 +321,12 @@ async function collect<T>(iterable: AsyncIterable<T>): Promise<T[]> {
   const values: T[] = [];
   for await (const value of iterable) values.push(value);
   return values;
+}
+
+function messageText(message: ModelRequest["messages"][number] | undefined): string {
+  if (message?.role !== "user") return "";
+  return message.content
+    .filter((block) => block.type === "text")
+    .map((block) => block.text)
+    .join("");
 }
