@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { agentCorePlugin } from "@piharness/agent-core";
 import { stdioApprovalPlugin } from "@piharness/approval-stdio";
+import { contextCorePlugin } from "@piharness/context-core";
 import { fileContextPlugin } from "@piharness/context-files";
 import { modelServiceToken, sessionStoreToken, toolCallId, type ModelRequest } from "@piharness/core";
 import { defineProfile, startProfile } from "@piharness/host";
@@ -53,7 +54,8 @@ describe("headless Agent E2E", () => {
         respond,
       }),
       plugin(jsonlSessionPlugin, { root: sessionRoot }),
-      plugin(fileContextPlugin, { systemPrompt: "Complete the task." }),
+      plugin(contextCorePlugin, { systemPrompt: "Complete the task." }),
+      plugin(fileContextPlugin, {}),
       plugin(basicPolicyPlugin, { mode: "workspace-write" }),
       plugin(stdioApprovalPlugin, { mode: "allow" }),
       plugin(toolsCorePlugin, {}),

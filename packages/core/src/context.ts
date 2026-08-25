@@ -16,6 +16,17 @@ export interface PreparedContext {
   readonly additions: readonly AgentMessage[];
 }
 
+export interface ContextContribution {
+  readonly systemPrompt?: string;
+  readonly additions?: readonly AgentMessage[];
+}
+
+export interface ContextSource {
+  readonly name: string;
+  contribute(request: ContextRequest): Promise<ContextContribution | undefined>;
+}
+
 export interface ContextService {
+  register(source: ContextSource): () => void;
   prepare(request: ContextRequest): Promise<PreparedContext>;
 }

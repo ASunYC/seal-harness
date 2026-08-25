@@ -24,6 +24,7 @@ describe("DefaultAgentService", () => {
   it("persists additions before runtime and generated messages after completion", async () => {
     const sessions = new MemorySessionStore(() => new Date("2026-01-01T00:00:00Z"));
     const context: ContextService = {
+      register() { return () => {}; },
       async prepare(request) {
         const addition = { role: "user" as const, content: request.prompt };
         return {
@@ -401,6 +402,7 @@ class ControlledRun implements AgentRun {
 
 function passthroughContext(): ContextService {
   return {
+    register() { return () => {}; },
     async prepare(request) {
       const addition = { role: "user" as const, content: request.prompt };
       return {

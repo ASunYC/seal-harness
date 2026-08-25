@@ -17,6 +17,9 @@ PiHarness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 - 分层 `AGENTS.md` 上下文；
 - Headless CLI。
 
+可选生态插件包括 Filesystem Skills、MCP Client、SQLite Session 和 JSONL RPC；它们
+不属于微内核，也可以从 Profile 完全移除。
+
 项目仍处于早期开发阶段，附件、LLM 摘要 Compaction、Skills、MCP 和发布流程
 正在按 [`docs/development-plan.md`](docs/development-plan.md) 实施。
 
@@ -89,7 +92,10 @@ node apps/cli/dist/bin.js \
 | `plugins/tools-core` | 强制 Policy 的工具执行管线 |
 | `plugins/workspace-tools` | 文件、搜索和 Shell 工具 |
 | `plugins/session-*` | 可替换 Session Store |
+| `plugins/skills-filesystem` | 按 `$name` 展开的文件系统 Skills |
+| `plugins/mcp-client` | 官方 SDK 驱动、经过 Policy 的 MCP 工具 |
 | `apps/cli` | Headless 入口与默认 Profile |
+| `apps/rpc` | 严格 stdout JSONL RPC 入口 |
 
 ## 插件
 

@@ -14,6 +14,7 @@ import {
   sessionStoreToken,
   toolCallId,
   toolServiceToken,
+  telemetryServiceToken,
   turnId,
   userMessage,
 } from "../src/index.js";
@@ -31,6 +32,7 @@ describe("core contracts", () => {
       approvalServiceToken,
       contextServiceToken,
       credentialServiceToken,
+      telemetryServiceToken,
     ];
 
     expect(new Set(tokens.map((token) => token.id))).toHaveLength(tokens.length);
@@ -45,6 +47,7 @@ describe("core contracts", () => {
       "piharness.approval",
       "piharness.context",
       "piharness.credentials",
+      "piharness.telemetry",
     ]);
   });
 

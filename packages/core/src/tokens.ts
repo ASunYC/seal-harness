@@ -8,6 +8,7 @@ import type { ApprovalService, PolicyService } from "./policy.js";
 import type { AgentRuntime } from "./runtime.js";
 import type { SessionStore } from "./session.js";
 import type { ToolService } from "./tool.js";
+import type { TelemetryService } from "./telemetry.js";
 
 export const modelServiceToken = createServiceToken<ModelService>("piharness.model");
 export const runtimeToken = createServiceToken<AgentRuntime>("piharness.runtime");
@@ -19,3 +20,4 @@ export const contextServiceToken = createServiceToken<ContextService>("piharness
 export const credentialServiceToken = createServiceToken<CredentialService>("piharness.credentials");
 export const agentServiceToken = createServiceToken<AgentService>("piharness.agent");
 export const compactionServiceToken = createServiceToken<CompactionService>("piharness.compaction");
+export const telemetryServiceToken = createServiceToken<TelemetryService>("piharness.telemetry");

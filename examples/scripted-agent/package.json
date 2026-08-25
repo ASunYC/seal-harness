@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@piharness/agent-core": "workspace:^",
+    "@piharness/context-core": "workspace:^",
     "@piharness/context-files": "workspace:^",
     "@piharness/host": "workspace:^",
     "@piharness/kernel": "workspace:^",

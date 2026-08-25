@@ -1,4 +1,5 @@
 import { agentCorePlugin } from "@piharness/agent-core";
+import { contextCorePlugin } from "@piharness/context-core";
 import { fileContextPlugin } from "@piharness/context-files";
 import { defineProfile } from "@piharness/host";
 import { plugin } from "@piharness/kernel";
@@ -25,7 +26,8 @@ export default defineProfile([
     },
   }),
   plugin(memorySessionPlugin, {}),
-  plugin(fileContextPlugin, { systemPrompt: "You are an offline PiHarness demo." }),
+  plugin(contextCorePlugin, { systemPrompt: "You are an offline PiHarness demo." }),
+  plugin(fileContextPlugin, {}),
   plugin(piRuntimePlugin, {}),
   plugin(agentCorePlugin, {}),
 ]);

@@ -9,6 +9,7 @@
     { "path": "../../packages/host/tsconfig.build.json" },
     { "path": "../../plugins/agent-core/tsconfig.build.json" },
     { "path": "../../plugins/approval-stdio/tsconfig.build.json" },
+    { "path": "../../plugins/context-core/tsconfig.build.json" },
     { "path": "../../plugins/context-files/tsconfig.build.json" },
     { "path": "../../plugins/compaction-window/tsconfig.build.json" },
     { "path": "../../plugins/credentials-env/tsconfig.build.json" },
@@ -16,6 +17,7 @@
     { "path": "../../plugins/provider-pi-ai/tsconfig.build.json" },
     { "path": "../../plugins/runtime-pi/tsconfig.build.json" },
     { "path": "../../plugins/session-jsonl/tsconfig.build.json" },
+    { "path": "../../plugins/telemetry-noop/tsconfig.build.json" },
     { "path": "../../plugins/tools-core/tsconfig.build.json" },
     { "path": "../../plugins/workspace-tools/tsconfig.build.json" }
   ]

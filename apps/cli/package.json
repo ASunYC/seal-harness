@@ -19,6 +19,7 @@
   "dependencies": {
     "@piharness/agent-core": "workspace:^",
     "@piharness/approval-stdio": "workspace:^",
+    "@piharness/context-core": "workspace:^",
     "@piharness/context-files": "workspace:^",
     "@piharness/compaction-window": "workspace:^",
     "@piharness/core": "workspace:^",
@@ -29,6 +30,7 @@
     "@piharness/provider-pi-ai": "workspace:^",
     "@piharness/runtime-pi": "workspace:^",
     "@piharness/session-jsonl": "workspace:^",
+    "@piharness/telemetry-noop": "workspace:^",
     "@piharness/tools-core": "workspace:^",
     "@piharness/workspace-tools": "workspace:^"
   },

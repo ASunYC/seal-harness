@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { sessionId, text } from "@piharness/core";
-import { FileContextService } from "../src/index.js";
+import { FileContextSource } from "../src/index.js";
 
 const temporary: string[] = [];
 afterEach(async () => Promise.all(temporary.splice(0).map((path) => rm(path, { recursive: true, force: true }))));
@@ -16,9 +16,9 @@ describe("FileContextService", () => {
     await mkdir(join(root, "packages", "app"), { recursive: true });
     await writeFile(join(root, "AGENTS.md"), "root rules");
     await writeFile(join(root, "packages", "app", "AGENTS.md"), "app rules");
-    const service = new FileContextService({ systemPrompt: "base" });
+    const source = new FileContextSource({ systemPrompt: "base" });
 
-    const prepared = await service.prepare({
+    const contribution = await source.contribute({
       sessionId: sessionId("session"),
       cwd: join(root, "packages", "app"),
       prompt: [text("hello")],
@@ -26,10 +26,10 @@ describe("FileContextService", () => {
       signal: new AbortController().signal,
     });
 
-    expect(prepared.systemPrompt).toContain("root rules");
-    expect(prepared.systemPrompt).toContain("app rules");
-    expect(prepared.systemPrompt.indexOf("root rules")).toBeLessThan(prepared.systemPrompt.indexOf("app rules"));
-    expect(prepared.additions).toEqual([{ role: "user", content: [text("hello")] }]);
-    expect(prepared.messages).toEqual(prepared.additions);
+    expect(contribution.systemPrompt).toContain("root rules");
+    expect(contribution.systemPrompt).toContain("app rules");
+    expect(contribution.systemPrompt?.indexOf("root rules")).toBeLessThan(
+      contribution.systemPrompt?.indexOf("app rules") ?? 0,
+    );
   });
 });

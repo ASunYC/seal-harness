@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { agentCorePlugin } from "@piharness/agent-core";
 import { stdioApprovalPlugin } from "@piharness/approval-stdio";
+import { contextCorePlugin } from "@piharness/context-core";
 import { fileContextPlugin } from "@piharness/context-files";
 import { windowCompactionPlugin } from "@piharness/compaction-window";
 import { environmentCredentialPlugin } from "@piharness/credentials-env";
@@ -11,6 +12,7 @@ import { piAiProviderPlugin, type PiAiBuiltinProvider } from "@piharness/provide
 import { piRuntimePlugin } from "@piharness/runtime-pi";
 import { jsonlSessionPlugin } from "@piharness/session-jsonl";
 import { toolsCorePlugin } from "@piharness/tools-core";
+import { noopTelemetryPlugin } from "@piharness/telemetry-noop";
 import { workspaceToolsPlugin } from "@piharness/workspace-tools";
 
 export interface DefaultProfileOptions {
@@ -23,11 +25,13 @@ export interface DefaultProfileOptions {
 
 export function createDefaultProfile(options: DefaultProfileOptions) {
   return defineProfile([
+    plugin(noopTelemetryPlugin, undefined),
     plugin(environmentCredentialPlugin, {}),
     plugin(piAiProviderPlugin, { providers: [options.provider] }),
     plugin(jsonlSessionPlugin, {
       root: options.sessionRoot ?? join(options.cwd, ".piharness", "sessions"),
     }),
+    plugin(contextCorePlugin, {}),
     plugin(fileContextPlugin, {}),
     plugin(windowCompactionPlugin, {}),
     plugin(basicPolicyPlugin, { mode: "workspace-write" }),

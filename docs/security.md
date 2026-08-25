@@ -62,6 +62,13 @@ Shell 使用工作区作为 cwd，设置超时并在中止时终止进程树。�
 一旦批准，命令仍可能访问启动用户可访问的文件、网络和凭据。高保证部署必须在
 容器、虚拟机或系统沙箱中运行整个 PiHarness 进程。
 
+## MCP
+
+MCP Server 是独立信任边界。发现到的工具不会直接交给 Runtime，而是注册进同一个
+ToolService；默认风险是 `external`，因此默认 Policy 要求审批。stdio Server 是宿主
+启动的本地代码，HTTP Server 会接收工具参数。只连接可信 Server，并在 Profile 中
+显式配置每个连接。MCP 插件不默认启用。
+
 ## 供应链
 
 - 直接依赖固定精确版本；

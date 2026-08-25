@@ -3,10 +3,9 @@ import { dirname, join, relative, resolve } from "node:path";
 import {
   contextServiceToken,
   type ContextRequest,
-  type ContextService,
+  type ContextContribution,
+  type ContextSource,
   type PiHarnessEvents,
-  type PreparedContext,
-  type UserMessage,
 } from "@piharness/core";
 import { definePlugin } from "@piharness/kernel";
 
@@ -16,34 +15,33 @@ export interface FileContextConfig {
   readonly maxInstructionBytes?: number;
 }
 
-export class FileContextService implements ContextService {
+export class FileContextSource implements ContextSource {
+  readonly name = "context-files";
+
   constructor(readonly config: FileContextConfig = {}) {}
 
-  async prepare(request: ContextRequest): Promise<PreparedContext> {
+  async contribute(request: ContextRequest): Promise<ContextContribution> {
     request.signal.throwIfAborted();
     const instructions = await loadInstructions(
       request.cwd,
       this.config.instructionFile ?? "AGENTS.md",
       this.config.maxInstructionBytes ?? 65_536,
     );
-    const addition: UserMessage = { role: "user", content: request.prompt };
     const sections = [
-      this.config.systemPrompt ?? "You are PiHarness, a concise and careful coding agent.",
+      ...(this.config.systemPrompt === undefined ? [] : [this.config.systemPrompt]),
       ...instructions.map(({ path, content }) => `Project instructions (${path}):\n${content}`),
     ];
     return {
       systemPrompt: sections.join("\n\n"),
-      messages: [...request.history, addition],
-      additions: [addition],
     };
   }
 }
 
 export const fileContextPlugin = definePlugin<FileContextConfig, PiHarnessEvents>({
   name: "context-files",
-  provides: [contextServiceToken],
+  requires: [contextServiceToken],
   setup(context, config) {
-    context.provide(contextServiceToken, new FileContextService(config));
+    context.effect(context.use(contextServiceToken).register(new FileContextSource(config)));
   },
 });
 

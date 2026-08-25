@@ -104,6 +104,10 @@
 
 ## M6：可选生态插件
 
+当前状态：已完成。Filesystem Skills、官方 SDK MCP Client、Node SQLite Session、
+JSONL RPC 和默认无网络 Telemetry 均为独立插件/入口；离线最小 Profile 不依赖这些
+可选能力仍可运行。
+
 交付物：
 
 - Skills 文件系统插件；

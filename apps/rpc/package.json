@@ -1,0 +1,34 @@
+{
+  "name": "@piharness/rpc",
+  "version": "0.1.0",
+  "description": "JSONL RPC entry point for PiHarness",
+  "type": "module",
+  "bin": { "piharness-rpc": "./dist/bin.js" },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist", "README.md"],
+  "sideEffects": false,
+  "engines": { "node": ">=22.19.0" },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "node -e \"for(const p of ['dist','tsconfig.tsbuildinfo','tsconfig.build.tsbuildinfo'])require('node:fs').rmSync(p,{recursive:true,force:true})\"",
+    "test": "vitest run test",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@piharness/cli": "workspace:^",
+    "@piharness/core": "workspace:^",
+    "@piharness/host": "workspace:^",
+    "@piharness/kernel": "workspace:^",
+    "@piharness/provider-pi-ai": "workspace:^"
+  },
+  "devDependencies": {
+    "@piharness/agent-core": "workspace:^",
+    "@piharness/context-core": "workspace:^",
+    "@piharness/model-scripted": "workspace:^",
+    "@piharness/runtime-pi": "workspace:^",
+    "@piharness/session-memory": "workspace:^"
+  },
+  "license": "MIT"
+}

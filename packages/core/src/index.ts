@@ -10,5 +10,6 @@ export * from "./model.js";
 export * from "./policy.js";
 export * from "./runtime.js";
 export * from "./session.js";
+export * from "./telemetry.js";
 export * from "./tokens.js";
 export * from "./tool.js";
