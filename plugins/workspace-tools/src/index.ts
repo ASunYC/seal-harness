@@ -306,10 +306,12 @@ async function runShell(
 function terminateTree(child: ChildProcess): void {
   if (child.pid === undefined) return;
   if (process.platform === "win32") {
-    child.kill();
     const killer = spawn("taskkill", ["/pid", String(child.pid), "/T", "/F"], {
       windowsHide: true,
       stdio: "ignore",
+    });
+    killer.once("close", () => {
+      if (child.exitCode === null && child.signalCode === null) child.kill();
     });
     killer.unref();
     return;

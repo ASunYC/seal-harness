@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { access, mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -52,6 +52,30 @@ describe("workspace tools", () => {
     expect(result.isError).toBe(false);
     expect(result.content[0]).toMatchObject({ text: expect.stringContaining("ok") });
   });
+
+  it("aborts the shell process tree without leaving a child effect", async () => {
+    const cwd = await directory();
+    await writeFile(join(cwd, "parent.cjs"), `
+const { spawn } = require("node:child_process");
+spawn(process.execPath, ["-e", "setTimeout(()=>require('node:fs').writeFileSync('orphan.txt','bad'),700)"], { stdio: "ignore" });
+setInterval(() => {}, 1000);
+`);
+    const tool = createWorkspaceTools({ shellTimeoutMs: 5_000 })
+      .find((candidate) => candidate.name === "shell");
+    if (tool === undefined) throw new Error("Missing shell tool");
+    const controller = new AbortController();
+    const running = tool.execute({ command: `"${process.execPath}" parent.cjs` }, {
+      callId: toolCallId("abort-call"),
+      sessionId: sessionId("session"),
+      cwd,
+      signal: controller.signal,
+      reportProgress() {},
+    });
+    setTimeout(() => controller.abort(new Error("test abort")), 100);
+    await expect(running).rejects.toThrow("test abort");
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+    await expect(access(join(cwd, "orphan.txt"))).rejects.toMatchObject({ code: "ENOENT" });
+  }, 10_000);
 });
 
 async function directory(): Promise<string> {
