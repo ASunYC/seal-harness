@@ -12,6 +12,8 @@ export interface ContextRequest {
 export interface PreparedContext {
   readonly systemPrompt: string;
   readonly messages: readonly AgentMessage[];
+  /** New model-visible messages that must be persisted before the runtime starts. */
+  readonly additions: readonly AgentMessage[];
 }
 
 export interface ContextService {

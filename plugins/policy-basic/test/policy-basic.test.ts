@@ -20,6 +20,14 @@ describe("BasicPolicyService", () => {
       .toMatchObject({ outcome: "deny" });
   });
 
+  it("denies reads outside the workspace unless explicitly enabled", async () => {
+    const outside = resolve(workspace, "..", "secret.txt");
+    expect(await new BasicPolicyService().decide(action("read", outside), context))
+      .toMatchObject({ outcome: "deny" });
+    expect(await new BasicPolicyService({ allowReadOutsideWorkspace: true }).decide(action("read", outside), context))
+      .toEqual({ outcome: "allow" });
+  });
+
   it("asks for dangerous and external operations by default", async () => {
     const policy = new BasicPolicyService();
     expect(await policy.decide(action("dangerous"), context)).toMatchObject({ outcome: "ask" });

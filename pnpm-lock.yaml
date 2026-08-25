@@ -18,6 +18,76 @@ importers:
         specifier: 4.1.9
         version: 4.1.9(@types/node@22.19.19)(vite@8.2.2(@types/node@22.19.19)(yaml@2.9.0))
 
+  apps/cli:
+    dependencies:
+      '@piharness/agent-core':
+        specifier: workspace:^
+        version: link:../../plugins/agent-core
+      '@piharness/approval-stdio':
+        specifier: workspace:^
+        version: link:../../plugins/approval-stdio
+      '@piharness/context-files':
+        specifier: workspace:^
+        version: link:../../plugins/context-files
+      '@piharness/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@piharness/credentials-env':
+        specifier: workspace:^
+        version: link:../../plugins/credentials-env
+      '@piharness/host':
+        specifier: workspace:^
+        version: link:../../packages/host
+      '@piharness/kernel':
+        specifier: workspace:^
+        version: link:../../packages/kernel
+      '@piharness/policy-basic':
+        specifier: workspace:^
+        version: link:../../plugins/policy-basic
+      '@piharness/provider-pi-ai':
+        specifier: workspace:^
+        version: link:../../plugins/provider-pi-ai
+      '@piharness/runtime-pi':
+        specifier: workspace:^
+        version: link:../../plugins/runtime-pi
+      '@piharness/session-jsonl':
+        specifier: workspace:^
+        version: link:../../plugins/session-jsonl
+      '@piharness/tools-core':
+        specifier: workspace:^
+        version: link:../../plugins/tools-core
+      '@piharness/workspace-tools':
+        specifier: workspace:^
+        version: link:../../plugins/workspace-tools
+    devDependencies:
+      '@piharness/model-scripted':
+        specifier: workspace:^
+        version: link:../../plugins/model-scripted
+
+  examples/scripted-agent:
+    dependencies:
+      '@piharness/agent-core':
+        specifier: workspace:^
+        version: link:../../plugins/agent-core
+      '@piharness/context-files':
+        specifier: workspace:^
+        version: link:../../plugins/context-files
+      '@piharness/host':
+        specifier: workspace:^
+        version: link:../../packages/host
+      '@piharness/kernel':
+        specifier: workspace:^
+        version: link:../../packages/kernel
+      '@piharness/model-scripted':
+        specifier: workspace:^
+        version: link:../../plugins/model-scripted
+      '@piharness/runtime-pi':
+        specifier: workspace:^
+        version: link:../../plugins/runtime-pi
+      '@piharness/session-memory':
+        specifier: workspace:^
+        version: link:../../plugins/session-memory
+
   packages/core:
     dependencies:
       '@piharness/kernel':
@@ -32,7 +102,47 @@ importers:
 
   packages/kernel: {}
 
+  plugins/agent-core:
+    dependencies:
+      '@piharness/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@piharness/kernel':
+        specifier: workspace:^
+        version: link:../../packages/kernel
+    devDependencies:
+      '@piharness/session-memory':
+        specifier: workspace:^
+        version: link:../session-memory
+
+  plugins/approval-stdio:
+    dependencies:
+      '@piharness/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@piharness/kernel':
+        specifier: workspace:^
+        version: link:../../packages/kernel
+
+  plugins/context-files:
+    dependencies:
+      '@piharness/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@piharness/kernel':
+        specifier: workspace:^
+        version: link:../../packages/kernel
+
   plugins/credentials-env:
+    dependencies:
+      '@piharness/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@piharness/kernel':
+        specifier: workspace:^
+        version: link:../../packages/kernel
+
+  plugins/model-scripted:
     dependencies:
       '@piharness/core':
         specifier: workspace:^
@@ -86,6 +196,15 @@ importers:
         specifier: 1.3.7
         version: 1.3.7
 
+  plugins/session-jsonl:
+    dependencies:
+      '@piharness/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@piharness/kernel':
+        specifier: workspace:^
+        version: link:../../packages/kernel
+
   plugins/session-memory:
     dependencies:
       '@piharness/core':
@@ -106,6 +225,15 @@ importers:
       typebox:
         specifier: 1.3.7
         version: 1.3.7
+
+  plugins/workspace-tools:
+    dependencies:
+      '@piharness/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@piharness/kernel':
+        specifier: workspace:^
+        version: link:../../packages/kernel
 
 packages:
 

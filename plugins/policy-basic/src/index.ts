@@ -15,20 +15,30 @@ export type PermissionMode = "read-only" | "workspace-write" | "danger-full-acce
 export interface BasicPolicyConfig {
   readonly mode?: PermissionMode;
   readonly askFor?: readonly ToolRisk[];
+  readonly allowReadOutsideWorkspace?: boolean;
 }
 
 export class BasicPolicyService implements PolicyService {
   readonly mode: PermissionMode;
   readonly askFor: ReadonlySet<ToolRisk>;
 
-  constructor(config: BasicPolicyConfig = {}) {
+  constructor(readonly config: BasicPolicyConfig = {}) {
     this.mode = config.mode ?? "workspace-write";
     this.askFor = new Set(config.askFor ?? ["external", "dangerous"]);
   }
 
   async decide(action: ToolPolicyAction, context: PolicyContext): Promise<PolicyDecision> {
     if (this.mode === "danger-full-access") return { outcome: "allow" };
-    if (action.risk === "read") return { outcome: "allow" };
+    if (action.risk === "read") {
+      if (
+        this.config.allowReadOutsideWorkspace !== true
+        && action.target !== undefined
+        && !isWithin(context.cwd, action.target)
+      ) {
+        return { outcome: "deny", reason: `Read target is outside the workspace: ${action.target}` };
+      }
+      return { outcome: "allow" };
+    }
 
     if (this.mode === "read-only") {
       return { outcome: "deny", reason: `Permission mode read-only blocks ${action.risk}` };

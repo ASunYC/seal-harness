@@ -1,0 +1,15 @@
+{
+  "name": "piharness-example-scripted-agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@piharness/agent-core": "workspace:^",
+    "@piharness/context-files": "workspace:^",
+    "@piharness/host": "workspace:^",
+    "@piharness/kernel": "workspace:^",
+    "@piharness/model-scripted": "workspace:^",
+    "@piharness/runtime-pi": "workspace:^",
+    "@piharness/session-memory": "workspace:^"
+  }
+}

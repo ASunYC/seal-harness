@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  agentServiceToken,
   approvalServiceToken,
   contextServiceToken,
   credentialServiceToken,
@@ -19,6 +20,7 @@ import {
 describe("core contracts", () => {
   it("exports stable, unique service tokens", () => {
     const tokens = [
+      agentServiceToken,
       modelServiceToken,
       runtimeToken,
       sessionStoreToken,
@@ -31,6 +33,7 @@ describe("core contracts", () => {
 
     expect(new Set(tokens.map((token) => token.id))).toHaveLength(tokens.length);
     expect(tokens.map((token) => token.name)).toEqual([
+      "piharness.agent",
       "piharness.model",
       "piharness.runtime",
       "piharness.session-store",
