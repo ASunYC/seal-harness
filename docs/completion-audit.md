@@ -3,8 +3,9 @@
 审计日期：2026-08-25
 
 本文件按 [`development-plan.md`](development-plan.md) 的 M0–M7 逐项核对当前证据。
-结论：本地实现与发布准备完成；GitHub 私有空仓库和本地 `origin` 已建立。按用户要求
-暂不 push，首次同步和远端 CI 尚未完成，因此整个目标暂不能标记为完成。
+结论：本地实现、发布准备和 GitHub 同步均已完成。私有仓库 `ASunYC/PiHarness` 的
+`origin/main` 与本地一致，GitHub Actions 已在 Node 22.19 和 Node 24 上通过完整检查，
+整个目标具备可复核的完成证据。
 
 ## M0：仓库与决策基线
 
@@ -15,7 +16,7 @@
 | 本地 `origin` | fetch/push URL 均为 `https://github.com/ASunYC/PiHarness.git` | 完成 |
 | Node/pnpm workspace | 根 manifest、lockfile、25 个可发布包 | 完成 |
 | 架构与 ADR | `architecture.md`、ADR-0001 | 完成 |
-| CI 基线 | Node 22.19/24、pack smoke workflow 已定义 | 本地完成，远端未运行 |
+| CI 基线 | Node 22.19/24、pack smoke workflow 已定义并在 GitHub Actions 通过 | 完成 |
 
 ## M1：插件微内核
 
@@ -87,9 +88,9 @@
 - 25 个包从 tarball 安装到全新临时目录，打包后的 CLI + Scripted Pi Agent 运行成功。
 - `pnpm audit --prod`：0 个已知漏洞。
 
-状态：本地完成；远端 workflow 未运行。
+状态：完成；本地验证和远端 workflow 均已通过。
 
-## 最新本地验证
+## 最新验证
 
 ```text
 pnpm check       27 test files; 72 passed; 1 Windows-conditional skip
@@ -97,11 +98,16 @@ pnpm audit --prod  No known vulnerabilities found
 pnpm pack:smoke  Packed 25 packages and verified a clean install
 ```
 
-## 剩余同步条件
+远端 GitHub Actions（提交 `6bcbf00`）验证：
 
-1. 用户检查并确认空仓库创建稳定；
-2. 首次 push `main`；
-3. 等待并核对 GitHub Actions；
-4. 确认本地/远端 commit 一致。
+- Node 22.19：27 个测试文件、73 个测试通过；
+- Node 24：27 个测试文件、73 个测试通过；
+- 25 包 tarball clean-install smoke 通过；
+- workflow 结论为 `Success`。
 
-当前暂停 push 是用户要求的阶段性检查点，不是技术阻塞。
+## 同步证据
+
+- GitHub 仓库：`https://github.com/ASunYC/PiHarness`；
+- 首次同步后的代码提交：`6bcbf000d0a23e983c7e4d176101a3819a53060e`；
+- GitHub Actions：`https://github.com/ASunYC/PiHarness/actions/runs/32864496946`；
+- 本地 `main` 与 `origin/main` 在同步后 commit 一致，stash 为空。

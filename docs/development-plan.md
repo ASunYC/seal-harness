@@ -128,9 +128,9 @@ JSONL RPC 和默认无网络 Telemetry 均为独立插件/入口；离线最小 
 
 ## M7：发布准备
 
-当前状态：本地交付物已完成。用户/API/安全/版本文档、Changelog、Dependabot、CI、
-手动 Release Candidate 工作流和 25 包 tarball clean-install smoke 均已验证；GitHub
-私有空仓库和 `origin` 已建立，首次 push 与远端 Actions 按阶段性检查要求暂缓。
+当前状态：已完成。用户/API/安全/版本文档、Changelog、Dependabot、CI、手动 Release
+Candidate 工作流和 25 包 tarball clean-install smoke 均已验证；GitHub 私有仓库和
+`origin` 已建立，`main` 已同步，远端 Actions 在 Node 22.19/24 及打包安装任务中通过。
 
 交付物：
 
