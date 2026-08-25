@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { agentCorePlugin } from "@piharness/agent-core";
+import { localAttachmentPlugin } from "@piharness/attachment-local";
 import { stdioApprovalPlugin } from "@piharness/approval-stdio";
 import { contextCorePlugin } from "@piharness/context-core";
 import { fileContextPlugin } from "@piharness/context-files";
@@ -21,6 +22,7 @@ export interface DefaultProfileOptions {
   readonly approvalMode?: "ask" | "allow" | "deny";
   readonly enableShell?: boolean;
   readonly sessionRoot?: string;
+  readonly attachmentRoot?: string;
 }
 
 export function createDefaultProfile(options: DefaultProfileOptions) {
@@ -32,6 +34,9 @@ export function createDefaultProfile(options: DefaultProfileOptions) {
       root: options.sessionRoot ?? join(options.cwd, ".piharness", "sessions"),
     }),
     plugin(contextCorePlugin, {}),
+    plugin(localAttachmentPlugin, {
+      root: options.attachmentRoot ?? join(options.cwd, ".piharness", "attachments"),
+    }),
     plugin(fileContextPlugin, {}),
     plugin(windowCompactionPlugin, {}),
     plugin(basicPolicyPlugin, { mode: "workspace-write" }),

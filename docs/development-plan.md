@@ -85,8 +85,9 @@
 
 ## M5：可恢复性与上下文管理
 
-当前状态：Session resume/fork、JSONL 事务尾行恢复、增量持久化屏障、中断工具
-非重放恢复、基础 Compaction 和工具输出截断已完成；附件与基于 LLM 的摘要仍待实现。
+当前状态：已完成。Session resume/fork、JSONL 事务尾行恢复、增量持久化屏障、
+中断工具非重放恢复、可插拔 Compaction、内容寻址附件和通用工具输出截断均已落地；
+真实 Pi loop 长历史 E2E 已验证压缩后继续运行。
 
 交付物：
 
@@ -123,6 +124,10 @@ JSONL RPC 和默认无网络 Telemetry 均为独立插件/入口；离线最小 
 - Telemetry 默认不发起网络请求。
 
 ## M7：发布准备
+
+当前状态：本地交付物已完成。用户/API/安全/版本文档、Changelog、Dependabot、CI、
+手动 Release Candidate 工作流和 24 包 tarball clean-install smoke 均已验证；GitHub
+远端创建、首次 push 和远端 Actions 结果仍等待外部创建确认。
 
 交付物：
 

@@ -3,6 +3,7 @@ import {
   text,
   type AgentPromptRequest,
   type AgentService,
+  type ContentBlock,
   type RuntimeEvent,
 } from "@piharness/core";
 import type { Kernel } from "@piharness/kernel";
@@ -55,11 +56,12 @@ export function promptRequest(
   model: string,
   prompt: string,
   options: Pick<AgentPromptRequest, "sessionId" | "reasoning" | "signal"> = {},
+  extraContent: readonly ContentBlock[] = [],
 ): AgentPromptRequest {
   return {
     cwd,
     model: { provider, model },
-    prompt: [text(prompt)],
+    prompt: [text(prompt), ...extraContent],
     ...options,
   };
 }

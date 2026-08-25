@@ -26,6 +26,9 @@ importers:
       '@piharness/approval-stdio':
         specifier: workspace:^
         version: link:../../plugins/approval-stdio
+      '@piharness/attachment-local':
+        specifier: workspace:^
+        version: link:../../plugins/attachment-local
       '@piharness/compaction-window':
         specifier: workspace:^
         version: link:../../plugins/compaction-window
@@ -72,6 +75,9 @@ importers:
       '@piharness/model-scripted':
         specifier: workspace:^
         version: link:../../plugins/model-scripted
+      '@piharness/session-memory':
+        specifier: workspace:^
+        version: link:../../plugins/session-memory
 
   apps/rpc:
     dependencies:
@@ -170,6 +176,15 @@ importers:
         specifier: workspace:^
         version: link:../../packages/kernel
 
+  plugins/attachment-local:
+    dependencies:
+      '@piharness/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@piharness/kernel':
+        specifier: workspace:^
+        version: link:../../packages/kernel
+
   plugins/compaction-window:
     dependencies:
       '@piharness/core':
@@ -217,6 +232,13 @@ importers:
       '@piharness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
+    devDependencies:
+      '@modelcontextprotocol/server':
+        specifier: 2.0.0
+        version: 2.0.0
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
   plugins/model-scripted:
     dependencies:
@@ -481,6 +503,10 @@ packages:
 
   '@modelcontextprotocol/core@2.0.0':
     resolution: {integrity: sha512-pJCEwGG7Lfr/+PQp9ZTwKXNeO5wzbfKL7H3MYpCorM4oFBoQrdjnBgEoqG+RjhsvS1FKrDbKux+M1HhlnGWqcA==}
+    engines: {node: '>=20'}
+
+  '@modelcontextprotocol/server@2.0.0':
+    resolution: {integrity: sha512-YhHWdHfpFMQfd0prsEnxKeS3Qz3ytIGmsS0sth4KDjnacIT7hxk6hXHkJ9KysxlkvTM+WZAtQbbcUhdoP4Hvtw==}
     engines: {node: '>=20'}
 
   '@oxc-project/types@0.146.0':
@@ -1459,6 +1485,11 @@ snapshots:
 
   '@modelcontextprotocol/core@2.0.0':
     dependencies:
+      zod: 4.4.3
+
+  '@modelcontextprotocol/server@2.0.0':
+    dependencies:
+      '@modelcontextprotocol/core': 2.0.0
       zod: 4.4.3
 
   '@oxc-project/types@0.146.0': {}

@@ -24,6 +24,7 @@ append 事务，而不是一个事件：
 
 ```json
 {
+  "formatVersion": 1,
   "sessionId": "session-id",
   "startSequence": 4,
   "records": [

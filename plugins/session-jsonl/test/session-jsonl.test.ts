@@ -1,4 +1,4 @@
-import { appendFile, mkdtemp, rm } from "node:fs/promises";
+import { appendFile, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -63,6 +63,19 @@ describe("JsonlSessionStore", () => {
       "message.appended",
     ]);
     await expect(new JsonlSessionStore(root).read(targetId)).resolves.toEqual(fork);
+  });
+
+  it("fails closed on an unknown physical format version", async () => {
+    const root = await directory();
+    const id = sessionId("session");
+    const store = new JsonlSessionStore(root);
+    await store.create({ id, cwd: "/workspace" });
+    const path = join(root, `${Buffer.from(id).toString("base64url")}.jsonl`);
+    const transaction = JSON.parse(await readFile(path, "utf8"));
+    transaction.formatVersion = 99;
+    await writeFile(path, `${JSON.stringify(transaction)}\n`, "utf8");
+
+    await expect(store.read(id)).rejects.toThrow("Unsupported JSONL session format");
   });
 });
 

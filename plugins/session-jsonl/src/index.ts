@@ -25,6 +25,7 @@ interface JsonlTransactionRecord {
 }
 
 interface JsonlTransaction {
+  readonly formatVersion: 1;
   readonly sessionId: SessionId;
   readonly startSequence: number;
   readonly records: readonly JsonlTransactionRecord[];
@@ -179,16 +180,17 @@ export class JsonlSessionStore implements SessionStore {
     let expectedSequence = 1;
     for (const [index, line] of lines.entries()) {
       if (line.length === 0) continue;
+      let transaction: JsonlTransaction;
       try {
-        const transaction = JSON.parse(line) as JsonlTransaction;
-        validateTransaction(transaction, id, expectedSequence);
-        transactions.push(transaction);
-        expectedSequence += transaction.records.length;
+        transaction = JSON.parse(line) as JsonlTransaction;
       } catch (error) {
         const isLastContentLine = lines.slice(index + 1).every((candidate) => candidate.length === 0);
-        if (isLastContentLine) break;
+        if (error instanceof SyntaxError && isLastContentLine) break;
         throw error;
       }
+      validateTransaction(transaction, id, expectedSequence);
+      transactions.push(transaction);
+      expectedSequence += transaction.records.length;
     }
     return expandTransactions(id, transactions);
   }
@@ -199,6 +201,7 @@ export class JsonlSessionStore implements SessionStore {
     events: readonly SessionEvent[],
   ): JsonlTransaction {
     return {
+      formatVersion: 1,
       sessionId: id,
       startSequence,
       records: events.map((event) => ({
@@ -259,6 +262,9 @@ function validateTransaction(
 ): void {
   if (transaction.sessionId !== id) {
     throw new Error(`Session id mismatch at sequence ${expectedSequence}`);
+  }
+  if (transaction.formatVersion !== 1) {
+    throw new Error(`Unsupported JSONL session format: ${String(transaction.formatVersion)}`);
   }
   if (transaction.startSequence !== expectedSequence) {
     throw new Error(`Session sequence mismatch: expected ${expectedSequence}`);

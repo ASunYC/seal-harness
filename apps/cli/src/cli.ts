@@ -1,5 +1,13 @@
-import { resolve } from "node:path";
-import { agentServiceToken, modelServiceToken, sessionId, type SessionId } from "@piharness/core";
+import { readFile } from "node:fs/promises";
+import { basename, extname, resolve } from "node:path";
+import {
+  agentServiceToken,
+  attachmentServiceToken,
+  modelServiceToken,
+  sessionId,
+  type ContentBlock,
+  type SessionId,
+} from "@piharness/core";
 import { loadProfile, startProfile } from "@piharness/host";
 import type { PiAiBuiltinProvider } from "@piharness/provider-pi-ai";
 import { createDefaultProfile } from "./default-profile.js";
@@ -55,6 +63,18 @@ export async function runCli(
       ? args.prompt.join(" ")
       : await readStandardInput(environment.stdin);
     if (prompt.trim().length === 0) throw new Error("Prompt is required");
+    const attachments: ContentBlock[] = [];
+    if (args.attachments.length > 0) {
+      const store = kernel.use(attachmentServiceToken);
+      for (const configuredPath of args.attachments) {
+        const path = resolve(cwd, configuredPath);
+        attachments.push(await store.put({
+          data: await readFile(path),
+          mimeType: inferMimeType(path),
+          name: basename(path),
+        }));
+      }
+    }
     let activeSessionId: SessionId | undefined = args.session === undefined
       ? undefined
       : sessionId(args.session);
@@ -78,7 +98,7 @@ export async function runCli(
         ...(activeSessionId === undefined ? {} : { sessionId: activeSessionId }),
         ...(args.reasoning === undefined ? {} : { reasoning: args.reasoning }),
         signal: abortController.signal,
-      }),
+      }, attachments),
       environment.io,
     );
     environment.io.stderr.write(`session: ${result.sessionId}\n`);
@@ -95,6 +115,7 @@ export async function runCli(
 
 interface ParsedArgs {
   prompt: string[];
+  attachments: string[];
   provider?: string;
   model?: string;
   cwd?: string;
@@ -115,6 +136,7 @@ interface ParsedArgs {
 function parseArgs(argv: readonly string[]): ParsedArgs {
   const result: ParsedArgs = {
     prompt: [],
+    attachments: [],
     yes: false,
     denyApprovals: false,
     noShell: false,
@@ -134,6 +156,7 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
     else if (arg === "--list-models") result.listModels = true;
     else if (arg === "--help" || arg === "-h") result.help = true;
     else if (arg === "--provider") result.provider = takeValue(argv, ++index, arg);
+    else if (arg === "--attach") result.attachments.push(takeValue(argv, ++index, arg));
     else if (arg === "--model") result.model = takeValue(argv, ++index, arg);
     else if (arg === "--cwd") result.cwd = takeValue(argv, ++index, arg);
     else if (arg === "--session") result.session = takeValue(argv, ++index, arg);
@@ -198,4 +221,24 @@ async function readStandardInput(input: NodeJS.ReadableStream): Promise<string> 
   return Buffer.concat(chunks).toString("utf8");
 }
 
-const HELP = `PiHarness\n\nUsage:\n  piharness [options] <prompt>\n\nOptions:\n  --provider <name>       Built-in Pi AI provider (default: deepseek)\n  --model <id>            Model id (default: first provider model)\n  --reasoning <level>     off|low|medium|high|max\n  --cwd <path>            Workspace directory\n  --session <id>          Continue an existing session\n  --fork <id>             Fork an existing session before prompting\n  --fork-target <id>      Explicit target id for --fork\n  --fork-version <n>      Fork through a selected event version\n  --sessions <path>       Session storage root\n  --config <path>         Native ESM Profile\n  --yes                   Auto-approve ask decisions\n  --deny-approvals        Reject all ask decisions\n  --no-shell              Do not register the shell tool\n  --list-models           List configured models\n  -h, --help              Show help\n`;
+function inferMimeType(path: string): string {
+  switch (extname(path).toLowerCase()) {
+    case ".png": return "image/png";
+    case ".jpg":
+    case ".jpeg": return "image/jpeg";
+    case ".webp": return "image/webp";
+    case ".gif": return "image/gif";
+    case ".json": return "application/json";
+    case ".md": return "text/markdown";
+    case ".txt":
+    case ".ts":
+    case ".tsx":
+    case ".js":
+    case ".mjs":
+    case ".css":
+    case ".html": return "text/plain";
+    default: return "application/octet-stream";
+  }
+}
+
+const HELP = `PiHarness\n\nUsage:\n  piharness [options] <prompt>\n\nOptions:\n  --provider <name>       Built-in Pi AI provider (default: deepseek)\n  --model <id>            Model id (default: first provider model)\n  --reasoning <level>     off|low|medium|high|max\n  --attach <path>         Attach a file (repeatable)\n  --cwd <path>            Workspace directory\n  --session <id>          Continue an existing session\n  --fork <id>             Fork an existing session before prompting\n  --fork-target <id>      Explicit target id for --fork\n  --fork-version <n>      Fork through a selected event version\n  --sessions <path>       Session storage root\n  --config <path>         Native ESM Profile\n  --yes                   Auto-approve ask decisions\n  --deny-approvals        Reject all ask decisions\n  --no-shell              Do not register the shell tool\n  --list-models           List configured models\n  -h, --help              Show help\n`;

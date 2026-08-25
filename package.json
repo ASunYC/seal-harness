@@ -13,6 +13,7 @@
     "clean": "pnpm -r run clean",
     "piharness": "node apps/cli/dist/bin.js",
     "piharness:rpc": "node apps/rpc/dist/bin.js",
+    "pack:smoke": "node scripts/pack-smoke.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -b --pretty false && tsc -p tsconfig.tests.json --pretty false"

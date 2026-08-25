@@ -8,6 +8,7 @@ import {
   ToolNotFoundError,
   toolServiceToken,
   type ApprovalService,
+  type ContentBlock,
   type ModelToolDefinition,
   type PiHarnessEvents,
   type PolicyService,
@@ -20,7 +21,9 @@ import { definePlugin, type PluginContext } from "@piharness/kernel";
 import { Type } from "typebox";
 import { Check } from "typebox/value";
 
-export interface ToolsCoreConfig {}
+export interface ToolsCoreConfig {
+  readonly maxResultBytes?: number;
+}
 
 export class PolicyToolService implements ToolService {
   readonly #tools = new Map<string, ToolDefinition>();
@@ -29,6 +32,7 @@ export class PolicyToolService implements ToolService {
     readonly policy: PolicyService,
     readonly approval: ApprovalService | undefined,
     readonly emit: PluginContext<PiHarnessEvents>["emit"],
+    readonly maxResultBytes = 256 * 1024,
   ) {}
 
   register(tool: ToolDefinition): () => void {
@@ -88,10 +92,11 @@ export class PolicyToolService implements ToolService {
       if (!approved) throw new ToolDeniedError(request.name, "Approval declined");
     }
 
-    const result = await tool.execute(request.input, {
+    const executed = await tool.execute(request.input, {
       ...context,
       reportProgress: request.reportProgress ?? (() => {}),
     });
+    const result = truncateResult(executed, this.maxResultBytes);
     await this.emit("tool.completed", {
       sessionId: request.sessionId,
       toolName: request.name,
@@ -106,13 +111,57 @@ export const toolsCorePlugin = definePlugin<ToolsCoreConfig, PiHarnessEvents>({
   provides: [toolServiceToken],
   requires: [policyServiceToken],
   optional: [approvalServiceToken],
-  setup(context) {
+  setup(context, config) {
     const approval = context.has(approvalServiceToken)
       ? context.use(approvalServiceToken)
       : undefined;
     context.provide(
       toolServiceToken,
-      new PolicyToolService(context.use(policyServiceToken), approval, context.emit),
+      new PolicyToolService(
+        context.use(policyServiceToken),
+        approval,
+        context.emit,
+        positiveBytes(config.maxResultBytes ?? 256 * 1024),
+      ),
     );
   },
 });
+
+function truncateResult(result: ToolResult, maxBytes: number): ToolResult {
+  let remaining = maxBytes;
+  let truncated = false;
+  const content: ContentBlock[] = [];
+  for (const block of result.content) {
+    if (block.type === "text") {
+      const buffer = Buffer.from(block.text);
+      if (buffer.length <= remaining) {
+        content.push(block);
+        remaining -= buffer.length;
+      } else {
+        content.push({ type: "text" as const, text: buffer.subarray(0, remaining).toString("utf8") });
+        remaining = 0;
+        truncated = true;
+      }
+    } else if (block.type === "image") {
+      const estimatedBytes = Math.ceil(block.data.length * 0.75);
+      if (estimatedBytes <= remaining) {
+        content.push(block);
+        remaining -= estimatedBytes;
+      } else {
+        content.push({ type: "text" as const, text: `[image omitted: ${estimatedBytes} bytes]` });
+        truncated = true;
+      }
+    } else {
+      content.push(block);
+    }
+    if (remaining === 0) break;
+  }
+  if (result.content.length > content.length) truncated = true;
+  if (truncated) content.push({ type: "text" as const, text: `\n[tool result truncated at ${maxBytes} bytes]` });
+  return { ...result, content };
+}
+
+function positiveBytes(value: number): number {
+  if (!Number.isInteger(value) || value <= 0) throw new TypeError("maxResultBytes must be a positive integer");
+  return value;
+}

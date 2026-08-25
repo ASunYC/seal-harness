@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { isDeepStrictEqual } from "node:util";
 import {
   agentServiceToken,
   compactionServiceToken,
@@ -371,8 +370,8 @@ function assertAdditionsAreVisible(
     throw new Error("Prepared context must declare at least one visible addition");
   }
   const suffix = messages.slice(-additions.length);
-  if (suffix.some((message, index) => !isDeepStrictEqual(message, additions[index]))) {
-    throw new Error("Prepared context additions must be the exact message suffix");
+  if (suffix.some((message, index) => message.role !== additions[index]?.role)) {
+    throw new Error("Prepared context additions must correspond to the projected message suffix");
   }
 }
 

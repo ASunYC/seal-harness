@@ -46,6 +46,13 @@ export class SqliteSessionStore implements SessionStore {
   ) {
     if (path !== ":memory:") mkdirSync(dirname(resolve(path)), { recursive: true });
     this.database = new DatabaseSync(path);
+    const version = this.database.prepare("PRAGMA user_version").get() as unknown as {
+      user_version: number;
+    };
+    if (version.user_version !== 0 && version.user_version !== 1) {
+      this.database.close();
+      throw new Error(`Unsupported SQLite session format: ${version.user_version}`);
+    }
     this.database.exec("PRAGMA foreign_keys = ON");
     if (path !== ":memory:") this.database.exec("PRAGMA journal_mode = WAL");
     this.database.exec(`
@@ -63,6 +70,7 @@ export class SqliteSessionStore implements SessionStore {
         PRIMARY KEY (session_id, sequence)
       ) STRICT;
     `);
+    if (version.user_version === 0) this.database.exec("PRAGMA user_version = 1");
   }
 
   close(): void { this.database.close(); }

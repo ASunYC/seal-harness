@@ -65,6 +65,22 @@ describe("PolicyToolService", () => {
     await expect(declined.execute(request)).rejects.toBeInstanceOf(ToolDeniedError);
     expect(execute).not.toHaveBeenCalled();
   });
+
+  it("truncates arbitrary plugin results at the common tool boundary", async () => {
+    const service = new PolicyToolService(
+      policy({ outcome: "allow" }),
+      undefined,
+      async () => {},
+      8,
+    );
+    service.register(tool(async () => ({ content: [text("0123456789abcdef")] })));
+
+    const result = await service.execute(request);
+    expect(result.content[0]).toEqual({ type: "text", text: "01234567" });
+    expect(result.content[1]).toMatchObject({
+      text: expect.stringContaining("truncated at 8 bytes"),
+    });
+  });
 });
 
 function policy(decision: PolicyDecision): PolicyService {

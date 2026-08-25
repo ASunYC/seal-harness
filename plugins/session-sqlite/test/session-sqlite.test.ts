@@ -2,6 +2,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { DatabaseSync } from "node:sqlite";
 import { messageId, SessionConflictError, sessionId, userMessage } from "@piharness/core";
 import { SqliteSessionStore } from "../src/index.js";
 
@@ -46,5 +47,15 @@ describe("SqliteSessionStore", () => {
     } finally {
       reopened.close();
     }
+  });
+
+  it("fails closed on an unknown schema version", async () => {
+    const root = await mkdtemp(join(tmpdir(), "piharness-sqlite-version-"));
+    temporary.push(root);
+    const path = join(root, "sessions.db");
+    const database = new DatabaseSync(path);
+    database.exec("PRAGMA user_version = 99");
+    database.close();
+    expect(() => new SqliteSessionStore(path)).toThrow("Unsupported SQLite session format");
   });
 });

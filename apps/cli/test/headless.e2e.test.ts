@@ -3,16 +3,28 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { agentCorePlugin } from "@piharness/agent-core";
+import { localAttachmentPlugin } from "@piharness/attachment-local";
 import { stdioApprovalPlugin } from "@piharness/approval-stdio";
 import { contextCorePlugin } from "@piharness/context-core";
+import { windowCompactionPlugin } from "@piharness/compaction-window";
 import { fileContextPlugin } from "@piharness/context-files";
-import { modelServiceToken, sessionStoreToken, toolCallId, type ModelRequest } from "@piharness/core";
+import {
+  attachmentServiceToken,
+  messageId,
+  modelServiceToken,
+  sessionStoreToken,
+  sessionId,
+  text,
+  toolCallId,
+  type ModelRequest,
+} from "@piharness/core";
 import { defineProfile, startProfile } from "@piharness/host";
 import { plugin } from "@piharness/kernel";
 import { scriptedModelPlugin } from "@piharness/model-scripted";
 import { basicPolicyPlugin } from "@piharness/policy-basic";
 import { piRuntimePlugin } from "@piharness/runtime-pi";
 import { jsonlSessionPlugin } from "@piharness/session-jsonl";
+import { memorySessionPlugin } from "@piharness/session-memory";
 import { toolsCorePlugin } from "@piharness/tools-core";
 import { workspaceToolsPlugin } from "@piharness/workspace-tools";
 import { promptRequest, runHeadless } from "../src/index.js";
@@ -29,6 +41,11 @@ describe("headless Agent E2E", () => {
     const respond = async function* (_request: ModelRequest) {
       step += 1;
       if (step === 1) {
+        const prompt = _request.messages.at(-1);
+        expect(prompt?.role).toBe("user");
+        expect(prompt?.content.some((block) =>
+          block.type === "text" && block.text.includes("attachment evidence"),
+        )).toBe(true);
         yield call("read-1", "read_file", { path: "target.txt" });
         yield { type: "done" as const, stopReason: "tool_call" as const };
       } else if (step === 2) {
@@ -55,6 +72,7 @@ describe("headless Agent E2E", () => {
       }),
       plugin(jsonlSessionPlugin, { root: sessionRoot }),
       plugin(contextCorePlugin, { systemPrompt: "Complete the task." }),
+      plugin(localAttachmentPlugin, { root: join(cwd, ".attachments") }),
       plugin(fileContextPlugin, {}),
       plugin(basicPolicyPlugin, { mode: "workspace-write" }),
       plugin(stdioApprovalPlugin, { mode: "allow" }),
@@ -67,9 +85,14 @@ describe("headless Agent E2E", () => {
     let stdout = "";
     let stderr = "";
     try {
+      const attachment = await kernel.use(attachmentServiceToken).put({
+        data: Buffer.from("attachment evidence"),
+        mimeType: "text/plain",
+        name: "evidence.txt",
+      });
       const result = await runHeadless(
         kernel,
-        promptRequest(cwd, "scripted", "test", "update target and verify"),
+        promptRequest(cwd, "scripted", "test", "update target and verify", {}, [attachment]),
         {
           stdout: { write(value) { stdout += value; } },
           stderr: { write(value) { stderr += value; } },
@@ -87,7 +110,75 @@ describe("headless Agent E2E", () => {
       expect(sessions[0]?.events.some((entry) =>
         entry.event.type === "run.completed" && entry.event.payload.outcome === "completed",
       )).toBe(true);
+      expect(sessions[0]?.events.some((entry) =>
+        entry.event.type === "message.appended"
+        && entry.event.payload.message.role === "user"
+        && entry.event.payload.message.content.some((block) => block.type === "attachment"),
+      )).toBe(true);
       expect(await kernel.use(modelServiceToken).list()).toHaveLength(1);
+    } finally {
+      await kernel.stop();
+    }
+  });
+
+  it("compacts long replayed history and continues through the real Pi loop", async () => {
+    const cwd = await directory();
+    const id = sessionId("long-session");
+    const profile = defineProfile([
+      plugin(scriptedModelPlugin, {
+        models: [{
+          provider: "scripted", model: "test", contextWindow: 32_000, maxOutputTokens: 4_096,
+        }],
+        async *respond(request) {
+          const first = request.messages[0];
+          expect(first?.role).toBe("user");
+          expect(first?.content[0]).toMatchObject({
+            type: "text",
+            text: expect.stringContaining("Compacted conversation history"),
+          });
+          yield { type: "text_delta", delta: "continued-after-compaction" };
+          yield { type: "done", stopReason: "stop" };
+        },
+      }),
+      plugin(memorySessionPlugin, {}),
+      plugin(contextCorePlugin, { systemPrompt: "test" }),
+      plugin(windowCompactionPlugin, { thresholdMessages: 4, retainMessages: 2 }),
+      plugin(piRuntimePlugin, {}),
+      plugin(agentCorePlugin, { idFactory: sequentialIds() }),
+    ]);
+    const kernel = await startProfile(profile);
+    try {
+      const sessions = kernel.use(sessionStoreToken);
+      await sessions.create({ id, cwd });
+      const oldMessages = [
+        { role: "user" as const, content: [text("one")] },
+        { role: "assistant" as const, content: [text("answer one")] },
+        { role: "user" as const, content: [text("two")] },
+        { role: "assistant" as const, content: [text("answer two")] },
+        { role: "user" as const, content: [text("three")] },
+        { role: "assistant" as const, content: [text("answer three")] },
+      ];
+      await sessions.append({
+        id,
+        expectedVersion: 1,
+        events: oldMessages.map((message, index) => ({
+          type: "message.appended" as const,
+          payload: { messageId: messageId(`old-${index}`), message },
+        })),
+      });
+      let stdout = "";
+      const result = await runHeadless(
+        kernel,
+        promptRequest(cwd, "scripted", "test", "continue", { sessionId: id }),
+        {
+          stdout: { write(value) { stdout += value; } },
+          stderr: { write() {} },
+        },
+      );
+      expect(result.stopReason).toBe("stop");
+      expect(stdout).toBe("continued-after-compaction\n");
+      const stored = await sessions.read(id);
+      expect(stored?.events.some((entry) => entry.event.type === "context.compacted")).toBe(true);
     } finally {
       await kernel.stop();
     }

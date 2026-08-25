@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@piharness/agent-core": "workspace:^",
+    "@piharness/attachment-local": "workspace:^",
     "@piharness/approval-stdio": "workspace:^",
     "@piharness/context-core": "workspace:^",
     "@piharness/context-files": "workspace:^",
@@ -35,7 +36,8 @@
     "@piharness/workspace-tools": "workspace:^"
   },
   "devDependencies": {
-    "@piharness/model-scripted": "workspace:^"
+    "@piharness/model-scripted": "workspace:^",
+    "@piharness/session-memory": "workspace:^"
   },
   "license": "MIT"
 }

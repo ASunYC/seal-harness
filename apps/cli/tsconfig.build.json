@@ -8,6 +8,7 @@
     { "path": "../../packages/core/tsconfig.build.json" },
     { "path": "../../packages/host/tsconfig.build.json" },
     { "path": "../../plugins/agent-core/tsconfig.build.json" },
+    { "path": "../../plugins/attachment-local/tsconfig.build.json" },
     { "path": "../../plugins/approval-stdio/tsconfig.build.json" },
     { "path": "../../plugins/context-core/tsconfig.build.json" },
     { "path": "../../plugins/context-files/tsconfig.build.json" },

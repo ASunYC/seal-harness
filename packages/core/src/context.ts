@@ -19,11 +19,16 @@ export interface PreparedContext {
 export interface ContextContribution {
   readonly systemPrompt?: string;
   readonly additions?: readonly AgentMessage[];
+  /** Same-length, same-role projection used only for the model request. */
+  readonly messages?: readonly AgentMessage[];
 }
 
 export interface ContextSource {
   readonly name: string;
-  contribute(request: ContextRequest): Promise<ContextContribution | undefined>;
+  contribute(
+    request: ContextRequest,
+    messages: readonly AgentMessage[],
+  ): Promise<ContextContribution | undefined>;
 }
 
 export interface ContextService {

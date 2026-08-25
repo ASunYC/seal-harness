@@ -22,6 +22,7 @@
     { "path": "./plugins/telemetry-noop/tsconfig.build.json" },
     { "path": "./plugins/session-sqlite/tsconfig.build.json" },
     { "path": "./plugins/mcp-client/tsconfig.build.json" },
+    { "path": "./plugins/attachment-local/tsconfig.build.json" },
     { "path": "./apps/cli/tsconfig.build.json" },
     { "path": "./apps/rpc/tsconfig.build.json" }
   ]

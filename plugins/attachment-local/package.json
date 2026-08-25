@@ -1,7 +1,7 @@
 {
-  "name": "@piharness/mcp-client",
+  "name": "@piharness/attachment-local",
   "version": "0.1.0",
-  "description": "Policy-routed MCP client tools for PiHarness",
+  "description": "Content-addressed local attachment plugin for PiHarness",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,13 +16,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@modelcontextprotocol/client": "2.0.0",
     "@piharness/core": "workspace:^",
     "@piharness/kernel": "workspace:^"
-  },
-  "devDependencies": {
-    "@modelcontextprotocol/server": "2.0.0",
-    "zod": "4.4.3"
   },
   "license": "MIT"
 }

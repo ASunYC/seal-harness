@@ -12,6 +12,7 @@ PiHarness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 - JSONL/Memory Session；
 - Session resume/fork、事务尾行恢复和中断工具的非重放恢复；
 - 可重放的滑动窗口 Compaction；
+- 内容寻址附件（Session 存引用、请求时解析）；
 - 强制 Policy/Approval 的工具执行管线；
 - 防路径和符号链接逃逸的工作区工具；
 - 分层 `AGENTS.md` 上下文；
@@ -20,7 +21,7 @@ PiHarness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 可选生态插件包括 Filesystem Skills、MCP Client、SQLite Session 和 JSONL RPC；它们
 不属于微内核，也可以从 Profile 完全移除。
 
-项目仍处于早期开发阶段，附件、LLM 摘要 Compaction、Skills、MCP 和发布流程
+项目仍处于早期开发阶段，LLM 摘要 Compaction、进程级沙箱和正式发布流程
 正在按 [`docs/development-plan.md`](docs/development-plan.md) 实施。
 
 ## 环境
@@ -49,6 +50,12 @@ export DEEPSEEK_API_KEY=...
 
 ```sh
 pnpm piharness -- --provider deepseek --model deepseek-chat "检查这个仓库"
+```
+
+附件可重复指定；显式使用该参数意味着文件内容会进入模型请求：
+
+```sh
+pnpm piharness -- --attach ./error.log --attach ./screenshot.png "分析附件"
 ```
 
 如果省略 `--model`，CLI 使用该 Provider 目录中的第一个模型。Session 默认保存在
@@ -103,6 +110,8 @@ node apps/cli/dist/bin.js \
 [`docs/security.md`](docs/security.md)，总体架构见
 [`docs/architecture.md`](docs/architecture.md)。
 Session 物理格式和恢复语义见 [`docs/session-format.md`](docs/session-format.md)。
+日常使用见 [`docs/user-guide.md`](docs/user-guide.md)，公共契约索引见
+[`docs/api.md`](docs/api.md)。
 
 ## 验证
 

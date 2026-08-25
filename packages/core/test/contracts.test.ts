@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   agentServiceToken,
   approvalServiceToken,
+  attachmentServiceToken,
   compactionServiceToken,
   contextServiceToken,
   credentialServiceToken,
@@ -33,6 +34,7 @@ describe("core contracts", () => {
       contextServiceToken,
       credentialServiceToken,
       telemetryServiceToken,
+      attachmentServiceToken,
     ];
 
     expect(new Set(tokens.map((token) => token.id))).toHaveLength(tokens.length);
@@ -48,6 +50,7 @@ describe("core contracts", () => {
       "piharness.context",
       "piharness.credentials",
       "piharness.telemetry",
+      "piharness.attachments",
     ]);
   });
 

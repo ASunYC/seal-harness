@@ -41,3 +41,22 @@ jobs:
 
       - name: Import built kernel
         run: node --input-type=module -e "await import('./packages/kernel/dist/index.js')"
+
+  pack-smoke:
+    name: Packed install smoke
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Pack and install
+        run: pnpm pack:smoke
