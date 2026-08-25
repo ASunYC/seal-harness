@@ -106,6 +106,14 @@ export class SessionNotFoundError extends Error {
   }
 }
 
+export class SessionAlreadyExistsError extends Error {
+  override readonly name = "SessionAlreadyExistsError";
+
+  constructor(readonly sessionId: SessionId) {
+    super(`Session already exists: ${sessionId}`);
+  }
+}
+
 export interface SessionStore {
   create(request: CreateSessionRequest): Promise<SessionSnapshot>;
   read(id: SessionId): Promise<SessionSnapshot | undefined>;

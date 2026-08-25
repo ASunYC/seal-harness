@@ -3,6 +3,12 @@
   "references": [
     { "path": "./packages/kernel/tsconfig.build.json" },
     { "path": "./packages/host/tsconfig.build.json" },
-    { "path": "./packages/core/tsconfig.build.json" }
+    { "path": "./packages/core/tsconfig.build.json" },
+    { "path": "./plugins/runtime-pi/tsconfig.build.json" },
+    { "path": "./plugins/session-memory/tsconfig.build.json" },
+    { "path": "./plugins/policy-basic/tsconfig.build.json" },
+    { "path": "./plugins/tools-core/tsconfig.build.json" },
+    { "path": "./plugins/credentials-env/tsconfig.build.json" },
+    { "path": "./plugins/provider-pi-ai/tsconfig.build.json" }
   ]
 }

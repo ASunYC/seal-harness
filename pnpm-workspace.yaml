@@ -2,3 +2,10 @@ packages:
   - packages/*
   - plugins/*
   - apps/*
+allowBuilds:
+  '@google/genai': false
+  protobufjs: false
+minimumReleaseAgeExclude:
+  - '@earendil-works/pi-agent-core@0.84.3'
+  - '@earendil-works/pi-ai@0.84.3'
+  - '@earendil-works/pi-telemetry@0.84.3'

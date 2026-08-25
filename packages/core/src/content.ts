@@ -22,10 +22,20 @@ export interface AttachmentBlock {
 export type ContentBlock = TextBlock | ImageBlock | AttachmentBlock;
 
 export interface ToolCall {
+  readonly type: "tool_call";
   readonly id: ToolCallId;
   readonly name: string;
   readonly arguments: JsonObject;
+  readonly providerData?: JsonObject;
 }
+
+export interface ReasoningBlock {
+  readonly type: "reasoning";
+  readonly text: string;
+  readonly providerData?: JsonObject;
+}
+
+export type AssistantContentBlock = TextBlock | ReasoningBlock | ToolCall;
 
 export interface UserMessage {
   readonly role: "user";
@@ -34,9 +44,8 @@ export interface UserMessage {
 
 export interface AssistantMessage {
   readonly role: "assistant";
-  readonly content: readonly ContentBlock[];
-  readonly reasoning?: string;
-  readonly toolCalls?: readonly ToolCall[];
+  readonly content: readonly AssistantContentBlock[];
+  readonly providerData?: JsonObject;
 }
 
 export interface ToolResultMessage {
@@ -45,6 +54,7 @@ export interface ToolResultMessage {
   readonly name: string;
   readonly content: readonly ContentBlock[];
   readonly isError: boolean;
+  readonly providerData?: JsonObject;
 }
 
 export type AgentMessage = UserMessage | AssistantMessage | ToolResultMessage;

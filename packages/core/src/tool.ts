@@ -51,3 +51,46 @@ export interface ToolService {
   definitions(): readonly ModelToolDefinition[];
   execute(request: ToolExecutionRequest): Promise<ToolResult>;
 }
+
+export class DuplicateToolError extends Error {
+  override readonly name = "DuplicateToolError";
+
+  constructor(readonly toolName: string) {
+    super(`Tool is already registered: ${toolName}`);
+  }
+}
+
+export class ToolNotFoundError extends Error {
+  override readonly name = "ToolNotFoundError";
+
+  constructor(readonly toolName: string) {
+    super(`Tool is not registered: ${toolName}`);
+  }
+}
+
+export class InvalidToolInputError extends Error {
+  override readonly name = "InvalidToolInputError";
+
+  constructor(readonly toolName: string) {
+    super(`Tool input does not match schema: ${toolName}`);
+  }
+}
+
+export class ToolDeniedError extends Error {
+  override readonly name = "ToolDeniedError";
+
+  constructor(
+    readonly toolName: string,
+    readonly reason: string,
+  ) {
+    super(`Tool ${toolName} was denied: ${reason}`);
+  }
+}
+
+export class ApprovalUnavailableError extends Error {
+  override readonly name = "ApprovalUnavailableError";
+
+  constructor(readonly toolName: string) {
+    super(`Tool ${toolName} requires approval, but no ApprovalService is available`);
+  }
+}
