@@ -72,7 +72,7 @@ apps/cli
 | Workspace tools | `workspace-tools` | 远端工作区、只读工具 |
 | Policy | `permission-basic` | 企业策略、全拒绝策略 |
 | Context | `context-files` | 数据库检索、远端知识库 |
-| Entry point | `cli-headless` | RPC、TUI、Web |
+| Entry point | `cli-headless` / `web` | RPC、未来可选 TUI |
 
 ## 6. 安全模型
 
@@ -102,3 +102,6 @@ Pi API 只能在 `runtime-pi` 和 `provider-pi-ai` 内出现。其他插件依�
 - 第一版不提供插件市场；
 - 第一版不追求与 Pi Coding Agent Session 格式兼容；
 - 第一版不把全部 Provider、UI 和高级工具塞入默认安装。
+
+WebUI 是独立 `apps/web` 宿主，通过公共 Agent、Session 和 Model 服务工作；微内核和
+能力插件不依赖浏览器代码。`apps/launcher` 只负责选择 Headless 或 Web runner。

@@ -14,7 +14,7 @@
 | 本地 Git 仓库 | `main` 上存在完整 Conventional Commit 历史，工作区 clean | 完成 |
 | GitHub 私有仓库 | 浏览器显示 `ASunYC/PiHarness`、`Private` 和空仓库 Quick setup | 完成 |
 | 本地 `origin` | fetch/push URL 均为 `https://github.com/ASunYC/PiHarness.git` | 完成 |
-| Node/pnpm workspace | 根 manifest、lockfile、25 个可发布包 | 完成 |
+| Node/pnpm workspace | 根 manifest、lockfile、27 个可发布包 | 完成 |
 | 架构与 ADR | `architecture.md`、ADR-0001 | 完成 |
 | CI 基线 | Node 22.19/24、pack smoke workflow 已定义并在 GitHub Actions 通过 | 完成 |
 
@@ -85,7 +85,7 @@
 - 用户、插件、API、安全、Session、MCP、版本、贡献和 Changelog 文档齐备。
 - Dependabot、CI 和手动 Release Candidate workflow 已定义。
 - `pack:smoke` 校验统一版本、精确直接依赖和 tarball 内容白名单。
-- 25 个包从 tarball 安装到全新临时目录，打包后的 CLI + Scripted Pi Agent 运行成功。
+- 27 个包从 tarball 安装到全新临时目录，打包后的 CLI + Scripted Pi Agent 运行成功。
 - `pnpm audit --prod`：0 个已知漏洞。
 
 状态：完成；本地验证和远端 workflow 均已通过。
@@ -93,10 +93,12 @@
 ## 最新验证
 
 ```text
-pnpm check       27 test files; 72 passed; 1 Windows-conditional skip
+pnpm check       30 test files; 79 passed; 1 Windows-conditional skip
 pnpm audit --prod  No known vulnerabilities found
-pnpm pack:smoke  Packed 25 packages and verified a clean install
+pnpm pack:smoke  Packed 27 packages; verified CLI, launcher, Web UI and clean install
 ```
+
+Web 产品扩展的真实浏览器检查覆盖首屏、设置面板、模型列表和输入区。
 
 远端 GitHub Actions（提交 `6bcbf00`）验证：
 

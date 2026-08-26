@@ -108,7 +108,22 @@ export default defineProfile([
   if (!result.stdout.includes("packed-install-ok")) {
     throw new Error(`Packed CLI smoke output was unexpected: ${result.stdout}`);
   }
-  process.stdout.write(`Packed ${packages.length} packages and verified a clean install.\n`);
+  const launcherResult = await run(
+    process.execPath,
+    [join(installRoot, "node_modules", "@piharness", "launcher", "dist", "bin.js"), "help"],
+    installRoot,
+    true,
+  );
+  if (!launcherResult.stdout.includes("piharness web")) {
+    throw new Error(`Packed launcher smoke output was unexpected: ${launcherResult.stdout}`);
+  }
+  await smokeWeb(
+    join(installRoot, "node_modules", "@piharness", "web", "dist", "bin.js"),
+    installRoot,
+  );
+  process.stdout.write(
+    `Packed ${packages.length} packages and verified CLI, launcher, Web UI, and a clean install.\n`,
+  );
 } finally {
   await rm(installRoot, { recursive: true, force: true });
 }
@@ -173,4 +188,53 @@ function run(command, args, cwd, capture = false) {
 
 function runPnpm(args, cwd, capture = false) {
   return run(process.execPath, [pnpmEntrypoint, ...args], cwd, capture);
+}
+
+async function smokeWeb(bin, cwd) {
+  const child = spawn(process.execPath, [bin, "--port", "0", "--no-open"], {
+    cwd,
+    windowsHide: true,
+    shell: false,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  child.stdout.setEncoding("utf8");
+  child.stderr.setEncoding("utf8");
+  let stdout = "";
+  let stderr = "";
+  child.stdout.on("data", (chunk) => { stdout += chunk; });
+  child.stderr.on("data", (chunk) => { stderr += chunk; });
+  const url = await new Promise((resolvePromise, reject) => {
+    const timeout = setTimeout(() => reject(new Error(`Packed Web UI did not start:\n${stderr}`)), 15_000);
+    const inspect = () => {
+      const match = /PiHarness Web UI: (http:\/\/[^\s]+)/.exec(stdout);
+      if (match?.[1] === undefined) return;
+      clearTimeout(timeout);
+      resolvePromise(match[1]);
+    };
+    child.stdout.on("data", inspect);
+    child.once("error", (error) => { clearTimeout(timeout); reject(error); });
+    child.once("close", (code) => {
+      clearTimeout(timeout);
+      reject(new Error(`Packed Web UI exited before startup (${code}):\n${stderr}`));
+    });
+  });
+  try {
+    const [index, health] = await Promise.all([
+      fetch(url),
+      fetch(`${url}/api/health`),
+    ]);
+    if (!index.ok || !(await index.text()).includes("PiHarness")) {
+      throw new Error(`Packed Web UI index smoke failed: ${index.status}`);
+    }
+    if (!health.ok || (await health.json()).status !== "ok") {
+      throw new Error(`Packed Web UI health smoke failed: ${health.status}`);
+    }
+  } finally {
+    child.kill("SIGTERM");
+    await Promise.race([
+      new Promise((resolvePromise) => child.once("close", resolvePromise)),
+      new Promise((resolvePromise) => setTimeout(resolvePromise, 5_000)),
+    ]);
+    if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
+  }
 }

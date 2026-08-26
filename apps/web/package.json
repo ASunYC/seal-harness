@@ -1,9 +1,9 @@
 {
-  "name": "@piharness/cli",
+  "name": "@piharness/web",
   "version": "0.1.0",
-  "description": "Headless CLI for PiHarness",
+  "description": "Local Web UI and HTTP streaming host for PiHarness",
   "type": "module",
-  "bin": { "piharness-headless": "./dist/bin.js" },
+  "bin": { "piharness-web": "./dist/bin.js" },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
@@ -11,33 +11,27 @@
   "sideEffects": false,
   "engines": { "node": ">=22.19.0" },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node scripts/copy-public.mjs",
     "clean": "node -e \"for(const p of ['dist','tsconfig.tsbuildinfo','tsconfig.build.tsbuildinfo'])require('node:fs').rmSync(p,{recursive:true,force:true})\"",
     "test": "vitest run test",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@piharness/agent-core": "workspace:^",
-    "@piharness/attachment-local": "workspace:^",
-    "@piharness/approval-stdio": "workspace:^",
-    "@piharness/context-core": "workspace:^",
-    "@piharness/context-files": "workspace:^",
-    "@piharness/compaction-window": "workspace:^",
+    "@piharness/cli": "workspace:^",
     "@piharness/core": "workspace:^",
-    "@piharness/credentials-env": "workspace:^",
     "@piharness/host": "workspace:^",
     "@piharness/kernel": "workspace:^",
-    "@piharness/policy-basic": "workspace:^",
-    "@piharness/provider-pi-ai": "workspace:^",
-    "@piharness/runtime-pi": "workspace:^",
-    "@piharness/session-jsonl": "workspace:^",
-    "@piharness/telemetry-noop": "workspace:^",
-    "@piharness/tools-core": "workspace:^",
-    "@piharness/workspace-tools": "workspace:^"
+    "@piharness/provider-pi-ai": "workspace:^"
   },
   "devDependencies": {
+    "@piharness/agent-core": "workspace:^",
+    "@piharness/context-core": "workspace:^",
     "@piharness/model-scripted": "workspace:^",
-    "@piharness/session-memory": "workspace:^"
+    "@piharness/policy-basic": "workspace:^",
+    "@piharness/runtime-pi": "workspace:^",
+    "@piharness/session-memory": "workspace:^",
+    "@piharness/tools-core": "workspace:^",
+    "@piharness/workspace-tools": "workspace:^"
   },
   "license": "MIT"
 }

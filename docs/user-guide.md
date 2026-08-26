@@ -2,7 +2,8 @@
 
 ## 选择入口
 
-- `piharness`：面向终端的一次或多轮 Headless Agent。
+- `piharness run` / `piharness headless`：面向终端的一次或多轮 Headless Agent；
+- `piharness web`：本地 WebUI、流式任务和浏览器审批；
 - `piharness-rpc`：stdout 严格 JSONL 的应用集成入口。
 - `@piharness/host`：在自己的 TypeScript 应用中启动 Profile。
 
@@ -50,6 +51,26 @@ Session 包含提示、回答、工具参数和结果，应按敏感业务数据
 - `--yes`：自动批准，只适用于隔离环境。
 
 非 TTY 环境的交互审批默认拒绝。
+
+## WebUI
+
+```sh
+piharness web
+piharness web --port 8080 --no-open
+```
+
+Web Host 默认只监听 `127.0.0.1:3080`。它提供工作区选择、模型选择、Session 列表与
+恢复、流式回答、工具调用卡片、任务中止和浏览器审批。API key 可在 Connection 面板
+设置，只保存在当前进程内存，服务停止即清除。
+
+绑定非回环地址必须显式声明：
+
+```sh
+piharness web --host 0.0.0.0 --allow-remote --no-open
+```
+
+当前 Web Host 没有用户认证。远程监听只能放在可信网络或带认证的反向代理之后；
+默认本机模式不需要 `--allow-remote`。
 
 ## 自定义 Profile
 

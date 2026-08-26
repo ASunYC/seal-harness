@@ -79,6 +79,15 @@ importers:
         specifier: workspace:^
         version: link:../../plugins/session-memory
 
+  apps/launcher:
+    dependencies:
+      '@piharness/cli':
+        specifier: workspace:^
+        version: link:../cli
+      '@piharness/web':
+        specifier: workspace:^
+        version: link:../web
+
   apps/rpc:
     dependencies:
       '@piharness/cli':
@@ -112,6 +121,49 @@ importers:
       '@piharness/session-memory':
         specifier: workspace:^
         version: link:../../plugins/session-memory
+
+  apps/web:
+    dependencies:
+      '@piharness/cli':
+        specifier: workspace:^
+        version: link:../cli
+      '@piharness/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@piharness/host':
+        specifier: workspace:^
+        version: link:../../packages/host
+      '@piharness/kernel':
+        specifier: workspace:^
+        version: link:../../packages/kernel
+      '@piharness/provider-pi-ai':
+        specifier: workspace:^
+        version: link:../../plugins/provider-pi-ai
+    devDependencies:
+      '@piharness/agent-core':
+        specifier: workspace:^
+        version: link:../../plugins/agent-core
+      '@piharness/context-core':
+        specifier: workspace:^
+        version: link:../../plugins/context-core
+      '@piharness/model-scripted':
+        specifier: workspace:^
+        version: link:../../plugins/model-scripted
+      '@piharness/policy-basic':
+        specifier: workspace:^
+        version: link:../../plugins/policy-basic
+      '@piharness/runtime-pi':
+        specifier: workspace:^
+        version: link:../../plugins/runtime-pi
+      '@piharness/session-memory':
+        specifier: workspace:^
+        version: link:../../plugins/session-memory
+      '@piharness/tools-core':
+        specifier: workspace:^
+        version: link:../../plugins/tools-core
+      '@piharness/workspace-tools':
+        specifier: workspace:^
+        version: link:../../plugins/workspace-tools
 
   examples/scripted-agent:
     dependencies:

@@ -16,7 +16,9 @@ PiHarness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 - 强制 Policy/Approval 的工具执行管线；
 - 防路径和符号链接逃逸的工作区工具；
 - 分层 `AGENTS.md` 上下文；
-- Headless CLI。
+- Headless CLI；
+- Local-first WebUI、流式 HTTP Host 和浏览器审批；
+- 统一 `piharness run|headless|web` 产品启动器。
 
 可选生态插件包括 Filesystem Skills、MCP Client、SQLite Session 和 JSONL RPC；它们
 不属于微内核，也可以从 Profile 完全移除。
@@ -51,6 +53,15 @@ export DEEPSEEK_API_KEY=...
 ```sh
 pnpm piharness -- --provider deepseek --model deepseek-chat "检查这个仓库"
 ```
+
+启动本地 WebUI（默认 `http://127.0.0.1:3080` 并打开浏览器）：
+
+```sh
+pnpm piharness -- web
+```
+
+WebUI 支持工作区、Provider/模型、Session 恢复、流式事件、工具卡片、中止和浏览器
+审批。页面中输入的 API key 只保存在当前 Node 进程内存，不写入 Session。
 
 附件可重复指定；显式使用该参数意味着文件内容会进入模型请求：
 
@@ -104,6 +115,8 @@ node apps/cli/dist/bin.js \
 | `plugins/mcp-client` | 官方 SDK 驱动、经过 Policy 的 MCP 工具 |
 | `apps/cli` | Headless 入口与默认 Profile |
 | `apps/rpc` | 严格 stdout JSONL RPC 入口 |
+| `apps/web` | Local-first WebUI、HTTP 流式 Host 与浏览器审批 |
+| `apps/launcher` | `run`、`headless`、`web` 统一命令入口 |
 
 ## 插件
 

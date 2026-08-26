@@ -17,3 +17,6 @@ the project uses Semantic Versioning for published packages.
 - Policy-routed workspace and MCP tools.
 - Headless CLI, JSONL RPC, filesystem Skills and offline scripted model.
 - Awaited durability barriers, deterministic Compaction and interrupted-tool recovery.
+- Local-first Web UI with streaming runs, model and workspace selection, Session browsing,
+  in-memory credentials, cancellation, and browser-based approvals.
+- Unified `piharness run|headless|web` product launcher.

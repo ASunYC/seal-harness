@@ -36,4 +36,17 @@
 - `loadProfile({ cwd, configPath })`：发现并验证原生 ESM Profile。
 - `startProfile(profile)`：创建并启动 Kernel。
 
+## `@piharness/web`
+
+- `startWebServer(options)`：启动本地 HTTP Host、静态 WebUI 和 Agent 流式 API；
+- `WebApprovalService`：公开待审批请求并由浏览器决定 allow/deny；
+- `runWebCli(argv, environment)`：`piharness web` 的可嵌入入口。
+
+HTTP API 包含模型、Session、运行流、中止、审批和进程内 Credential 端点。运行响应
+使用 `application/x-ndjson` 持续发送 RuntimeEvent。
+
+## `@piharness/launcher`
+
+- `runLauncher(argv, environment)`：分派 `run`、`headless` 和 `web` 产品模式。
+
 完整类型定义以各包生成的 `.d.ts` 为准。公开符号由每个包的 `src/index.ts` 控制。

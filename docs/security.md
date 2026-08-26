@@ -46,6 +46,19 @@ Session。禁止在以下位置记录 API key：
 
 Provider 错误需要依赖上游 SDK 的脱敏，同时测试必须扫描 Session 和日志产物。
 
+WebUI 的 Credential API 只更新当前进程持有的内存映射，不回传、记录或持久化 key。
+浏览器密码输入框清空后，密钥只在 Node Host 中保留到进程结束。
+
+## Web Host
+
+Web Host 默认绑定 `127.0.0.1`，对带 `Origin` 的请求执行同源校验，并发送 CSP、
+`X-Content-Type-Options`、`X-Frame-Options` 和禁用缓存的 API 响应头。非回环地址需要
+CLI 显式 `--allow-remote`。
+
+当前 Web Host 不包含用户身份认证或租户隔离。不得把它直接暴露到公网；远程使用应
+置于可信网络、SSH 转发或带 TLS 与认证的反向代理之后。工作区路径和 Session 内容均
+属于敏感本地数据。
+
 ## Session
 
 JSONL Session 文件包含用户输入、模型输出、工具参数和结果，可能包含敏感业务数据。
