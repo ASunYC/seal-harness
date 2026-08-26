@@ -7,6 +7,22 @@
 - `piharness-rpc`：stdout 严格 JSONL 的应用集成入口。
 - `@piharness/host`：在自己的 TypeScript 应用中启动 Profile。
 
+## 下载发行包
+
+GitHub Release 提供内置 Node.js 与生产依赖的 Windows、Linux 和 macOS 压缩包。解压后
+无需安装 Node、npm 或 pnpm：
+
+```text
+# Windows
+piharness.cmd web
+
+# Linux / macOS
+./piharness web
+```
+
+发行页同时提供 `SHA256SUMS.txt`。源码安装和 npm 包用于插件开发，自包含压缩包面向
+直接使用。
+
 ## Provider 与模型
 
 默认 CLI 支持按需加载 Anthropic、DeepSeek、Google、Groq、Mistral、OpenAI、

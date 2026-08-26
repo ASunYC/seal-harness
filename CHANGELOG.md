@@ -20,3 +20,5 @@ the project uses Semantic Versioning for published packages.
 - Local-first Web UI with streaming runs, model and workspace selection, Session browsing,
   in-memory credentials, cancellation, and browser-based approvals.
 - Unified `piharness run|headless|web` product launcher.
+- Self-contained Windows, Linux, and macOS release bundles with an embedded Node.js runtime,
+  archive extraction smoke tests, and SHA-256 checksums.

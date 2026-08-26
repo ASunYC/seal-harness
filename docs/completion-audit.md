@@ -113,3 +113,10 @@ Web 产品扩展的真实浏览器检查覆盖首屏、设置面板、模型列�
 - 首次同步后的代码提交：`6bcbf000d0a23e983c7e4d176101a3819a53060e`；
 - GitHub Actions：`https://github.com/ASunYC/PiHarness/actions/runs/32864496946`；
 - 本地 `main` 与 `origin/main` 在同步后 commit 一致，stash 为空。
+
+## 自包含发行扩展
+
+- Windows、Linux、macOS 发行目录内置 Node.js 与 hoisted/copy 生产依赖；
+- 启动器只使用相对路径，不依赖系统 Node、npm、pnpm 或本机 pnpm Store；
+- Windows x64 ZIP 已完成“构建 → 压缩 → 异目录解压 → Launcher 运行”验证；
+- Release workflow 在各原生 runner 上构建并解压复验，标签发布附带 SHA-256 校验和。

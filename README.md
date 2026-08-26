@@ -33,6 +33,22 @@ PiHarness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 
 Pi 当前也要求 Node.js 22.19 以上。低版本 Node 可能在启动测试工具之前就失败。
 
+## 下载即用
+
+普通用户可从 [GitHub Releases](https://github.com/ASunYC/PiHarness/releases) 下载对应系统
+的自包含压缩包。发行包已内置 Node.js 和生产依赖，解压后直接运行：
+
+```text
+# Windows
+piharness.cmd web
+
+# Linux / macOS
+./piharness web
+```
+
+每个 Release 提供 Windows x64、Linux x64、macOS arm64、macOS x64 和
+`SHA256SUMS.txt`。源码环境仅用于开发插件或参与贡献。
+
 ## 从源码运行
 
 ```sh
