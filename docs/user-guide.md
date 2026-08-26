@@ -14,6 +14,9 @@ GitHub Release 提供内置 Node.js 与生产依赖的 Windows、Linux 和 macOS
 
 ```text
 # Windows
+双击 Start PiHarness.cmd
+
+# Windows 终端方式（继续保留）
 piharness.cmd web
 
 # Linux / macOS
@@ -22,6 +25,9 @@ piharness.cmd web
 
 发行页同时提供 `SHA256SUMS.txt`。源码安装和 npm 包用于插件开发，自包含压缩包面向
 直接使用。
+
+Windows 双击启动器会保留一个状态窗口，关闭该窗口即可停止 PiHarness。它只是调用
+同目录中的 `piharness.cmd web`，不会替换或移除原有 CLI 使用方式。
 
 ## Provider 与模型
 
