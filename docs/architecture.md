@@ -108,7 +108,11 @@ WebUI 是独立 `apps/web` 宿主，通过公共 Agent、Session 和 Model 服�
 
 ## 9. DSH 兼容层
 
-`@seal-harness/dsh-compat` 是独立可选插件，不属于默认 Profile，也不改变微内核契约。
-它在一个 Seal 插件作用域内运行真实 Cordis Context，把兼容 DSH 插件的生命周期交给
-Cordis，再将 DSH 工具注册桥接到 Seal `ToolService`。这样兼容依赖只进入显式使用该包
-的安装闭包，默认 CLI、WebUI 和自包含发行包不会因 Cordis 增重。
+`@seal-harness/dsh-compat` 不改变微内核契约；只有 Profile 实际安装了 DSH 插件时才创建
+Cordis Context。Web 产品携带轻量兼容运行时以保证开箱可安装，但第三方插件、主题素材和
+插件专有依赖只进入用户的隔离 Profile，不进入默认应用依赖闭包。
+
+`@seal-harness/plugin-manager` 只负责安装与发现，不把第三方插件编译进产品。每个 Profile
+拥有独立的 `package.json`、lockfile、`node_modules` 和 DSH patch。GitHub `#path:` 依赖
+使用 partial clone，只 checkout 包的运行时文件。Web Host 按 Profile 启动 Cordis Host
+插件，并从同源 `/plugins/.../client.js` 提供浏览器 Bundle。

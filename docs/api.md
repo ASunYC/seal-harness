@@ -59,4 +59,12 @@ HTTP API 包含模型、Session、运行流、中止、审批和进程内 Creden
 当 Profile 已提供 `toolServiceToken` 时，兼容层自动提供 Cordis `ctx.tools` 桥。DSH 工具
 会转换成 Seal `ToolDefinition`，继续经过 Policy 与 Approval。
 
+## `@seal-harness/plugin-manager`
+
+- `PluginProfileManager`：管理 `~/.seal-harness/profiles/<name>` 隔离依赖；
+- `add()` / `remove()` / `list()`：安装、删除和列出插件；
+- `doctor()`：检查 Host/Client `inject` 和缺失适配器；
+- `loadHostPlugins()`：把启用的 DSH Host 入口交给 Cordis 兼容层；
+- `runPluginCli()`：实现 `seal-harness plugin` 命令。
+
 完整类型定义以各包生成的 `.d.ts` 为准。公开符号由每个包的 `src/index.ts` 控制。

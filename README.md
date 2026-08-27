@@ -7,9 +7,9 @@
 Seal Harness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 “能力皆插件”为设计原则，并将 Pi Agent 作为默认、可替换的运行时插件。
 
-需要复用 DeepSeek Harness 插件时，可按需安装独立的
-[`@seal-harness/dsh-compat`](docs/dsh-compatibility.md) 兼容层；默认产品和自包含发行包
-不会加载 Cordis。
+需要复用 DeepSeek Harness 插件时，可使用内置的 `seal-harness plugin` 管理器按需安装；
+第三方插件与素材保存在隔离 Profile，不进入默认安装包。兼容边界见
+[`docs/dsh-compatibility.md`](docs/dsh-compatibility.md)。
 
 当前已经具备可运行的 Headless Agent 主链路：
 
@@ -131,6 +131,7 @@ node apps/cli/dist/bin.js \
 | `packages/kernel` | 服务拓扑、事件、Effect、回滚和卸载 |
 | `packages/core` | Provider-neutral Agent 能力契约 |
 | `packages/host` | Profile 发现、校验和启动 |
+| `packages/plugin-manager` | 隔离安装、诊断、启停和删除 DSH 插件 |
 | `plugins/runtime-pi` | Pi Agent Runtime 适配 |
 | `plugins/runtime-scripted` | 不依赖 Pi/Provider 的替代 Runtime |
 | `plugins/provider-pi-ai` | Pi AI ModelService |
@@ -155,6 +156,13 @@ node apps/cli/dist/bin.js \
 Session 物理格式和恢复语义见 [`docs/session-format.md`](docs/session-format.md)。
 日常使用见 [`docs/user-guide.md`](docs/user-guide.md)，公共契约索引见
 [`docs/api.md`](docs/api.md)。
+
+```sh
+seal-harness plugin --profile web add 'github:user/repo#path:/plugin'
+seal-harness plugin --profile web list
+seal-harness plugin --profile web doctor
+seal-harness plugin --profile web remove '@scope/plugin'
+```
 
 ## 验证
 

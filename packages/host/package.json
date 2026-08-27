@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/host",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Profile loading and kernel startup for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",

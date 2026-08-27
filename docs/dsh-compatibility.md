@@ -7,10 +7,13 @@ Seal Harness 通过可选包 `@seal-harness/dsh-compat` 运行基于
 ## 安装和加载
 
 ```sh
-pnpm add @seal-harness/dsh-compat
+seal-harness plugin --profile web add 'github:user/repo#path:/plugin'
+seal-harness plugin --profile web list
+seal-harness plugin --profile web doctor
 ```
 
-在原生 ESM Profile 中导入 DSH 插件模块：
+插件按需安装到独立 Profile。默认应用包只包含管理器和兼容运行时，不包含第三方插件、
+主题素材或其依赖。源码开发时仍可在原生 ESM Profile 中直接导入模块：
 
 ```js
 import * as myDshPlugin from "my-dsh-plugin";
@@ -43,6 +46,9 @@ seal-harness --config ./seal-harness.config.mjs "Use the DSH plugin"
 | `ctx.tools.register()` | 转换为 Seal ToolDefinition 并自动随 Fiber 注销 |
 | DSH `defineTool()` 结果 | 使用其 JSON Schema、execute、output.render 与 finalizeContent |
 | 工具安全 | 统一经过 Seal JSON Schema、Policy、Approval 和结果大小限制 |
+| DSH `webServer` | 精确同源 API 路由注册与生命周期清理 |
+| Web Client Bundle | `window.__ModuleLoader__`、Effect 和同源脚本加载 |
+| GitHub `#path:` | partial clone + 运行时文件白名单 |
 
 兼容层默认把 DSH 工具分类为 `external`，因此默认需要审批。只有明确了解工具行为后，
 才应通过 `toolRisks` 把单个工具调整为 `read` 或 `workspace-write`。
@@ -64,8 +70,8 @@ plugin(dshCompatPlugin, {
 
 ## 明确不兼容
 
-- `cordis.yml` Loader 树、include/group 配置和 HMR；
-- DSH Web Client 插件以及 Host/Client RPC 表面；
+- 完整 `cordis.yml` Loader 树、include/group 配置和通用 HMR；
+- 依赖 React Slots 等 DSH 专有 Web Client 服务的设置面板，除非存在对应适配器；
 - 依赖 DSH Agent、Session、Workspace、Storage、Code Runtime 或 scoped ToolRuntime 的
   第一方插件，除非调用者为所有 `inject` 服务提供适配器；
 - DSH 工具的 `deferContext()` 和 `concludeTurn()` 对 Agent loop 的控制语义。兼容层会把

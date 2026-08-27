@@ -4,6 +4,7 @@
   "include": ["src/**/*.ts"],
   "exclude": ["test/**/*.ts"],
   "references": [
+    { "path": "../../packages/plugin-manager/tsconfig.build.json" },
     { "path": "../cli/tsconfig.build.json" },
     { "path": "../web/tsconfig.build.json" }
   ]

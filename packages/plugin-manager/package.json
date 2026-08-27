@@ -1,11 +1,16 @@
 {
-  "name": "@seal-harness/context-core",
+  "name": "@seal-harness/plugin-manager",
   "version": "0.3.1",
-  "description": "Composable context source registry for Seal Harness",
+  "description": "Isolated DSH-compatible plugin profile manager for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "files": ["dist", "README.md"],
   "sideEffects": false,
   "engines": { "node": ">=22.19.0" },
@@ -14,10 +19,6 @@
     "clean": "node -e \"for(const p of ['dist','tsconfig.tsbuildinfo','tsconfig.build.tsbuildinfo'])require('node:fs').rmSync(p,{recursive:true,force:true})\"",
     "test": "vitest run test",
     "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
-  "dependencies": {
-    "@seal-harness/core": "workspace:^",
-    "@seal-harness/kernel": "workspace:^"
   },
   "license": "MIT"
 }

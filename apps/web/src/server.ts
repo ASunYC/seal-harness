@@ -13,11 +13,13 @@ import {
   type JsonObject,
 } from "@seal-harness/core";
 import { createDefaultProfile } from "@seal-harness/cli";
-import type { Profile } from "@seal-harness/host";
-import { startProfile } from "@seal-harness/host";
-import type { Kernel } from "@seal-harness/kernel";
+import { dshCompatPlugin, type DshPluginSource } from "@seal-harness/dsh-compat";
+import { defineProfile, startProfile, type Profile } from "@seal-harness/host";
+import { plugin, type Kernel } from "@seal-harness/kernel";
+import { PluginProfileManager } from "@seal-harness/plugin-manager";
 import type { PiAiBuiltinProvider } from "@seal-harness/provider-pi-ai";
 import { WebApprovalService } from "./approval.js";
+import { WebRouteRegistry } from "./plugin-host.js";
 
 const PROVIDERS: readonly PiAiBuiltinProvider[] = [
   "anthropic", "deepseek", "google", "groq", "mistral", "openai", "openrouter", "xai",
@@ -37,6 +39,8 @@ export interface WebServerOptions {
   readonly profile?: Profile;
   readonly approvalService?: WebApprovalService;
   readonly credentialEnvironment?: Record<string, string | undefined>;
+  readonly pluginHome?: string;
+  readonly pluginProfile?: string;
 }
 
 export interface RunningWebServer {
@@ -54,18 +58,52 @@ export async function startWebServer(options: WebServerOptions): Promise<Running
   const host = options.host ?? "127.0.0.1";
   const approvalService = options.approvalService ?? new WebApprovalService();
   const credentialEnvironment = options.credentialEnvironment ?? {};
-  const profile = options.profile ?? createDefaultProfile({
+  const manager = new PluginProfileManager({
+    ...(options.pluginHome === undefined ? {} : { home: options.pluginHome }),
+    profile: options.pluginProfile ?? "web",
+  });
+  const installedHostPlugins = await manager.loadHostPlugins();
+  const routes = new WebRouteRegistry();
+  const baseProfile = options.profile ?? createDefaultProfile({
     cwd,
     provider: options.provider ?? "deepseek",
     providers: options.providers ?? PROVIDERS,
     approvalService,
     credentialEnvironment,
   });
-  const kernel = await startProfile(profile);
+  const profile = installedHostPlugins.length === 0
+    ? baseProfile
+    : defineProfile([
+        ...baseProfile,
+        plugin(dshCompatPlugin, {
+          plugins: installedHostPlugins.map((entry) => ({
+            plugin: entry.plugin as DshPluginSource,
+            config: entry.config,
+            enabled: entry.enabled,
+          })),
+          services: { webServer: routes },
+        }),
+      ]);
+  const previousDshHome = process.env.DSH_HOME;
+  const previousDshProfile = process.env.DSH_PROFILE;
+  if (installedHostPlugins.length > 0) {
+    const environment = manager.dshEnvironment();
+    process.env.DSH_HOME = environment.DSH_HOME;
+    process.env.DSH_PROFILE = environment.DSH_PROFILE;
+  }
+  let kernel: Kernel<any>;
+  try {
+    kernel = await startProfile(profile);
+  } catch (error) {
+    restoreEnvironment("DSH_HOME", previousDshHome);
+    restoreEnvironment("DSH_PROFILE", previousDshProfile);
+    throw error;
+  }
   const runs = new Map<string, AgentExecution>();
+  const clientPluginState: { report: JsonObject | undefined } = { report: undefined };
   const server = createServer((request, response) => {
     void dispatch(request, response, {
-      cwd, kernel, runs, approvalService, credentialEnvironment,
+      cwd, kernel, runs, approvalService, credentialEnvironment, manager, routes, clientPluginState,
     }).catch((error) => {
       if (!response.headersSent) json(response, webErrorStatus(error), { error: message(error) });
       else if (!response.writableEnded) response.end();
@@ -77,6 +115,8 @@ export async function startWebServer(options: WebServerOptions): Promise<Running
   } catch (error) {
     approvalService.close(error);
     await kernel.stop();
+    restoreEnvironment("DSH_HOME", previousDshHome);
+    restoreEnvironment("DSH_PROFILE", previousDshProfile);
     throw error;
   }
   const address = server.address();
@@ -96,6 +136,8 @@ export async function startWebServer(options: WebServerOptions): Promise<Running
       approvalService.close();
       await closeServer(server);
       await kernel.stop();
+      restoreEnvironment("DSH_HOME", previousDshHome);
+      restoreEnvironment("DSH_PROFILE", previousDshProfile);
     },
   };
 }
@@ -106,6 +148,9 @@ interface DispatchContext {
   readonly runs: Map<string, AgentExecution>;
   readonly approvalService: WebApprovalService;
   readonly credentialEnvironment: Record<string, string | undefined>;
+  readonly manager: PluginProfileManager;
+  readonly routes: WebRouteRegistry;
+  readonly clientPluginState: { report: JsonObject | undefined };
 }
 
 async function dispatch(
@@ -120,12 +165,41 @@ async function dispatch(
     return;
   }
 
+  const pluginRoute = context.routes.get(url.pathname);
+  if (pluginRoute !== undefined) {
+    await pluginRoute.handler(request, response);
+    return;
+  }
+
   if (method === "GET" && url.pathname === "/api/health") {
     json(response, 200, { status: "ok", cwd: context.cwd });
     return;
   }
   if (method === "GET" && url.pathname === "/api/models") {
     json(response, 200, await context.kernel.use(modelServiceToken).list());
+    return;
+  }
+  if (method === "GET" && url.pathname === "/api/plugins/client") {
+    const installed = await context.manager.list();
+    json(response, 200, installed
+      .filter((entry) => entry.clientEntry !== undefined)
+      .map((entry) => ({
+        name: entry.name,
+        version: entry.version,
+        url: `/plugins/${encodeURIComponent(entry.name)}/client.js`,
+        inject: entry.clientInject,
+        enabled: entry.enabled,
+        ...(entry.skin === undefined ? {} : { skin: entry.skin }),
+      })));
+    return;
+  }
+  if (method === "GET" && url.pathname === "/api/plugins/client-state") {
+    json(response, 200, context.clientPluginState.report ?? { results: [], active: [] });
+    return;
+  }
+  if (method === "POST" && url.pathname === "/api/plugins/client-state") {
+    context.clientPluginState.report = await readObject(request);
+    json(response, 200, { recorded: true });
     return;
   }
   if (method === "GET" && url.pathname === "/api/sessions") {
@@ -185,13 +259,29 @@ async function dispatch(
     return;
   }
   if (method === "GET") {
+    const pluginAsset = /^\/plugins\/([^/]+)\/client\.js$/.exec(url.pathname);
+    if (pluginAsset !== null) {
+      const name = decodeURIComponent(pluginAsset[1] ?? "");
+      const entry = (await context.manager.list()).find((candidate) => candidate.name === name);
+      if (entry?.clientEntry === undefined) {
+        json(response, 404, { error: "Client plugin not found" });
+        return;
+      }
+      const data = await readFile(entry.clientEntry);
+      response.writeHead(200, securityHeaders({
+        "content-type": "text/javascript; charset=utf-8",
+        "cache-control": "no-cache",
+      }, true));
+      response.end(data);
+      return;
+    }
     const asset = staticAsset(url.pathname);
     if (asset !== undefined) {
       const data = await readFile(join(PUBLIC_ROOT, asset.file));
       response.writeHead(200, securityHeaders({
         "content-type": asset.type,
         "cache-control": asset.file === "index.html" ? "no-cache" : "public, max-age=3600",
-      }));
+      }, true));
       response.end(data);
       return;
     }
@@ -311,9 +401,12 @@ function writeLine(response: ServerResponse, value: unknown): void {
   if (!response.destroyed && !response.writableEnded) response.write(`${JSON.stringify(value)}\n`);
 }
 
-function securityHeaders(extra: Record<string, string>): Record<string, string> {
+function securityHeaders(
+  extra: Record<string, string>,
+  allowPluginStyles = false,
+): Record<string, string> {
   return {
-    "content-security-policy": "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+    "content-security-policy": `default-src 'self'; img-src 'self' data:; style-src 'self'${allowPluginStyles ? " 'unsafe-inline'" : ""}; script-src 'self'; connect-src 'self'`,
     "referrer-policy": "no-referrer",
     "x-content-type-options": "nosniff",
     "x-frame-options": "DENY",
@@ -331,6 +424,7 @@ function isSafeOrigin(request: IncomingMessage): boolean {
 function staticAsset(pathname: string): { file: string; type: string } | undefined {
   if (pathname === "/" || pathname === "/index.html") return { file: "index.html", type: "text/html; charset=utf-8" };
   if (pathname === "/app.js") return { file: "app.js", type: "text/javascript; charset=utf-8" };
+  if (pathname === "/client-runtime.js") return { file: "client-runtime.js", type: "text/javascript; charset=utf-8" };
   if (pathname === "/styles.css") return { file: "styles.css", type: "text/css; charset=utf-8" };
   if (pathname === "/assets/seal-harness-mascot.png") {
     return { file: "assets/seal-harness-mascot.png", type: "image/png" };
@@ -380,6 +474,11 @@ function closeServer(server: Server): Promise<void> {
 
 function formatHost(host: string): string { return host.includes(":") ? `[${host}]` : host; }
 function message(error: unknown): string { return error instanceof Error ? error.message : String(error); }
+
+function restoreEnvironment(name: "DSH_HOME" | "DSH_PROFILE", value: string | undefined): void {
+  if (value === undefined) delete process.env[name];
+  else process.env[name] = value;
+}
 
 export function webErrorStatus(error: unknown): number {
   return error instanceof RequestError ? error.status : 500;

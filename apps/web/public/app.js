@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const state = { models: [], sessionId: null, runId: null, running: false };
+const state = { models: [], sessionId: null, runId: null, running: false, skins: [] };
 const providers = ["anthropic", "deepseek", "google", "groq", "mistral", "openai", "openrouter", "xai"];
 
 async function api(path, options = {}) {
@@ -21,6 +21,7 @@ function initialize() {
   $("cancel").addEventListener("click", cancelRun);
   $("new-session").addEventListener("click", newSession);
   $("save-key").addEventListener("click", saveKey);
+  $("theme").addEventListener("change", () => void switchTheme($("theme").value));
   void bootstrap();
   setInterval(() => void loadApprovals(), 750);
 }
@@ -31,8 +32,49 @@ async function bootstrap() {
     if (!$("cwd").value) $("cwd").value = health.cwd;
     state.models = await (await api("/api/models")).json();
     updateModels();
+    await loadClientPlugins();
+    await loadThemes();
     await loadSessions();
   } catch (error) { setStatus(error.message, true); }
+}
+
+async function loadClientPlugins() {
+  const entries = await (await api("/api/plugins/client")).json();
+  const results = await window.SealDshPlugins.load(entries);
+  await api("/api/plugins/client-state", {
+    method: "POST",
+    body: JSON.stringify({ results, active: window.SealDshPlugins.active() }),
+  });
+  const active = results.filter((entry) => entry.status === "active").length;
+  const waiting = results.filter((entry) => entry.status === "adapter-required").length;
+  $("plugin-status").textContent = `${active} active${waiting ? ` · ${waiting} need adapters` : ""}`;
+}
+
+async function loadThemes() {
+  try {
+    const body = await (await api("/api/dsh/skins")).json();
+    state.skins = body.skins || [];
+    if (state.skins.length === 0) return;
+    const select = $("theme");
+    select.replaceChildren(new Option("Official", "official"));
+    for (const skin of state.skins) select.append(new Option(skin.name, skin.id));
+    const active = state.skins.find((skin) => document.body.hasAttribute(skin.bodyAttr));
+    select.value = active?.id || "official";
+    $("themes-settings").hidden = false;
+    $("themes-settings").open = true;
+  } catch {
+    $("themes-settings").hidden = true;
+  }
+}
+
+async function switchTheme(target) {
+  try {
+    await api("/api/dsh/skins", { method: "POST", body: JSON.stringify({ target }) });
+    await window.SealDshPlugins.activateSkin(target, state.skins);
+    setStatus(target === "official" ? "Official theme active" : `Theme active: ${target}`);
+  } catch (error) {
+    setStatus(error.message, true);
+  }
 }
 
 function updateModels() {

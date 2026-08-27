@@ -26,6 +26,11 @@
           <label>API key<input id="api-key" type="password" autocomplete="off" placeholder="kept in memory"></label>
           <button id="save-key">Set API key</button>
         </details>
+        <details id="themes-settings" class="settings" hidden>
+          <summary>Themes</summary>
+          <label>Active theme<select id="theme"></select></label>
+          <span id="plugin-status" class="settings-note"></span>
+        </details>
       </aside>
       <main class="main">
         <header><div><strong id="session-title">New session</strong><span id="status">Ready</span></div></header>
@@ -39,6 +44,7 @@
         </form>
       </main>
     </div>
+    <script type="module" src="/client-runtime.js"></script>
     <script type="module" src="/app.js"></script>
   </body>
 </html>

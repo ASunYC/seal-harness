@@ -4,6 +4,9 @@
 
 Local-first Web UI and streaming HTTP host for Seal Harness.
 
+Installed DSH Profile packages can contribute Cordis Host routes and same-origin Client Bundles;
+compatible skins appear in the sidebar Themes selector.
+
 ```sh
 seal-harness web
 ```

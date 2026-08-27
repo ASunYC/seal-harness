@@ -16,6 +16,12 @@ the project uses Semantic Versioning for published packages.
 
 ### Added
 
+- DSH-compatible `seal-harness plugin` commands for isolated Profile installation, listing,
+  diagnostics, enable/disable and removal.
+- Efficient GitHub `#path:` installation through a partial, runtime-file-only checkout.
+- Web Host and browser Client plugin loading, DSH `webServer` route bridging, and native theme
+  selection for installed DSH skins.
+
 - Optional `@seal-harness/dsh-compat` host backed by real Cordis 4.0.1, including DSH
   `apply`/`inject`/`Config` lifecycle support and Policy-routed DSH tool bridging.
 - Packed-install coverage and compatibility documentation for DSH plugins.
