@@ -84,6 +84,9 @@ importers:
       '@seal-harness/cli':
         specifier: workspace:^
         version: link:../cli
+      '@seal-harness/plugin-manager':
+        specifier: workspace:^
+        version: link:../../packages/plugin-manager
       '@seal-harness/web':
         specifier: workspace:^
         version: link:../web
@@ -130,12 +133,18 @@ importers:
       '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@seal-harness/dsh-compat':
+        specifier: workspace:^
+        version: link:../../plugins/dsh-compat
       '@seal-harness/host':
         specifier: workspace:^
         version: link:../../packages/host
       '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
+      '@seal-harness/plugin-manager':
+        specifier: workspace:^
+        version: link:../../packages/plugin-manager
       '@seal-harness/provider-pi-ai':
         specifier: workspace:^
         version: link:../../plugins/provider-pi-ai
@@ -205,6 +214,8 @@ importers:
         version: link:../kernel
 
   packages/kernel: {}
+
+  packages/plugin-manager: {}
 
   plugins/agent-core:
     dependencies:

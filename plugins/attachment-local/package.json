@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/attachment-local",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Content-addressed local attachment plugin for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",

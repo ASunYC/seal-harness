@@ -109,10 +109,32 @@ const runtime = new DshCompatRuntime(undefined, {
 });
 await runtime.start();
 if (events.join(",") !== "packed") throw new Error("packed DSH plugin did not start");
-await runtime.stop();
+  await runtime.stop();
 if (events.join(",") !== "packed,disposed") throw new Error("packed DSH plugin did not dispose");
 `);
   await run(process.execPath, [join(installRoot, "dsh-compat-smoke.mjs")], installRoot, true);
+  const pluginFixture = join(installRoot, "plugin-fixture");
+  await mkdir(join(pluginFixture, "lib"), { recursive: true });
+  await writeFile(join(pluginFixture, "package.json"), JSON.stringify({
+    name: "@seal-harness-test/packed-plugin",
+    version: "1.0.0",
+    type: "module",
+    main: "lib/index.js",
+    exports: { ".": "./lib/index.js", "./package.json": "./package.json" },
+  }, null, 2));
+  await writeFile(join(pluginFixture, "lib", "index.js"), "export function apply() {}\n");
+  const pluginHome = join(installRoot, "plugin-home");
+  const packedLauncher = join(installRoot, "node_modules", "@seal-harness", "launcher", "dist", "bin.js");
+  await run(process.execPath, [packedLauncher, "plugin", "--home", pluginHome, "add", pluginFixture], installRoot, true);
+  const pluginList = await run(process.execPath, [packedLauncher, "plugin", "--home", pluginHome, "list"], installRoot, true);
+  if (!pluginList.stdout.includes("@seal-harness-test/packed-plugin@1.0.0")) {
+    throw new Error(`Packed plugin add/list smoke failed: ${pluginList.stdout}`);
+  }
+  await run(process.execPath, [packedLauncher, "plugin", "--home", pluginHome, "remove", "@seal-harness-test/packed-plugin"], installRoot, true);
+  const removedList = await run(process.execPath, [packedLauncher, "plugin", "--home", pluginHome, "list"], installRoot, true);
+  if (removedList.stdout.trim().length !== 0) {
+    throw new Error(`Packed plugin remove smoke failed: ${removedList.stdout}`);
+  }
   const result = await run(
     process.execPath,
     [
@@ -145,7 +167,7 @@ if (events.join(",") !== "packed,disposed") throw new Error("packed DSH plugin d
     installRoot,
   );
   process.stdout.write(
-    `Packed ${packages.length} packages and verified CLI, launcher, Web UI, DSH compatibility, and a clean install.\n`,
+    `Packed ${packages.length} packages and verified CLI, launcher, Web UI, plugin add/remove, DSH compatibility, and a clean install.\n`,
   );
 } finally {
   await rm(installRoot, { recursive: true, force: true });
@@ -204,7 +226,7 @@ function run(command, args, cwd, capture = false) {
     child.once("error", reject);
     child.once("close", (code) => {
       if (code === 0) resolvePromise({ stdout, stderr });
-      else reject(new Error(`${command} ${args.join(" ")} failed (${code})\n${stderr}`));
+      else reject(new Error(`${command} ${args.join(" ")} failed (${code})\n${stdout}\n${stderr}`));
     });
   });
 }

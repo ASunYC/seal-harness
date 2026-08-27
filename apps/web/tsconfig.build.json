@@ -4,6 +4,8 @@
   "include": ["src/**/*.ts"],
   "exclude": ["test/**/*.ts"],
   "references": [
+    { "path": "../../packages/plugin-manager/tsconfig.build.json" },
+    { "path": "../../plugins/dsh-compat/tsconfig.build.json" },
     { "path": "../../packages/kernel/tsconfig.build.json" },
     { "path": "../../packages/core/tsconfig.build.json" },
     { "path": "../../packages/host/tsconfig.build.json" },

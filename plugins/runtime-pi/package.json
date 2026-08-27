@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/runtime-pi",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Pi Agent runtime adapter for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",

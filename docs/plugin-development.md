@@ -114,7 +114,7 @@ Profile 不在运行时编译 TypeScript，也不解释带可执行标签的 YAM
 
 ## DeepSeek Harness / Cordis 插件
 
-需要复用 DSH 插件时，安装可选包 `@seal-harness/dsh-compat`。兼容层运行真实
+需要复用 DSH 插件时，通过 `seal-harness plugin add` 安装到隔离 Profile。兼容层运行真实
 `@deepseek-ai/cordis` Context，并将 DSH `ctx.tools.register()` 注册的工具桥接到 Seal
 Harness `ToolService`，所以工具仍会经过 JSON Schema、Policy 和 Approval 管线。
 

@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -14,6 +14,7 @@ import { memorySessionPlugin } from "@seal-harness/session-memory";
 import { toolsCorePlugin } from "@seal-harness/tools-core";
 import { workspaceToolsPlugin } from "@seal-harness/workspace-tools";
 import { WebApprovalService } from "../src/approval.js";
+import { WebRouteRegistry } from "../src/plugin-host.js";
 import { startWebServer, type RunningWebServer } from "../src/server.js";
 
 const cleanup: Array<() => Promise<void>> = [];
@@ -22,6 +23,15 @@ afterEach(async () => {
 });
 
 describe("Seal Harness Web server", () => {
+  it("prevents DSH plugins from shadowing core API routes", () => {
+    const routes = new WebRouteRegistry();
+    expect(() => routes.register({
+      kind: "exact",
+      path: "/api/health",
+      handler() {},
+    })).toThrow("conflicts with a Seal Harness API");
+  });
+
   it("serves the UI and streams an Agent run into a persisted session", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "seal-harness-web-"));
     cleanup.push(() => rm(cwd, { recursive: true, force: true }));
@@ -83,6 +93,36 @@ describe("Seal Harness Web server", () => {
       body: "{}",
     });
     expect(response.status).toBe(403);
+  });
+
+  it("loads installed DSH host routes and serves client bundles", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "seal-harness-web-plugin-"));
+    cleanup.push(() => rm(cwd, { recursive: true, force: true }));
+    const home = join(cwd, "home");
+    await writeWebPluginFixture(home);
+    const running = await startWebServer({
+      cwd,
+      port: 0,
+      pluginHome: home,
+      profile: defineProfile([
+        plugin(scriptedModelPlugin, {
+          models: [{ provider: "scripted", model: "web", contextWindow: 1_000, maxOutputTokens: 100 }],
+          async *respond() { yield { type: "done", stopReason: "stop" }; },
+        }),
+        plugin(memorySessionPlugin, {}),
+        plugin(contextCorePlugin, {}),
+        plugin(piRuntimePlugin, {}),
+        plugin(agentCorePlugin, {}),
+      ]),
+    });
+    cleanup.push(() => running.close());
+
+    expect(await fetchJson(`${running.url}/api/fixture-plugin`)).toEqual({ ok: true });
+    const clients = await fetchJson(`${running.url}/api/plugins/client`) as Array<{ name: string; url: string }>;
+    expect(clients).toEqual([expect.objectContaining({ name: "@fixture/web-plugin" })]);
+    const bundle = await fetch(`${running.url}${clients[0]?.url}`);
+    expect(bundle.status).toBe(200);
+    await expect(bundle.text()).resolves.toContain("__ModuleLoader__");
   });
 
   it("pauses a dangerous tool until the Web approval endpoint allows it", async () => {
@@ -179,4 +219,39 @@ async function waitForApproval(url: string): Promise<{ id: string }> {
     await new Promise((resolvePromise) => setTimeout(resolvePromise, 25));
   }
   throw new Error("Approval did not become pending");
+}
+
+async function writeWebPluginFixture(home: string): Promise<void> {
+  const profile = join(home, "profiles", "web");
+  const root = join(profile, "node_modules", "@fixture", "web-plugin");
+  await mkdir(join(root, "lib"), { recursive: true });
+  await writeFile(join(profile, "package.json"), JSON.stringify({
+    name: "fixture-profile",
+    private: true,
+    type: "module",
+    dependencies: { "@fixture/web-plugin": "file:fixture" },
+  }, null, 2));
+  await writeFile(join(profile, "cordis.patch.yml"), "[]\n");
+  await writeFile(join(root, "package.json"), JSON.stringify({
+    name: "@fixture/web-plugin",
+    version: "1.0.0",
+    type: "module",
+    main: "lib/index.js",
+    exports: { ".": "./lib/index.js", "./client": "./lib/client.js", "./package.json": "./package.json" },
+    dsh: { client: { inject: [], platform: "web" } },
+  }));
+  await writeFile(join(root, "lib", "index.js"), `
+export const inject = ["webServer"];
+export function apply(ctx) {
+  ctx.effect(() => ctx.webServer.register({
+    kind: "exact",
+    path: "/api/fixture-plugin",
+    handler(_request, response) {
+      response.writeHead(200, { "content-type": "application/json" });
+      response.end(JSON.stringify({ ok: true }));
+    },
+  }));
+}
+`);
+  await writeFile(join(root, "lib", "client.js"), "window.__ModuleLoader__.load({id:'@fixture/web-plugin',factory:()=>({apply(){}})});\n");
 }

@@ -4,6 +4,7 @@
     { "path": "./packages/kernel/tsconfig.build.json" },
     { "path": "./packages/host/tsconfig.build.json" },
     { "path": "./packages/core/tsconfig.build.json" },
+    { "path": "./packages/plugin-manager/tsconfig.build.json" },
     { "path": "./plugins/runtime-pi/tsconfig.build.json" },
     { "path": "./plugins/session-memory/tsconfig.build.json" },
     { "path": "./plugins/policy-basic/tsconfig.build.json" },
