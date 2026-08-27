@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/compaction-window",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Deterministic sliding-window compaction plugin for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",

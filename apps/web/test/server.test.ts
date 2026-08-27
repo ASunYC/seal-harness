@@ -59,6 +59,9 @@ describe("Seal Harness Web server", () => {
     expect(indexText).toContain('data-pane="conversation"');
     expect(indexText).toContain("data-conversation-scroll");
     expect(indexText).toContain("data-composer-card");
+    expect(indexText).toContain('id="settings-modal"');
+    expect(indexText).toContain('data-settings-page="models"');
+    expect(indexText).toContain('data-settings-page="plugins"');
     const mascot = await fetch(`${running.url}/assets/seal-harness-mascot.png`);
     expect(mascot.status).toBe(200);
     expect(mascot.headers.get("content-type")).toBe("image/png");
@@ -125,9 +128,17 @@ describe("Seal Harness Web server", () => {
     expect(await fetchJson(`${running.url}/api/fixture-plugin`)).toEqual({ ok: true });
     const clients = await fetchJson(`${running.url}/api/plugins/client`) as Array<{ name: string; url: string }>;
     expect(clients).toEqual([expect.objectContaining({ name: "@fixture/web-plugin" })]);
+    const plugins = await fetchJson(`${running.url}/api/plugins`) as Array<{ name: string; status: string }>;
+    expect(plugins).toEqual([expect.objectContaining({ name: "@fixture/web-plugin", status: "ready" })]);
     const bundle = await fetch(`${running.url}${clients[0]?.url}`);
     expect(bundle.status).toBe(200);
     await expect(bundle.text()).resolves.toContain("__ModuleLoader__");
+    const invalidAdd = await fetch(`${running.url}/api/plugins`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "add", spec: "" }),
+    });
+    expect(invalidAdd.status).toBe(400);
   });
 
   it("pauses a dangerous tool until the Web approval endpoint allows it", async () => {

@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/skills-filesystem",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Filesystem skill catalog context plugin for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",

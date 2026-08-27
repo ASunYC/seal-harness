@@ -17,23 +17,9 @@
           <div id="sessions" class="sessions flatList" role="tree"></div>
           <div class="sidebar-footer">
             <span data-slot="sidebar.footer.action" hidden></span>
-            <details class="settings" data-slot="sidebar.settings">
-              <summary>Connection</summary>
-              <label>Workspace<input id="cwd" type="text"></label>
-              <label>Provider<select id="provider"></select></label>
-              <label>Model<select id="model"></select></label>
-              <label>Reasoning<select id="reasoning">
-                <option value="">Default</option><option>off</option><option>low</option>
-                <option>medium</option><option>high</option><option>max</option>
-              </select></label>
-              <label>API key<input id="api-key" type="password" autocomplete="off" placeholder="kept in memory"></label>
-              <button id="save-key">Set API key</button>
-            </details>
-            <details id="themes-settings" class="settings" hidden>
-              <summary>Themes</summary>
-              <label>Active theme<select id="theme"></select></label>
-              <span id="plugin-status" class="settings-note"></span>
-            </details>
+            <div data-slot="sidebar.settings">
+              <button id="settings-open" class="settings-trigger" type="button"><span aria-hidden="true">⚙</span><span>Settings</span></button>
+            </div>
           </div>
         </div>
       </aside>
@@ -48,6 +34,51 @@
           <div class="composer-actions"><span id="run-meta"></span><button id="cancel" type="button" hidden>Stop</button><button class="primary" type="submit">Run</button></div>
         </form>
       </main>
+    </div>
+    <div id="settings-modal" class="modal-backdrop" role="presentation" hidden>
+      <section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <nav class="settings-nav" aria-label="Settings sections">
+          <div class="settings-nav-brand"><img src="/assets/seal-harness-mascot.png" alt=""><span>Seal Harness</span></div>
+          <button class="settings-nav-item active" type="button" data-settings-target="general">General</button>
+          <button class="settings-nav-item" type="button" data-settings-target="models">Models</button>
+          <button class="settings-nav-item" type="button" data-settings-target="plugins">Plugins</button>
+        </nav>
+        <div class="settings-main">
+          <header class="settings-header"><h2 id="settings-title">Settings</h2><button id="settings-close" type="button" aria-label="Close settings">×</button></header>
+          <div class="settings-pages">
+            <section class="settings-page active" data-settings-page="general">
+              <h3>General</h3>
+              <p class="settings-description">Workspace, appearance, and local security defaults.</p>
+              <div class="settings-card">
+                <label>Workspace<input id="cwd" type="text"></label>
+                <label>Appearance<select id="theme"><option value="official">Official</option></select></label>
+                <span id="plugin-status" class="settings-note"></span>
+              </div>
+              <div class="settings-card"><strong>Security</strong><p>Local workspace-write policy. External and dangerous tools require approval.</p></div>
+            </section>
+            <section class="settings-page" data-settings-page="models">
+              <h3>Models</h3>
+              <p class="settings-description">Choose a provider and model, then configure its process-local credential.</p>
+              <div class="settings-card">
+                <label>Provider<select id="provider"></select></label>
+                <label>Model<select id="model"></select></label>
+                <label>Reasoning<select id="reasoning">
+                  <option value="">Default</option><option>off</option><option>low</option>
+                  <option>medium</option><option>high</option><option>max</option>
+                </select></label>
+                <label>API key<input id="api-key" type="password" autocomplete="off" placeholder="kept in memory"></label>
+                <button id="save-key" class="primary" type="button">Set API key</button>
+              </div>
+            </section>
+            <section class="settings-page" data-settings-page="plugins">
+              <div class="settings-page-heading"><div><h3>Plugins</h3><p class="settings-description">Install and inspect optional Profile packages.</p></div><button id="plugins-refresh" type="button">Refresh</button></div>
+              <form id="plugin-install" class="plugin-install"><input id="plugin-spec" type="text" placeholder="github:user/repo#path:/plugin"><button class="primary" type="submit">Install</button></form>
+              <div id="plugins-notice" class="settings-note"></div>
+              <div id="plugins-list" class="plugins-list"></div>
+            </section>
+          </div>
+        </div>
+      </section>
     </div>
     <script type="module" src="/client-runtime.js"></script>
     <script type="module" src="/app.js"></script>
