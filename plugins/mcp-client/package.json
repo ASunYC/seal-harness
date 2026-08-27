@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/mcp-client",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Policy-routed MCP client tools for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",

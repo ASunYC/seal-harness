@@ -112,6 +112,30 @@ export default defineProfile([
 Profile 不在运行时编译 TypeScript，也不解释带可执行标签的 YAML。需要 TypeScript
 配置时，应在发布或启动前编译为 ESM。
 
+## DeepSeek Harness / Cordis 插件
+
+需要复用 DSH 插件时，安装可选包 `@seal-harness/dsh-compat`。兼容层运行真实
+`@deepseek-ai/cordis` Context，并将 DSH `ctx.tools.register()` 注册的工具桥接到 Seal
+Harness `ToolService`，所以工具仍会经过 JSON Schema、Policy 和 Approval 管线。
+
+```js
+import * as existingDshPlugin from "existing-dsh-plugin";
+import { dshCompatPlugin } from "@seal-harness/dsh-compat";
+
+export default defineProfile([
+  // 其余 Seal Harness 能力插件……
+  plugin(dshCompatPlugin, {
+    plugins: [{ plugin: existingDshPlugin, config: {} }],
+    defaultToolRisk: "external",
+  }),
+]);
+```
+
+支持 DSH 的函数、类、对象和 module namespace 插件，以及 `apply`、`inject`、Standard
+Schema `Config`、Cordis Service/Event/Fiber/Effect。`cordis.yml` Loader、HMR、DSH Web
+Client、Agent/Session/Workspace 宿主对象不由兼容层模拟。完整边界见
+[`docs/dsh-compatibility.md`](./dsh-compatibility.md)。
+
 ## 测试要求
 
 每个能力插件至少验证：

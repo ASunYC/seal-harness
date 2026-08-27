@@ -49,4 +49,14 @@ HTTP API 包含模型、Session、运行流、中止、审批和进程内 Creden
 
 - `runLauncher(argv, environment)`：分派 `run`、`headless` 和 `web` 产品模式。
 
+## `@seal-harness/dsh-compat`
+
+- `dshCompatPlugin`：在 Seal Profile 中托管真实 Cordis Context 和 DSH 插件；
+- `DshCompatRuntime`：可嵌入的 Cordis 生命周期宿主；
+- `dshCompatServiceToken`：访问兼容 Context 与 Fiber；
+- `DshCompatConfig`：配置 DSH 插件、额外 Cordis 服务、启动超时与工具风险。
+
+当 Profile 已提供 `toolServiceToken` 时，兼容层自动提供 Cordis `ctx.tools` 桥。DSH 工具
+会转换成 Seal `ToolDefinition`，继续经过 Policy 与 Approval。
+
 完整类型定义以各包生成的 `.d.ts` 为准。公开符号由每个包的 `src/index.ts` 控制。

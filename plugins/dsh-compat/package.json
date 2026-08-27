@@ -1,14 +1,24 @@
 {
-  "name": "@seal-harness/attachment-local",
+  "name": "@seal-harness/dsh-compat",
   "version": "0.3.0",
-  "description": "Content-addressed local attachment plugin for Seal Harness",
+  "description": "Optional DeepSeek Harness Cordis plugin compatibility host for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
-  "files": ["dist", "README.md"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "sideEffects": false,
-  "engines": { "node": ">=22.19.0" },
+  "engines": {
+    "node": ">=22.19.0"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "clean": "node -e \"for(const p of ['dist','tsconfig.tsbuildinfo','tsconfig.build.tsbuildinfo'])require('node:fs').rmSync(p,{recursive:true,force:true})\"",
@@ -16,6 +26,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@deepseek-ai/cordis": "4.0.1",
     "@seal-harness/core": "workspace:^",
     "@seal-harness/kernel": "workspace:^"
   },

@@ -7,6 +7,10 @@
 Seal Harness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 “能力皆插件”为设计原则，并将 Pi Agent 作为默认、可替换的运行时插件。
 
+需要复用 DeepSeek Harness 插件时，可按需安装独立的
+[`@seal-harness/dsh-compat`](docs/dsh-compatibility.md) 兼容层；默认产品和自包含发行包
+不会加载 Cordis。
+
 当前已经具备可运行的 Headless Agent 主链路：
 
 - 零运行时依赖的插件微内核；
@@ -136,6 +140,7 @@ node apps/cli/dist/bin.js \
 | `plugins/session-*` | 可替换 Session Store |
 | `plugins/skills-filesystem` | 按 `$name` 展开的文件系统 Skills |
 | `plugins/mcp-client` | 官方 SDK 驱动、经过 Policy 的 MCP 工具 |
+| `plugins/dsh-compat` | 可选的 DSH/Cordis 插件兼容宿主与工具桥接 |
 | `apps/cli` | Headless 入口与默认 Profile |
 | `apps/rpc` | 严格 stdout JSONL RPC 入口 |
 | `apps/web` | Local-first WebUI、HTTP 流式 Host 与浏览器审批 |
@@ -143,7 +148,8 @@ node apps/cli/dist/bin.js \
 
 ## 插件
 
-插件开发从 [`docs/plugin-development.md`](docs/plugin-development.md) 开始。安全模型见
+插件开发从 [`docs/plugin-development.md`](docs/plugin-development.md) 开始；DSH 插件见
+[`docs/dsh-compatibility.md`](docs/dsh-compatibility.md)。安全模型见
 [`docs/security.md`](docs/security.md)，总体架构见
 [`docs/architecture.md`](docs/architecture.md)。
 Session 物理格式和恢复语义见 [`docs/session-format.md`](docs/session-format.md)。

@@ -105,3 +105,10 @@ Pi API 只能在 `runtime-pi` 和 `provider-pi-ai` 内出现。其他插件依�
 
 WebUI 是独立 `apps/web` 宿主，通过公共 Agent、Session 和 Model 服务工作；微内核和
 能力插件不依赖浏览器代码。`apps/launcher` 只负责选择 Headless 或 Web runner。
+
+## 9. DSH 兼容层
+
+`@seal-harness/dsh-compat` 是独立可选插件，不属于默认 Profile，也不改变微内核契约。
+它在一个 Seal 插件作用域内运行真实 Cordis Context，把兼容 DSH 插件的生命周期交给
+Cordis，再将 DSH 工具注册桥接到 Seal `ToolService`。这样兼容依赖只进入显式使用该包
+的安装闭包，默认 CLI、WebUI 和自包含发行包不会因 Cordis 增重。

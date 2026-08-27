@@ -105,6 +105,10 @@ seal-harness --config ./seal-harness.config.mjs --provider my-provider --model m
 可从默认组合中移除 Tools、Telemetry、Compaction 等能力，也可替换 Runtime 和
 Session Store。插件写法见 [`plugin-development.md`](plugin-development.md)。
 
+需要加载 DeepSeek Harness/Cordis 插件时，安装可选包 `@seal-harness/dsh-compat` 并在
+Profile 中加入 `dshCompatPlugin`。它不在默认自包含发行包的运行时依赖闭包中；支持矩阵
+和安全边界见 [`dsh-compatibility.md`](dsh-compatibility.md)。
+
 ## RPC
 
 每行一个请求，每行一个响应或事件 notification：

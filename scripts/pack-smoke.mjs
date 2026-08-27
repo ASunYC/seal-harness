@@ -90,6 +90,29 @@ export default defineProfile([
     "--store-dir",
     storePath,
   ], installRoot);
+  await writeFile(join(installRoot, "dsh-compat-smoke.mjs"), `
+import { DshCompatRuntime } from "@seal-harness/dsh-compat";
+
+const events = [];
+const runtime = new DshCompatRuntime(undefined, {
+  services: { greeting: { value: "packed" } },
+  plugins: [{
+    plugin: {
+      name: "packed-dsh-plugin",
+      inject: ["greeting"],
+      apply(ctx) {
+        events.push(ctx.get("greeting").value);
+        ctx.effect(() => () => events.push("disposed"));
+      },
+    },
+  }],
+});
+await runtime.start();
+if (events.join(",") !== "packed") throw new Error("packed DSH plugin did not start");
+await runtime.stop();
+if (events.join(",") !== "packed,disposed") throw new Error("packed DSH plugin did not dispose");
+`);
+  await run(process.execPath, [join(installRoot, "dsh-compat-smoke.mjs")], installRoot, true);
   const result = await run(
     process.execPath,
     [
@@ -122,7 +145,7 @@ export default defineProfile([
     installRoot,
   );
   process.stdout.write(
-    `Packed ${packages.length} packages and verified CLI, launcher, Web UI, and a clean install.\n`,
+    `Packed ${packages.length} packages and verified CLI, launcher, Web UI, DSH compatibility, and a clean install.\n`,
   );
 } finally {
   await rm(installRoot, { recursive: true, force: true });

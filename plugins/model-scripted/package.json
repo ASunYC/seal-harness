@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/model-scripted",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Deterministic scripted model plugin for Seal Harness tests and demos",
   "type": "module",
   "main": "./dist/index.js",
