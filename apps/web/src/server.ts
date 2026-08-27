@@ -332,6 +332,9 @@ function staticAsset(pathname: string): { file: string; type: string } | undefin
   if (pathname === "/" || pathname === "/index.html") return { file: "index.html", type: "text/html; charset=utf-8" };
   if (pathname === "/app.js") return { file: "app.js", type: "text/javascript; charset=utf-8" };
   if (pathname === "/styles.css") return { file: "styles.css", type: "text/css; charset=utf-8" };
+  if (pathname === "/assets/seal-harness-mascot.png") {
+    return { file: "assets/seal-harness-mascot.png", type: "image/png" };
+  }
   return undefined;
 }
 

@@ -16,6 +16,8 @@ the project uses Semantic Versioning for published packages.
 
 ### Added
 
+- Rounded seal mascot artwork used by the Web UI, favicon, README, and self-contained releases.
+
 - Zero-runtime-dependency plugin microkernel and native ESM Profiles.
 - Provider-neutral Agent, Model, Session, Tool, Policy, Context and Telemetry contracts.
 - Pi Agent runtime and Pi AI Provider adapters.

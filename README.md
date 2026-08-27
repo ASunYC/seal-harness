@@ -1,5 +1,9 @@
 # Seal Harness
 
+<p align="center">
+  <img src="assets/brand/seal-harness-mascot.png" width="180" alt="Seal Harness mascot">
+</p>
+
 Seal Harness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 “能力皆插件”为设计原则，并将 Pi Agent 作为默认、可替换的运行时插件。
 

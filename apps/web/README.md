@@ -1,5 +1,7 @@
 # @seal-harness/web
 
+![Seal Harness mascot](public/assets/seal-harness-mascot.png)
+
 Local-first Web UI and streaming HTTP host for Seal Harness.
 
 ```sh

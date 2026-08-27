@@ -4,12 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Seal Harness</title>
+    <link rel="icon" type="image/png" href="/assets/seal-harness-mascot.png">
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
     <div class="shell">
       <aside class="sidebar">
-        <div class="brand"><span class="mark">π</span><span>Seal Harness</span></div>
+        <div class="brand"><img class="brand-mark" src="/assets/seal-harness-mascot.png" alt=""><span>Seal Harness</span></div>
         <button id="new-session" class="primary wide">New session</button>
         <div class="section-label">Sessions</div>
         <div id="sessions" class="sessions"></div>
@@ -29,7 +30,7 @@
       <main class="main">
         <header><div><strong id="session-title">New session</strong><span id="status">Ready</span></div></header>
         <section id="transcript" class="transcript">
-          <div id="welcome" class="welcome"><div class="hero-mark">π</div><h1>What should we work on?</h1><p>Choose a workspace, configure a model, and give the agent a task.</p></div>
+          <div id="welcome" class="welcome"><img class="hero-mark" src="/assets/seal-harness-mascot.png" alt="Seal mascot"><h1>What should we work on?</h1><p>Choose a workspace, configure a model, and give the agent a task.</p></div>
         </section>
         <section id="approvals" class="approvals"></section>
         <form id="composer" class="composer">

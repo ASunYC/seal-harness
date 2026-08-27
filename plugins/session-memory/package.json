@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/session-memory",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "In-memory session store plugin for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",

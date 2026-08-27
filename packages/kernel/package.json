@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/kernel",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Zero-runtime-dependency plugin microkernel for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",

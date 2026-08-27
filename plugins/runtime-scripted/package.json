@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/runtime-scripted",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Deterministic replaceable runtime plugin for Seal Harness tests and demos",
   "type": "module",
   "main": "./dist/index.js",

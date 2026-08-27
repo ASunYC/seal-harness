@@ -4,7 +4,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const version = normalizeVersion(argument("--version") ?? process.env.RELEASE_VERSION ?? "0.2.0");
+const version = normalizeVersion(argument("--version") ?? process.env.RELEASE_VERSION ?? "0.2.1");
 const platform = releasePlatform(process.platform);
 const architecture = process.arch;
 const bundleName = `seal-harness-${version}-${platform}-${architecture}`;
@@ -99,6 +99,7 @@ if (process.platform === "win32") {
 await copyFile(join(repositoryRoot, "LICENSE"), join(bundleRoot, "LICENSE"));
 await copyFile(join(repositoryRoot, "THIRD_PARTY_NOTICES.md"), join(bundleRoot, "THIRD_PARTY_NOTICES.md"));
 await copyFile(join(repositoryRoot, "README.md"), join(bundleRoot, "README.md"));
+await cp(join(repositoryRoot, "assets"), join(bundleRoot, "assets"), { recursive: true });
 await writeNodeLicense(join(bundleRoot, "NODE_LICENSE"));
 await writeFile(join(bundleRoot, "VERSION"), `${version}\n`);
 await writeFile(join(bundleRoot, "QUICKSTART.txt"), quickstart(platform, version));

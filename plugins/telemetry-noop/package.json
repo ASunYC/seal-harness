@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/telemetry-noop",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Default-off no-op telemetry plugin for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
