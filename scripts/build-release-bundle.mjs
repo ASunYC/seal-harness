@@ -61,6 +61,28 @@ if (process.platform === "win32") {
     `\"%~dp0runtime\\node.exe\" \"%~dp0${launcherRelative.replaceAll("/", "\\")}\" %*`,
     "",
   ].join("\r\n"));
+  await writeFile(join(bundleRoot, "Start PiHarness.cmd"), [
+    "@echo off",
+    "setlocal",
+    "cd /d \"%~dp0\"",
+    "title PiHarness",
+    "echo Starting PiHarness Web UI...",
+    "echo Close this window or press Ctrl+C to stop.",
+    "echo.",
+    "if defined PIHARNESS_START_ARGS (",
+    "  call \"%~dp0piharness.cmd\" %PIHARNESS_START_ARGS%",
+    ") else (",
+    "  call \"%~dp0piharness.cmd\" web",
+    ")",
+    "set \"PIHARNESS_EXIT_CODE=%ERRORLEVEL%\"",
+    "if not \"%PIHARNESS_EXIT_CODE%\"==\"0\" (",
+    "  echo.",
+    "  echo PiHarness exited with code %PIHARNESS_EXIT_CODE%.",
+    "  if not defined PIHARNESS_START_ARGS pause",
+    ")",
+    "exit /b %PIHARNESS_EXIT_CODE%",
+    "",
+  ].join("\r\n"));
 } else {
   const script = [
     "#!/usr/bin/env sh",
@@ -177,10 +199,20 @@ function quickstart(platform, releaseVersion) {
   return [
     `PiHarness ${releaseVersion}`,
     "",
-    "1. Open a terminal in this extracted directory.",
-    `2. Run: ${command}`,
-    "3. Open http://127.0.0.1:3080 if the browser does not open automatically.",
-    "4. Expand Connection, choose a workspace and model, then set the API key.",
+    ...(platform === "windows"
+      ? [
+          "1. Double-click Start PiHarness.cmd.",
+          "2. Keep the console window open while using PiHarness; close it to stop.",
+          `3. Terminal alternative: ${command}`,
+          "4. Open http://127.0.0.1:3080 if the browser does not open automatically.",
+          "5. Expand Connection, choose a workspace and model, then set the API key.",
+        ]
+      : [
+          "1. Open a terminal in this extracted directory.",
+          `2. Run: ${command}`,
+          "3. Open http://127.0.0.1:3080 if the browser does not open automatically.",
+          "4. Expand Connection, choose a workspace and model, then set the API key.",
+        ]),
     "",
     "Headless example:",
     platform === "windows"

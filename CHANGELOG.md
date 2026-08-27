@@ -22,3 +22,4 @@ the project uses Semantic Versioning for published packages.
 - Unified `piharness run|headless|web` product launcher.
 - Self-contained Windows, Linux, and macOS release bundles with an embedded Node.js runtime,
   archive extraction smoke tests, and SHA-256 checksums.
+- Double-click `Start PiHarness.cmd` entry in every Windows release while retaining the full CLI.

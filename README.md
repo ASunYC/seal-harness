@@ -40,6 +40,9 @@ Pi 当前也要求 Node.js 22.19 以上。低版本 Node 可能在启动测试�
 
 ```text
 # Windows
+双击 Start PiHarness.cmd
+
+# Windows 终端方式（继续保留）
 piharness.cmd web
 
 # Linux / macOS

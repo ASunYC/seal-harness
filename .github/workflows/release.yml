@@ -73,7 +73,13 @@ jobs:
           Compress-Archive -LiteralPath $bundle.FullName -DestinationPath ".artifacts/release/${{ matrix.asset }}"
           $extract = Join-Path $env:RUNNER_TEMP "piharness-release-smoke"
           Expand-Archive -LiteralPath ".artifacts/release/${{ matrix.asset }}" -DestinationPath $extract
-          & (Join-Path $extract $bundle.Name "piharness.cmd") help
+          $extracted = Join-Path $extract $bundle.Name
+          & (Join-Path $extracted "piharness.cmd") help
+          $doubleClick = Join-Path $extracted "Start PiHarness.cmd"
+          if (-not (Test-Path -LiteralPath $doubleClick)) { throw "Windows double-click launcher is missing" }
+          $env:PIHARNESS_START_ARGS = "help"
+          & $doubleClick
+          if ($LASTEXITCODE -ne 0) { throw "Windows double-click launcher smoke failed: $LASTEXITCODE" }
       - if: matrix.archive == 'tar'
         shell: bash
         run: |
@@ -113,5 +119,5 @@ jobs:
             gh release create "$GITHUB_REF_NAME" release-assets/* \
               --verify-tag \
               --title "PiHarness $GITHUB_REF_NAME" \
-              --notes-file docs/release-notes-v0.1.0.md
+              --notes-file "docs/release-notes-${RELEASE_VERSION}.md"
           fi

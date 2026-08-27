@@ -7,6 +7,14 @@
 
 ## Workflow
 
+`main` is protected. Create a topic branch and open a pull request; do not push directly to
+`main`. Before merging, the branch must be current with `main`, all review conversations must be
+resolved, and these GitHub Actions checks must pass:
+
+- `Node 22.19.0`;
+- `Node 24`;
+- `Packed install smoke`.
+
 ```sh
 corepack enable
 pnpm install --frozen-lockfile
