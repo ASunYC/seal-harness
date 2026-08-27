@@ -1,6 +1,20 @@
 const $ = (id) => document.getElementById(id);
 const state = { models: [], sessionId: null, runId: null, running: false };
-const providers = ["anthropic", "deepseek", "google", "groq", "mistral", "openai", "openrouter", "xai"];
+const providerLabels = {
+  "amazon-bedrock": "Amazon Bedrock", "ant-ling": "Ant Ling", anthropic: "Anthropic",
+  "azure-openai-responses": "Azure OpenAI", baseten: "Baseten", cerebras: "Cerebras",
+  "cloudflare-ai-gateway": "Cloudflare AI Gateway", "cloudflare-workers-ai": "Cloudflare Workers AI",
+  deepseek: "DeepSeek", fireworks: "Fireworks", "github-copilot": "GitHub Copilot", google: "Google",
+  "google-vertex": "Google Vertex AI", groq: "Groq", huggingface: "Hugging Face", "kimi-coding": "Kimi Coding",
+  minimax: "MiniMax", "minimax-cn": "MiniMax China", mistral: "Mistral", moonshotai: "Moonshot AI",
+  "moonshotai-cn": "Moonshot AI China", nvidia: "NVIDIA NIM", openai: "OpenAI", "openai-codex": "OpenAI Codex",
+  opencode: "OpenCode Zen", "opencode-go": "OpenCode Go", openrouter: "OpenRouter",
+  "qwen-token-plan": "Qwen Token Plan", "qwen-token-plan-cn": "Qwen Token Plan China",
+  "qwen-token-plan-individual": "Qwen Token Plan Individual", together: "Together AI",
+  "vercel-ai-gateway": "Vercel AI Gateway", xai: "xAI", xiaomi: "Xiaomi MiMo",
+  "xiaomi-token-plan-ams": "Xiaomi Token Plan AMS", "xiaomi-token-plan-cn": "Xiaomi Token Plan China",
+  "xiaomi-token-plan-sgp": "Xiaomi Token Plan Singapore", zai: "Z.AI", "zai-coding-cn": "Z.AI Coding China",
+};
 
 async function api(path, options = {}) {
   const response = await fetch(path, { headers: { "content-type": "application/json", ...(options.headers || {}) }, ...options });
@@ -13,14 +27,18 @@ async function api(path, options = {}) {
 
 function initialize() {
   $("cwd").value = localStorage.getItem("seal-harness.cwd") || "";
-  for (const name of providers) $("provider").append(new Option(name, name));
-  $("provider").value = localStorage.getItem("seal-harness.provider") || "deepseek";
   $("provider").addEventListener("change", () => { updateModels(); localStorage.setItem("seal-harness.provider", $("provider").value); });
   $("cwd").addEventListener("change", () => localStorage.setItem("seal-harness.cwd", $("cwd").value));
   $("composer").addEventListener("submit", submit);
   $("cancel").addEventListener("click", cancelRun);
   $("new-session").addEventListener("click", newSession);
   $("save-key").addEventListener("click", saveKey);
+  $("credential-onboarding-form").addEventListener("submit", saveOnboardingKey);
+  $("onboarding-api-key").addEventListener("input", () => {
+    $("onboarding-save").disabled = $("onboarding-api-key").value.trim().length === 0;
+    $("onboarding-error").textContent = "";
+  });
+  $("onboarding-later").addEventListener("click", closeOnboarding);
   void bootstrap();
   setInterval(() => void loadApprovals(), 750);
 }
@@ -30,9 +48,59 @@ async function bootstrap() {
     const health = await (await api("/api/health")).json();
     if (!$("cwd").value) $("cwd").value = health.cwd;
     state.models = await (await api("/api/models")).json();
+    updateProviders();
     updateModels();
+    await updateOnboarding();
     await loadSessions();
   } catch (error) { setStatus(error.message, true); }
+}
+
+function updateProviders() {
+  const select = $("provider");
+  const preferred = localStorage.getItem("seal-harness.provider") || "deepseek";
+  const providers = [...new Set(state.models.map((model) => model.provider))];
+  select.replaceChildren(...providers.map((provider) => new Option(providerLabels[provider] || provider, provider)));
+  if (providers.includes(preferred)) select.value = preferred;
+  else if (providers.includes("deepseek")) select.value = "deepseek";
+}
+
+async function updateOnboarding() {
+  const status = await (await api("/api/credentials")).json();
+  const available = new Set(state.models.map((model) => model.provider));
+  const hasConfiguredProvider = status.configuredProviders.some((provider) => available.has(provider));
+  if (status.managed && available.has("deepseek") && !hasConfiguredProvider) openOnboarding();
+}
+
+function openOnboarding() {
+  $("credential-onboarding").hidden = false;
+  document.querySelector(".shell").inert = true;
+  requestAnimationFrame(() => $("onboarding-api-key").focus());
+}
+
+function closeOnboarding() {
+  $("credential-onboarding").hidden = true;
+  document.querySelector(".shell").inert = false;
+  $("prompt").focus();
+}
+
+async function saveOnboardingKey(event) {
+  event.preventDefault();
+  const apiKey = $("onboarding-api-key").value.trim();
+  if (!apiKey) return;
+  $("onboarding-save").disabled = true;
+  $("onboarding-later").disabled = true;
+  $("onboarding-error").textContent = "";
+  try {
+    await api("/api/credentials/deepseek", { method: "PUT", body: JSON.stringify({ apiKey }) });
+    $("onboarding-api-key").value = "";
+    setStatus("DeepSeek API key configured for this process");
+    closeOnboarding();
+  } catch (error) {
+    $("onboarding-error").textContent = error.message;
+  } finally {
+    $("onboarding-save").disabled = $("onboarding-api-key").value.trim().length === 0;
+    $("onboarding-later").disabled = false;
+  }
 }
 
 function updateModels() {

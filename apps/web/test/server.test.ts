@@ -44,6 +44,8 @@ describe("Seal Harness Web server", () => {
     const index = await fetch(running.url);
     expect(index.status).toBe(200);
     await expect(index.text()).resolves.toContain("Seal Harness");
+    const app = await fetch(`${running.url}/app.js`);
+    await expect(app.text()).resolves.toContain("amazon-bedrock");
     const mascot = await fetch(`${running.url}/assets/seal-harness-mascot.png`);
     expect(mascot.status).toBe(200);
     expect(mascot.headers.get("content-type")).toBe("image/png");
@@ -83,6 +85,31 @@ describe("Seal Harness Web server", () => {
       body: "{}",
     });
     expect(response.status).toBe(403);
+  });
+
+  it("reports credential readiness without returning secrets", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "seal-harness-web-credentials-"));
+    cleanup.push(() => rm(cwd, { recursive: true, force: true }));
+    const credentialEnvironment: Record<string, string | undefined> = {};
+    const running = await startWebServer({
+      cwd, port: 0, providers: ["deepseek"], credentialEnvironment,
+    });
+    cleanup.push(() => running.close());
+
+    const before = await fetchJson(`${running.url}/api/credentials`);
+    expect(before).toEqual({ managed: true, configuredProviders: [] });
+
+    const secret = "sk-test-readiness-secret";
+    const saved = await fetch(`${running.url}/api/credentials/deepseek`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ apiKey: secret }),
+    });
+    expect(saved.status).toBe(200);
+    const afterResponse = await fetch(`${running.url}/api/credentials`);
+    const afterText = await afterResponse.text();
+    expect(afterText).not.toContain(secret);
+    expect(JSON.parse(afterText)).toEqual({ managed: true, configuredProviders: ["deepseek"] });
   });
 
   it("pauses a dangerous tool until the Web approval endpoint allows it", async () => {

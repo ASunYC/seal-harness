@@ -50,4 +50,17 @@ header strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
 .composer textarea { width: 100%; resize: vertical; border: 0; outline: 0; background: transparent; color: #eef1f5; min-height: 62px; }
 .composer-actions { display: flex; align-items: center; justify-content: flex-end; gap: 9px; }
 #run-meta { color: #76808f; font-size: 11px; margin-right: auto; }
+.modal-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: #000a; }
+.modal-backdrop[hidden] { display: none; }
+.onboarding-dialog { width: min(388px, calc(100vw - 40px)); border: 1px solid #454951; border-radius: 24px; background: #2c2c2f; padding: 25px 24px 22px; box-shadow: 0 24px 80px #0009; }
+.onboarding-dialog h2 { margin: 0; color: #f1f1f3; font-size: 20px; line-height: 1.4; }
+.onboarding-dialog p { margin: 21px 0 24px; color: #d0d0d4; font-size: 13px; }
+.onboarding-dialog label { display: block; margin-bottom: 6px; color: #bfc0c5; font-size: 12px; font-weight: 700; }
+.onboarding-dialog input { width: 100%; border: 1px solid #f1f1f3; border-radius: 9px; outline: 0; background: #29292c; color: #f4f4f5; padding: 8px 10px; }
+.onboarding-dialog input:focus { border-color: #8d95ff; box-shadow: 0 0 0 2px #6570ee55; }
+.onboarding-dialog input::placeholder { color: #62636a; }
+.onboarding-error { min-height: 18px; padding-top: 4px; color: #ff9b9f; font-size: 11px; }
+.onboarding-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 7px; }
+.onboarding-actions button { border-radius: 18px; }
+.onboarding-actions button:disabled { cursor: not-allowed; opacity: .5; }
 @media (max-width: 900px) { .shell { grid-template-columns: 230px 1fr; } .transcript, .approvals { padding-left: 20px; padding-right: 20px; } .composer { margin-left: 20px; margin-right: 20px; } }

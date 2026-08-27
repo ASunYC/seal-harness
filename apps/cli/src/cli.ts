@@ -9,13 +9,14 @@ import {
   type SessionId,
 } from "@seal-harness/core";
 import { loadProfile, startProfile } from "@seal-harness/host";
-import type { PiAiBuiltinProvider } from "@seal-harness/provider-pi-ai";
+import {
+  PI_AI_BUILTIN_PROVIDERS,
+  type PiAiBuiltinProvider,
+} from "@seal-harness/provider-pi-ai";
 import { createDefaultProfile } from "./default-profile.js";
 import { promptRequest, runHeadless, type HeadlessIo } from "./run-headless.js";
 
-const PROVIDERS = new Set<PiAiBuiltinProvider>([
-  "anthropic", "deepseek", "google", "groq", "mistral", "openai", "openrouter", "xai",
-]);
+const PROVIDERS = new Set<string>(PI_AI_BUILTIN_PROVIDERS);
 
 export interface CliEnvironment {
   readonly cwd: string;
@@ -201,7 +202,7 @@ function takeValue(argv: readonly string[], index: number, flag: string): string
 }
 
 function parseProvider(value: string): PiAiBuiltinProvider {
-  if (!PROVIDERS.has(value as PiAiBuiltinProvider)) {
+  if (!PROVIDERS.has(value)) {
     throw new Error(`Unsupported built-in provider: ${value}. Use --config for a custom provider.`);
   }
   return value as PiAiBuiltinProvider;

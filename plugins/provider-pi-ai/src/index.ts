@@ -3,11 +3,14 @@ import {
   type AssistantMessageEvent,
   type Model,
   type Models,
-  type MutableModels,
-  type Provider,
   type SimpleStreamOptions,
   type Usage,
 } from "@earendil-works/pi-ai";
+import {
+  builtinProviders,
+  getBuiltinProviders,
+  type BuiltinProvider,
+} from "@earendil-works/pi-ai/providers/all";
 import {
   credentialServiceToken,
   modelServiceToken,
@@ -25,15 +28,10 @@ import { definePlugin } from "@seal-harness/kernel";
 import { toPiLlmMessages } from "@seal-harness/runtime-pi";
 import { Type } from "typebox";
 
-export type PiAiBuiltinProvider =
-  | "anthropic"
-  | "deepseek"
-  | "google"
-  | "groq"
-  | "mistral"
-  | "openai"
-  | "openrouter"
-  | "xai";
+export type PiAiBuiltinProvider = BuiltinProvider;
+
+/** The complete provider catalog shipped by the installed pi-ai version. */
+export const PI_AI_BUILTIN_PROVIDERS: readonly PiAiBuiltinProvider[] = getBuiltinProviders();
 
 export interface PiAiProviderConfig {
   readonly providers?: readonly PiAiBuiltinProvider[];
@@ -53,6 +51,20 @@ export class PiAiModelService implements ModelService {
   async get(ref: { provider: string; model: string }): Promise<ModelInfo | undefined> {
     const model = this.models.getModel(ref.provider, ref.model);
     return model === undefined ? undefined : toModelInfo(model);
+  }
+
+  /**
+   * Reports whether the provider can authenticate without exposing credential
+   * material. Explicit Seal Harness credentials and provider-native ambient
+   * auth (including AWS, ADC, and OAuth stores) are both considered.
+   */
+  async isProviderConfigured(provider: string): Promise<boolean> {
+    if (this.models.getProvider(provider) === undefined) return false;
+    const apiKey = await this.credentials?.resolve({ provider, name: "apiKey" });
+    if (apiKey !== undefined) {
+      return (await this.models.getAuth(provider, { apiKey })) !== undefined;
+    }
+    return (await this.models.checkAuth(provider)) !== undefined;
   }
 
   async *stream(request: ModelRequest): AsyncIterable<ModelStreamEvent> {
@@ -99,8 +111,12 @@ export const piAiProviderPlugin = definePlugin<PiAiProviderConfig, SealHarnessEv
   optional: [credentialServiceToken],
   async setup(context, config) {
     const models = createModels();
-    const providers = await Promise.all((config.providers ?? ["deepseek"]).map(loadProvider));
-    for (const provider of providers) models.setProvider(provider);
+    const available = new Map(builtinProviders().map((provider) => [provider.id, provider]));
+    for (const name of config.providers ?? ["deepseek"]) {
+      const provider = available.get(name);
+      if (provider === undefined) throw new Error(`Unknown built-in pi-ai provider: ${name}`);
+      models.setProvider(provider);
+    }
     if (config.refreshOnStart === true) {
       await models.refresh({ allowNetwork: true });
     }
@@ -110,19 +126,6 @@ export const piAiProviderPlugin = definePlugin<PiAiProviderConfig, SealHarnessEv
     context.provide(modelServiceToken, new PiAiModelService(models, credentials));
   },
 });
-
-async function loadProvider(name: PiAiBuiltinProvider): Promise<Provider> {
-  switch (name) {
-    case "anthropic": return (await import("@earendil-works/pi-ai/providers/anthropic")).anthropicProvider();
-    case "deepseek": return (await import("@earendil-works/pi-ai/providers/deepseek")).deepseekProvider();
-    case "google": return (await import("@earendil-works/pi-ai/providers/google")).googleProvider();
-    case "groq": return (await import("@earendil-works/pi-ai/providers/groq")).groqProvider();
-    case "mistral": return (await import("@earendil-works/pi-ai/providers/mistral")).mistralProvider();
-    case "openai": return (await import("@earendil-works/pi-ai/providers/openai")).openaiProvider();
-    case "openrouter": return (await import("@earendil-works/pi-ai/providers/openrouter")).openrouterProvider();
-    case "xai": return (await import("@earendil-works/pi-ai/providers/xai")).xaiProvider();
-  }
-}
 
 function toModelInfo(model: Model<any>): ModelInfo {
   return {

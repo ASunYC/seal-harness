@@ -8,9 +8,17 @@ import {
 } from "@earendil-works/pi-ai";
 import { deepseekProvider } from "@earendil-works/pi-ai/providers/deepseek";
 import { userMessage } from "@seal-harness/core";
-import { PiAiModelService } from "../src/index.js";
+import { PI_AI_BUILTIN_PROVIDERS, PiAiModelService } from "../src/index.js";
 
 describe("PiAiModelService", () => {
+  it("tracks the complete built-in pi-ai provider catalog", () => {
+    expect(PI_AI_BUILTIN_PROVIDERS.length).toBeGreaterThan(30);
+    expect(PI_AI_BUILTIN_PROVIDERS).toEqual(expect.arrayContaining([
+      "amazon-bedrock", "anthropic", "deepseek", "google-vertex", "minimax-cn",
+      "moonshotai", "openai", "openai-codex", "qwen-token-plan", "xiaomi", "zai",
+    ]));
+  });
+
   it("exposes only providers registered in its Pi Models collection", async () => {
     const models = createModels();
     models.setProvider(deepseekProvider());

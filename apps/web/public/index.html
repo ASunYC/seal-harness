@@ -39,6 +39,19 @@
         </form>
       </main>
     </div>
+    <div id="credential-onboarding" class="modal-backdrop" hidden>
+      <form id="credential-onboarding-form" class="onboarding-dialog" role="dialog" aria-modal="true" aria-labelledby="credential-onboarding-title">
+        <h2 id="credential-onboarding-title">添加一个 API Key 开始使用</h2>
+        <p>配置 DeepSeek 官方模型，即可开始使用。</p>
+        <label for="onboarding-api-key">API 密钥</label>
+        <input id="onboarding-api-key" type="password" autocomplete="off" placeholder="输入 API 密钥">
+        <div id="onboarding-error" class="onboarding-error" role="alert"></div>
+        <div class="onboarding-actions">
+          <button id="onboarding-later" type="button">稍后配置</button>
+          <button id="onboarding-save" class="primary" type="submit" disabled>保存并继续</button>
+        </div>
+      </form>
+    </div>
     <script type="module" src="/app.js"></script>
   </body>
 </html>

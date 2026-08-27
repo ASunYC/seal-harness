@@ -16,12 +16,14 @@ import { createDefaultProfile } from "@seal-harness/cli";
 import type { Profile } from "@seal-harness/host";
 import { startProfile } from "@seal-harness/host";
 import type { Kernel } from "@seal-harness/kernel";
-import type { PiAiBuiltinProvider } from "@seal-harness/provider-pi-ai";
+import {
+  PI_AI_BUILTIN_PROVIDERS,
+  PiAiModelService,
+  type PiAiBuiltinProvider,
+} from "@seal-harness/provider-pi-ai";
 import { WebApprovalService } from "./approval.js";
 
-const PROVIDERS: readonly PiAiBuiltinProvider[] = [
-  "anthropic", "deepseek", "google", "groq", "mistral", "openai", "openrouter", "xai",
-];
+const PROVIDERS: readonly PiAiBuiltinProvider[] = PI_AI_BUILTIN_PROVIDERS;
 const PROVIDER_SET = new Set<string>(PROVIDERS);
 const MODULE_ROOT = dirname(fileURLToPath(import.meta.url));
 const PUBLIC_ROOT = basename(MODULE_ROOT) === "src"
@@ -126,6 +128,23 @@ async function dispatch(
   }
   if (method === "GET" && url.pathname === "/api/models") {
     json(response, 200, await context.kernel.use(modelServiceToken).list());
+    return;
+  }
+  if (method === "GET" && url.pathname === "/api/credentials") {
+    const service = context.kernel.use(modelServiceToken);
+    if (!(service instanceof PiAiModelService)) {
+      json(response, 200, { managed: false, configuredProviders: [] });
+      return;
+    }
+    const providers = [...new Set((await service.list()).map((model) => model.provider))];
+    const configured = await Promise.all(providers.map(async (provider) => ({
+      provider,
+      configured: await service.isProviderConfigured(provider).catch(() => false),
+    })));
+    json(response, 200, {
+      managed: true,
+      configuredProviders: configured.filter((item) => item.configured).map((item) => item.provider),
+    });
     return;
   }
   if (method === "GET" && url.pathname === "/api/sessions") {

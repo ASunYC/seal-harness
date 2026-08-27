@@ -31,9 +31,11 @@ Windows 双击启动器会保留一个状态窗口，关闭该窗口即可停止
 
 ## Provider 与模型
 
-默认 CLI 支持按需加载 Anthropic、DeepSeek、Google、Groq、Mistral、OpenAI、
-OpenRouter 和 xAI。API key 使用 `<PROVIDER>_API_KEY` 环境变量，或通过自定义
-CredentialService 提供。
+默认 CLI 和 Web UI 支持当前 `pi-ai` 完整内置目录，包括 Anthropic、DeepSeek、
+OpenAI、Google/Vertex AI、Amazon Bedrock、Azure OpenAI、OpenRouter、xAI、
+MiniMax、Moonshot AI、Qwen、Z.AI、Xiaomi MiMo 等三十余个 Provider。目录会随锁定的
+`pi-ai` 版本同步更新。API key 使用 `<PROVIDER>_API_KEY` 环境变量，或通过自定义
+CredentialService 提供；Bedrock、Vertex AI、Codex 等仍使用各自的原生认证方式。
 
 ```sh
 seal-harness --provider deepseek --model deepseek-chat "分析项目"
