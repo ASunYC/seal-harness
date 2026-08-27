@@ -8,7 +8,8 @@ button:hover { background: #252b34; }
 .primary:hover { background: #6b74ef; }
 .wide { width: 100%; }
 .shell { display: grid; grid-template-columns: 280px 1fr; height: 100vh; }
-.sidebar { border-right: 1px solid #222731; background: #101318; padding: 18px 14px; display: flex; flex-direction: column; gap: 14px; overflow: auto; }
+.sidebar { border-right: 1px solid #222731; background: #101318; overflow: hidden; }
+.sidebar-inner { position: relative; display: flex; flex-direction: column; gap: 14px; height: 100%; padding: 18px 14px; overflow: auto; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
 .brand-mark { width: 32px; height: 32px; border-radius: 9px; object-fit: cover; flex: none; }
 .section-label { color: #858e9c; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-top: 4px; }
@@ -18,13 +19,14 @@ button:hover { background: #252b34; }
 .session strong, .session span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .session strong { font-size: 13px; }
 .session span { color: #77808f; font-size: 10px; margin-top: 3px; }
-.settings { margin-top: auto; border-top: 1px solid #262b34; padding-top: 12px; }
+.sidebar-footer { margin-top: auto; }
+.settings { border-top: 1px solid #262b34; padding-top: 12px; }
 #themes-settings { margin-top: 0; }
 .settings summary { cursor: pointer; color: #adb5c1; margin-bottom: 12px; }
 .settings label { display: block; color: #858e9c; font-size: 11px; margin: 10px 0; }
 .settings-note { color: #7f8998; font-size: 11px; line-height: 1.4; }
 .settings input, .settings select { display: block; width: 100%; margin-top: 5px; background: #0d1014; color: #e8ebf0; border: 1px solid #303641; border-radius: 7px; padding: 8px; }
-.main { display: grid; grid-template-rows: 56px minmax(0, 1fr) auto auto; min-width: 0; min-height: 0; }
+.main { position: relative; display: grid; grid-template-rows: 56px minmax(0, 1fr) auto auto; min-width: 0; min-height: 0; overflow: hidden; }
 header { border-bottom: 1px solid #222731; display: flex; align-items: center; padding: 0 24px; }
 header div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 header strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

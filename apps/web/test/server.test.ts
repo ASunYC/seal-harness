@@ -53,7 +53,12 @@ describe("Seal Harness Web server", () => {
 
     const index = await fetch(running.url);
     expect(index.status).toBe(200);
-    await expect(index.text()).resolves.toContain("Seal Harness");
+    const indexText = await index.text();
+    expect(indexText).toContain("Seal Harness");
+    expect(indexText).toContain('data-pane="sidebar"');
+    expect(indexText).toContain('data-pane="conversation"');
+    expect(indexText).toContain("data-conversation-scroll");
+    expect(indexText).toContain("data-composer-card");
     const mascot = await fetch(`${running.url}/assets/seal-harness-mascot.png`);
     expect(mascot.status).toBe(200);
     expect(mascot.headers.get("content-type")).toBe("image/png");

@@ -4,7 +4,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const version = normalizeVersion(argument("--version") ?? process.env.RELEASE_VERSION ?? "0.3.1");
+const version = normalizeVersion(argument("--version") ?? process.env.RELEASE_VERSION ?? "0.3.2");
 const platform = releasePlatform(process.platform);
 const architecture = process.arch;
 const bundleName = `seal-harness-${version}-${platform}-${architecture}`;

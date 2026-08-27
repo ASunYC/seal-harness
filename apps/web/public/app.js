@@ -43,7 +43,16 @@ async function loadClientPlugins() {
   const results = await window.SealDshPlugins.load(entries);
   await api("/api/plugins/client-state", {
     method: "POST",
-    body: JSON.stringify({ results, active: window.SealDshPlugins.active() }),
+    body: JSON.stringify({
+      results,
+      active: window.SealDshPlugins.active(),
+      surfaces: {
+        characterStage: document.querySelector("[data-skin-chrome='character-stage']") !== null,
+        sidebarMascot: document.querySelector("[data-skin-chrome='sidebar-mascot']") !== null,
+        topTrim: document.querySelector("[data-skin-chrome='top-trim']") !== null,
+        conversationPane: document.querySelector("[data-pane='conversation']") !== null,
+      },
+    }),
   });
   const active = results.filter((entry) => entry.status === "active").length;
   const waiting = results.filter((entry) => entry.status === "adapter-required").length;
@@ -94,6 +103,8 @@ async function loadSessions() {
   for (const session of sessions) {
     const button = document.createElement("button");
     button.className = `session${session.id === state.sessionId ? " active" : ""}`;
+    button.setAttribute("role", "treeitem");
+    button.setAttribute("aria-selected", String(session.id === state.sessionId));
     const title = document.createElement("strong");
     title.textContent = session.preview || "Session";
     const meta = document.createElement("span");
@@ -108,6 +119,7 @@ async function openSession(id) {
   if (state.running) return;
   const session = await (await api(`/api/sessions/${encodeURIComponent(id)}`)).json();
   state.sessionId = id;
+  document.querySelector(".main")?.setAttribute("data-phase", "active");
   const created = session.events.find((entry) => entry.event.type === "session.created");
   if (created) $("cwd").value = created.event.payload.cwd;
   const transcript = $("transcript");
@@ -121,8 +133,9 @@ async function openSession(id) {
 function newSession() {
   if (state.running) return;
   state.sessionId = null;
+  document.querySelector(".main")?.setAttribute("data-phase", "hero");
   $("session-title").textContent = "New session";
-  const welcome = document.createElement("div"); welcome.className = "welcome"; welcome.id = "welcome";
+  const welcome = document.createElement("div"); welcome.className = "welcome"; welcome.id = "welcome"; welcome.dataset.chatFlow = "";
   const mark = document.createElement("img"); mark.className = "hero-mark"; mark.src = "/assets/seal-harness-mascot.png"; mark.alt = "Seal mascot";
   const title = document.createElement("h1"); title.textContent = "What should we work on?";
   const description = document.createElement("p"); description.textContent = "Choose a workspace, configure a model, and give the agent a task.";
@@ -141,6 +154,7 @@ async function submit(event) {
   const model = $("model").value;
   if (!model) return setStatus("No model is available for this provider", true);
   state.running = true;
+  document.querySelector(".main")?.setAttribute("data-phase", "active");
   $("cancel").hidden = false;
   $("prompt").value = "";
   $("welcome")?.remove();
@@ -250,13 +264,13 @@ function renderMessage(message) {
 
 function blocksText(content = []) { return content.filter((block) => block.type === "text").map((block) => block.text).join("\n"); }
 function appendBubble(role, value) {
-  const item = document.createElement("article"); item.className = `message ${role}`;
+  const item = document.createElement("article"); item.className = `message ${role}`; item.dataset.chatFlow = "";
   const label = document.createElement("div"); label.className = "label"; label.textContent = role === "user" ? "You" : "Seal Harness";
   const content = document.createElement("pre"); content.className = "content"; content.textContent = value;
   item.append(label, content); $("transcript").append(item); return item;
 }
 function appendTool(titleValue, value) {
-  const details = document.createElement("details"); details.className = "tool";
+  const details = document.createElement("details"); details.className = "tool"; details.dataset.chatFlow = "";
   const summary = document.createElement("summary"); summary.textContent = titleValue;
   const content = document.createElement("pre"); content.textContent = value;
   details.append(summary, content); $("transcript").append(details);
