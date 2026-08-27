@@ -2,10 +2,10 @@
 
 ## 选择入口
 
-- `piharness run` / `piharness headless`：面向终端的一次或多轮 Headless Agent；
-- `piharness web`：本地 WebUI、流式任务和浏览器审批；
-- `piharness-rpc`：stdout 严格 JSONL 的应用集成入口。
-- `@piharness/host`：在自己的 TypeScript 应用中启动 Profile。
+- `seal-harness run` / `seal-harness headless`：面向终端的一次或多轮 Headless Agent；
+- `seal-harness web`：本地 WebUI、流式任务和浏览器审批；
+- `seal-harness-rpc`：stdout 严格 JSONL 的应用集成入口。
+- `@seal-harness/host`：在自己的 TypeScript 应用中启动 Profile。
 
 ## 下载发行包
 
@@ -14,20 +14,20 @@ GitHub Release 提供内置 Node.js 与生产依赖的 Windows、Linux 和 macOS
 
 ```text
 # Windows
-双击 Start PiHarness.cmd
+双击 Start Seal Harness.cmd
 
 # Windows 终端方式（继续保留）
-piharness.cmd web
+seal-harness.cmd web
 
 # Linux / macOS
-./piharness web
+./seal-harness web
 ```
 
 发行页同时提供 `SHA256SUMS.txt`。源码安装和 npm 包用于插件开发，自包含压缩包面向
 直接使用。
 
-Windows 双击启动器会保留一个状态窗口，关闭该窗口即可停止 PiHarness。它只是调用
-同目录中的 `piharness.cmd web`，不会替换或移除原有 CLI 使用方式。
+Windows 双击启动器会保留一个状态窗口，关闭该窗口即可停止 Seal Harness。它只是调用
+同目录中的 `seal-harness.cmd web`，不会替换或移除原有 CLI 使用方式。
 
 ## Provider 与模型
 
@@ -36,8 +36,8 @@ OpenRouter 和 xAI。API key 使用 `<PROVIDER>_API_KEY` 环境变量，或通�
 CredentialService 提供。
 
 ```sh
-piharness --provider deepseek --model deepseek-chat "分析项目"
-piharness --provider anthropic --model claude-sonnet-4-6 --reasoning high "修复测试"
+seal-harness --provider deepseek --model deepseek-chat "分析项目"
+seal-harness --provider anthropic --model claude-sonnet-4-6 --reasoning high "修复测试"
 ```
 
 使用 `--list-models` 查看 Profile 中的模型。自定义 Provider 应使用 `--config`。
@@ -48,19 +48,19 @@ piharness --provider anthropic --model claude-sonnet-4-6 --reasoning high "修�
 图片在模型请求前解析。附件内容会发送给所选 Provider。
 
 ```sh
-piharness --attach ./trace.txt --attach ./screen.png "定位问题"
+seal-harness --attach ./trace.txt --attach ./screen.png "定位问题"
 ```
 
 ## Session
 
-默认 Session 根目录是 `.piharness/sessions`。
+默认 Session 根目录是 `.seal-harness/sessions`。
 
 ```sh
 # 继续 Session
-piharness --session session-id "继续处理"
+seal-harness --session session-id "继续处理"
 
 # 从指定事件版本 Fork 后继续
-piharness --fork session-id --fork-version 20 "尝试另一种方案"
+seal-harness --fork session-id --fork-version 20 "尝试另一种方案"
 ```
 
 Session 包含提示、回答、工具参数和结果，应按敏感业务数据保护。
@@ -77,8 +77,8 @@ Session 包含提示、回答、工具参数和结果，应按敏感业务数据
 ## WebUI
 
 ```sh
-piharness web
-piharness web --port 8080 --no-open
+seal-harness web
+seal-harness web --port 8080 --no-open
 ```
 
 Web Host 默认只监听 `127.0.0.1:3080`。它提供工作区选择、模型选择、Session 列表与
@@ -88,7 +88,7 @@ Web Host 默认只监听 `127.0.0.1:3080`。它提供工作区选择、模型选
 绑定非回环地址必须显式声明：
 
 ```sh
-piharness web --host 0.0.0.0 --allow-remote --no-open
+seal-harness web --host 0.0.0.0 --allow-remote --no-open
 ```
 
 当前 Web Host 没有用户认证。远程监听只能放在可信网络或带认证的反向代理之后；
@@ -99,7 +99,7 @@ piharness web --host 0.0.0.0 --allow-remote --no-open
 Profile 是原生 ESM，默认导出插件实例数组：
 
 ```sh
-piharness --config ./piharness.config.mjs --provider my-provider --model my-model "hello"
+seal-harness --config ./seal-harness.config.mjs --provider my-provider --model my-model "hello"
 ```
 
 可从默认组合中移除 Tools、Telemetry、Compaction 等能力，也可替换 Runtime 和

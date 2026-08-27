@@ -5,8 +5,8 @@ import type {
   ContentBlock,
   JsonObject,
   JsonValue,
-} from "@piharness/core";
-import { toolCallId } from "@piharness/core";
+} from "@seal-harness/core";
+import { toolCallId } from "@seal-harness/core";
 import type {
   AssistantMessage as PiAssistantMessage,
   Message as PiLlmMessage,

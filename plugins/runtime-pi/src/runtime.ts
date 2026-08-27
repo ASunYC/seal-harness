@@ -12,8 +12,8 @@ import type {
   RuntimeStartRequest,
   ToolResult,
   ToolService,
-} from "@piharness/core";
-import { toolCallId } from "@piharness/core";
+} from "@seal-harness/core";
+import { toolCallId } from "@seal-harness/core";
 import { Type } from "typebox";
 import { AsyncChannel } from "./async-channel.js";
 import { createModelBridge, createPiModel } from "./model-bridge.js";
@@ -242,7 +242,7 @@ function createPiTools(toolService: ToolService, request: RuntimeStartRequest): 
         sessionId: request.sessionId,
         cwd: request.cwd,
         name: definition.name,
-        input: params as import("@piharness/core").JsonObject,
+        input: params as import("@seal-harness/core").JsonObject,
         signal: signal ?? new AbortController().signal,
         reportProgress: (content) => {
           onUpdate?.({ content: toPiToolContent(content), details: {} });
@@ -259,7 +259,7 @@ function createPiTools(toolService: ToolService, request: RuntimeStartRequest): 
   }));
 }
 
-function toPiToolContent(content: readonly import("@piharness/core").ContentBlock[]) {
+function toPiToolContent(content: readonly import("@seal-harness/core").ContentBlock[]) {
   return content.map((block) => {
     if (block.type === "text") return { type: "text" as const, text: block.text };
     if (block.type === "image") {
@@ -269,8 +269,8 @@ function toPiToolContent(content: readonly import("@piharness/core").ContentBloc
   });
 }
 
-function fromPiToolContent(content: readonly any[]): import("@piharness/core").ContentBlock[] {
-  const converted: import("@piharness/core").ContentBlock[] = [];
+function fromPiToolContent(content: readonly any[]): import("@seal-harness/core").ContentBlock[] {
+  const converted: import("@seal-harness/core").ContentBlock[] = [];
   for (const block of content) {
     if (block?.type === "text" && typeof block.text === "string") {
       converted.push({ type: "text", text: block.text });

@@ -15,7 +15,7 @@ import type {
   ModelService,
   ModelStopReason,
   ModelUsage,
-} from "@piharness/core";
+} from "@seal-harness/core";
 import { fromPiMessages } from "./messages.js";
 
 const EMPTY_USAGE: Usage = {
@@ -186,9 +186,9 @@ function modelInfoToPi(info: ModelInfo): Model<any> {
   return {
     id: info.model,
     name: info.displayName ?? info.model,
-    api: "piharness-model",
+    api: "seal-harness-model",
     provider: info.provider,
-    baseUrl: "piharness://model-service",
+    baseUrl: "seal-harness://model-service",
     reasoning: info.supportsReasoning ?? false,
     input: info.supportsImages === true ? ["text", "image"] : ["text"],
     cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },

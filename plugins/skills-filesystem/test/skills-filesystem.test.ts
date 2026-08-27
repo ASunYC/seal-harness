@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { sessionId, text } from "@piharness/core";
+import { sessionId, text } from "@seal-harness/core";
 import { FilesystemSkillsSource } from "../src/index.js";
 
 const temporary: string[] = [];
@@ -10,7 +10,7 @@ afterEach(async () => Promise.all(temporary.splice(0).map((path) => rm(path, { r
 
 describe("FilesystemSkillsSource", () => {
   it("lists discovered skills and expands only an explicitly selected skill", async () => {
-    const cwd = await mkdtemp(join(tmpdir(), "piharness-skills-"));
+    const cwd = await mkdtemp(join(tmpdir(), "seal-harness-skills-"));
     temporary.push(cwd);
     const root = join(cwd, ".agents", "skills");
     await mkdir(join(root, "alpha"), { recursive: true });

@@ -1,7 +1,7 @@
 {
-  "name": "@piharness/session-sqlite",
-  "version": "0.1.0",
-  "description": "SQLite session store plugin using node:sqlite for PiHarness",
+  "name": "@seal-harness/session-sqlite",
+  "version": "0.2.0",
+  "description": "SQLite session store plugin using node:sqlite for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,8 +16,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@piharness/core": "workspace:^",
-    "@piharness/kernel": "workspace:^"
+    "@seal-harness/core": "workspace:^",
+    "@seal-harness/kernel": "workspace:^"
   },
   "license": "MIT"
 }

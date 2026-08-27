@@ -6,13 +6,13 @@ import {
   type AppendSessionRequest,
   type CreateSessionRequest,
   type ForkSessionRequest,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type SessionId,
   type SessionSnapshot,
   type SessionStore,
   type StoredSessionEvent,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface MemorySessionConfig {
   readonly now?: () => Date;
@@ -121,7 +121,7 @@ export class MemorySessionStore implements SessionStore {
   }
 }
 
-export const memorySessionPlugin = definePlugin<MemorySessionConfig, PiHarnessEvents>({
+export const memorySessionPlugin = definePlugin<MemorySessionConfig, SealHarnessEvents>({
   name: "session-memory",
   provides: [sessionStoreToken],
   setup(context, config) {

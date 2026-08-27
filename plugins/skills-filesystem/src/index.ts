@@ -5,9 +5,9 @@ import {
   type ContextContribution,
   type ContextRequest,
   type ContextSource,
-  type PiHarnessEvents,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+  type SealHarnessEvents,
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface FilesystemSkillsConfig {
   readonly roots?: readonly string[];
@@ -53,7 +53,7 @@ export class FilesystemSkillsSource implements ContextSource {
   }
 }
 
-export const filesystemSkillsPlugin = definePlugin<FilesystemSkillsConfig, PiHarnessEvents>({
+export const filesystemSkillsPlugin = definePlugin<FilesystemSkillsConfig, SealHarnessEvents>({
   name: "skills-filesystem",
   requires: [contextServiceToken],
   setup(context, config) {

@@ -1,17 +1,17 @@
 import {
   telemetryServiceToken,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type TelemetryRecord,
   type TelemetryService,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export class NoopTelemetryService implements TelemetryService {
   record(_record: TelemetryRecord): void {}
   async flush(): Promise<void> {}
 }
 
-export const noopTelemetryPlugin = definePlugin<undefined, PiHarnessEvents>({
+export const noopTelemetryPlugin = definePlugin<undefined, SealHarnessEvents>({
   name: "telemetry-noop",
   provides: [telemetryServiceToken],
   setup(context) {

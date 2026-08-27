@@ -1,4 +1,4 @@
-import { Kernel, type EventMap, type KernelOptions } from "@piharness/kernel";
+import { Kernel, type EventMap, type KernelOptions } from "@seal-harness/kernel";
 import type { Profile } from "./profile.js";
 
 export async function startProfile<TEvents extends EventMap = EventMap>(

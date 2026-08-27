@@ -1,6 +1,6 @@
-# PiHarness
+# Seal Harness
 
-PiHarness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
+Seal Harness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 “能力皆插件”为设计原则，并将 Pi Agent 作为默认、可替换的运行时插件。
 
 当前已经具备可运行的 Headless Agent 主链路：
@@ -18,7 +18,7 @@ PiHarness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 - 分层 `AGENTS.md` 上下文；
 - Headless CLI；
 - Local-first WebUI、流式 HTTP Host 和浏览器审批；
-- 统一 `piharness run|headless|web` 产品启动器。
+- 统一 `seal-harness run|headless|web` 产品启动器。
 
 可选生态插件包括 Filesystem Skills、MCP Client、SQLite Session 和 JSONL RPC；它们
 不属于微内核，也可以从 Profile 完全移除。
@@ -35,18 +35,18 @@ Pi 当前也要求 Node.js 22.19 以上。低版本 Node 可能在启动测试�
 
 ## 下载即用
 
-普通用户可从 [GitHub Releases](https://github.com/ASunYC/PiHarness/releases) 下载对应系统
+普通用户可从 [GitHub Releases](https://github.com/ASunYC/seal-harness/releases) 下载对应系统
 的自包含压缩包。发行包已内置 Node.js 和生产依赖，解压后直接运行：
 
 ```text
 # Windows
-双击 Start PiHarness.cmd
+双击 Start Seal Harness.cmd
 
 # Windows 终端方式（继续保留）
-piharness.cmd web
+seal-harness.cmd web
 
 # Linux / macOS
-./piharness web
+./seal-harness web
 ```
 
 每个 Release 提供 Windows x64、Linux x64、macOS arm64、macOS x64 和
@@ -70,13 +70,13 @@ export DEEPSEEK_API_KEY=...
 运行：
 
 ```sh
-pnpm piharness -- --provider deepseek --model deepseek-chat "检查这个仓库"
+pnpm seal-harness -- --provider deepseek --model deepseek-chat "检查这个仓库"
 ```
 
 启动本地 WebUI（默认 `http://127.0.0.1:3080` 并打开浏览器）：
 
 ```sh
-pnpm piharness -- web
+pnpm seal-harness -- web
 ```
 
 WebUI 支持工作区、Provider/模型、Session 恢复、流式事件、工具卡片、中止和浏览器
@@ -85,20 +85,20 @@ WebUI 支持工作区、Provider/模型、Session 恢复、流式事件、工具
 附件可重复指定；显式使用该参数意味着文件内容会进入模型请求：
 
 ```sh
-pnpm piharness -- --attach ./error.log --attach ./screenshot.png "分析附件"
+pnpm seal-harness -- --attach ./error.log --attach ./screenshot.png "分析附件"
 ```
 
 如果省略 `--model`，CLI 使用该 Provider 目录中的第一个模型。Session 默认保存在
-当前工作区的 `.piharness/sessions`。
+当前工作区的 `.seal-harness/sessions`。
 
 常用安全选项：
 
 ```sh
 # 完全不注册 shell 工具
-pnpm piharness -- --no-shell "只分析代码"
+pnpm seal-harness -- --no-shell "只分析代码"
 
 # 非交互环境明确拒绝所有 ask 决策
-pnpm piharness -- --deny-approvals "检查并修复问题"
+pnpm seal-harness -- --deny-approvals "检查并修复问题"
 ```
 
 `--yes` 会允许所有 `ask` 决策，只应在隔离环境中明确使用。
@@ -110,7 +110,7 @@ pnpm piharness -- --deny-approvals "检查并修复问题"
 ```sh
 pnpm build
 node apps/cli/dist/bin.js \
-  --config examples/scripted-agent/piharness.config.mjs \
+  --config examples/scripted-agent/seal-harness.config.mjs \
   --provider scripted \
   --model demo \
   "hello"

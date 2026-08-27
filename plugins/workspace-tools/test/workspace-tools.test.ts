@@ -2,7 +2,7 @@ import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { sessionId, toolCallId, type ToolDefinition } from "@piharness/core";
+import { sessionId, toolCallId, type ToolDefinition } from "@seal-harness/core";
 import { createWorkspaceTools } from "../src/index.js";
 
 const temporary: string[] = [];
@@ -88,7 +88,7 @@ setInterval(() => {}, 1000);
 });
 
 async function directory(): Promise<string> {
-  const path = await mkdtemp(join(tmpdir(), "piharness-tools-"));
+  const path = await mkdtemp(join(tmpdir(), "seal-harness-tools-"));
   temporary.push(path);
   return path;
 }

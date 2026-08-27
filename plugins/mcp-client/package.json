@@ -1,7 +1,7 @@
 {
-  "name": "@piharness/mcp-client",
-  "version": "0.1.0",
-  "description": "Policy-routed MCP client tools for PiHarness",
+  "name": "@seal-harness/mcp-client",
+  "version": "0.2.0",
+  "description": "Policy-routed MCP client tools for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.0.0",
-    "@piharness/core": "workspace:^",
-    "@piharness/kernel": "workspace:^"
+    "@seal-harness/core": "workspace:^",
+    "@seal-harness/kernel": "workspace:^"
   },
   "devDependencies": {
     "@modelcontextprotocol/server": "2.0.0",

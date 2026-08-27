@@ -7,7 +7,7 @@ import {
   type Provider,
 } from "@earendil-works/pi-ai";
 import { deepseekProvider } from "@earendil-works/pi-ai/providers/deepseek";
-import { userMessage } from "@piharness/core";
+import { userMessage } from "@seal-harness/core";
 import { PiAiModelService } from "../src/index.js";
 
 describe("PiAiModelService", () => {

@@ -5,7 +5,7 @@ import {
   SessionConflictError,
   sessionId,
   userMessage,
-} from "@piharness/core";
+} from "@seal-harness/core";
 import { MemorySessionStore } from "../src/index.js";
 
 describe("MemorySessionStore", () => {

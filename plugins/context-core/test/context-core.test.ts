@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sessionId, text } from "@piharness/core";
+import { sessionId, text } from "@seal-harness/core";
 import { ContextRegistry } from "../src/index.js";
 
 describe("ContextRegistry", () => {

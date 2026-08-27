@@ -2,12 +2,12 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { agentCorePlugin } from "@piharness/agent-core";
-import { localAttachmentPlugin } from "@piharness/attachment-local";
-import { stdioApprovalPlugin } from "@piharness/approval-stdio";
-import { contextCorePlugin } from "@piharness/context-core";
-import { windowCompactionPlugin } from "@piharness/compaction-window";
-import { fileContextPlugin } from "@piharness/context-files";
+import { agentCorePlugin } from "@seal-harness/agent-core";
+import { localAttachmentPlugin } from "@seal-harness/attachment-local";
+import { stdioApprovalPlugin } from "@seal-harness/approval-stdio";
+import { contextCorePlugin } from "@seal-harness/context-core";
+import { windowCompactionPlugin } from "@seal-harness/compaction-window";
+import { fileContextPlugin } from "@seal-harness/context-files";
 import {
   attachmentServiceToken,
   messageId,
@@ -17,16 +17,16 @@ import {
   text,
   toolCallId,
   type ModelRequest,
-} from "@piharness/core";
-import { defineProfile, startProfile } from "@piharness/host";
-import { plugin } from "@piharness/kernel";
-import { scriptedModelPlugin } from "@piharness/model-scripted";
-import { basicPolicyPlugin } from "@piharness/policy-basic";
-import { piRuntimePlugin } from "@piharness/runtime-pi";
-import { jsonlSessionPlugin } from "@piharness/session-jsonl";
-import { memorySessionPlugin } from "@piharness/session-memory";
-import { toolsCorePlugin } from "@piharness/tools-core";
-import { workspaceToolsPlugin } from "@piharness/workspace-tools";
+} from "@seal-harness/core";
+import { defineProfile, startProfile } from "@seal-harness/host";
+import { plugin } from "@seal-harness/kernel";
+import { scriptedModelPlugin } from "@seal-harness/model-scripted";
+import { basicPolicyPlugin } from "@seal-harness/policy-basic";
+import { piRuntimePlugin } from "@seal-harness/runtime-pi";
+import { jsonlSessionPlugin } from "@seal-harness/session-jsonl";
+import { memorySessionPlugin } from "@seal-harness/session-memory";
+import { toolsCorePlugin } from "@seal-harness/tools-core";
+import { workspaceToolsPlugin } from "@seal-harness/workspace-tools";
 import { promptRequest, runHeadless } from "../src/index.js";
 
 const temporary: string[] = [];
@@ -198,7 +198,7 @@ function sequentialIds(): () => string {
 }
 
 async function directory(): Promise<string> {
-  const path = await mkdtemp(join(tmpdir(), "piharness-e2e-"));
+  const path = await mkdtemp(join(tmpdir(), "seal-harness-e2e-"));
   temporary.push(path);
   return path;
 }

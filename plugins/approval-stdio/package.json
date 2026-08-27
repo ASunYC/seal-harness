@@ -1,7 +1,7 @@
 {
-  "name": "@piharness/approval-stdio",
-  "version": "0.1.0",
-  "description": "TTY approval plugin for PiHarness",
+  "name": "@seal-harness/approval-stdio",
+  "version": "0.2.0",
+  "description": "TTY approval plugin for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,8 +16,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@piharness/core": "workspace:^",
-    "@piharness/kernel": "workspace:^"
+    "@seal-harness/core": "workspace:^",
+    "@seal-harness/kernel": "workspace:^"
   },
   "license": "MIT"
 }

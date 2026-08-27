@@ -1,6 +1,6 @@
 # 版本与兼容策略
 
-## PiHarness
+## Seal Harness
 
 所有公开包在 1.0 前保持统一版本。`0.x` 次版本可能包含公共插件契约破坏；变更必须
 提供 Changelog 和迁移说明。1.0 后遵循 Semantic Versioning。

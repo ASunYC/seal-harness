@@ -8,9 +8,9 @@ import {
   type AgentPromptRequest,
   type JsonObject,
   type JsonValue,
-} from "@piharness/core";
-import type { Profile } from "@piharness/host";
-import { startProfile } from "@piharness/host";
+} from "@seal-harness/core";
+import type { Profile } from "@seal-harness/host";
+import { startProfile } from "@seal-harness/host";
 
 export interface RpcIo {
   readonly input: NodeJS.ReadableStream;
@@ -55,7 +55,7 @@ export async function runRpcServer(profile: Profile, io: RpcIo): Promise<void> {
 }
 
 async function dispatch(
-  kernel: import("@piharness/kernel").Kernel<any>,
+  kernel: import("@seal-harness/kernel").Kernel<any>,
   request: RpcRequest,
   io: RpcIo,
 ): Promise<JsonValue> {

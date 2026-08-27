@@ -5,7 +5,7 @@
 插件是一个静态声明能力边界的 TypeScript 对象：
 
 ```ts
-import { createServiceToken, definePlugin, plugin } from "@piharness/kernel";
+import { createServiceToken, definePlugin, plugin } from "@seal-harness/kernel";
 
 interface Clock {
   now(): Date;
@@ -47,7 +47,7 @@ Promise、计时器、文件监听器或子进程越过插件生命周期。
 
 ## 服务边界
 
-标准令牌位于 `@piharness/core`：
+标准令牌位于 `@seal-harness/core`：
 
 - `agentServiceToken`
 - `runtimeToken`
@@ -101,8 +101,8 @@ setup(context) {
 生产配置使用原生 ESM，默认导出插件实例数组：
 
 ```js
-import { defineProfile } from "@piharness/host";
-import { plugin } from "@piharness/kernel";
+import { defineProfile } from "@seal-harness/host";
+import { plugin } from "@seal-harness/kernel";
 
 export default defineProfile([
   plugin(clockPlugin, undefined),

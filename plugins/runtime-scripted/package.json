@@ -1,7 +1,7 @@
 {
-  "name": "@piharness/runtime-scripted",
-  "version": "0.1.0",
-  "description": "Deterministic replaceable runtime plugin for PiHarness tests and demos",
+  "name": "@seal-harness/runtime-scripted",
+  "version": "0.2.0",
+  "description": "Deterministic replaceable runtime plugin for Seal Harness tests and demos",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,14 +16,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@piharness/core": "workspace:^",
-    "@piharness/kernel": "workspace:^"
+    "@seal-harness/core": "workspace:^",
+    "@seal-harness/kernel": "workspace:^"
   },
   "devDependencies": {
-    "@piharness/agent-core": "workspace:^",
-    "@piharness/context-core": "workspace:^",
-    "@piharness/host": "workspace:^",
-    "@piharness/session-memory": "workspace:^"
+    "@seal-harness/agent-core": "workspace:^",
+    "@seal-harness/context-core": "workspace:^",
+    "@seal-harness/host": "workspace:^",
+    "@seal-harness/session-memory": "workspace:^"
   },
   "license": "MIT"
 }

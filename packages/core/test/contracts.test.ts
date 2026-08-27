@@ -39,18 +39,18 @@ describe("core contracts", () => {
 
     expect(new Set(tokens.map((token) => token.id))).toHaveLength(tokens.length);
     expect(tokens.map((token) => token.name)).toEqual([
-      "piharness.agent",
-      "piharness.compaction",
-      "piharness.model",
-      "piharness.runtime",
-      "piharness.session-store",
-      "piharness.tools",
-      "piharness.policy",
-      "piharness.approval",
-      "piharness.context",
-      "piharness.credentials",
-      "piharness.telemetry",
-      "piharness.attachments",
+      "seal-harness.agent",
+      "seal-harness.compaction",
+      "seal-harness.model",
+      "seal-harness.runtime",
+      "seal-harness.session-store",
+      "seal-harness.tools",
+      "seal-harness.policy",
+      "seal-harness.approval",
+      "seal-harness.context",
+      "seal-harness.credentials",
+      "seal-harness.telemetry",
+      "seal-harness.attachments",
     ]);
   });
 

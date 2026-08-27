@@ -1,9 +1,9 @@
-# PiHarness 架构
+# Seal Harness 架构
 
 ## 1. 目标
 
-PiHarness 使用 Pi Agent，但不把 Pi Coding Agent CLI 作为不可替换的宿主。
-Pi 负责默认 Agent loop、流式消息和工具调用；PiHarness 负责能力组合、生命周期、
+Seal Harness 使用 Pi Agent，但不把 Pi Coding Agent CLI 作为不可替换的宿主。
+Pi 负责默认 Agent loop、流式消息和工具调用；Seal Harness 负责能力组合、生命周期、
 安全边界和产品入口。
 
 核心原则是“能力皆插件”，不是“每个函数都是插件”。插件的粒度对应一个可独立
@@ -86,7 +86,7 @@ Session log、事件载荷或普通配置文件。
 
 ## 7. 稳定性边界
 
-Pi API 只能在 `runtime-pi` 和 `provider-pi-ai` 内出现。其他插件依赖 PiHarness
+Pi API 只能在 `runtime-pi` 和 `provider-pi-ai` 内出现。其他插件依赖 Seal Harness
 定义的窄接口。上游 Pi 使用精确版本，并通过以下契约测试升级：
 
 - 流式文本事件顺序；

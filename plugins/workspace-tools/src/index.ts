@@ -14,11 +14,11 @@ import {
   toolServiceToken,
   type ContentBlock,
   type JsonObject,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type ToolDefinition,
   type ToolService,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface WorkspaceToolsConfig {
   readonly maxReadBytes?: number;
@@ -30,7 +30,7 @@ export interface WorkspaceToolsConfig {
   readonly ignoredDirectories?: readonly string[];
 }
 
-export const workspaceToolsPlugin = definePlugin<WorkspaceToolsConfig, PiHarnessEvents>({
+export const workspaceToolsPlugin = definePlugin<WorkspaceToolsConfig, SealHarnessEvents>({
   name: "workspace-tools",
   requires: [toolServiceToken],
   setup(context, config) {

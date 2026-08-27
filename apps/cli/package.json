@@ -1,9 +1,9 @@
 {
-  "name": "@piharness/cli",
-  "version": "0.1.0",
-  "description": "Headless CLI for PiHarness",
+  "name": "@seal-harness/cli",
+  "version": "0.2.0",
+  "description": "Headless CLI for Seal Harness",
   "type": "module",
-  "bin": { "piharness-headless": "./dist/bin.js" },
+  "bin": { "seal-harness-headless": "./dist/bin.js" },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
@@ -17,27 +17,27 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@piharness/agent-core": "workspace:^",
-    "@piharness/attachment-local": "workspace:^",
-    "@piharness/approval-stdio": "workspace:^",
-    "@piharness/context-core": "workspace:^",
-    "@piharness/context-files": "workspace:^",
-    "@piharness/compaction-window": "workspace:^",
-    "@piharness/core": "workspace:^",
-    "@piharness/credentials-env": "workspace:^",
-    "@piharness/host": "workspace:^",
-    "@piharness/kernel": "workspace:^",
-    "@piharness/policy-basic": "workspace:^",
-    "@piharness/provider-pi-ai": "workspace:^",
-    "@piharness/runtime-pi": "workspace:^",
-    "@piharness/session-jsonl": "workspace:^",
-    "@piharness/telemetry-noop": "workspace:^",
-    "@piharness/tools-core": "workspace:^",
-    "@piharness/workspace-tools": "workspace:^"
+    "@seal-harness/agent-core": "workspace:^",
+    "@seal-harness/attachment-local": "workspace:^",
+    "@seal-harness/approval-stdio": "workspace:^",
+    "@seal-harness/context-core": "workspace:^",
+    "@seal-harness/context-files": "workspace:^",
+    "@seal-harness/compaction-window": "workspace:^",
+    "@seal-harness/core": "workspace:^",
+    "@seal-harness/credentials-env": "workspace:^",
+    "@seal-harness/host": "workspace:^",
+    "@seal-harness/kernel": "workspace:^",
+    "@seal-harness/policy-basic": "workspace:^",
+    "@seal-harness/provider-pi-ai": "workspace:^",
+    "@seal-harness/runtime-pi": "workspace:^",
+    "@seal-harness/session-jsonl": "workspace:^",
+    "@seal-harness/telemetry-noop": "workspace:^",
+    "@seal-harness/tools-core": "workspace:^",
+    "@seal-harness/workspace-tools": "workspace:^"
   },
   "devDependencies": {
-    "@piharness/model-scripted": "workspace:^",
-    "@piharness/session-memory": "workspace:^"
+    "@seal-harness/model-scripted": "workspace:^",
+    "@seal-harness/session-memory": "workspace:^"
   },
   "license": "MIT"
 }

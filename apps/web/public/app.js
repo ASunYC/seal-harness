@@ -12,11 +12,11 @@ async function api(path, options = {}) {
 }
 
 function initialize() {
-  $("cwd").value = localStorage.getItem("piharness.cwd") || "";
+  $("cwd").value = localStorage.getItem("seal-harness.cwd") || "";
   for (const name of providers) $("provider").append(new Option(name, name));
-  $("provider").value = localStorage.getItem("piharness.provider") || "deepseek";
-  $("provider").addEventListener("change", () => { updateModels(); localStorage.setItem("piharness.provider", $("provider").value); });
-  $("cwd").addEventListener("change", () => localStorage.setItem("piharness.cwd", $("cwd").value));
+  $("provider").value = localStorage.getItem("seal-harness.provider") || "deepseek";
+  $("provider").addEventListener("change", () => { updateModels(); localStorage.setItem("seal-harness.provider", $("provider").value); });
+  $("cwd").addEventListener("change", () => localStorage.setItem("seal-harness.cwd", $("cwd").value));
   $("composer").addEventListener("submit", submit);
   $("cancel").addEventListener("click", cancelRun);
   $("new-session").addEventListener("click", newSession);
@@ -209,7 +209,7 @@ function renderMessage(message) {
 function blocksText(content = []) { return content.filter((block) => block.type === "text").map((block) => block.text).join("\n"); }
 function appendBubble(role, value) {
   const item = document.createElement("article"); item.className = `message ${role}`;
-  const label = document.createElement("div"); label.className = "label"; label.textContent = role === "user" ? "You" : "PiHarness";
+  const label = document.createElement("div"); label.className = "label"; label.textContent = role === "user" ? "You" : "Seal Harness";
   const content = document.createElement("pre"); content.className = "content"; content.textContent = value;
   item.append(label, content); $("transcript").append(item); return item;
 }

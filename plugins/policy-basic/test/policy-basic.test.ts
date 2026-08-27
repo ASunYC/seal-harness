@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { join, resolve } from "node:path";
-import { sessionId, type ToolPolicyAction } from "@piharness/core";
+import { sessionId, type ToolPolicyAction } from "@seal-harness/core";
 import { BasicPolicyService } from "../src/index.js";
 
 const workspace = resolve("test-workspace");

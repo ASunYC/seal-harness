@@ -5,8 +5,8 @@ import {
   type AgentService,
   type ContentBlock,
   type RuntimeEvent,
-} from "@piharness/core";
-import type { Kernel } from "@piharness/kernel";
+} from "@seal-harness/core";
+import type { Kernel } from "@seal-harness/kernel";
 
 export interface HeadlessIo {
   readonly stdout: { write(value: string): unknown };

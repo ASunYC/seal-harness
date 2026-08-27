@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { ApprovalRequest, ApprovalService, JsonObject } from "@piharness/core";
+import type { ApprovalRequest, ApprovalService, JsonObject } from "@seal-harness/core";
 
 export interface PendingWebApproval {
   readonly id: string;

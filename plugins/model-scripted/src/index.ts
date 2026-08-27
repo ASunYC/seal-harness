@@ -4,9 +4,9 @@ import {
   type ModelRequest,
   type ModelService,
   type ModelStreamEvent,
-  type PiHarnessEvents,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+  type SealHarnessEvents,
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface ScriptedModelConfig {
   readonly models: readonly ModelInfo[];
@@ -29,7 +29,7 @@ export class ScriptedModelService implements ModelService {
   }
 }
 
-export const scriptedModelPlugin = definePlugin<ScriptedModelConfig, PiHarnessEvents>({
+export const scriptedModelPlugin = definePlugin<ScriptedModelConfig, SealHarnessEvents>({
   name: "model-scripted",
   provides: [modelServiceToken],
   setup(context, config) {

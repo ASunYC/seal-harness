@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
-import { sessionId, toolCallId, type ToolDefinition, type ToolService } from "@piharness/core";
+import { sessionId, toolCallId, type ToolDefinition, type ToolService } from "@seal-harness/core";
 import { registerMcpTools, type McpClientLike, type McpServerConfig } from "../src/index.js";
 
 describe("MCP client plugin", () => {

@@ -1,11 +1,11 @@
-import { agentCorePlugin } from "@piharness/agent-core";
-import { contextCorePlugin } from "@piharness/context-core";
-import { fileContextPlugin } from "@piharness/context-files";
-import { defineProfile } from "@piharness/host";
-import { plugin } from "@piharness/kernel";
-import { scriptedModelPlugin } from "@piharness/model-scripted";
-import { piRuntimePlugin } from "@piharness/runtime-pi";
-import { memorySessionPlugin } from "@piharness/session-memory";
+import { agentCorePlugin } from "@seal-harness/agent-core";
+import { contextCorePlugin } from "@seal-harness/context-core";
+import { fileContextPlugin } from "@seal-harness/context-files";
+import { defineProfile } from "@seal-harness/host";
+import { plugin } from "@seal-harness/kernel";
+import { scriptedModelPlugin } from "@seal-harness/model-scripted";
+import { piRuntimePlugin } from "@seal-harness/runtime-pi";
+import { memorySessionPlugin } from "@seal-harness/session-memory";
 
 export default defineProfile([
   plugin(scriptedModelPlugin, {
@@ -26,7 +26,7 @@ export default defineProfile([
     },
   }),
   plugin(memorySessionPlugin, {}),
-  plugin(contextCorePlugin, { systemPrompt: "You are an offline PiHarness demo." }),
+  plugin(contextCorePlugin, { systemPrompt: "You are an offline Seal Harness demo." }),
   plugin(fileContextPlugin, {}),
   plugin(piRuntimePlugin, {}),
   plugin(agentCorePlugin, {}),

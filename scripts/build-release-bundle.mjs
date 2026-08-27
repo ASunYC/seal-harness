@@ -4,10 +4,10 @@ import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const version = normalizeVersion(argument("--version") ?? process.env.RELEASE_VERSION ?? "0.1.0");
+const version = normalizeVersion(argument("--version") ?? process.env.RELEASE_VERSION ?? "0.2.0");
 const platform = releasePlatform(process.platform);
 const architecture = process.arch;
-const bundleName = `piharness-${version}-${platform}-${architecture}`;
+const bundleName = `seal-harness-${version}-${platform}-${architecture}`;
 const releaseRoot = join(repositoryRoot, ".artifacts", "release");
 const bundleRoot = join(releaseRoot, bundleName);
 const appRoot = join(bundleRoot, "app");
@@ -25,14 +25,14 @@ const packed = Object.fromEntries(packages.map(({ manifest }) => {
   if (!tarballs.has(filename)) throw new Error(`Missing release pack: ${filename}`);
   return [manifest.name, `file:${join(packRoot, filename)}`];
 }));
-if (packed["@piharness/launcher"] === undefined) throw new Error("Launcher pack is missing");
+if (packed["@seal-harness/launcher"] === undefined) throw new Error("Launcher pack is missing");
 
 await writeFile(join(appRoot, "package.json"), JSON.stringify({
-  name: "piharness-release-runtime",
+  name: "seal-harness-release-runtime",
   private: true,
   version,
   type: "module",
-  dependencies: { "@piharness/launcher": packed["@piharness/launcher"] },
+  dependencies: { "@seal-harness/launcher": packed["@seal-harness/launcher"] },
 }, null, 2));
 await writeFile(join(appRoot, "pnpm-workspace.yaml"), [
   "packages:",
@@ -54,33 +54,33 @@ const runtimePath = join(runtimeRoot, runtimeName);
 await copyFile(process.execPath, runtimePath);
 if (process.platform !== "win32") await chmod(runtimePath, 0o755);
 
-const launcherRelative = join("app", "node_modules", "@piharness", "launcher", "dist", "bin.js");
+const launcherRelative = join("app", "node_modules", "@seal-harness", "launcher", "dist", "bin.js");
 if (process.platform === "win32") {
-  await writeFile(join(bundleRoot, "piharness.cmd"), [
+  await writeFile(join(bundleRoot, "seal-harness.cmd"), [
     "@echo off",
     `\"%~dp0runtime\\node.exe\" \"%~dp0${launcherRelative.replaceAll("/", "\\")}\" %*`,
     "",
   ].join("\r\n"));
-  await writeFile(join(bundleRoot, "Start PiHarness.cmd"), [
+  await writeFile(join(bundleRoot, "Start Seal Harness.cmd"), [
     "@echo off",
     "setlocal",
     "cd /d \"%~dp0\"",
-    "title PiHarness",
-    "echo Starting PiHarness Web UI...",
+    "title Seal Harness",
+    "echo Starting Seal Harness Web UI...",
     "echo Close this window or press Ctrl+C to stop.",
     "echo.",
-    "if defined PIHARNESS_START_ARGS (",
-    "  call \"%~dp0piharness.cmd\" %PIHARNESS_START_ARGS%",
+    "if defined SEAL_HARNESS_START_ARGS (",
+    "  call \"%~dp0seal-harness.cmd\" %SEAL_HARNESS_START_ARGS%",
     ") else (",
-    "  call \"%~dp0piharness.cmd\" web",
+    "  call \"%~dp0seal-harness.cmd\" web",
     ")",
-    "set \"PIHARNESS_EXIT_CODE=%ERRORLEVEL%\"",
-    "if not \"%PIHARNESS_EXIT_CODE%\"==\"0\" (",
+    "set \"SEAL_HARNESS_EXIT_CODE=%ERRORLEVEL%\"",
+    "if not \"%SEAL_HARNESS_EXIT_CODE%\"==\"0\" (",
     "  echo.",
-    "  echo PiHarness exited with code %PIHARNESS_EXIT_CODE%.",
-    "  if not defined PIHARNESS_START_ARGS pause",
+    "  echo Seal Harness exited with code %SEAL_HARNESS_EXIT_CODE%.",
+    "  if not defined SEAL_HARNESS_START_ARGS pause",
     ")",
-    "exit /b %PIHARNESS_EXIT_CODE%",
+    "exit /b %SEAL_HARNESS_EXIT_CODE%",
     "",
   ].join("\r\n"));
 } else {
@@ -91,7 +91,7 @@ if (process.platform === "win32") {
     `exec \"$SCRIPT_DIR/runtime/node\" \"$SCRIPT_DIR/${launcherRelative}\" \"$@\"`,
     "",
   ].join("\n");
-  const launcherPath = join(bundleRoot, "piharness");
+  const launcherPath = join(bundleRoot, "seal-harness");
   await writeFile(launcherPath, script);
   await chmod(launcherPath, 0o755);
 }
@@ -150,7 +150,7 @@ async function writeNodeLicense(path) {
 
 async function smokeBundle(root, runtime, launcher) {
   const help = await run(runtime, [launcher, "help"], root, true);
-  if (!help.stdout.includes("piharness web")) throw new Error(`Release launcher failed:\n${help.stdout}`);
+  if (!help.stdout.includes("seal-harness web")) throw new Error(`Release launcher failed:\n${help.stdout}`);
 
   const child = spawn(runtime, [launcher, "web", "--port", "0", "--no-open"], {
     cwd: root,
@@ -167,7 +167,7 @@ async function smokeBundle(root, runtime, launcher) {
   const url = await new Promise((resolvePromise, reject) => {
     const timeout = setTimeout(() => reject(new Error(`Release Web UI did not start:\n${stderr}`)), 20_000);
     const inspect = () => {
-      const match = /PiHarness Web UI: (http:\/\/[^\s]+)/.exec(stdout);
+      const match = /Seal Harness Web UI: (http:\/\/[^\s]+)/.exec(stdout);
       if (match?.[1] === undefined) return;
       clearTimeout(timeout);
       resolvePromise(match[1]);
@@ -181,7 +181,7 @@ async function smokeBundle(root, runtime, launcher) {
   });
   try {
     const response = await fetch(url);
-    if (!response.ok || !(await response.text()).includes("PiHarness")) {
+    if (!response.ok || !(await response.text()).includes("Seal Harness")) {
       throw new Error(`Release Web UI smoke failed: ${response.status}`);
     }
   } finally {
@@ -195,14 +195,14 @@ async function smokeBundle(root, runtime, launcher) {
 }
 
 function quickstart(platform, releaseVersion) {
-  const command = platform === "windows" ? "piharness.cmd web" : "./piharness web";
+  const command = platform === "windows" ? "seal-harness.cmd web" : "./seal-harness web";
   return [
-    `PiHarness ${releaseVersion}`,
+    `Seal Harness ${releaseVersion}`,
     "",
     ...(platform === "windows"
       ? [
-          "1. Double-click Start PiHarness.cmd.",
-          "2. Keep the console window open while using PiHarness; close it to stop.",
+          "1. Double-click Start Seal Harness.cmd.",
+          "2. Keep the console window open while using Seal Harness; close it to stop.",
           `3. Terminal alternative: ${command}`,
           "4. Open http://127.0.0.1:3080 if the browser does not open automatically.",
           "5. Expand Connection, choose a workspace and model, then set the API key.",
@@ -216,8 +216,8 @@ function quickstart(platform, releaseVersion) {
     "",
     "Headless example:",
     platform === "windows"
-      ? "  piharness.cmd run --provider deepseek \"Inspect this repository\""
-      : "  ./piharness run --provider deepseek \"Inspect this repository\"",
+      ? "  seal-harness.cmd run --provider deepseek \"Inspect this repository\""
+      : "  ./seal-harness run --provider deepseek \"Inspect this repository\"",
     "",
     "Security: the Web UI listens on 127.0.0.1 by default. Do not expose it publicly.",
     "Documentation: README.md",

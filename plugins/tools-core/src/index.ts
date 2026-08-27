@@ -10,14 +10,14 @@ import {
   type ApprovalService,
   type ContentBlock,
   type ModelToolDefinition,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type PolicyService,
   type ToolDefinition,
   type ToolExecutionRequest,
   type ToolResult,
   type ToolService,
-} from "@piharness/core";
-import { definePlugin, type PluginContext } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin, type PluginContext } from "@seal-harness/kernel";
 import { Type } from "typebox";
 import { Check } from "typebox/value";
 
@@ -31,7 +31,7 @@ export class PolicyToolService implements ToolService {
   constructor(
     readonly policy: PolicyService,
     readonly approval: ApprovalService | undefined,
-    readonly emit: PluginContext<PiHarnessEvents>["emit"],
+    readonly emit: PluginContext<SealHarnessEvents>["emit"],
     readonly maxResultBytes = 256 * 1024,
   ) {}
 
@@ -106,7 +106,7 @@ export class PolicyToolService implements ToolService {
   }
 }
 
-export const toolsCorePlugin = definePlugin<ToolsCoreConfig, PiHarnessEvents>({
+export const toolsCorePlugin = definePlugin<ToolsCoreConfig, SealHarnessEvents>({
   name: "tools-core",
   provides: [toolServiceToken],
   requires: [policyServiceToken],

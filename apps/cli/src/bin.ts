@@ -9,6 +9,6 @@ try {
     io: { stdout: process.stdout, stderr: process.stderr },
   });
 } catch (error) {
-  process.stderr.write(`piharness: ${error instanceof Error ? error.message : String(error)}\n`);
+  process.stderr.write(`seal-harness: ${error instanceof Error ? error.message : String(error)}\n`);
   process.exitCode = 1;
 }

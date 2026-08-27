@@ -20,187 +20,187 @@ importers:
 
   apps/cli:
     dependencies:
-      '@piharness/agent-core':
+      '@seal-harness/agent-core':
         specifier: workspace:^
         version: link:../../plugins/agent-core
-      '@piharness/approval-stdio':
+      '@seal-harness/approval-stdio':
         specifier: workspace:^
         version: link:../../plugins/approval-stdio
-      '@piharness/attachment-local':
+      '@seal-harness/attachment-local':
         specifier: workspace:^
         version: link:../../plugins/attachment-local
-      '@piharness/compaction-window':
+      '@seal-harness/compaction-window':
         specifier: workspace:^
         version: link:../../plugins/compaction-window
-      '@piharness/context-core':
+      '@seal-harness/context-core':
         specifier: workspace:^
         version: link:../../plugins/context-core
-      '@piharness/context-files':
+      '@seal-harness/context-files':
         specifier: workspace:^
         version: link:../../plugins/context-files
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/credentials-env':
+      '@seal-harness/credentials-env':
         specifier: workspace:^
         version: link:../../plugins/credentials-env
-      '@piharness/host':
+      '@seal-harness/host':
         specifier: workspace:^
         version: link:../../packages/host
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
-      '@piharness/policy-basic':
+      '@seal-harness/policy-basic':
         specifier: workspace:^
         version: link:../../plugins/policy-basic
-      '@piharness/provider-pi-ai':
+      '@seal-harness/provider-pi-ai':
         specifier: workspace:^
         version: link:../../plugins/provider-pi-ai
-      '@piharness/runtime-pi':
+      '@seal-harness/runtime-pi':
         specifier: workspace:^
         version: link:../../plugins/runtime-pi
-      '@piharness/session-jsonl':
+      '@seal-harness/session-jsonl':
         specifier: workspace:^
         version: link:../../plugins/session-jsonl
-      '@piharness/telemetry-noop':
+      '@seal-harness/telemetry-noop':
         specifier: workspace:^
         version: link:../../plugins/telemetry-noop
-      '@piharness/tools-core':
+      '@seal-harness/tools-core':
         specifier: workspace:^
         version: link:../../plugins/tools-core
-      '@piharness/workspace-tools':
+      '@seal-harness/workspace-tools':
         specifier: workspace:^
         version: link:../../plugins/workspace-tools
     devDependencies:
-      '@piharness/model-scripted':
+      '@seal-harness/model-scripted':
         specifier: workspace:^
         version: link:../../plugins/model-scripted
-      '@piharness/session-memory':
+      '@seal-harness/session-memory':
         specifier: workspace:^
         version: link:../../plugins/session-memory
 
   apps/launcher:
     dependencies:
-      '@piharness/cli':
+      '@seal-harness/cli':
         specifier: workspace:^
         version: link:../cli
-      '@piharness/web':
+      '@seal-harness/web':
         specifier: workspace:^
         version: link:../web
 
   apps/rpc:
     dependencies:
-      '@piharness/cli':
+      '@seal-harness/cli':
         specifier: workspace:^
         version: link:../cli
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/host':
+      '@seal-harness/host':
         specifier: workspace:^
         version: link:../../packages/host
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
-      '@piharness/provider-pi-ai':
+      '@seal-harness/provider-pi-ai':
         specifier: workspace:^
         version: link:../../plugins/provider-pi-ai
     devDependencies:
-      '@piharness/agent-core':
+      '@seal-harness/agent-core':
         specifier: workspace:^
         version: link:../../plugins/agent-core
-      '@piharness/context-core':
+      '@seal-harness/context-core':
         specifier: workspace:^
         version: link:../../plugins/context-core
-      '@piharness/model-scripted':
+      '@seal-harness/model-scripted':
         specifier: workspace:^
         version: link:../../plugins/model-scripted
-      '@piharness/runtime-pi':
+      '@seal-harness/runtime-pi':
         specifier: workspace:^
         version: link:../../plugins/runtime-pi
-      '@piharness/session-memory':
+      '@seal-harness/session-memory':
         specifier: workspace:^
         version: link:../../plugins/session-memory
 
   apps/web:
     dependencies:
-      '@piharness/cli':
+      '@seal-harness/cli':
         specifier: workspace:^
         version: link:../cli
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/host':
+      '@seal-harness/host':
         specifier: workspace:^
         version: link:../../packages/host
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
-      '@piharness/provider-pi-ai':
+      '@seal-harness/provider-pi-ai':
         specifier: workspace:^
         version: link:../../plugins/provider-pi-ai
     devDependencies:
-      '@piharness/agent-core':
+      '@seal-harness/agent-core':
         specifier: workspace:^
         version: link:../../plugins/agent-core
-      '@piharness/context-core':
+      '@seal-harness/context-core':
         specifier: workspace:^
         version: link:../../plugins/context-core
-      '@piharness/model-scripted':
+      '@seal-harness/model-scripted':
         specifier: workspace:^
         version: link:../../plugins/model-scripted
-      '@piharness/policy-basic':
+      '@seal-harness/policy-basic':
         specifier: workspace:^
         version: link:../../plugins/policy-basic
-      '@piharness/runtime-pi':
+      '@seal-harness/runtime-pi':
         specifier: workspace:^
         version: link:../../plugins/runtime-pi
-      '@piharness/session-memory':
+      '@seal-harness/session-memory':
         specifier: workspace:^
         version: link:../../plugins/session-memory
-      '@piharness/tools-core':
+      '@seal-harness/tools-core':
         specifier: workspace:^
         version: link:../../plugins/tools-core
-      '@piharness/workspace-tools':
+      '@seal-harness/workspace-tools':
         specifier: workspace:^
         version: link:../../plugins/workspace-tools
 
   examples/scripted-agent:
     dependencies:
-      '@piharness/agent-core':
+      '@seal-harness/agent-core':
         specifier: workspace:^
         version: link:../../plugins/agent-core
-      '@piharness/context-core':
+      '@seal-harness/context-core':
         specifier: workspace:^
         version: link:../../plugins/context-core
-      '@piharness/context-files':
+      '@seal-harness/context-files':
         specifier: workspace:^
         version: link:../../plugins/context-files
-      '@piharness/host':
+      '@seal-harness/host':
         specifier: workspace:^
         version: link:../../packages/host
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
-      '@piharness/model-scripted':
+      '@seal-harness/model-scripted':
         specifier: workspace:^
         version: link:../../plugins/model-scripted
-      '@piharness/runtime-pi':
+      '@seal-harness/runtime-pi':
         specifier: workspace:^
         version: link:../../plugins/runtime-pi
-      '@piharness/session-memory':
+      '@seal-harness/session-memory':
         specifier: workspace:^
         version: link:../../plugins/session-memory
 
   packages/core:
     dependencies:
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../kernel
 
   packages/host:
     dependencies:
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../kernel
 
@@ -208,68 +208,68 @@ importers:
 
   plugins/agent-core:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
     devDependencies:
-      '@piharness/session-memory':
+      '@seal-harness/session-memory':
         specifier: workspace:^
         version: link:../session-memory
 
   plugins/approval-stdio:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
   plugins/attachment-local:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
   plugins/compaction-window:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
   plugins/context-core:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
   plugins/context-files:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
   plugins/credentials-env:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
@@ -278,10 +278,10 @@ importers:
       '@modelcontextprotocol/client':
         specifier: 2.0.0
         version: 2.0.0
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
     devDependencies:
@@ -294,19 +294,19 @@ importers:
 
   plugins/model-scripted:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
   plugins/policy-basic:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
@@ -315,13 +315,13 @@ importers:
       '@earendil-works/pi-ai':
         specifier: 0.84.3
         version: 0.84.3(ws@8.21.3)(zod@4.4.3)
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
-      '@piharness/runtime-pi':
+      '@seal-harness/runtime-pi':
         specifier: workspace:^
         version: link:../runtime-pi
       typebox:
@@ -336,10 +336,10 @@ importers:
       '@earendil-works/pi-ai':
         specifier: 0.84.3
         version: 0.84.3(ws@8.21.3)(zod@4.4.3)
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
       typebox:
@@ -348,77 +348,77 @@ importers:
 
   plugins/runtime-scripted:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
     devDependencies:
-      '@piharness/agent-core':
+      '@seal-harness/agent-core':
         specifier: workspace:^
         version: link:../agent-core
-      '@piharness/context-core':
+      '@seal-harness/context-core':
         specifier: workspace:^
         version: link:../context-core
-      '@piharness/host':
+      '@seal-harness/host':
         specifier: workspace:^
         version: link:../../packages/host
-      '@piharness/session-memory':
+      '@seal-harness/session-memory':
         specifier: workspace:^
         version: link:../session-memory
 
   plugins/session-jsonl:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
   plugins/session-memory:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
   plugins/session-sqlite:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
   plugins/skills-filesystem:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
   plugins/telemetry-noop:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 
   plugins/tools-core:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
       typebox:
@@ -427,10 +427,10 @@ importers:
 
   plugins/workspace-tools:
     dependencies:
-      '@piharness/core':
+      '@seal-harness/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@piharness/kernel':
+      '@seal-harness/kernel':
         specifier: workspace:^
         version: link:../../packages/kernel
 

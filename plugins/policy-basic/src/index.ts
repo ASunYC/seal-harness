@@ -1,14 +1,14 @@
 import { isAbsolute, relative, resolve } from "node:path";
 import {
   policyServiceToken,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type PolicyContext,
   type PolicyDecision,
   type PolicyService,
   type ToolPolicyAction,
   type ToolRisk,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export type PermissionMode = "read-only" | "workspace-write" | "danger-full-access";
 
@@ -60,7 +60,7 @@ export class BasicPolicyService implements PolicyService {
   }
 }
 
-export const basicPolicyPlugin = definePlugin<BasicPolicyConfig, PiHarnessEvents>({
+export const basicPolicyPlugin = definePlugin<BasicPolicyConfig, SealHarnessEvents>({
   name: "policy-basic",
   provides: [policyServiceToken],
   setup(context, config) {

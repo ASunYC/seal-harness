@@ -2,9 +2,9 @@ import {
   credentialServiceToken,
   type CredentialRequest,
   type CredentialService,
-  type PiHarnessEvents,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+  type SealHarnessEvents,
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface EnvironmentCredentialConfig {
   /** Keys use `provider.name`, for example `deepseek.apiKey`. */
@@ -24,7 +24,7 @@ export class EnvironmentCredentialService implements CredentialService {
   }
 }
 
-export const environmentCredentialPlugin = definePlugin<EnvironmentCredentialConfig, PiHarnessEvents>({
+export const environmentCredentialPlugin = definePlugin<EnvironmentCredentialConfig, SealHarnessEvents>({
   name: "credentials-env",
   provides: [credentialServiceToken],
   setup(context, config) {

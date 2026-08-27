@@ -1,9 +1,9 @@
 {
-  "name": "@piharness/rpc",
-  "version": "0.1.0",
-  "description": "JSONL RPC entry point for PiHarness",
+  "name": "@seal-harness/rpc",
+  "version": "0.2.0",
+  "description": "JSONL RPC entry point for Seal Harness",
   "type": "module",
-  "bin": { "piharness-rpc": "./dist/bin.js" },
+  "bin": { "seal-harness-rpc": "./dist/bin.js" },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
@@ -17,18 +17,18 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@piharness/cli": "workspace:^",
-    "@piharness/core": "workspace:^",
-    "@piharness/host": "workspace:^",
-    "@piharness/kernel": "workspace:^",
-    "@piharness/provider-pi-ai": "workspace:^"
+    "@seal-harness/cli": "workspace:^",
+    "@seal-harness/core": "workspace:^",
+    "@seal-harness/host": "workspace:^",
+    "@seal-harness/kernel": "workspace:^",
+    "@seal-harness/provider-pi-ai": "workspace:^"
   },
   "devDependencies": {
-    "@piharness/agent-core": "workspace:^",
-    "@piharness/context-core": "workspace:^",
-    "@piharness/model-scripted": "workspace:^",
-    "@piharness/runtime-pi": "workspace:^",
-    "@piharness/session-memory": "workspace:^"
+    "@seal-harness/agent-core": "workspace:^",
+    "@seal-harness/context-core": "workspace:^",
+    "@seal-harness/model-scripted": "workspace:^",
+    "@seal-harness/runtime-pi": "workspace:^",
+    "@seal-harness/session-memory": "workspace:^"
   },
   "license": "MIT"
 }

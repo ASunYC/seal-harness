@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import type { PiAiBuiltinProvider } from "@piharness/provider-pi-ai";
+import type { PiAiBuiltinProvider } from "@seal-harness/provider-pi-ai";
 import { startWebServer } from "./server.js";
 
 export interface WebCliEnvironment {
@@ -23,7 +23,7 @@ export async function runWebCli(argv: readonly string[], environment: WebCliEnvi
     ...(args.port === undefined ? {} : { port: args.port }),
     ...(args.provider === undefined ? {} : { provider: args.provider }),
   });
-  environment.stdout.write(`PiHarness Web UI: ${running.url}\n`);
+  environment.stdout.write(`Seal Harness Web UI: ${running.url}\n`);
   if (!args.noOpen) openBrowser(running.url, environment.stderr);
   await waitForShutdown();
   await running.close();
@@ -103,4 +103,4 @@ function openBrowser(url: string, stderr: WebCliEnvironment["stderr"]): void {
   child.unref();
 }
 
-const HELP = `PiHarness Web UI\n\nUsage:\n  piharness web [options]\n\nOptions:\n  --cwd <path>       Initial workspace (default: current directory)\n  --host <address>   Listen address (default: 127.0.0.1)\n  --port <number>    Listen port (default: 3080; 0 selects a free port)\n  --provider <name>  Initially selected provider (default: deepseek)\n  --no-open          Do not open the default browser\n  --allow-remote     Permit a non-loopback host (no user authentication)\n  -h, --help         Show help\n`;
+const HELP = `Seal Harness Web UI\n\nUsage:\n  seal-harness web [options]\n\nOptions:\n  --cwd <path>       Initial workspace (default: current directory)\n  --host <address>   Listen address (default: 127.0.0.1)\n  --port <number>    Listen port (default: 3080; 0 selects a free port)\n  --provider <name>  Initially selected provider (default: deepseek)\n  --no-open          Do not open the default browser\n  --allow-remote     Permit a non-loopback host (no user authentication)\n  -h, --help         Show help\n`;

@@ -2,12 +2,12 @@ import {
   modelServiceToken,
   runtimeToken,
   toolServiceToken,
-  type PiHarnessEvents,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+  type SealHarnessEvents,
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 import { PiAgentRuntime, type PiRuntimeOptions } from "./runtime.js";
 
-export const piRuntimePlugin = definePlugin<PiRuntimeOptions, PiHarnessEvents>({
+export const piRuntimePlugin = definePlugin<PiRuntimeOptions, SealHarnessEvents>({
   name: "runtime-pi",
   provides: [runtimeToken],
   requires: [modelServiceToken],
