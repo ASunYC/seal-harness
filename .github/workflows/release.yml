@@ -6,7 +6,7 @@ on:
       version:
         description: Candidate version without v prefix
         required: true
-        default: 0.2.0-candidate
+        default: 0.2.1-candidate
   push:
     tags:
       - "v*"

@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Headless CLI for Seal Harness",
   "type": "module",
   "bin": { "seal-harness-headless": "./dist/bin.js" },

@@ -81,7 +81,7 @@ function newSession() {
   state.sessionId = null;
   $("session-title").textContent = "New session";
   const welcome = document.createElement("div"); welcome.className = "welcome"; welcome.id = "welcome";
-  const mark = document.createElement("div"); mark.className = "hero-mark"; mark.textContent = "π";
+  const mark = document.createElement("img"); mark.className = "hero-mark"; mark.src = "/assets/seal-harness-mascot.png"; mark.alt = "Seal mascot";
   const title = document.createElement("h1"); title.textContent = "What should we work on?";
   const description = document.createElement("p"); description.textContent = "Choose a workspace, configure a model, and give the agent a task.";
   welcome.append(mark, title, description);

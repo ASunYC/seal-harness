@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/core",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Provider-neutral Agent capability contracts for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
