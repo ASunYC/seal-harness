@@ -268,7 +268,13 @@ async function smokeWeb(bin, cwd) {
       fetch(url),
       fetch(`${url}/api/health`),
     ]);
-    if (!index.ok || !(await index.text()).includes("Seal Harness")) {
+    const indexText = await index.text();
+    if (
+      !index.ok
+      || !indexText.includes("Seal Harness")
+      || !indexText.includes('data-pane="conversation"')
+      || !indexText.includes("/client-runtime.js")
+    ) {
       throw new Error(`Packed Web UI index smoke failed: ${index.status}`);
     }
     if (!health.ok || (await health.json()).status !== "ok") {

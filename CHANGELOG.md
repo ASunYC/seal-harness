@@ -9,6 +9,9 @@ the project uses Semantic Versioning for published packages.
 
 ### Changed
 
+- Added a DSH-compatible Web DOM surface so client themes can mount their character stage,
+  sidebar chrome, conversation state and composer decorations instead of merely changing colors.
+
 - Renamed the project, npm scope, CLI, environment variables, data directories, configuration
   files, Web UI, documentation, and release assets from Seal Harness's former name to
   `seal-harness` / `@seal-harness/*`.

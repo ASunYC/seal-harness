@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/policy-basic",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Basic local permission policy plugin for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",

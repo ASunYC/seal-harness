@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/context-files",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Filesystem instruction context plugin for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",

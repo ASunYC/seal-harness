@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/web",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Local Web UI and HTTP streaming host for Seal Harness",
   "type": "module",
   "bin": { "seal-harness-web": "./dist/bin.js" },
