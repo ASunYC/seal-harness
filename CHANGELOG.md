@@ -16,6 +16,10 @@ the project uses Semantic Versioning for published packages.
 
 ### Added
 
+- Optional `@seal-harness/dsh-compat` host backed by real Cordis 4.0.1, including DSH
+  `apply`/`inject`/`Config` lifecycle support and Policy-routed DSH tool bridging.
+- Packed-install coverage and compatibility documentation for DSH plugins.
+
 - Rounded seal mascot artwork used by the Web UI, favicon, README, and self-contained releases.
 
 - Zero-runtime-dependency plugin microkernel and native ESM Profiles.
