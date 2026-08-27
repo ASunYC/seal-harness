@@ -3,12 +3,12 @@ import {
   type AgentMessage,
   type AgentRun,
   type AgentRuntime,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type RuntimeEvent,
   type RuntimeResult,
   type RuntimeStartRequest,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface ScriptedRuntimeOutput {
   readonly events: readonly RuntimeEvent[];
@@ -116,7 +116,7 @@ class ScriptedRun implements AgentRun {
   }
 }
 
-export const scriptedRuntimePlugin = definePlugin<ScriptedRuntimeConfig, PiHarnessEvents>({
+export const scriptedRuntimePlugin = definePlugin<ScriptedRuntimeConfig, SealHarnessEvents>({
   name: "runtime-scripted",
   provides: [runtimeToken],
   setup(context, config) {

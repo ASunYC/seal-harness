@@ -12,12 +12,12 @@ import {
   type JsonObject,
   type JsonSchema,
   type JsonValue,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type ToolDefinition,
   type ToolRisk,
   type ToolService,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export type McpTransportConfig =
   | {
@@ -54,7 +54,7 @@ export interface McpClientLike {
   close(): Promise<void>;
 }
 
-export const mcpClientPlugin = definePlugin<McpClientConfig, PiHarnessEvents>({
+export const mcpClientPlugin = definePlugin<McpClientConfig, SealHarnessEvents>({
   name: "mcp-client",
   requires: [toolServiceToken],
   async setup(context, config) {
@@ -114,7 +114,7 @@ export async function registerMcpTools(
 }
 
 async function connectServer(config: McpServerConfig): Promise<McpClientLike> {
-  const client = new Client({ name: "piharness", version: "0.1.0" });
+  const client = new Client({ name: "seal-harness", version: "0.1.0" });
   if (config.transport.type === "stdio") {
     await client.connect(new StdioClientTransport({
       command: config.transport.command,

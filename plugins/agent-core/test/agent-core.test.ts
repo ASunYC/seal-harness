@@ -16,8 +16,8 @@ import {
   type RuntimeEvent,
   type RuntimeResult,
   type SessionStore,
-} from "@piharness/core";
-import { MemorySessionStore } from "@piharness/session-memory";
+} from "@seal-harness/core";
+import { MemorySessionStore } from "@seal-harness/session-memory";
 import { DefaultAgentService } from "../src/index.js";
 
 describe("DefaultAgentService", () => {

@@ -2,7 +2,7 @@ import { PassThrough } from "node:stream";
 import { describe, expect, it } from "vitest";
 import { runLauncher } from "../src/launcher.js";
 
-describe("PiHarness launcher", () => {
+describe("Seal Harness launcher", () => {
   it("shows product modes without starting a profile", async () => {
     let stdout = "";
     const code = await runLauncher(["help"], {
@@ -13,8 +13,8 @@ describe("PiHarness launcher", () => {
       web: { cwd: process.cwd(), stdout: { write(value) { stdout += value; } }, stderr: { write() {} } },
     });
     expect(code).toBe(0);
-    expect(stdout).toContain("piharness web");
-    expect(stdout).toContain("piharness run");
+    expect(stdout).toContain("seal-harness web");
+    expect(stdout).toContain("seal-harness run");
   });
 
   it("accepts the pnpm argument separator", async () => {
@@ -27,6 +27,6 @@ describe("PiHarness launcher", () => {
       web: { cwd: process.cwd(), stdout: { write(value) { stdout += value; } }, stderr: { write() {} } },
     });
     expect(code).toBe(0);
-    expect(stdout).toContain("piharness web");
+    expect(stdout).toContain("seal-harness web");
   });
 });

@@ -5,14 +5,14 @@ import type {
   ModelService,
   ModelStreamEvent,
   ToolService,
-} from "@piharness/core";
+} from "@seal-harness/core";
 import {
   runId,
   sessionId,
   text,
   toolCallId,
   userMessage,
-} from "@piharness/core";
+} from "@seal-harness/core";
 import { PiAgentRuntime } from "../src/index.js";
 
 const MODEL: ModelInfo = {

@@ -4,11 +4,11 @@ import {
   type ContextRequest,
   type ContextService,
   type ContextSource,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type PreparedContext,
   type UserMessage,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface ContextCoreConfig {
   readonly systemPrompt?: string;
@@ -18,7 +18,7 @@ export class ContextRegistry implements ContextService {
   readonly #sources = new Map<string, ContextSource>();
 
   constructor(
-    readonly baseSystemPrompt = "You are PiHarness, a concise and careful coding agent.",
+    readonly baseSystemPrompt = "You are Seal Harness, a concise and careful coding agent.",
   ) {}
 
   register(source: ContextSource): () => void {
@@ -72,7 +72,7 @@ export class ContextRegistry implements ContextService {
   }
 }
 
-export const contextCorePlugin = definePlugin<ContextCoreConfig, PiHarnessEvents>({
+export const contextCorePlugin = definePlugin<ContextCoreConfig, SealHarnessEvents>({
   name: "context-core",
   provides: [contextServiceToken],
   setup(context, config) {

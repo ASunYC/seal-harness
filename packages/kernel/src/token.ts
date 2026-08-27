@@ -1,4 +1,4 @@
-const serviceType = Symbol("piharness.serviceType");
+const serviceType = Symbol("seal-harness.serviceType");
 
 export interface ServiceToken<T> {
   readonly id: symbol;

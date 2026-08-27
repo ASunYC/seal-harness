@@ -5,9 +5,9 @@ import {
   type ContextRequest,
   type ContextContribution,
   type ContextSource,
-  type PiHarnessEvents,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+  type SealHarnessEvents,
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface FileContextConfig {
   readonly systemPrompt?: string;
@@ -37,7 +37,7 @@ export class FileContextSource implements ContextSource {
   }
 }
 
-export const fileContextPlugin = definePlugin<FileContextConfig, PiHarnessEvents>({
+export const fileContextPlugin = definePlugin<FileContextConfig, SealHarnessEvents>({
   name: "context-files",
   requires: [contextServiceToken],
   setup(context, config) {

@@ -4,7 +4,7 @@ import type { StoredSessionEvent } from "./session.js";
 import type { ToolPolicyAction, ToolResult } from "./tool.js";
 import type { PolicyDecision } from "./policy.js";
 
-export interface PiHarnessEvents {
+export interface SealHarnessEvents {
   "runtime.event": {
     readonly sessionId: SessionId;
     readonly event: RuntimeEvent;

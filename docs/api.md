@@ -1,6 +1,6 @@
 # 公共 API 概览
 
-## `@piharness/kernel`
+## `@seal-harness/kernel`
 
 - `createServiceToken<T>(name)`：创建类型化服务标识。
 - `definePlugin(definition)`：定义静态插件边界。
@@ -8,7 +8,7 @@
 - `Kernel.start()` / `stop()`：启动和逆序卸载。
 - `PluginContext`：`use`、`provide`、`on`、`emit`、`effect`、`signal`。
 
-## `@piharness/core`
+## `@seal-harness/core`
 
 标准服务令牌：
 
@@ -27,25 +27,25 @@
 | `credentialServiceToken` | `CredentialService` |
 | `telemetryServiceToken` | `TelemetryService` |
 
-事件类型通过 `PiHarnessEvents` 统一，Session 使用 `SessionEventMap` 判别联合。公共
+事件类型通过 `SealHarnessEvents` 统一，Session 使用 `SessionEventMap` 判别联合。公共
 消息和模型接口不暴露 Pi 专有类型。
 
-## `@piharness/host`
+## `@seal-harness/host`
 
 - `defineProfile(specs)`：冻结 Profile。
 - `loadProfile({ cwd, configPath })`：发现并验证原生 ESM Profile。
 - `startProfile(profile)`：创建并启动 Kernel。
 
-## `@piharness/web`
+## `@seal-harness/web`
 
 - `startWebServer(options)`：启动本地 HTTP Host、静态 WebUI 和 Agent 流式 API；
 - `WebApprovalService`：公开待审批请求并由浏览器决定 allow/deny；
-- `runWebCli(argv, environment)`：`piharness web` 的可嵌入入口。
+- `runWebCli(argv, environment)`：`seal-harness web` 的可嵌入入口。
 
 HTTP API 包含模型、Session、运行流、中止、审批和进程内 Credential 端点。运行响应
 使用 `application/x-ndjson` 持续发送 RuntimeEvent。
 
-## `@piharness/launcher`
+## `@seal-harness/launcher`
 
 - `runLauncher(argv, environment)`：分派 `run`、`headless` 和 `web` 产品模式。
 

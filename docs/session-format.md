@@ -59,5 +59,5 @@ UI 使用 `AsyncIterable`，不承担持久化职责；即使没有 UI 消费事
 - `tool.started` 没有 `tool.completed`：写入失败 ToolResult，明确说明未自动重放；
 - 已提交 `tool.completed`：其 ToolResult 在同一事务中，不会出现一半状态。
 
-PiHarness 不声称外部副作用“恰好一次”。安全保证是恢复时不会静默重放可能已执行的
+Seal Harness 不声称外部副作用“恰好一次”。安全保证是恢复时不会静默重放可能已执行的
 工具。

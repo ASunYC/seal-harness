@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const artifactRoot = join(repositoryRoot, ".artifacts", "packs");
-const installRoot = await mkdtemp(join(tmpdir(), "piharness-pack-smoke-"));
+const installRoot = await mkdtemp(join(tmpdir(), "seal-harness-pack-smoke-"));
 const pnpmEntrypoint = process.env.npm_execpath;
 if (pnpmEntrypoint === undefined) {
   throw new Error("pack:smoke must be launched through pnpm");
@@ -31,7 +31,7 @@ try {
   for (const tarball of tarballs) {
     const listing = (await run("tar", ["-tf", join(artifactRoot, tarball)], repositoryRoot, true)).stdout;
     const forbidden = listing.split(/\r?\n/).filter((entry) =>
-      /(^|\/)(src|test|tests|coverage|sessions|\.piharness)(\/|$)/.test(entry)
+      /(^|\/)(src|test|tests|coverage|sessions|\.seal-harness)(\/|$)/.test(entry)
       || /(^|\/)\.env(?:\.|$)/.test(entry),
     );
     if (forbidden.length > 0) {
@@ -44,7 +44,7 @@ try {
     return [entry.manifest.name, `file:${join(artifactRoot, expected)}`];
   }));
   await writeFile(join(installRoot, "package.json"), JSON.stringify({
-    name: "piharness-packed-smoke",
+    name: "seal-harness-packed-smoke",
     private: true,
     type: "module",
     dependencies,
@@ -59,14 +59,14 @@ try {
       "",
     ].join("\n"),
   );
-  await writeFile(join(installRoot, "piharness.config.mjs"), `
-import { agentCorePlugin } from "@piharness/agent-core";
-import { contextCorePlugin } from "@piharness/context-core";
-import { defineProfile } from "@piharness/host";
-import { plugin } from "@piharness/kernel";
-import { scriptedModelPlugin } from "@piharness/model-scripted";
-import { piRuntimePlugin } from "@piharness/runtime-pi";
-import { memorySessionPlugin } from "@piharness/session-memory";
+  await writeFile(join(installRoot, "seal-harness.config.mjs"), `
+import { agentCorePlugin } from "@seal-harness/agent-core";
+import { contextCorePlugin } from "@seal-harness/context-core";
+import { defineProfile } from "@seal-harness/host";
+import { plugin } from "@seal-harness/kernel";
+import { scriptedModelPlugin } from "@seal-harness/model-scripted";
+import { piRuntimePlugin } from "@seal-harness/runtime-pi";
+import { memorySessionPlugin } from "@seal-harness/session-memory";
 
 export default defineProfile([
   plugin(scriptedModelPlugin, {
@@ -93,9 +93,9 @@ export default defineProfile([
   const result = await run(
     process.execPath,
     [
-      join(installRoot, "node_modules", "@piharness", "cli", "dist", "bin.js"),
+      join(installRoot, "node_modules", "@seal-harness", "cli", "dist", "bin.js"),
       "--config",
-      join(installRoot, "piharness.config.mjs"),
+      join(installRoot, "seal-harness.config.mjs"),
       "--provider",
       "scripted",
       "--model",
@@ -110,15 +110,15 @@ export default defineProfile([
   }
   const launcherResult = await run(
     process.execPath,
-    [join(installRoot, "node_modules", "@piharness", "launcher", "dist", "bin.js"), "help"],
+    [join(installRoot, "node_modules", "@seal-harness", "launcher", "dist", "bin.js"), "help"],
     installRoot,
     true,
   );
-  if (!launcherResult.stdout.includes("piharness web")) {
+  if (!launcherResult.stdout.includes("seal-harness web")) {
     throw new Error(`Packed launcher smoke output was unexpected: ${launcherResult.stdout}`);
   }
   await smokeWeb(
-    join(installRoot, "node_modules", "@piharness", "web", "dist", "bin.js"),
+    join(installRoot, "node_modules", "@seal-harness", "web", "dist", "bin.js"),
     installRoot,
   );
   process.stdout.write(
@@ -206,7 +206,7 @@ async function smokeWeb(bin, cwd) {
   const url = await new Promise((resolvePromise, reject) => {
     const timeout = setTimeout(() => reject(new Error(`Packed Web UI did not start:\n${stderr}`)), 15_000);
     const inspect = () => {
-      const match = /PiHarness Web UI: (http:\/\/[^\s]+)/.exec(stdout);
+      const match = /Seal Harness Web UI: (http:\/\/[^\s]+)/.exec(stdout);
       if (match?.[1] === undefined) return;
       clearTimeout(timeout);
       resolvePromise(match[1]);
@@ -223,7 +223,7 @@ async function smokeWeb(bin, cwd) {
       fetch(url),
       fetch(`${url}/api/health`),
     ]);
-    if (!index.ok || !(await index.text()).includes("PiHarness")) {
+    if (!index.ok || !(await index.text()).includes("Seal Harness")) {
       throw new Error(`Packed Web UI index smoke failed: ${index.status}`);
     }
     if (!health.ok || (await health.json()).status !== "ok") {

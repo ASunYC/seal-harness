@@ -2,7 +2,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { sessionId, text } from "@piharness/core";
+import { sessionId, text } from "@seal-harness/core";
 import { AttachmentContextSource, LocalAttachmentStore } from "../src/index.js";
 
 const temporary: string[] = [];
@@ -10,7 +10,7 @@ afterEach(async () => Promise.all(temporary.splice(0).map((path) => rm(path, { r
 
 describe("local attachments", () => {
   it("deduplicates content and resolves text without changing the durable reference", async () => {
-    const root = await mkdtemp(join(tmpdir(), "piharness-attachments-"));
+    const root = await mkdtemp(join(tmpdir(), "seal-harness-attachments-"));
     temporary.push(root);
     const store = new LocalAttachmentStore(root);
     const first = await store.put({

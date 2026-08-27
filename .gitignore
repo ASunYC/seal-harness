@@ -6,7 +6,7 @@ coverage/
 .env
 .env.*
 !.env.example
-.piharness/
+.seal-harness/
 sessions/
 *.log
 .DS_Store

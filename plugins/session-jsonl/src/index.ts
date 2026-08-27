@@ -10,14 +10,14 @@ import {
   type AppendSessionRequest,
   type CreateSessionRequest,
   type ForkSessionRequest,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type SessionEvent,
   type SessionId,
   type SessionSnapshot,
   type SessionStore,
   type StoredSessionEvent,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 interface JsonlTransactionRecord {
   readonly timestamp: string;
@@ -247,7 +247,7 @@ export class JsonlSessionStore implements SessionStore {
   }
 }
 
-export const jsonlSessionPlugin = definePlugin<JsonlSessionConfig, PiHarnessEvents>({
+export const jsonlSessionPlugin = definePlugin<JsonlSessionConfig, SealHarnessEvents>({
   name: "session-jsonl",
   provides: [sessionStoreToken],
   setup(context, config) {

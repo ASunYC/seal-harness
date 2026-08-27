@@ -7,9 +7,9 @@ import {
   sessionId,
   type ContentBlock,
   type SessionId,
-} from "@piharness/core";
-import { loadProfile, startProfile } from "@piharness/host";
-import type { PiAiBuiltinProvider } from "@piharness/provider-pi-ai";
+} from "@seal-harness/core";
+import { loadProfile, startProfile } from "@seal-harness/host";
+import type { PiAiBuiltinProvider } from "@seal-harness/provider-pi-ai";
 import { createDefaultProfile } from "./default-profile.js";
 import { promptRequest, runHeadless, type HeadlessIo } from "./run-headless.js";
 
@@ -35,7 +35,7 @@ export async function runCli(
   }
 
   const cwd = resolve(environment.cwd, args.cwd ?? ".");
-  const provider = args.provider ?? environment.env.PIHARNESS_PROVIDER ?? "deepseek";
+  const provider = args.provider ?? environment.env.SEAL_HARNESS_PROVIDER ?? "deepseek";
   const profile = args.config === undefined
     ? createDefaultProfile({
         cwd,
@@ -90,7 +90,7 @@ export async function runCli(
       environment.io.stderr.write(`forked session: ${forked.id}\n`);
     }
     const model = args.model
-      ?? environment.env.PIHARNESS_MODEL
+      ?? environment.env.SEAL_HARNESS_MODEL
       ?? await firstModel(kernel.use(modelServiceToken), provider);
     const result = await runHeadless(
       kernel,
@@ -208,7 +208,7 @@ function parseProvider(value: string): PiAiBuiltinProvider {
 }
 
 async function firstModel(
-  service: import("@piharness/core").ModelService,
+  service: import("@seal-harness/core").ModelService,
   provider: string,
 ): Promise<string> {
   const model = (await service.list()).find((candidate) => candidate.provider === provider);
@@ -242,4 +242,4 @@ function inferMimeType(path: string): string {
   }
 }
 
-const HELP = `PiHarness\n\nUsage:\n  piharness [options] <prompt>\n\nOptions:\n  --provider <name>       Built-in Pi AI provider (default: deepseek)\n  --model <id>            Model id (default: first provider model)\n  --reasoning <level>     off|low|medium|high|max\n  --attach <path>         Attach a file (repeatable)\n  --cwd <path>            Workspace directory\n  --session <id>          Continue an existing session\n  --fork <id>             Fork an existing session before prompting\n  --fork-target <id>      Explicit target id for --fork\n  --fork-version <n>      Fork through a selected event version\n  --sessions <path>       Session storage root\n  --config <path>         Native ESM Profile\n  --yes                   Auto-approve ask decisions\n  --deny-approvals        Reject all ask decisions\n  --no-shell              Do not register the shell tool\n  --list-models           List configured models\n  -h, --help              Show help\n`;
+const HELP = `Seal Harness\n\nUsage:\n  seal-harness [options] <prompt>\n\nOptions:\n  --provider <name>       Built-in Pi AI provider (default: deepseek)\n  --model <id>            Model id (default: first provider model)\n  --reasoning <level>     off|low|medium|high|max\n  --attach <path>         Attach a file (repeatable)\n  --cwd <path>            Workspace directory\n  --session <id>          Continue an existing session\n  --fork <id>             Fork an existing session before prompting\n  --fork-target <id>      Explicit target id for --fork\n  --fork-version <n>      Fork through a selected event version\n  --sessions <path>       Session storage root\n  --config <path>         Native ESM Profile\n  --yes                   Auto-approve ask decisions\n  --deny-approvals        Reject all ask decisions\n  --no-shell              Do not register the shell tool\n  --list-models           List configured models\n  -h, --help              Show help\n`;

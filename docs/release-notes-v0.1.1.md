@@ -1,22 +1,22 @@
-# PiHarness v0.1.1
+# Seal Harness v0.1.1
 
 Windows 易用性补丁版本。
 
 ## Windows 双击启动
 
-1. 下载并解压 `piharness-windows-x64.zip`；
-2. 双击 `Start PiHarness.cmd`；
+1. 下载并解压 `seal-harness-windows-x64.zip`；
+2. 双击 `Start Seal Harness.cmd`；
 3. 保持状态窗口打开，浏览器会自动进入 WebUI；
-4. 关闭状态窗口即可停止 PiHarness。
+4. 关闭状态窗口即可停止 Seal Harness。
 
 原有命令行方式继续保留：
 
 ```powershell
-.\piharness.cmd web
+.\seal-harness.cmd web
 ```
 
 发行工作流会在 ZIP 解压后同时验证命令行入口和双击入口。以后所有 Windows Release
-都会包含 `Start PiHarness.cmd`。
+都会包含 `Start Seal Harness.cmd`。
 
 ## 安全提示
 

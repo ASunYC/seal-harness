@@ -10,7 +10,7 @@ import {
   type PolicyDecision,
   type PolicyService,
   type ToolDefinition,
-} from "@piharness/core";
+} from "@seal-harness/core";
 import { PolicyToolService } from "../src/index.js";
 
 const request = {

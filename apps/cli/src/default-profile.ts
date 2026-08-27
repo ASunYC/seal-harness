@@ -1,25 +1,25 @@
 import { join } from "node:path";
-import { agentCorePlugin } from "@piharness/agent-core";
-import { localAttachmentPlugin } from "@piharness/attachment-local";
-import { stdioApprovalPlugin } from "@piharness/approval-stdio";
-import { contextCorePlugin } from "@piharness/context-core";
-import { fileContextPlugin } from "@piharness/context-files";
-import { windowCompactionPlugin } from "@piharness/compaction-window";
-import { environmentCredentialPlugin } from "@piharness/credentials-env";
+import { agentCorePlugin } from "@seal-harness/agent-core";
+import { localAttachmentPlugin } from "@seal-harness/attachment-local";
+import { stdioApprovalPlugin } from "@seal-harness/approval-stdio";
+import { contextCorePlugin } from "@seal-harness/context-core";
+import { fileContextPlugin } from "@seal-harness/context-files";
+import { windowCompactionPlugin } from "@seal-harness/compaction-window";
+import { environmentCredentialPlugin } from "@seal-harness/credentials-env";
 import {
   approvalServiceToken,
   type ApprovalService,
-  type PiHarnessEvents,
-} from "@piharness/core";
-import { defineProfile } from "@piharness/host";
-import { definePlugin, plugin } from "@piharness/kernel";
-import { basicPolicyPlugin } from "@piharness/policy-basic";
-import { piAiProviderPlugin, type PiAiBuiltinProvider } from "@piharness/provider-pi-ai";
-import { piRuntimePlugin } from "@piharness/runtime-pi";
-import { jsonlSessionPlugin } from "@piharness/session-jsonl";
-import { toolsCorePlugin } from "@piharness/tools-core";
-import { noopTelemetryPlugin } from "@piharness/telemetry-noop";
-import { workspaceToolsPlugin } from "@piharness/workspace-tools";
+  type SealHarnessEvents,
+} from "@seal-harness/core";
+import { defineProfile } from "@seal-harness/host";
+import { definePlugin, plugin } from "@seal-harness/kernel";
+import { basicPolicyPlugin } from "@seal-harness/policy-basic";
+import { piAiProviderPlugin, type PiAiBuiltinProvider } from "@seal-harness/provider-pi-ai";
+import { piRuntimePlugin } from "@seal-harness/runtime-pi";
+import { jsonlSessionPlugin } from "@seal-harness/session-jsonl";
+import { toolsCorePlugin } from "@seal-harness/tools-core";
+import { noopTelemetryPlugin } from "@seal-harness/telemetry-noop";
+import { workspaceToolsPlugin } from "@seal-harness/workspace-tools";
 
 export interface DefaultProfileOptions {
   readonly cwd: string;
@@ -43,11 +43,11 @@ export function createDefaultProfile(options: DefaultProfileOptions) {
     }),
     plugin(piAiProviderPlugin, { providers: options.providers ?? [options.provider] }),
     plugin(jsonlSessionPlugin, {
-      root: options.sessionRoot ?? join(options.cwd, ".piharness", "sessions"),
+      root: options.sessionRoot ?? join(options.cwd, ".seal-harness", "sessions"),
     }),
     plugin(contextCorePlugin, {}),
     plugin(localAttachmentPlugin, {
-      root: options.attachmentRoot ?? join(options.cwd, ".piharness", "attachments"),
+      root: options.attachmentRoot ?? join(options.cwd, ".seal-harness", "attachments"),
     }),
     plugin(fileContextPlugin, {}),
     plugin(windowCompactionPlugin, {}),
@@ -64,7 +64,7 @@ export function createDefaultProfile(options: DefaultProfileOptions) {
 
 const providedApprovalPlugin = definePlugin<
   { readonly service: ApprovalService },
-  PiHarnessEvents
+  SealHarnessEvents
 >({
   name: "approval-provided",
   provides: [approvalServiceToken],

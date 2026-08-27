@@ -5,9 +5,9 @@ import {
   type CompactionRequest,
   type CompactionResult,
   type CompactionService,
-  type PiHarnessEvents,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+  type SealHarnessEvents,
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface WindowCompactionConfig {
   readonly thresholdMessages?: number;
@@ -63,7 +63,7 @@ export class WindowCompactionService implements CompactionService {
   }
 }
 
-export const windowCompactionPlugin = definePlugin<WindowCompactionConfig, PiHarnessEvents>({
+export const windowCompactionPlugin = definePlugin<WindowCompactionConfig, SealHarnessEvents>({
   name: "compaction-window",
   provides: [compactionServiceToken],
   setup(context, config) {
@@ -88,7 +88,7 @@ function renderMessage(message: AgentMessage, max: number): string {
   return value.length <= max ? value : `${value.slice(0, max)}…`;
 }
 
-function visibleText(content: readonly import("@piharness/core").ContentBlock[]): string {
+function visibleText(content: readonly import("@seal-harness/core").ContentBlock[]): string {
   return content.map((block) => {
     if (block.type === "text") return block.text;
     if (block.type === "image") return `[image ${block.mimeType}]`;

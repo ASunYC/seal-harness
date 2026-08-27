@@ -1,9 +1,9 @@
 {
-  "name": "@piharness/launcher",
-  "version": "0.1.0",
-  "description": "Unified product launcher for PiHarness",
+  "name": "@seal-harness/launcher",
+  "version": "0.2.0",
+  "description": "Unified product launcher for Seal Harness",
   "type": "module",
-  "bin": { "piharness": "./dist/bin.js" },
+  "bin": { "seal-harness": "./dist/bin.js" },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
@@ -17,8 +17,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@piharness/cli": "workspace:^",
-    "@piharness/web": "workspace:^"
+    "@seal-harness/cli": "workspace:^",
+    "@seal-harness/web": "workspace:^"
   },
   "license": "MIT"
 }

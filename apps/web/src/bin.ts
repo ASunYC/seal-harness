@@ -8,6 +8,6 @@ try {
     stderr: process.stderr,
   });
 } catch (error) {
-  process.stderr.write(`piharness-web: ${error instanceof Error ? error.message : String(error)}\n`);
+  process.stderr.write(`seal-harness-web: ${error instanceof Error ? error.message : String(error)}\n`);
   process.exitCode = 1;
 }

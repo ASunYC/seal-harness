@@ -2,7 +2,7 @@ import { appendFile, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { messageId, SessionConflictError, sessionId, userMessage } from "@piharness/core";
+import { messageId, SessionConflictError, sessionId, userMessage } from "@seal-harness/core";
 import { JsonlSessionStore } from "../src/index.js";
 
 const temporary: string[] = [];
@@ -80,7 +80,7 @@ describe("JsonlSessionStore", () => {
 });
 
 async function directory(): Promise<string> {
-  const path = await mkdtemp(join(tmpdir(), "piharness-jsonl-"));
+  const path = await mkdtemp(join(tmpdir(), "seal-harness-jsonl-"));
   temporary.push(path);
   return path;
 }

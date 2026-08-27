@@ -1,4 +1,4 @@
-# PiHarness 开发计划
+# Seal Harness 开发计划
 
 本计划由目标和验收证据驱动。除外部账户登录、浏览器安全确认等必须由用户完成的
 边界外，实施过程中不等待普通技术决策审批。
@@ -32,7 +32,7 @@
 验收证据：
 
 - 单元测试覆盖正常启动、可选依赖、事件顺序、清理顺序、失败回滚和非法图；
-- `@piharness/kernel` 构建产物可被 Node ESM 导入；
+- `@seal-harness/kernel` 构建产物可被 Node ESM 导入；
 - 包的 `dependencies` 为空。
 
 ## M2：领域契约与测试替身
@@ -59,7 +59,7 @@ Scripted Runtime 均可作为独立 Profile 插件运行。
 
 - `runtime-pi`：包装 `@earendil-works/pi-agent-core` 的 `Agent`；
 - `provider-pi-ai`：精确配置所选 Provider 和模型；
-- Pi 消息、工具、用量、错误与 PiHarness 契约的双向转换；
+- Pi 消息、工具、用量、错误与 Seal Harness 契约的双向转换；
 - 上游兼容契约测试。
 
 验收证据：

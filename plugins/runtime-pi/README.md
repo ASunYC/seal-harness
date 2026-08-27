@@ -1,6 +1,6 @@
-# @piharness/runtime-pi
+# @seal-harness/runtime-pi
 
-将 `@earendil-works/pi-agent-core` 的 `Agent` 适配到 PiHarness Provider-neutral
+将 `@earendil-works/pi-agent-core` 的 `Agent` 适配到 Seal Harness Provider-neutral
 Runtime 契约。
 
 插件依赖标准 `ModelService`，可选使用标准 `ToolService`，不会要求其他插件暴露

@@ -1,4 +1,4 @@
-import type { AnyPluginSpec, EventMap } from "@piharness/kernel";
+import type { AnyPluginSpec, EventMap } from "@seal-harness/kernel";
 
 export type Profile<TEvents extends EventMap = EventMap> = readonly AnyPluginSpec<TEvents>[];
 

@@ -2,17 +2,17 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { agentCorePlugin } from "@piharness/agent-core";
-import { contextCorePlugin } from "@piharness/context-core";
-import { approvalServiceToken, toolCallId, type PiHarnessEvents } from "@piharness/core";
-import { defineProfile } from "@piharness/host";
-import { definePlugin, plugin } from "@piharness/kernel";
-import { scriptedModelPlugin } from "@piharness/model-scripted";
-import { basicPolicyPlugin } from "@piharness/policy-basic";
-import { piRuntimePlugin } from "@piharness/runtime-pi";
-import { memorySessionPlugin } from "@piharness/session-memory";
-import { toolsCorePlugin } from "@piharness/tools-core";
-import { workspaceToolsPlugin } from "@piharness/workspace-tools";
+import { agentCorePlugin } from "@seal-harness/agent-core";
+import { contextCorePlugin } from "@seal-harness/context-core";
+import { approvalServiceToken, toolCallId, type SealHarnessEvents } from "@seal-harness/core";
+import { defineProfile } from "@seal-harness/host";
+import { definePlugin, plugin } from "@seal-harness/kernel";
+import { scriptedModelPlugin } from "@seal-harness/model-scripted";
+import { basicPolicyPlugin } from "@seal-harness/policy-basic";
+import { piRuntimePlugin } from "@seal-harness/runtime-pi";
+import { memorySessionPlugin } from "@seal-harness/session-memory";
+import { toolsCorePlugin } from "@seal-harness/tools-core";
+import { workspaceToolsPlugin } from "@seal-harness/workspace-tools";
 import { WebApprovalService } from "../src/approval.js";
 import { startWebServer, type RunningWebServer } from "../src/server.js";
 
@@ -21,9 +21,9 @@ afterEach(async () => {
   for (const dispose of cleanup.splice(0).reverse()) await dispose();
 });
 
-describe("PiHarness Web server", () => {
+describe("Seal Harness Web server", () => {
   it("serves the UI and streams an Agent run into a persisted session", async () => {
-    const cwd = await mkdtemp(join(tmpdir(), "piharness-web-"));
+    const cwd = await mkdtemp(join(tmpdir(), "seal-harness-web-"));
     cleanup.push(() => rm(cwd, { recursive: true, force: true }));
     const profile = defineProfile([
       plugin(scriptedModelPlugin, {
@@ -43,7 +43,7 @@ describe("PiHarness Web server", () => {
 
     const index = await fetch(running.url);
     expect(index.status).toBe(200);
-    await expect(index.text()).resolves.toContain("PiHarness");
+    await expect(index.text()).resolves.toContain("Seal Harness");
     const models = await fetchJson(`${running.url}/api/models`);
     expect(models).toEqual([expect.objectContaining({ provider: "scripted", model: "web" })]);
 
@@ -82,10 +82,10 @@ describe("PiHarness Web server", () => {
   });
 
   it("pauses a dangerous tool until the Web approval endpoint allows it", async () => {
-    const cwd = await mkdtemp(join(tmpdir(), "piharness-web-approval-"));
+    const cwd = await mkdtemp(join(tmpdir(), "seal-harness-web-approval-"));
     cleanup.push(() => rm(cwd, { recursive: true, force: true }));
     const approvals = new WebApprovalService();
-    const approvalPlugin = definePlugin<undefined, PiHarnessEvents>({
+    const approvalPlugin = definePlugin<undefined, SealHarnessEvents>({
       name: "test-web-approval",
       provides: [approvalServiceToken],
       setup(context) { context.provide(approvalServiceToken, approvals); },
@@ -144,7 +144,7 @@ describe("PiHarness Web server", () => {
 });
 
 async function scriptedServer(): Promise<RunningWebServer> {
-  const cwd = await mkdtemp(join(tmpdir(), "piharness-web-origin-"));
+  const cwd = await mkdtemp(join(tmpdir(), "seal-harness-web-origin-"));
   cleanup.push(() => rm(cwd, { recursive: true, force: true }));
   return startWebServer({
     cwd,

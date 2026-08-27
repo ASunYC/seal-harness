@@ -10,14 +10,14 @@ import {
   type AppendSessionRequest,
   type CreateSessionRequest,
   type ForkSessionRequest,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type SessionEvent,
   type SessionId,
   type SessionSnapshot,
   type SessionStore,
   type StoredSessionEvent,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface SqliteSessionConfig {
   readonly path: string;
@@ -227,7 +227,7 @@ export class SqliteSessionStore implements SessionStore {
   }
 }
 
-export const sqliteSessionPlugin = definePlugin<SqliteSessionConfig, PiHarnessEvents>({
+export const sqliteSessionPlugin = definePlugin<SqliteSessionConfig, SealHarnessEvents>({
   name: "session-sqlite",
   provides: [sessionStoreToken],
   setup(context, config) {

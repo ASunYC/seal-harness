@@ -1,5 +1,5 @@
-import { runCli, type CliEnvironment } from "@piharness/cli";
-import { runWebCli, type WebCliEnvironment } from "@piharness/web";
+import { runCli, type CliEnvironment } from "@seal-harness/cli";
+import { runWebCli, type WebCliEnvironment } from "@seal-harness/web";
 
 export interface LauncherEnvironment extends CliEnvironment {
   readonly web: WebCliEnvironment;
@@ -20,4 +20,4 @@ export async function runLauncher(
   return runCli(normalized, environment);
 }
 
-const HELP = `PiHarness\n\nUsage:\n  piharness <prompt>             Run one headless task (legacy shorthand)\n  piharness run <prompt>         Run one headless task\n  piharness headless <prompt>    Run one headless task\n  piharness web [options]        Start the local Web UI\n  piharness help                 Show this help\n\nUse \"piharness web --help\" or \"piharness run --help\" for mode options.\n`;
+const HELP = `Seal Harness\n\nUsage:\n  seal-harness <prompt>             Run one headless task (legacy shorthand)\n  seal-harness run <prompt>         Run one headless task\n  seal-harness headless <prompt>    Run one headless task\n  seal-harness web [options]        Start the local Web UI\n  seal-harness help                 Show this help\n\nUse \"seal-harness web --help\" or \"seal-harness run --help\" for mode options.\n`;

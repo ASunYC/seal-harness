@@ -1,4 +1,4 @@
-# PiHarness v0.1.0
+# Seal Harness v0.1.0
 
 首个可下载运行的开发者预览版。
 
@@ -6,7 +6,7 @@
 
 1. 下载与你系统匹配的压缩包；
 2. 解压到任意目录；
-3. Windows 运行 `piharness.cmd web`，Linux/macOS 运行 `./piharness web`；
+3. Windows 运行 `seal-harness.cmd web`，Linux/macOS 运行 `./seal-harness web`；
 4. 在 WebUI 的 Connection 面板选择工作区、模型并设置 API key。
 
 发行包已经内置 Node.js 和生产依赖，不需要安装 Node、npm 或 pnpm。

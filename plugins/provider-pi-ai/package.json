@@ -1,7 +1,7 @@
 {
-  "name": "@piharness/provider-pi-ai",
-  "version": "0.1.0",
-  "description": "Pi AI model provider plugin for PiHarness",
+  "name": "@seal-harness/provider-pi-ai",
+  "version": "0.2.0",
+  "description": "Pi AI model provider plugin for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,9 +17,9 @@
   },
   "dependencies": {
     "@earendil-works/pi-ai": "0.84.3",
-    "@piharness/core": "workspace:^",
-    "@piharness/kernel": "workspace:^",
-    "@piharness/runtime-pi": "workspace:^",
+    "@seal-harness/core": "workspace:^",
+    "@seal-harness/kernel": "workspace:^",
+    "@seal-harness/runtime-pi": "workspace:^",
     "typebox": "1.3.7"
   },
   "license": "MIT"

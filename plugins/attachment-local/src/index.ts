@@ -12,11 +12,11 @@ import {
   type ContextContribution,
   type ContextRequest,
   type ContextSource,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type PutAttachmentRequest,
   type ResolvedAttachment,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface LocalAttachmentConfig {
   readonly root: string;
@@ -129,7 +129,7 @@ export class AttachmentContextSource implements ContextSource {
   }
 }
 
-export const localAttachmentPlugin = definePlugin<LocalAttachmentConfig, PiHarnessEvents>({
+export const localAttachmentPlugin = definePlugin<LocalAttachmentConfig, SealHarnessEvents>({
   name: "attachment-local",
   provides: [attachmentServiceToken],
   requires: [contextServiceToken],

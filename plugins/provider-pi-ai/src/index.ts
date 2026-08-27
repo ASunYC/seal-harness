@@ -19,10 +19,10 @@ import {
   type ModelStopReason,
   type ModelStreamEvent,
   type ModelUsage,
-  type PiHarnessEvents,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
-import { toPiLlmMessages } from "@piharness/runtime-pi";
+  type SealHarnessEvents,
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
+import { toPiLlmMessages } from "@seal-harness/runtime-pi";
 import { Type } from "typebox";
 
 export type PiAiBuiltinProvider =
@@ -93,7 +93,7 @@ export class PiAiModelService implements ModelService {
   }
 }
 
-export const piAiProviderPlugin = definePlugin<PiAiProviderConfig, PiHarnessEvents>({
+export const piAiProviderPlugin = definePlugin<PiAiProviderConfig, SealHarnessEvents>({
   name: "provider-pi-ai",
   provides: [modelServiceToken],
   optional: [credentialServiceToken],

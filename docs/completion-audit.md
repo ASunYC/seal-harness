@@ -3,7 +3,7 @@
 审计日期：2026-08-25
 
 本文件按 [`development-plan.md`](development-plan.md) 的 M0–M7 逐项核对当前证据。
-结论：本地实现、发布准备和 GitHub 同步均已完成。私有仓库 `ASunYC/PiHarness` 的
+结论：本地实现、发布准备和 GitHub 同步均已完成。私有仓库 `ASunYC/seal-harness` 的
 `origin/main` 与本地一致，GitHub Actions 已在 Node 22.19 和 Node 24 上通过完整检查，
 整个目标具备可复核的完成证据。
 
@@ -12,8 +12,8 @@
 | 要求 | 证据 | 状态 |
 |---|---|---|
 | 本地 Git 仓库 | `main` 上存在完整 Conventional Commit 历史，工作区 clean | 完成 |
-| GitHub 私有仓库 | 浏览器显示 `ASunYC/PiHarness`、`Private` 和空仓库 Quick setup | 完成 |
-| 本地 `origin` | fetch/push URL 均为 `https://github.com/ASunYC/PiHarness.git` | 完成 |
+| GitHub 私有仓库 | 浏览器显示 `ASunYC/seal-harness`、`Private` 和空仓库 Quick setup | 完成 |
+| 本地 `origin` | fetch/push URL 均为 `https://github.com/ASunYC/seal-harness.git` | 完成 |
 | Node/pnpm workspace | 根 manifest、lockfile、27 个可发布包 | 完成 |
 | 架构与 ADR | `architecture.md`、ADR-0001 | 完成 |
 | CI 基线 | Node 22.19/24、pack smoke workflow 已定义并在 GitHub Actions 通过 | 完成 |
@@ -29,7 +29,7 @@
 
 ## M2：领域契约与替身
 
-- `@piharness/core` 提供 Runtime、Model、Session、Tool、Policy、Approval、Context、
+- `@seal-harness/core` 提供 Runtime、Model、Session、Tool、Policy、Approval、Context、
   Compaction、Attachment、Credential 和 Telemetry 契约及 branded IDs。
 - Memory Session、Scripted Model、Scripted Runtime 均为独立插件。
 - Scripted Runtime Profile 不注册 Pi 或 ModelService 仍完成 Agent/Session 全流程。
@@ -109,9 +109,9 @@ Web 产品扩展的真实浏览器检查覆盖首屏、设置面板、模型列�
 
 ## 同步证据
 
-- GitHub 仓库：`https://github.com/ASunYC/PiHarness`；
+- GitHub 仓库：`https://github.com/ASunYC/seal-harness`；
 - 首次同步后的代码提交：`6bcbf000d0a23e983c7e4d176101a3819a53060e`；
-- GitHub Actions：`https://github.com/ASunYC/PiHarness/actions/runs/32864496946`；
+- GitHub Actions：`https://github.com/ASunYC/seal-harness/actions/runs/32864496946`；
 - 本地 `main` 与 `origin/main` 在同步后 commit 一致，stash 为空。
 
 ## 自包含发行扩展

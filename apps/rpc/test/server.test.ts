@@ -1,12 +1,12 @@
 import { PassThrough } from "node:stream";
 import { describe, expect, it } from "vitest";
-import { agentCorePlugin } from "@piharness/agent-core";
-import { contextCorePlugin } from "@piharness/context-core";
-import { defineProfile } from "@piharness/host";
-import { plugin } from "@piharness/kernel";
-import { scriptedModelPlugin } from "@piharness/model-scripted";
-import { piRuntimePlugin } from "@piharness/runtime-pi";
-import { memorySessionPlugin } from "@piharness/session-memory";
+import { agentCorePlugin } from "@seal-harness/agent-core";
+import { contextCorePlugin } from "@seal-harness/context-core";
+import { defineProfile } from "@seal-harness/host";
+import { plugin } from "@seal-harness/kernel";
+import { scriptedModelPlugin } from "@seal-harness/model-scripted";
+import { piRuntimePlugin } from "@seal-harness/runtime-pi";
+import { memorySessionPlugin } from "@seal-harness/session-memory";
 import { runRpcServer } from "../src/index.js";
 
 describe("RPC server", () => {

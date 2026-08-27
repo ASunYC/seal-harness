@@ -1,7 +1,7 @@
 {
-  "name": "@piharness/agent-core",
-  "version": "0.1.0",
-  "description": "Provider-neutral Agent orchestration plugin for PiHarness",
+  "name": "@seal-harness/agent-core",
+  "version": "0.2.0",
+  "description": "Provider-neutral Agent orchestration plugin for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,11 +16,11 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@piharness/core": "workspace:^",
-    "@piharness/kernel": "workspace:^"
+    "@seal-harness/core": "workspace:^",
+    "@seal-harness/kernel": "workspace:^"
   },
   "devDependencies": {
-    "@piharness/session-memory": "workspace:^"
+    "@seal-harness/session-memory": "workspace:^"
   },
   "license": "MIT"
 }

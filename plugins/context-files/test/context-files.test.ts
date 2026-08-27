@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { sessionId, text } from "@piharness/core";
+import { sessionId, text } from "@seal-harness/core";
 import { FileContextSource } from "../src/index.js";
 
 const temporary: string[] = [];
@@ -10,7 +10,7 @@ afterEach(async () => Promise.all(temporary.splice(0).map((path) => rm(path, { r
 
 describe("FileContextService", () => {
   it("loads root-to-leaf AGENTS.md files and declares the user addition", async () => {
-    const root = await mkdtemp(join(tmpdir(), "piharness-context-"));
+    const root = await mkdtemp(join(tmpdir(), "seal-harness-context-"));
     temporary.push(root);
     await mkdir(join(root, ".git"));
     await mkdir(join(root, "packages", "app"), { recursive: true });

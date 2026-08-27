@@ -1,13 +1,13 @@
 import { access, realpath } from "node:fs/promises";
 import { isAbsolute, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import type { EventMap } from "@piharness/kernel";
+import type { EventMap } from "@seal-harness/kernel";
 import { InvalidProfileError, ProfileNotFoundError } from "./errors.js";
 import { assertProfile, type Profile } from "./profile.js";
 
 export const DEFAULT_PROFILE_FILES = Object.freeze([
-  "piharness.config.mjs",
-  "piharness.config.js",
+  "seal-harness.config.mjs",
+  "seal-harness.config.js",
 ] as const);
 
 export interface LoadProfileOptions {
@@ -32,14 +32,14 @@ export async function loadProfile<TEvents extends EventMap = EventMap>(
   try {
     imported = await import(pathToFileURL(configPath).href);
   } catch (cause) {
-    throw new InvalidProfileError("Failed to import PiHarness profile", configPath, { cause });
+    throw new InvalidProfileError("Failed to import Seal Harness profile", configPath, { cause });
   }
 
   try {
     assertProfile<TEvents>(imported.default, configPath);
   } catch (cause) {
     if (cause instanceof InvalidProfileError) throw cause;
-    throw new InvalidProfileError("Invalid PiHarness profile", configPath, { cause });
+    throw new InvalidProfileError("Invalid Seal Harness profile", configPath, { cause });
   }
 
   return { configPath, profile: imported.default };

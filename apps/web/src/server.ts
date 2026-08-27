@@ -11,12 +11,12 @@ import {
   text,
   type AgentExecution,
   type JsonObject,
-} from "@piharness/core";
-import { createDefaultProfile } from "@piharness/cli";
-import type { Profile } from "@piharness/host";
-import { startProfile } from "@piharness/host";
-import type { Kernel } from "@piharness/kernel";
-import type { PiAiBuiltinProvider } from "@piharness/provider-pi-ai";
+} from "@seal-harness/core";
+import { createDefaultProfile } from "@seal-harness/cli";
+import type { Profile } from "@seal-harness/host";
+import { startProfile } from "@seal-harness/host";
+import type { Kernel } from "@seal-harness/kernel";
+import type { PiAiBuiltinProvider } from "@seal-harness/provider-pi-ai";
 import { WebApprovalService } from "./approval.js";
 
 const PROVIDERS: readonly PiAiBuiltinProvider[] = [
@@ -344,7 +344,7 @@ function preview(messages: ReturnType<typeof deriveSessionMessages>): string {
   return "New session";
 }
 
-function sessionCwd(session: import("@piharness/core").SessionSnapshot): string | undefined {
+function sessionCwd(session: import("@seal-harness/core").SessionSnapshot): string | undefined {
   for (const entry of session.events) {
     if (entry.event.type === "session.created") return entry.event.payload.cwd;
   }

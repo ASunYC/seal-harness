@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { DatabaseSync } from "node:sqlite";
-import { messageId, SessionConflictError, sessionId, userMessage } from "@piharness/core";
+import { messageId, SessionConflictError, sessionId, userMessage } from "@seal-harness/core";
 import { SqliteSessionStore } from "../src/index.js";
 
 const temporary: string[] = [];
@@ -11,7 +11,7 @@ afterEach(async () => Promise.all(temporary.splice(0).map((path) => rm(path, { r
 
 describe("SqliteSessionStore", () => {
   it("atomically creates, appends, reloads, lists, and forks", async () => {
-    const root = await mkdtemp(join(tmpdir(), "piharness-sqlite-"));
+    const root = await mkdtemp(join(tmpdir(), "seal-harness-sqlite-"));
     temporary.push(root);
     const path = join(root, "sessions.db");
     const sourceId = sessionId("source");
@@ -50,7 +50,7 @@ describe("SqliteSessionStore", () => {
   });
 
   it("fails closed on an unknown schema version", async () => {
-    const root = await mkdtemp(join(tmpdir(), "piharness-sqlite-version-"));
+    const root = await mkdtemp(join(tmpdir(), "seal-harness-sqlite-version-"));
     temporary.push(root);
     const path = join(root, "sessions.db");
     const database = new DatabaseSync(path);

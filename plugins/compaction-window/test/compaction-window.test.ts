@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sessionId, text, userMessage } from "@piharness/core";
+import { sessionId, text, userMessage } from "@seal-harness/core";
 import { WindowCompactionService } from "../src/index.js";
 
 describe("WindowCompactionService", () => {

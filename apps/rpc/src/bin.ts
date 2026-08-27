@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { resolve } from "node:path";
-import { createDefaultProfile } from "@piharness/cli";
-import { loadProfile } from "@piharness/host";
-import type { PiAiBuiltinProvider } from "@piharness/provider-pi-ai";
+import { createDefaultProfile } from "@seal-harness/cli";
+import { loadProfile } from "@seal-harness/host";
+import type { PiAiBuiltinProvider } from "@seal-harness/provider-pi-ai";
 import { runRpcServer } from "./server.js";
 
 const args = process.argv.slice(2);

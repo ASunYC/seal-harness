@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { agentCorePlugin } from "@piharness/agent-core";
-import { contextCorePlugin } from "@piharness/context-core";
-import { agentServiceToken, text } from "@piharness/core";
-import { defineProfile, startProfile } from "@piharness/host";
-import { plugin } from "@piharness/kernel";
-import { memorySessionPlugin } from "@piharness/session-memory";
+import { agentCorePlugin } from "@seal-harness/agent-core";
+import { contextCorePlugin } from "@seal-harness/context-core";
+import { agentServiceToken, text } from "@seal-harness/core";
+import { defineProfile, startProfile } from "@seal-harness/host";
+import { plugin } from "@seal-harness/kernel";
+import { memorySessionPlugin } from "@seal-harness/session-memory";
 import { scriptedRuntimePlugin } from "../src/index.js";
 
 describe("scripted runtime", () => {

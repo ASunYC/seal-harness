@@ -3,9 +3,9 @@ import {
   approvalServiceToken,
   type ApprovalRequest,
   type ApprovalService,
-  type PiHarnessEvents,
-} from "@piharness/core";
-import { definePlugin } from "@piharness/kernel";
+  type SealHarnessEvents,
+} from "@seal-harness/core";
+import { definePlugin } from "@seal-harness/kernel";
 
 export interface StdioApprovalConfig {
   readonly mode?: "ask" | "allow" | "deny";
@@ -39,7 +39,7 @@ export class StdioApprovalService implements ApprovalService {
   }
 }
 
-export const stdioApprovalPlugin = definePlugin<StdioApprovalConfig, PiHarnessEvents>({
+export const stdioApprovalPlugin = definePlugin<StdioApprovalConfig, SealHarnessEvents>({
   name: "approval-stdio",
   provides: [approvalServiceToken],
   setup(context, config) {

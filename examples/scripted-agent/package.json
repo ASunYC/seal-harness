@@ -1,16 +1,16 @@
 {
-  "name": "piharness-example-scripted-agent",
-  "version": "0.0.0",
+  "name": "seal-harness-example-scripted-agent",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@piharness/agent-core": "workspace:^",
-    "@piharness/context-core": "workspace:^",
-    "@piharness/context-files": "workspace:^",
-    "@piharness/host": "workspace:^",
-    "@piharness/kernel": "workspace:^",
-    "@piharness/model-scripted": "workspace:^",
-    "@piharness/runtime-pi": "workspace:^",
-    "@piharness/session-memory": "workspace:^"
+    "@seal-harness/agent-core": "workspace:^",
+    "@seal-harness/context-core": "workspace:^",
+    "@seal-harness/context-files": "workspace:^",
+    "@seal-harness/host": "workspace:^",
+    "@seal-harness/kernel": "workspace:^",
+    "@seal-harness/model-scripted": "workspace:^",
+    "@seal-harness/runtime-pi": "workspace:^",
+    "@seal-harness/session-memory": "workspace:^"
   }
 }

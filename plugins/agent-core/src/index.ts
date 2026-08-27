@@ -19,15 +19,15 @@ import {
   type AgentRun,
   type AgentService,
   type CompactionService,
-  type PiHarnessEvents,
+  type SealHarnessEvents,
   type RunId,
   type RuntimeEvent,
   type SessionEvent,
   type SessionId,
   type SessionSnapshot,
   type SessionStore,
-} from "@piharness/core";
-import { definePlugin, type PluginContext } from "@piharness/kernel";
+} from "@seal-harness/core";
+import { definePlugin, type PluginContext } from "@seal-harness/kernel";
 
 export interface AgentCoreConfig {
   readonly idFactory?: () => string;
@@ -36,9 +36,9 @@ export interface AgentCoreConfig {
 export class DefaultAgentService implements AgentService {
   constructor(
     readonly sessions: SessionStore,
-    readonly contextService: import("@piharness/core").ContextService,
-    readonly runtime: import("@piharness/core").AgentRuntime,
-    readonly emit: PluginContext<PiHarnessEvents>["emit"],
+    readonly contextService: import("@seal-harness/core").ContextService,
+    readonly runtime: import("@seal-harness/core").AgentRuntime,
+    readonly emit: PluginContext<SealHarnessEvents>["emit"],
     readonly idFactory: () => string = randomUUID,
     readonly compaction: CompactionService | undefined = undefined,
   ) {}
@@ -156,8 +156,8 @@ export class DefaultAgentService implements AgentService {
 class PersistedExecution implements AgentExecution {
   readonly result: Promise<AgentExecutionResult>;
   #version: number;
-  #currentTurnId: import("@piharness/core").TurnId | undefined;
-  readonly #pendingToolCalls: import("@piharness/core").ToolCall[] = [];
+  #currentTurnId: import("@seal-harness/core").TurnId | undefined;
+  readonly #pendingToolCalls: import("@seal-harness/core").ToolCall[] = [];
   #persistedGeneratedMessages = 0;
   readonly #unsubscribe: () => void;
 
@@ -169,7 +169,7 @@ class PersistedExecution implements AgentExecution {
     version: number,
     readonly inputMessageCount: number,
     readonly idFactory: () => string,
-    readonly emit: PluginContext<PiHarnessEvents>["emit"],
+    readonly emit: PluginContext<SealHarnessEvents>["emit"],
   ) {
     this.#version = version;
     this.#unsubscribe = runtimeRun.subscribe((event) => this.#onRuntimeEvent(event));
@@ -307,7 +307,7 @@ class PersistedExecution implements AgentExecution {
     return session;
   }
 
-  async #complete(runtimeResult: Promise<import("@piharness/core").RuntimeResult>): Promise<AgentExecutionResult> {
+  async #complete(runtimeResult: Promise<import("@seal-harness/core").RuntimeResult>): Promise<AgentExecutionResult> {
     const runtime = await runtimeResult;
     this.#unsubscribe();
     const unpersisted = runtime.messages.slice(
@@ -337,7 +337,7 @@ class PersistedExecution implements AgentExecution {
     return { session, runtime };
   }
 
-  #requireTurn(): import("@piharness/core").TurnId {
+  #requireTurn(): import("@seal-harness/core").TurnId {
     if (this.#currentTurnId === undefined) {
       throw new Error(`Runtime event requires an active turn for run ${this.runId}`);
     }
@@ -345,7 +345,7 @@ class PersistedExecution implements AgentExecution {
   }
 }
 
-export const agentCorePlugin = definePlugin<AgentCoreConfig, PiHarnessEvents>({
+export const agentCorePlugin = definePlugin<AgentCoreConfig, SealHarnessEvents>({
   name: "agent-core",
   provides: [agentServiceToken],
   requires: [sessionStoreToken, contextServiceToken, runtimeToken],
@@ -384,8 +384,8 @@ function interruptedRunRecoveryEvents(
     string,
     {
       runId: RunId;
-      turnId: import("@piharness/core").TurnId;
-      callId: import("@piharness/core").ToolCallId;
+      turnId: import("@seal-harness/core").TurnId;
+      callId: import("@seal-harness/core").ToolCallId;
       name: string;
     }
   >();

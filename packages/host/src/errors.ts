@@ -5,7 +5,7 @@ export class ProfileNotFoundError extends Error {
     readonly cwd: string,
     readonly candidates: readonly string[],
   ) {
-    super(`No PiHarness profile found in ${cwd}; tried: ${candidates.join(", ")}`);
+    super(`No Seal Harness profile found in ${cwd}; tried: ${candidates.join(", ")}`);
   }
 }
 
