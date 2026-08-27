@@ -22,6 +22,15 @@ function initialize() {
   $("new-session").addEventListener("click", newSession);
   $("save-key").addEventListener("click", saveKey);
   $("theme").addEventListener("change", () => void switchTheme($("theme").value));
+  $("settings-open").addEventListener("click", () => openSettings("general"));
+  $("settings-close").addEventListener("click", closeSettings);
+  $("settings-modal").addEventListener("click", (event) => { if (event.target === $("settings-modal")) closeSettings(); });
+  for (const button of document.querySelectorAll("[data-settings-target]")) {
+    button.addEventListener("click", () => showSettingsSection(button.dataset.settingsTarget));
+  }
+  $("plugin-install").addEventListener("submit", installPlugin);
+  $("plugins-refresh").addEventListener("click", () => void loadPlugins());
+  document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !$("settings-modal").hidden) closeSettings(); });
   void bootstrap();
   setInterval(() => void loadApprovals(), 750);
 }
@@ -35,6 +44,8 @@ async function bootstrap() {
     await loadClientPlugins();
     await loadThemes();
     await loadSessions();
+    const requestedSettings = new URL(window.location.href).searchParams.get("settings");
+    if (["general", "models", "plugins"].includes(requestedSettings)) openSettings(requestedSettings);
   } catch (error) { setStatus(error.message, true); }
 }
 
@@ -63,16 +74,14 @@ async function loadThemes() {
   try {
     const body = await (await api("/api/dsh/skins")).json();
     state.skins = body.skins || [];
-    if (state.skins.length === 0) return;
     const select = $("theme");
     select.replaceChildren(new Option("Official", "official"));
     for (const skin of state.skins) select.append(new Option(skin.name, skin.id));
     const active = state.skins.find((skin) => document.body.hasAttribute(skin.bodyAttr));
     select.value = active?.id || "official";
-    $("themes-settings").hidden = false;
-    $("themes-settings").open = true;
   } catch {
-    $("themes-settings").hidden = true;
+    state.skins = [];
+    $("theme").replaceChildren(new Option("Official", "official"));
   }
 }
 
@@ -84,6 +93,96 @@ async function switchTheme(target) {
   } catch (error) {
     setStatus(error.message, true);
   }
+}
+
+function openSettings(section) {
+  showSettingsSection(section);
+  $("settings-modal").hidden = false;
+  $("root").inert = true;
+  requestAnimationFrame(() => $("settings-close").focus());
+}
+
+function closeSettings() {
+  $("settings-modal").hidden = true;
+  $("root").inert = false;
+  $("settings-open").focus();
+}
+
+function showSettingsSection(section = "general") {
+  for (const button of document.querySelectorAll("[data-settings-target]")) {
+    button.classList.toggle("active", button.dataset.settingsTarget === section);
+  }
+  for (const page of document.querySelectorAll("[data-settings-page]")) {
+    page.classList.toggle("active", page.dataset.settingsPage === section);
+  }
+  if (section === "plugins") void loadPlugins();
+}
+
+async function loadPlugins() {
+  const container = $("plugins-list");
+  container.replaceChildren();
+  $("plugins-notice").textContent = "Loading plugins…";
+  try {
+    const entries = await (await api("/api/plugins")).json();
+    $("plugins-notice").textContent = entries.length === 0 ? "No optional plugins installed." : `${entries.length} installed`;
+    for (const entry of entries) container.append(pluginCard(entry));
+  } catch (error) {
+    $("plugins-notice").textContent = error.message;
+  }
+}
+
+function pluginCard(entry) {
+  const card = document.createElement("article");
+  card.className = "plugin-card";
+  const header = document.createElement("div"); header.className = "plugin-card-header";
+  const identity = document.createElement("div");
+  const title = document.createElement("strong"); title.textContent = entry.name;
+  const version = document.createElement("span"); version.textContent = entry.version;
+  identity.append(title, version);
+  const badge = document.createElement("span"); badge.className = `plugin-badge ${entry.status}`; badge.textContent = entry.enabled ? entry.status : "disabled";
+  header.append(identity, badge);
+  const spec = document.createElement("code"); spec.textContent = entry.spec;
+  const details = document.createElement("p");
+  const missing = [...entry.missingHostServices, ...entry.missingClientServices];
+  details.textContent = missing.length ? `Missing adapters: ${missing.join(", ")}` : entry.skin?.tagline || "Host and client contracts are ready.";
+  const actions = document.createElement("div"); actions.className = "plugin-card-actions";
+  const toggle = document.createElement("button"); toggle.type = "button"; toggle.textContent = entry.enabled ? "Disable" : "Enable";
+  toggle.addEventListener("click", () => void updatePluginEnabled(entry.name, !entry.enabled));
+  const remove = document.createElement("button"); remove.type = "button"; remove.className = "danger"; remove.textContent = "Remove";
+  remove.addEventListener("click", () => void removePlugin(entry.name));
+  actions.append(toggle, remove);
+  card.append(header, spec, details, actions);
+  return card;
+}
+
+async function installPlugin(event) {
+  event.preventDefault();
+  const spec = $("plugin-spec").value.trim();
+  if (!spec) return;
+  $("plugins-notice").textContent = "Installing plugin…";
+  try {
+    await api("/api/plugins", { method: "POST", body: JSON.stringify({ action: "add", spec }) });
+    $("plugin-spec").value = "";
+    await loadPlugins();
+    $("plugins-notice").textContent = "Installed. Restart WebUI to load Host changes.";
+  } catch (error) { $("plugins-notice").textContent = error.message; }
+}
+
+async function updatePluginEnabled(name, enabled) {
+  try {
+    await api(`/api/plugins/${encodeURIComponent(name)}/enabled`, { method: "POST", body: JSON.stringify({ enabled }) });
+    await loadPlugins();
+    $("plugins-notice").textContent = "Updated. Restart WebUI to apply Host changes.";
+  } catch (error) { $("plugins-notice").textContent = error.message; }
+}
+
+async function removePlugin(name) {
+  if (!window.confirm(`Remove ${name}?`)) return;
+  try {
+    await api(`/api/plugins/${encodeURIComponent(name)}`, { method: "DELETE" });
+    await loadPlugins();
+    $("plugins-notice").textContent = "Removed. Restart WebUI to unload Host changes.";
+  } catch (error) { $("plugins-notice").textContent = error.message; }
 }
 
 function updateModels() {

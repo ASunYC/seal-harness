@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/launcher",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Unified product launcher for Seal Harness",
   "type": "module",
   "bin": { "seal-harness": "./dist/bin.js" },

@@ -274,6 +274,8 @@ async function smokeWeb(bin, cwd) {
       || !indexText.includes("Seal Harness")
       || !indexText.includes('data-pane="conversation"')
       || !indexText.includes("/client-runtime.js")
+      || !indexText.includes('id="settings-modal"')
+      || !indexText.includes('data-settings-page="plugins"')
     ) {
       throw new Error(`Packed Web UI index smoke failed: ${index.status}`);
     }

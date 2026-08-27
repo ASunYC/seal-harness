@@ -104,6 +104,7 @@ export async function startWebServer(options: WebServerOptions): Promise<Running
   const server = createServer((request, response) => {
     void dispatch(request, response, {
       cwd, kernel, runs, approvalService, credentialEnvironment, manager, routes, clientPluginState,
+      localPluginManagement: isLoopbackHost(host),
     }).catch((error) => {
       if (!response.headersSent) json(response, webErrorStatus(error), { error: message(error) });
       else if (!response.writableEnded) response.end();
@@ -151,6 +152,7 @@ interface DispatchContext {
   readonly manager: PluginProfileManager;
   readonly routes: WebRouteRegistry;
   readonly clientPluginState: { report: JsonObject | undefined };
+  readonly localPluginManagement: boolean;
 }
 
 async function dispatch(
@@ -191,6 +193,56 @@ async function dispatch(
         enabled: entry.enabled,
         ...(entry.skin === undefined ? {} : { skin: entry.skin }),
       })));
+    return;
+  }
+  if (method === "GET" && url.pathname === "/api/plugins") {
+    const entries = await context.manager.doctor();
+    json(response, 200, entries.map((entry) => ({
+      name: entry.name,
+      version: entry.version,
+      spec: entry.spec,
+      enabled: entry.enabled,
+      status: entry.status,
+      hostInject: entry.hostInject,
+      clientInject: entry.clientInject,
+      missingHostServices: entry.missingHostServices,
+      missingClientServices: entry.missingClientServices,
+      ...(entry.skin === undefined ? {} : { skin: entry.skin }),
+      ...(entry.error === undefined ? {} : { error: entry.error }),
+    })));
+    return;
+  }
+  if (method === "POST" && url.pathname === "/api/plugins") {
+    requireLocalPluginManagement(context);
+    const body = await readObject(request);
+    if (body.action !== "add" || typeof body.spec !== "string" || body.spec.trim().length === 0) {
+      throw new RequestError(400, "plugin add requires action=add and a non-empty spec");
+    }
+    const added = await context.manager.add(body.spec);
+    json(response, 201, {
+      added: added.map((entry) => ({ name: entry.name, version: entry.version })),
+      restartRequired: true,
+    });
+    return;
+  }
+  const pluginEnabledMatch = /^\/api\/plugins\/([^/]+)\/enabled$/.exec(url.pathname);
+  if (method === "POST" && pluginEnabledMatch !== null) {
+    requireLocalPluginManagement(context);
+    const body = await readObject(request);
+    if (typeof body.enabled !== "boolean") throw new RequestError(400, "enabled must be a boolean");
+    const name = decodeURIComponent(pluginEnabledMatch[1] ?? "");
+    try { await context.manager.setEnabled(name, body.enabled); }
+    catch (error) { throw new RequestError(404, message(error)); }
+    json(response, 200, { name, enabled: body.enabled, restartRequired: true });
+    return;
+  }
+  const pluginRemoveMatch = /^\/api\/plugins\/([^/]+)$/.exec(url.pathname);
+  if (method === "DELETE" && pluginRemoveMatch !== null) {
+    requireLocalPluginManagement(context);
+    const name = decodeURIComponent(pluginRemoveMatch[1] ?? "");
+    try { await context.manager.remove([name]); }
+    catch (error) { throw new RequestError(404, message(error)); }
+    json(response, 200, { removed: name, restartRequired: true });
     return;
   }
   if (method === "GET" && url.pathname === "/api/plugins/client-state") {
@@ -474,6 +526,16 @@ function closeServer(server: Server): Promise<void> {
 
 function formatHost(host: string): string { return host.includes(":") ? `[${host}]` : host; }
 function message(error: unknown): string { return error instanceof Error ? error.message : String(error); }
+
+function isLoopbackHost(host: string): boolean {
+  return host === "127.0.0.1" || host === "::1" || host === "localhost";
+}
+
+function requireLocalPluginManagement(context: DispatchContext): void {
+  if (!context.localPluginManagement) {
+    throw new RequestError(403, "Plugin management is available only on a loopback Web host");
+  }
+}
 
 function restoreEnvironment(name: "DSH_HOME" | "DSH_PROFILE", value: string | undefined): void {
   if (value === undefined) delete process.env[name];

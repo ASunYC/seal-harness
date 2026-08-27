@@ -26,6 +26,7 @@ Seal Harness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 - 分层 `AGENTS.md` 上下文；
 - Headless CLI；
 - Local-first WebUI、流式 HTTP Host 和浏览器审批；
+- DSH 风格的 Settings 产品壳层，包含 General、Models 与 Plugins 管理页面；
 - 统一 `seal-harness run|headless|web` 产品启动器。
 
 可选生态插件包括 Filesystem Skills、MCP Client、SQLite Session 和 JSONL RPC；它们

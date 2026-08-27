@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/session-sqlite",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "SQLite session store plugin using node:sqlite for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",

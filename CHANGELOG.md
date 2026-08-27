@@ -19,6 +19,10 @@ the project uses Semantic Versioning for published packages.
 
 ### Added
 
+- DSH-inspired product shell with a fixed Settings entry and General, Models, and Plugins pages.
+- Loopback-only Web plugin management APIs and searchable plugin cards with install, enable,
+  disable, diagnostics, and remove controls.
+
 - DSH-compatible `seal-harness plugin` commands for isolated Profile installation, listing,
   diagnostics, enable/disable and removal.
 - Efficient GitHub `#path:` installation through a partial, runtime-file-only checkout.

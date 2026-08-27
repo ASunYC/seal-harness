@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/context-core",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Composable context source registry for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
