@@ -1,0 +1,41 @@
+{
+  "name": "@seal-harness/acp",
+  "version": "0.3.4",
+  "description": "Agent Client Protocol stdio server for Seal Harness",
+  "type": "module",
+  "bin": { "seal-harness-acp": "./dist/bin.js" },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist", "README.md"],
+  "sideEffects": false,
+  "engines": { "node": ">=22.19.0" },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "node -e \"for(const p of ['dist','tsconfig.tsbuildinfo','tsconfig.build.tsbuildinfo'])require('node:fs').rmSync(p,{recursive:true,force:true})\"",
+    "test": "vitest run test",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@agentclientprotocol/sdk": "1.4.0",
+    "@seal-harness/cli": "workspace:^",
+    "@seal-harness/core": "workspace:^",
+    "@seal-harness/host": "workspace:^",
+    "@seal-harness/kernel": "workspace:^",
+    "@seal-harness/mcp-client": "workspace:^",
+    "@seal-harness/provider-pi-ai": "workspace:^"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "@seal-harness/agent-core": "workspace:^",
+    "@seal-harness/context-core": "workspace:^",
+    "@seal-harness/model-scripted": "workspace:^",
+    "@seal-harness/policy-basic": "workspace:^",
+    "@seal-harness/runtime-pi": "workspace:^",
+    "@seal-harness/session-memory": "workspace:^",
+    "@seal-harness/tools-core": "workspace:^",
+    "@seal-harness/workspace-tools": "workspace:^",
+    "zod": "4.4.3"
+  },
+  "license": "MIT"
+}
