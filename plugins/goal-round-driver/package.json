@@ -1,0 +1,21 @@
+{
+  "name": "@seal-harness/goal-round-driver",
+  "version": "0.3.4",
+  "description": "Automatic same-session continuation rounds for persisted Seal Harness goals",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist", "README.md"],
+  "sideEffects": false,
+  "engines": { "node": ">=22.19.0" },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "node -e \"for(const p of ['dist','tsconfig.tsbuildinfo','tsconfig.build.tsbuildinfo'])require('node:fs').rmSync(p,{recursive:true,force:true})\"",
+    "test": "vitest run test",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": { "@seal-harness/core": "workspace:^", "@seal-harness/kernel": "workspace:^" },
+  "devDependencies": { "@seal-harness/goal-tools": "workspace:^", "@seal-harness/session-memory": "workspace:^" },
+  "license": "MIT"
+}
