@@ -5,82 +5,249 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Seal Harness</title>
     <link rel="icon" type="image/png" href="/assets/seal-harness-mascot.png">
-    <link rel="stylesheet" href="/styles.css">
+    <meta name="theme-color" content="#173f3a">
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
+    <link rel="stylesheet" href="/styles.css?v=0.3.4-107">
+    <link rel="stylesheet" href="/vendor/katex.css?v=0.3.4-3">
+    <link rel="stylesheet" href="/vendor/highlight.css?v=0.3.4-4">
+    <link rel="stylesheet" href="/vendor/client-runtime.css?v=0.3.4-2">
   </head>
   <body>
     <div id="root" class="shell">
       <aside class="sidebar sidebarCol" data-pane="sidebar">
         <div class="sidebar-inner">
-          <div class="brand logoRow"><img class="brand-mark" src="/assets/seal-harness-mascot.png" alt=""><span>Seal Harness</span></div>
-          <button id="new-session" class="primary wide newSession">New session</button>
-          <div class="section-label">Sessions</div>
+          <div class="brand logoRow"><img class="brand-mark" src="/assets/seal-harness-mascot.png" alt=""><span>Seal Harness</span><button id="sidebar-toggle" type="button" aria-label="Toggle sidebar" title="Toggle sidebar">☰</button></div>
+          <button id="new-session" class="primary wide newSession" data-i18n="nav.newSession">New session</button>
+          <button id="add-workspace" class="wide" data-i18n="nav.addWorkspace">Add workspace</button>
+          <div id="session-search" class="session-search">
+            <button id="session-search-open" type="button" aria-label="Search sessions" aria-expanded="false">⌕</button>
+            <input id="session-search-input" type="search" placeholder="搜索会话…" aria-label="搜索会话" maxlength="500">
+            <button id="session-search-clear" type="button" aria-label="Clear search" hidden>×</button>
+          </div>
+          <div id="session-search-status" class="session-search-status" hidden aria-live="polite"></div>
+          <div class="sidebar-list-heading"><span id="session-list-label" class="section-label" data-i18n="nav.workspaces">Workspaces</span><details class="view-options"><summary aria-label="View options">⋯</summary><div><label><span data-i18n="view.groupBy">Group by</span><select id="session-group-by"><option value="workspace" data-i18n="view.workspace">Workspace</option><option value="flat" data-i18n="view.flat">In one list</option></select></label><label><span data-i18n="view.orderBy">Order by</span><select id="session-order-by"><option value="manual" data-i18n="view.manual">Manual</option><option value="updated" data-i18n="view.updated">Last updated</option></select></label></div></details></div>
           <div id="sessions" class="sessions flatList" role="tree"></div>
           <div class="sidebar-footer">
-            <span data-slot="sidebar.footer.action" hidden></span>
+            <div id="dsh-sidebar-footer-slot" data-slot="sidebar.footer.action"></div>
             <div data-slot="sidebar.settings">
-              <button id="settings-open" class="settings-trigger" type="button"><span aria-hidden="true">⚙</span><span>Settings</span></button>
+              <div class="settings-trigger-row"><button id="settings-open" class="settings-trigger" type="button"><span aria-hidden="true">⚙</span><span data-i18n="nav.settings">Settings</span></button><span id="connection-indicator" class="connection-indicator" hidden></span></div>
             </div>
           </div>
         </div>
       </aside>
+      <div id="sidebar-resize" class="layout-resize" data-side="sidebar" role="separator" aria-orientation="vertical" aria-label="Resize sidebar"></div>
       <main class="main centerCol" data-pane="conversation" data-phase="hero">
-        <header class="header"><div><strong id="session-title">New session</strong><span id="status">Ready</span></div></header>
+        <header class="header"><div class="session-heading"><nav id="session-breadcrumbs" class="session-breadcrumbs" aria-label="Session hierarchy"><strong id="session-title">New session</strong></nav><span id="status">Ready</span></div><div class="header-actions"><span id="schedule-catalog" class="schedule-catalog" hidden></span><span id="job-control" class="job-control" hidden></span><button id="session-export" type="button" disabled data-i18n="session.export">Session log</button></div></header>
+        <div id="content-resize-left" class="content-resize" data-side="left" role="separator" aria-orientation="vertical" aria-label="Resize conversation width"></div>
+        <div id="content-resize-right" class="content-resize" data-side="right" role="separator" aria-orientation="vertical" aria-label="Resize conversation width"></div>
         <section id="transcript" class="transcript" data-conversation-scroll>
-          <div id="welcome" class="welcome" data-chat-flow><img class="hero-mark" src="/assets/seal-harness-mascot.png" alt="Seal mascot"><h1>What should we work on?</h1><p>Choose a workspace, configure a model, and give the agent a task.</p></div>
+          <button id="load-earlier" class="load-earlier" type="button" hidden>Load earlier messages</button>
+          <div id="welcome" class="welcome" data-chat-flow><img class="hero-mark" src="/assets/seal-harness-mascot.png" alt="Seal mascot"><h1 data-i18n="hero.title">What should we work on?</h1><p data-i18n="hero.description">Choose a workspace, configure a model, and give the agent a task.</p></div>
+          <div id="turn-navigator-slot" class="turn-navigator-slot"><nav id="turn-navigator" class="turn-navigator" aria-label="Turn navigation" hidden></nav></div>
+          <div id="back-to-bottom-slot" class="back-to-bottom-slot"><button id="back-to-bottom" class="back-to-bottom" type="button" hidden aria-label="Back to bottom" data-i18n-aria-label="chat.backToBottom">↓</button></div>
         </section>
-        <section id="approvals" class="approvals"></section>
-        <form id="composer" class="composer" data-composer-seat data-composer-card>
-          <textarea id="prompt" rows="3" placeholder="Ask Seal Harness to inspect, edit, or run…"></textarea>
-          <div class="composer-actions"><span id="run-meta"></span><button id="cancel" type="button" hidden>Stop</button><button class="primary" type="submit">Run</button></div>
-        </form>
+        <div class="composer-seat" data-composer-seat>
+          <section id="stats-line" class="stats-line" hidden></section>
+          <section id="todo-dock" class="todo-dock" hidden></section>
+          <section id="goal-dock" class="goal-dock" hidden></section>
+          <section id="queue-dock" class="queue-dock" hidden aria-live="polite"></section>
+          <section id="approvals" class="approvals"></section>
+          <form id="composer" class="composer" data-composer-card>
+          <textarea id="prompt" rows="3" placeholder="Ask Seal Harness to inspect, edit, or run…" data-i18n-placeholder="composer.placeholder" aria-controls="input-trigger-menu" aria-autocomplete="list"></textarea>
+          <div id="input-trigger-menu" class="input-trigger-menu" role="listbox" hidden></div>
+          <div id="attachment-chips" class="attachment-chips" hidden></div>
+          <div class="composer-actions"><label class="attach-button"><span data-i18n="composer.attach">Attach</span><input id="attachment-input" type="file" multiple hidden></label><span id="plan-control" class="plan-control" hidden></span><button id="model-settings-open" type="button" data-i18n="models.model">Model</button><label class="preset-picker"><span data-i18n="composer.agent">Agent</span><select id="agent-preset"></select></label><label id="delivery-picker" class="preset-picker" hidden><span data-i18n="composer.sendAs">Send as</span><select id="delivery-mode"><option value="steer" data-i18n="composer.steering">Steering</option><option value="followUp" data-i18n="composer.followUp">Follow-up</option></select></label><span id="run-meta"></span><span id="context-meter" class="context-meter" hidden></span><button id="cancel" type="button" hidden data-i18n="composer.stop">Stop</button><button id="submit-run" class="primary" type="submit" data-i18n="composer.run">Run</button></div>
+          </form>
+        </div>
       </main>
+      <aside id="session-state" class="state-rail" aria-label="Session activity">
+        <header class="state-rail-header"><div class="state-tabs" role="tablist"><button id="state-tab" type="button" role="tab" aria-selected="true" data-i18n="state.title">Session state</button><button id="trajectory-tab" type="button" role="tab" aria-selected="false" data-i18n="trajectory.title">Trajectory</button></div><button id="state-refresh" type="button" title="Refresh">↻</button></header>
+        <div id="state-empty" class="state-empty" data-i18n="state.empty">Select a Session to inspect its active work.</div>
+        <div id="state-cards" class="state-cards" hidden></div>
+        <div id="trajectory-ledger" class="trajectory-ledger" role="tabpanel" hidden></div>
+      </aside>
+      <div id="details-resize" class="layout-resize" data-side="details" role="separator" aria-orientation="vertical" aria-label="Resize session details"></div>
     </div>
     <div id="settings-modal" class="modal-backdrop" role="presentation" hidden>
       <section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <nav class="settings-nav" aria-label="Settings sections">
           <div class="settings-nav-brand"><img src="/assets/seal-harness-mascot.png" alt=""><span>Seal Harness</span></div>
-          <button class="settings-nav-item active" type="button" data-settings-target="general">General</button>
-          <button class="settings-nav-item" type="button" data-settings-target="models">Models</button>
-          <button class="settings-nav-item" type="button" data-settings-target="plugins">Plugins</button>
+          <button class="settings-nav-item active" type="button" data-settings-target="general"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0"/></svg><span data-i18n="settings.general">General</span><span class="settings-nav-chevron" aria-hidden="true">›</span></button>
+          <button class="settings-nav-item" type="button" data-settings-target="models"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v12H4zM8 7V4h8v3M8 12h.01M16 12h.01M9 16h6"/></svg><span data-i18n="settings.models">Models</span><span class="settings-nav-chevron" aria-hidden="true">›</span></button>
+          <button class="settings-nav-item" type="button" data-settings-target="configuration"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16M8 3v6M16 9v6M10 15v6"/></svg><span data-i18n="settings.configuration">Configuration</span><span class="settings-nav-chevron" aria-hidden="true">›</span></button>
+          <button class="settings-nav-item" type="button" data-settings-target="plugins"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v5m8-5v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/></svg><span data-i18n="settings.plugins">Plugins</span><span class="settings-nav-chevron" aria-hidden="true">›</span></button>
         </nav>
         <div class="settings-main">
-          <header class="settings-header"><h2 id="settings-title">Settings</h2><button id="settings-close" type="button" aria-label="Close settings">×</button></header>
+          <header class="settings-header"><h2 id="settings-title" data-i18n="nav.settings">Settings</h2><button id="settings-close" type="button" aria-label="Close settings">×</button></header>
           <div class="settings-pages">
             <section class="settings-page active" data-settings-page="general">
-              <h3>General</h3>
-              <p class="settings-description">Workspace, appearance, and local security defaults.</p>
+              <h3 data-i18n="settings.general">General</h3>
+              <p class="settings-description" data-i18n="settings.generalDescription">Workspace, appearance, and local security defaults.</p>
+              <div id="dsh-settings-general-slot" class="settings-card dsh-settings-general-slot" data-slot="settings.general.item"></div>
               <div class="settings-card">
-                <label>Workspace<input id="cwd" type="text"></label>
-                <label>Appearance<select id="theme"><option value="official">Official</option></select></label>
+                <label><span data-i18n="settings.workspace">Workspace</span><input id="cwd" type="text"></label>
+                <label><span data-i18n="settings.busyEnter">Enter while busy</span><select id="busy-enter"><option value="queue" data-i18n="settings.busyEnterQueue">Queue</option><option value="steer" data-i18n="settings.busyEnterSteer">Steer</option></select></label>
+                <label><span data-i18n="settings.transcriptView">Transcript view</span><select id="transcript-view"><option value="normal" data-i18n="settings.transcriptNormal">Normal</option><option value="compact" data-i18n="settings.transcriptCompact">Compact</option></select></label>
+                <label><span>Skin</span><select id="theme"><option value="official">Official</option></select></label>
+                <label><span data-i18n="settings.language">Language</span><select id="locale"><option value="en">English</option><option value="zh-CN">简体中文</option></select></label>
                 <span id="plugin-status" class="settings-note"></span>
               </div>
-              <div class="settings-card"><strong>Security</strong><p>Local workspace-write policy. External and dangerous tools require approval.</p></div>
+              <div class="settings-card"><strong data-i18n="settings.security">Security</strong><p data-i18n="settings.securityDescription">Local workspace-write policy. External and dangerous tools require approval.</p></div>
+              <section id="dsh-general-management" class="settings-card dsh-general-management">
+                <div class="settings-page-heading"><div><strong data-i18n="settings.filesTitle">Configuration files</strong><p data-i18n="settings.filesDescription">Open the active settings document and inspect Agent Preset compositions.</p></div><button id="settings-document-open" type="button" hidden data-i18n="settings.openDocument">Open settings file</button></div>
+                <div id="dsh-general-notice" class="settings-note" aria-live="polite"></div>
+                <div id="agent-preset-management" class="agent-preset-management"></div>
+              </section>
             </section>
             <section class="settings-page" data-settings-page="models">
-              <h3>Models</h3>
-              <p class="settings-description">Choose a provider and model, then configure its process-local credential.</p>
+              <h3 data-i18n="settings.models">Models</h3>
+              <p class="settings-description" data-i18n="settings.modelsStoredDescription">Choose from the models advertised by the active Profile, then configure its local credential.</p>
+              <div id="model-catalog-count" class="settings-note model-catalog-count"></div>
               <div class="settings-card">
-                <label>Provider<select id="provider"></select></label>
-                <label>Model<select id="model"></select></label>
-                <label>Reasoning<select id="reasoning">
-                  <option value="">Default</option><option>off</option><option>low</option>
+                <label><span data-i18n="models.provider">Provider</span><select id="provider"></select></label>
+                <label><span data-i18n="models.model">Model</span><select id="model"></select></label>
+                <div id="model-details" class="model-details" aria-live="polite"></div>
+                <label><span data-i18n="models.reasoning">Reasoning</span><select id="reasoning">
+                  <option value="" data-i18n="models.default">Default</option><option>off</option><option>low</option>
                   <option>medium</option><option>high</option><option>max</option>
                 </select></label>
-                <label>API key<input id="api-key" type="password" autocomplete="off" placeholder="kept in memory"></label>
-                <button id="save-key" class="primary" type="button">Set API key</button>
+                <label><span data-i18n="models.apiKey">API key</span><input id="api-key" type="password" autocomplete="off" placeholder="stored in your local credential file" data-i18n-placeholder="models.keyStored"></label>
+                <span id="credential-status" class="settings-note" aria-live="polite"></span>
+                <div class="settings-config-actions"><button id="clear-key" type="button" data-i18n="models.clearKey">Clear API key</button><button id="save-key" class="primary" type="button" data-i18n="models.setKey">Set API key</button></div>
               </div>
+              <form id="custom-provider-form" class="settings-card custom-provider-form">
+                <strong data-i18n="models.addProvider">Add custom provider</strong>
+                <p data-i18n="models.addProviderDescription">Discover an OpenAI- or Anthropic-compatible endpoint and make its models immediately available.</p>
+                <label><span data-i18n="models.providerId">Provider ID</span><input id="custom-provider-id" required type="text" placeholder="local-openai"></label>
+                <label><span data-i18n="models.displayName">Display name</span><input id="custom-provider-name" type="text" placeholder="Local OpenAI"></label>
+                <label><span data-i18n="models.baseUrl">Base URL</span><input id="custom-provider-url" required type="url" placeholder="http://127.0.0.1:8000/v1"></label>
+                <label><span data-i18n="models.protocol">Protocol</span><select id="custom-provider-api">
+                  <option value="openai-completions">OpenAI Chat Completions</option>
+                  <option value="openai-responses">OpenAI Responses</option>
+                  <option value="anthropic-messages">Anthropic Messages</option>
+                </select></label>
+                <label><span data-i18n="models.apiKey">API key</span><input id="custom-provider-key" type="password" autocomplete="off" placeholder="optional; kept in memory" data-i18n-placeholder="models.optionalKeyMemory"></label>
+                <button class="primary" type="submit" data-i18n="models.discoverAdd">Discover and add</button>
+                <span id="custom-provider-status" class="settings-note" aria-live="polite"></span>
+              </form>
             </section>
             <section class="settings-page" data-settings-page="plugins">
-              <div class="settings-page-heading"><div><h3>Plugins</h3><p class="settings-description">Install and inspect optional Profile packages.</p></div><button id="plugins-refresh" type="button">Refresh</button></div>
-              <form id="plugin-install" class="plugin-install"><input id="plugin-spec" type="text" placeholder="github:user/repo#path:/plugin"><button class="primary" type="submit">Install</button></form>
+              <div class="settings-page-heading"><div><h3 data-i18n="settings.plugins">Plugins</h3><p class="settings-description" data-i18n="settings.pluginsDescription">Install and inspect optional Profile packages.</p></div><button id="plugins-refresh" type="button" data-i18n="common.refresh">Refresh</button></div>
+              <form id="plugin-install" class="plugin-install"><input id="plugin-spec" type="text" placeholder="github:user/repo#path:/plugin"><button class="primary" type="submit" data-i18n="plugins.install">Install</button></form>
               <div id="plugins-notice" class="settings-note"></div>
               <div id="plugins-list" class="plugins-list"></div>
+              <section class="plugin-inventory-section" aria-labelledby="plugin-inventory-title">
+                <div class="plugin-inventory-heading"><div><h4 id="plugin-inventory-title" data-i18n="plugins.runtimeTitle">Runtime inventory</h4><p data-i18n="plugins.runtimeDescription">Inspect loaded global plugins and Agent Preset compositions.</p></div><input id="plugin-inventory-search" type="search" data-i18n-placeholder="plugins.runtimeSearch" placeholder="Search module or entry ID"></div>
+                <div id="plugin-inventory-notice" class="settings-note" aria-live="polite"></div>
+                <div id="plugin-inventory-list" class="plugin-inventory-list"></div>
+              </section>
+            </section>
+            <section class="settings-page" data-settings-page="configuration">
+              <div class="settings-page-heading"><div><h3 data-i18n="settings.configuration">Configuration</h3><p class="settings-description" data-i18n="settings.configurationDescription">Edit settings exposed by the active Profile. Changes marked restart take effect after restarting.</p></div><button id="settings-refresh" type="button" data-i18n="common.refresh">Refresh</button></div>
+              <div id="settings-config-notice" class="settings-note" aria-live="polite"></div>
+              <div id="settings-config-list" class="settings-config-list"></div>
             </section>
           </div>
         </div>
       </section>
     </div>
-    <script type="module" src="/client-runtime.js"></script>
-    <script type="module" src="/app.js"></script>
+    <div id="permission-risk-dialog" class="workspace-backdrop" hidden>
+      <form id="permission-risk-form" class="workspace-dialog" role="dialog" aria-modal="true" aria-labelledby="permission-risk-title">
+        <h2 id="permission-risk-title" data-i18n="permissionRisk.title">Enable Full Access?</h2>
+        <p data-i18n="permissionRisk.description">This removes workspace confinement and approval prompts. Commands may read, modify, or delete files anywhere accessible to this process.</p>
+        <label class="checkbox"><input id="permission-risk-ack" type="checkbox"><span data-i18n="permissionRisk.acknowledge">I understand the risk</span></label>
+        <div class="dialog-actions"><button id="permission-risk-cancel" type="button" data-i18n="permissionRisk.cancel">Cancel</button><button id="permission-risk-confirm" class="primary" type="submit" disabled data-i18n="permissionRisk.confirm">Enable Full Access</button></div>
+      </form>
+    </div>
+    <div id="agent-preset-view-dialog" class="workspace-backdrop" hidden>
+      <section class="workspace-dialog agent-preset-view-dialog" role="dialog" aria-modal="true" aria-labelledby="agent-preset-view-title">
+        <header><h2 id="agent-preset-view-title"></h2><button id="agent-preset-view-close" type="button" aria-label="Close" data-i18n-aria-label="common.close">×</button></header>
+        <pre id="agent-preset-view-content"></pre>
+      </section>
+    </div>
+    <div id="agent-preset-copy-dialog" class="workspace-backdrop" hidden>
+      <form id="agent-preset-copy-form" class="workspace-dialog" role="dialog" aria-modal="true" aria-labelledby="agent-preset-copy-title">
+        <header><h2 id="agent-preset-copy-title" data-i18n="settings.presetCopyTitle">Duplicate Agent Preset</h2><button id="agent-preset-copy-close" type="button" aria-label="Close" data-i18n-aria-label="common.close">×</button></header>
+        <p id="agent-preset-copy-description"></p><label><span data-i18n="settings.presetId">Preset ID</span><input id="agent-preset-copy-id" required type="text" autocomplete="off" placeholder="my-preset"></label><label><span data-i18n="settings.presetName">Display name</span><input id="agent-preset-copy-name" type="text"></label><div id="agent-preset-copy-error" class="directory-browser-error" role="alert" hidden></div><div class="dialog-actions"><button id="agent-preset-copy-cancel" type="button" data-i18n="common.cancel">Cancel</button><button id="agent-preset-copy-submit" class="primary" type="submit" data-i18n="settings.presetCopy">Duplicate</button></div>
+      </form>
+    </div>
+    <div id="agent-preset-delete-dialog" class="workspace-backdrop" hidden>
+      <form id="agent-preset-delete-form" class="workspace-dialog" role="dialog" aria-modal="true" aria-labelledby="agent-preset-delete-title">
+        <header><h2 id="agent-preset-delete-title" data-i18n="settings.presetDeleteTitle">Delete Agent Preset</h2><button id="agent-preset-delete-close" type="button" aria-label="Close" data-i18n-aria-label="common.close">×</button></header><p id="agent-preset-delete-description"></p><div id="agent-preset-delete-error" class="directory-browser-error" role="alert" hidden></div><div class="dialog-actions"><button id="agent-preset-delete-cancel" type="button" data-i18n="common.cancel">Cancel</button><button id="agent-preset-delete-submit" class="danger" type="submit" data-i18n="settings.presetDelete">Delete</button></div>
+      </form>
+    </div>
+    <div id="workspace-dialog" class="workspace-backdrop" hidden>
+      <form id="workspace-form" class="workspace-dialog">
+        <h2 data-i18n="workspace.addTitle">Add workspace</h2>
+        <p data-i18n="workspace.addDescription">Register an existing local directory. Removing it later will not delete files or sessions.</p>
+        <label><span data-i18n="workspace.directory">Directory</span><span class="workspace-path-row"><input id="workspace-path" type="text" required><button id="workspace-browse" type="button" data-i18n="workspace.browse">Browse…</button></span></label>
+        <label><span data-i18n="workspace.name">Name</span><input id="workspace-title" type="text" placeholder="defaults to folder name" data-i18n-placeholder="workspace.namePlaceholder"></label>
+        <div class="dialog-actions"><button id="workspace-cancel" type="button" data-i18n="common.cancel">Cancel</button><button class="primary" type="submit" data-i18n="common.add">Add</button></div>
+      </form>
+    </div>
+    <div id="workspace-rename-dialog" class="workspace-backdrop" hidden>
+      <form id="workspace-rename-form" class="workspace-dialog workspace-mutation-dialog" role="dialog" aria-modal="true" aria-labelledby="workspace-rename-heading">
+        <header><h2 id="workspace-rename-heading" data-i18n="workspace.renameTitle">Rename workspace</h2><button id="workspace-rename-close" type="button" aria-label="Close" data-i18n-aria-label="common.close">×</button></header>
+        <label><span data-i18n="workspace.name">Name</span><input id="workspace-rename-name" type="text" required></label>
+        <div id="workspace-rename-error" class="directory-browser-error" role="alert" hidden></div>
+        <div class="dialog-actions"><button id="workspace-rename-cancel" type="button" data-i18n="common.cancel">Cancel</button><button id="workspace-rename-submit" class="primary" type="submit" disabled data-i18n="workspace.rename">Rename</button></div>
+      </form>
+    </div>
+    <div id="workspace-remove-dialog" class="workspace-backdrop" hidden>
+      <form id="workspace-remove-form" class="workspace-dialog workspace-mutation-dialog" role="dialog" aria-modal="true" aria-labelledby="workspace-remove-heading">
+        <header><h2 id="workspace-remove-heading" data-i18n="workspace.removeTitle">Remove workspace</h2><button id="workspace-remove-close" type="button" aria-label="Close" data-i18n-aria-label="common.close">×</button></header>
+        <p id="workspace-remove-description"></p><p data-i18n="workspace.removeRetention">The folder and session logs will be retained. Its sessions will appear under Ungrouped.</p>
+        <div id="workspace-remove-status" role="status" hidden data-i18n="workspace.removing">Removing workspace…</div>
+        <div id="workspace-remove-error" class="directory-browser-error" role="alert" hidden></div>
+        <div class="dialog-actions"><button id="workspace-remove-cancel" type="button" data-i18n="common.cancel">Cancel</button><button id="workspace-remove-submit" class="danger" type="submit" data-i18n="workspace.removeTitle">Remove workspace</button></div>
+      </form>
+    </div>
+    <div id="session-rename-dialog" class="workspace-backdrop" hidden>
+      <form id="session-rename-form" class="workspace-dialog workspace-mutation-dialog" role="dialog" aria-modal="true" aria-labelledby="session-rename-heading">
+        <header><h2 id="session-rename-heading" data-i18n="session.renameTitle">Rename session</h2><button id="session-rename-close" type="button" aria-label="Close" data-i18n-aria-label="common.close">×</button></header>
+        <label><span data-i18n="session.namePrompt">Session name</span><input id="session-rename-name" type="text" required></label>
+        <div id="session-rename-error" class="directory-browser-error" role="alert" hidden></div>
+        <div class="dialog-actions"><button id="session-rename-cancel" type="button" data-i18n="common.cancel">Cancel</button><button id="session-rename-submit" class="primary" type="submit" disabled data-i18n="session.rename">Rename session</button></div>
+      </form>
+    </div>
+    <div id="plugin-remove-dialog" class="workspace-backdrop" hidden>
+      <form id="plugin-remove-form" class="workspace-dialog workspace-mutation-dialog" role="dialog" aria-modal="true" aria-labelledby="plugin-remove-heading">
+        <header><h2 id="plugin-remove-heading" data-i18n="plugins.removeTitle">Remove plugin</h2><button id="plugin-remove-close" type="button" aria-label="Close" data-i18n-aria-label="common.close">×</button></header>
+        <p id="plugin-remove-description"></p>
+        <div id="plugin-remove-status" role="status" hidden data-i18n="plugins.removing">Removing plugin…</div>
+        <div id="plugin-remove-error" class="directory-browser-error" role="alert" hidden></div>
+        <div class="dialog-actions"><button id="plugin-remove-cancel" type="button" data-i18n="common.cancel">Cancel</button><button id="plugin-remove-submit" class="danger" type="submit" data-i18n="plugins.remove">Remove</button></div>
+      </form>
+    </div>
+    <div id="file-open-dialog" class="workspace-backdrop" hidden>
+      <section class="workspace-dialog file-open-dialog" role="dialog" aria-modal="true" aria-labelledby="file-open-title" aria-describedby="file-open-message">
+        <h2 id="file-open-title"></h2>
+        <p id="file-open-message"></p>
+        <div class="dialog-actions"><button id="file-open-cancel" type="button" data-i18n="common.cancel">Cancel</button><button id="file-open-retry" class="primary" type="button" data-i18n="common.retry">Retry</button></div>
+      </section>
+    </div>
+    <div id="directory-browser-dialog" class="workspace-backdrop" hidden>
+      <section class="workspace-dialog directory-browser-dialog" role="dialog" aria-modal="true" aria-labelledby="directory-browser-title">
+        <header><h2 id="directory-browser-title" data-i18n="directory.title">Select Workspace Directory</h2><button id="directory-browser-close" type="button" aria-label="Close" data-i18n-aria-label="common.close">×</button></header>
+        <div class="directory-browser-location"><nav id="directory-browser-crumbs" class="directory-browser-crumbs" aria-label="Directory path" data-i18n-aria-label="directory.path"></nav><button id="directory-browser-edit" type="button" data-i18n="directory.editPath">Edit path</button><form id="directory-browser-path-form" hidden><input id="directory-browser-path" type="text" aria-label="Directory path" data-i18n-aria-label="directory.path"><button class="primary" type="submit" data-i18n="directory.go">Go</button></form></div>
+        <div id="directory-browser-error" class="directory-browser-error" role="alert" hidden></div>
+        <div id="directory-browser-list" class="directory-browser-list" role="list"></div>
+        <span id="directory-browser-loading" class="directory-browser-loading" data-i18n="directory.loading" hidden>Loading…</span>
+        <p id="directory-browser-truncated" data-i18n="directory.truncated" hidden>Too many folders to list; only the beginning is shown.</p>
+        <footer><button id="directory-browser-hidden" type="button" aria-pressed="false" data-i18n="directory.showHidden">Show hidden files</button><button id="directory-browser-new" type="button" data-i18n="directory.newFolder">New folder</button><span></span><button id="directory-browser-cancel" type="button" data-i18n="common.cancel">Cancel</button><button id="directory-browser-open" class="primary" type="button" data-i18n="directory.open">Open</button></footer>
+        <div id="directory-create-dialog" class="directory-create-backdrop" hidden>
+          <form id="directory-create-form" class="directory-create-dialog" role="dialog" aria-modal="true" aria-labelledby="directory-create-title">
+            <h3 id="directory-create-title"></h3>
+            <label><span data-i18n="directory.folderName">Folder name</span><input id="directory-create-name" type="text" required></label>
+            <div id="directory-create-error" class="directory-browser-error" role="alert" hidden></div>
+            <div class="dialog-actions"><button id="directory-create-cancel" type="button" data-i18n="common.cancel">Cancel</button><button id="directory-create-submit" class="primary" type="submit" data-i18n="directory.create">Create</button></div>
+          </form>
+        </div>
+      </section>
+    </div>
+    <script type="importmap">{"imports":{"react":"/vendor/react-runtime.mjs?v=0.3.4-7","react/jsx-runtime":"/vendor/react-runtime.mjs?v=0.3.4-7","react-dom":"/vendor/react-runtime.mjs?v=0.3.4-7","react-dom/client":"/vendor/react-runtime.mjs?v=0.3.4-7"}}</script>
+    <div id="dsh-slot-root"></div>
+    <script type="module" src="/client-bootstrap.js?v=0.3.4-12"></script>
+    <script type="module" src="/app.js?v=0.3.4-205"></script>
   </body>
 </html>
