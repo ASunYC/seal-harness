@@ -17,6 +17,7 @@ export interface PolicyService {
 }
 
 export interface ApprovalRequest {
+  readonly sessionId?: SessionId;
   readonly title: string;
   readonly message: string;
   readonly details?: JsonObject;

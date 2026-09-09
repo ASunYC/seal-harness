@@ -1,5 +1,5 @@
-import type { JsonObject } from "./json.js";
-import type { ToolCallId } from "./ids.js";
+import type { JsonObject, JsonValue } from "./json.js";
+import type { MessageId, ToolCallId } from "./ids.js";
 
 export interface TextBlock {
   readonly type: "text";
@@ -17,6 +17,11 @@ export interface AttachmentBlock {
   readonly id: string;
   readonly name?: string;
   readonly mimeType?: string;
+  readonly bytes?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly originalDimensions?: { readonly width: number; readonly height: number };
+  readonly providerData?: JsonObject;
 }
 
 export type ContentBlock = TextBlock | ImageBlock | AttachmentBlock;
@@ -35,17 +40,27 @@ export interface ReasoningBlock {
   readonly providerData?: JsonObject;
 }
 
-export type AssistantContentBlock = TextBlock | ReasoningBlock | ToolCall;
+export type AssistantContentBlock = TextBlock | ImageBlock | AttachmentBlock | ReasoningBlock | ToolCall;
+
+export interface ModelReplayState {
+  /** Replayable provider state for a successful stop, tool call, or token limit terminal. */
+  readonly response: JsonValue;
+  readonly blocks?: readonly JsonValue[];
+}
 
 export interface UserMessage {
+  readonly id?: MessageId;
   readonly role: "user";
   readonly content: readonly ContentBlock[];
+  /** Optional durable producer identity; adapters preserve unknown JSON fields. */
+  readonly source?: JsonObject;
 }
 
 export interface AssistantMessage {
   readonly role: "assistant";
   readonly content: readonly AssistantContentBlock[];
   readonly providerData?: JsonObject;
+  readonly replayState?: ModelReplayState;
 }
 
 export interface ToolResultMessage {

@@ -1,10 +1,13 @@
 import type { AgentMessage, ContentBlock } from "./content.js";
-import type { SessionId } from "./ids.js";
+import type { MessageId, SessionId } from "./ids.js";
+import type { JsonObject } from "./json.js";
 
 export interface ContextRequest {
   readonly sessionId: SessionId;
   readonly cwd: string;
   readonly prompt: readonly ContentBlock[];
+  readonly promptMessageId?: MessageId;
+  readonly promptSource?: JsonObject;
   readonly history: readonly AgentMessage[];
   readonly signal: AbortSignal;
 }
