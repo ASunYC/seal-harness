@@ -11,3 +11,12 @@ sessions/
 *.log
 .DS_Store
 Thumbs.db
+__pycache__/
+*.py[cod]
+# Python SDK packaging outputs; source remains under python/sdk/src/seal_harness.
+/python/sdk/build/
+/python/sdk/src/*.egg-info/
+# Rebuilt by apps/web/scripts/build-react-runtime.mjs.
+apps/web/public/vendor/client-runtime.mjs
+apps/web/public/vendor/client-runtime.css
+apps/web/public/vendor/react-runtime.mjs
