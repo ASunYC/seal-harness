@@ -11,12 +11,18 @@ import {
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import {
   text,
+  sandboxServiceToken,
+  permissionPresetServiceToken,
   toolServiceToken,
   type ContentBlock,
   type JsonObject,
   type SealHarnessEvents,
   type ToolDefinition,
   type ToolService,
+  type SandboxMode,
+  type SandboxService,
+  type SessionId,
+  type PermissionPresetService,
 } from "@seal-harness/core";
 import { definePlugin } from "@seal-harness/kernel";
 
@@ -28,19 +34,21 @@ export interface WorkspaceToolsConfig {
   readonly shellTimeoutMs?: number;
   readonly enableShell?: boolean;
   readonly ignoredDirectories?: readonly string[];
+  readonly sandboxMode?: SandboxMode;
 }
 
 export const workspaceToolsPlugin = definePlugin<WorkspaceToolsConfig, SealHarnessEvents>({
   name: "workspace-tools",
   requires: [toolServiceToken],
+  optional: [sandboxServiceToken, permissionPresetServiceToken],
   setup(context, config) {
-    const tools = createWorkspaceTools(config);
+    const tools = createWorkspaceTools(config, context.has(sandboxServiceToken) ? context.use(sandboxServiceToken) : undefined, context.has(permissionPresetServiceToken) ? context.use(permissionPresetServiceToken) : undefined);
     const registry = context.use(toolServiceToken);
     for (const tool of tools) context.effect(registry.register(tool));
   },
 });
 
-export function createWorkspaceTools(config: WorkspaceToolsConfig = {}): ToolDefinition[] {
+export function createWorkspaceTools(config: WorkspaceToolsConfig = {}, sandbox?: SandboxService, permissions?: PermissionPresetService): ToolDefinition[] {
   const maxReadBytes = config.maxReadBytes ?? 256 * 1024;
   const maxOutputBytes = config.maxOutputBytes ?? 256 * 1024;
   const maxListEntries = config.maxListEntries ?? 2_000;
@@ -189,12 +197,14 @@ export function createWorkspaceTools(config: WorkspaceToolsConfig = {}): ToolDef
   ];
 
   if (config.enableShell !== false) {
+    const sandboxMode = config.sandboxMode ?? (sandbox === undefined ? "danger-full-access" : "workspace-write");
     tools.push({
       name: "shell",
-      description: "Run a shell command in the workspace. This always requires dangerous-operation policy.",
+      description: "Run a shell command under the Session permission preset's process policy.",
       inputSchema: objectSchema({ command: stringSchema("Shell command") }, ["command"]),
       classify(input, context) {
-        return action("shell", "dangerous", `Run shell command: ${stringInput(input, "command")}`, context.cwd);
+        const effectiveMode = permissions?.sandboxMode(context.sessionId) ?? sandboxMode;
+        return action("shell", effectiveMode === "danger-full-access" ? "dangerous" : "workspace-write", `Run shell command: ${stringInput(input, "command")}`, context.cwd);
       },
       async execute(input, context) {
         const root = await realpath(context.cwd);
@@ -204,6 +214,9 @@ export function createWorkspaceTools(config: WorkspaceToolsConfig = {}): ToolDef
           context.signal,
           config.shellTimeoutMs ?? 60_000,
           maxOutputBytes,
+          sandbox,
+          permissions === undefined ? sandboxMode : permissions.resolve(await permissions.current(context.sessionId)).sandbox,
+          context.sessionId,
         );
         const rendered = [
           result.stdout.length === 0 ? "" : `stdout:\n${result.stdout}`,
@@ -219,6 +232,7 @@ export function createWorkspaceTools(config: WorkspaceToolsConfig = {}): ToolDef
             exitCode: result.exitCode,
             timedOut: result.timedOut,
             truncated: result.truncated,
+            sandbox: result.sandbox,
           },
           isError: result.exitCode !== 0,
         };
@@ -234,6 +248,7 @@ interface ShellResult {
   readonly exitCode: number | null;
   readonly timedOut: boolean;
   readonly truncated: boolean;
+  readonly sandbox: { readonly mode: SandboxMode; readonly denied: boolean; readonly enforcement?: "full" | "partial" };
 }
 
 async function runShell(
@@ -242,12 +257,33 @@ async function runShell(
   signal: AbortSignal,
   timeoutMs: number,
   maxBytes: number,
+  sandbox: SandboxService | undefined,
+  sandboxMode: SandboxMode,
+  sessionId: SessionId,
 ): Promise<ShellResult> {
   signal.throwIfAborted();
+  const shellArgv = process.platform === "win32"
+    ? [process.env.ComSpec || "cmd.exe", "/d", "/s", "/c", command]
+    : [process.env.SHELL || "/bin/sh", "-c", command];
+  const confined = sandboxMode === "danger-full-access"
+    ? undefined
+    : await sandbox?.confine(shellArgv, { mode: sandboxMode, workspaceRoot: cwd, sessionId });
+  if (sandboxMode !== "danger-full-access" && confined === undefined) {
+    throw new Error(`sandbox mode "${sandboxMode}" requested but no SandboxService is available`);
+  }
+  const argv = confined?.argv ?? [command];
+  const program = argv[0];
+  if (program === undefined) throw new Error("resolved shell command is empty");
   return new Promise((resolvePromise, reject) => {
-    const child = spawn(command, {
+    const child = confined === undefined ? spawn(command, {
       cwd,
       shell: true,
+      windowsHide: true,
+      detached: process.platform !== "win32",
+      stdio: ["ignore", "pipe", "pipe"],
+    }) : spawn(program, [...argv.slice(1)], {
+      cwd,
+      shell: false,
       windowsHide: true,
       detached: process.platform !== "win32",
       stdio: ["ignore", "pipe", "pipe"],
@@ -297,15 +333,33 @@ async function runShell(
         reject(signal.reason instanceof Error ? signal.reason : new Error("Shell command aborted"));
         return;
       }
+      const stdoutText = decodeShellOutput(stdout);
+      const stderrText = decodeShellOutput(stderr);
+      const diagnosticText = `${stdoutText}\n${stderrText}`.toLowerCase();
+      if (exitCode !== 0 && confined?.runnerFailureSignatures.some(signature => stderrText.toLowerCase().includes(signature.toLowerCase()))) {
+        reject(new Error(`sandbox runner failed before executing the command: ${stderrText.trim() || `exit ${exitCode}`}`));
+        return;
+      }
       resolvePromise({
-        stdout: stdout.toString("utf8"),
-        stderr: stderr.toString("utf8"),
+        stdout: stdoutText,
+        stderr: stderrText,
         exitCode,
         timedOut,
         truncated,
+        sandbox: {
+          mode: sandboxMode,
+          denied: exitCode !== 0 && (confined?.denialSignatures.some(signature => diagnosticText.includes(signature.toLowerCase())) ?? false),
+          ...(confined === undefined ? {} : { enforcement: confined.enforcement }),
+        },
       });
     });
   });
+}
+
+function decodeShellOutput(buffer: Buffer<ArrayBufferLike>): string {
+  if (process.platform !== "win32") return buffer.toString("utf8");
+  try { return new TextDecoder("gbk").decode(buffer); }
+  catch { return buffer.toString("utf8"); }
 }
 
 async function terminateTree(child: ChildProcess): Promise<void> {
