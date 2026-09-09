@@ -15,16 +15,22 @@ describe("PluginProfileManager", () => {
     const root = await mkdtemp(join(tmpdir(), "seal-plugin-manager-"));
     temporary.push(root);
     const fixture = join(root, "fixture");
-    await writeFixture(fixture);
+    await writeFixture(fixture, [], [], ["@fixture/dynamic/client"], true);
     const runner = fixtureRunner(fixture);
     const manager = new PluginProfileManager({ home: join(root, "home"), profile: "web", runPackageManager: runner });
 
     const added = await manager.add(fixture);
+    expect(runner.calls[0]?.args).toEqual(["add", "--save-prod", "--save-exact", "--ignore-scripts", fixture]);
+    await expect(readFile(join(manager.profileRoot, "pnpm-workspace.yaml"), "utf8")).resolves.toBe(
+      "packages:\n  - .\n\nnodeLinker: hoisted\nautoInstallPeers: false\n",
+    );
     expect(added).toEqual([expect.objectContaining({
       name: "@fixture/dsh-skin",
       version: "1.2.3",
       enabled: true,
       clientInject: [],
+      clientExternal: ["@fixture/dynamic/client"],
+      clientImmediately: true,
       wiringId: "ui-fixture-skin",
       skin: expect.objectContaining({ id: "fixture", bodyAttr: "data-dsh-fixture" }),
     })]);
@@ -56,11 +62,22 @@ describe("PluginProfileManager", () => {
       missingHostServices: ["unknown-host"],
       missingClientServices: ["slots"],
     })]);
+    expect(await manager.doctor({ hostServiceAvailable: (name) => name === "unknown-host" })).toEqual([
+      expect.objectContaining({
+        status: "adapter-required",
+        missingHostServices: [],
+        missingClientServices: ["slots"],
+      }),
+    ]);
   });
 });
 
-function fixtureRunner(fixture: string): PackageManagerRunner {
-  return async (args, options) => {
+function fixtureRunner(fixture: string): PackageManagerRunner & {
+  readonly calls: Array<{ args: readonly string[] }>;
+} {
+  const calls: Array<{ args: readonly string[] }> = [];
+  const runner: PackageManagerRunner = async (args, options) => {
+    calls.push({ args: [...args] });
     const manifestPath = join(options.cwd, "package.json");
     const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as { dependencies: Record<string, string> };
     if (args[0] === "add") {
@@ -77,12 +94,15 @@ function fixtureRunner(fixture: string): PackageManagerRunner {
     }
     await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
   };
+  return Object.assign(runner, { calls });
 }
 
 async function writeFixture(
   root: string,
   hostInject: readonly string[] = [],
   clientInject: readonly string[] = [],
+  clientExternal: readonly string[] = [],
+  clientImmediately = false,
 ): Promise<void> {
   await mkdir(join(root, "lib"), { recursive: true });
   await writeFile(join(root, "package.json"), JSON.stringify({
@@ -91,7 +111,7 @@ async function writeFixture(
     type: "module",
     main: "lib/index.js",
     exports: { ".": "./lib/index.js", "./client": "./lib/client.js", "./package.json": "./package.json" },
-    dsh: { bundle: { patch: "./cordis.patch.yml" }, client: { inject: clientInject, platform: "web" } },
+    dsh: { bundle: { patch: "./cordis.patch.yml" }, client: { inject: clientInject, external: clientExternal, immediately: clientImmediately, platform: "web" } },
   }, null, 2));
   await writeFile(
     join(root, "lib", "index.js"),

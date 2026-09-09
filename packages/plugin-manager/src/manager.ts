@@ -33,6 +33,8 @@ export interface InstalledPlugin {
   readonly hostEntry: string;
   readonly clientEntry?: string;
   readonly clientInject: readonly string[];
+  readonly clientExternal: readonly string[];
+  readonly clientImmediately: boolean;
   readonly wiringId?: string;
   readonly enabled: boolean;
   readonly skin?: PluginSkin;
@@ -56,6 +58,11 @@ export interface PluginDoctorEntry extends InstalledPlugin {
   readonly error?: string;
 }
 
+export interface PluginDoctorOptions {
+  /** Runtime-aware Host service probe. Omit for the standalone CLI baseline. */
+  readonly hostServiceAvailable?: (service: string) => boolean;
+}
+
 interface ProfileManifest {
   name: string;
   private: true;
@@ -74,13 +81,12 @@ interface PackageManifest {
   readonly exports?: unknown;
   readonly dsh?: {
     readonly bundle?: { readonly patch?: unknown };
-    readonly client?: { readonly inject?: unknown; readonly platform?: unknown };
+    readonly client?: { readonly inject?: unknown; readonly external?: unknown; readonly immediately?: unknown; readonly platform?: unknown };
   };
 }
 
 const PROFILE_NAME = /^[a-zA-Z0-9._-]+$/;
-const SUPPORTED_HOST_SERVICES = new Set(["tools", "webServer"]);
-const SUPPORTED_CLIENT_SERVICES = new Set<string>();
+const SUPPORTED_HOST_SERVICES = new Set(["tools", "webServer", "connection", "typertGateway", "directoryPicker", "workspaceRegistry"]);
 
 export class PluginProfileManager {
   readonly home: string;
@@ -114,7 +120,11 @@ export class PluginProfileManager {
     if (!(await exists(patchPath))) await writeFile(patchPath, "[]\n", "utf8");
     const workspacePath = join(this.profileRoot, "pnpm-workspace.yaml");
     if (!(await exists(workspacePath))) {
-      await writeFile(workspacePath, "packages:\n  - .\n", "utf8");
+      await writeFile(
+        workspacePath,
+        "packages:\n  - .\n\nnodeLinker: hoisted\nautoInstallPeers: false\n",
+        "utf8",
+      );
     }
   }
 
@@ -180,6 +190,8 @@ export class PluginProfileManager {
           root: packageRootFallback(this.profileRoot, name),
           hostEntry: "",
           clientInject: [],
+          clientExternal: [],
+          clientImmediately: false,
           enabled: false,
         });
       }
@@ -187,11 +199,12 @@ export class PluginProfileManager {
     return entries.sort((left, right) => left.name.localeCompare(right.name));
   }
 
-  async doctor(): Promise<readonly PluginDoctorEntry[]> {
+  async doctor(options: PluginDoctorOptions = {}): Promise<readonly PluginDoctorEntry[]> {
     await this.ensure();
     const manifest = await this.readManifest();
     const state = await this.readState();
     const disabled = await readDisabledIds(this.patchPath());
+    const installedPackages = new Set(Object.keys(manifest.dependencies));
     const entries: PluginDoctorEntry[] = [];
     for (const [name, manifestSpec] of Object.entries(manifest.dependencies)) {
       const spec = state.specs[name] ?? manifestSpec;
@@ -199,9 +212,11 @@ export class PluginProfileManager {
         const installed = await this.inspect(name, spec, disabled);
         const module = await import(pathToFileURL(installed.hostEntry).href);
         const inject = stringArray(module.inject ?? module.default?.inject);
-        const missingHostServices = inject.filter((service) => !SUPPORTED_HOST_SERVICES.has(service));
+        const missingHostServices = inject.filter((service) =>
+          !(options.hostServiceAvailable?.(service) ?? SUPPORTED_HOST_SERVICES.has(service)),
+        );
         const missingClientServices = installed.clientInject.filter(
-          (service) => !SUPPORTED_CLIENT_SERVICES.has(service),
+          (dependency) => !installedPackages.has(dependency.endsWith("/client") ? dependency.slice(0, -"/client".length) : dependency),
         );
         entries.push({
           ...installed,
@@ -220,6 +235,8 @@ export class PluginProfileManager {
           root: packageRootFallback(this.profileRoot, name),
           hostEntry: "",
           clientInject: [],
+          clientExternal: [],
+          clientImmediately: false,
           enabled: false,
           hostInject: [],
           missingHostServices: [],
@@ -285,6 +302,8 @@ export class PluginProfileManager {
       hostEntry,
       ...(clientEntry === undefined ? {} : { clientEntry }),
       clientInject: stringArray(manifest.dsh?.client?.inject),
+      clientExternal: stringArray(manifest.dsh?.client?.external),
+      clientImmediately: manifest.dsh?.client?.immediately === true,
       ...(wiringId === undefined ? {} : { wiringId }),
       enabled: wiringId === undefined || !disabled.has(wiringId),
       ...(skin === undefined ? {} : { skin }),
