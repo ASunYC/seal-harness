@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { link, mkdir, open, readdir, readFile, unlink } from "node:fs/promises";
+import { link, mkdir, open, readdir, readFile, unlink, rename } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import {
   SessionAlreadyExistsError,
+  assertSessionSurfaceAppend,
+  materializeForkEvents,
   SessionConflictError,
   SessionNotFoundError,
   sessionId,
@@ -14,6 +16,7 @@ import {
   type SessionEvent,
   type SessionId,
   type SessionSnapshot,
+  type SessionRawArtifact,
   type SessionStore,
   type StoredSessionEvent,
 } from "@seal-harness/core";
@@ -43,23 +46,29 @@ export class JsonlSessionStore implements SessionStore {
   constructor(
     root: string,
     readonly now: () => Date = () => new Date(),
+    readonly notify: SessionNotifier = async () => {},
   ) {
     this.root = resolve(root);
   }
 
   async create(request: CreateSessionRequest): Promise<SessionSnapshot> {
-    return this.#serialized(request.id, async () => {
-      const transaction = this.#transaction(request.id, 1, [{
+    const result = await this.#serialized(request.id, async () => {
+      const created: SessionEvent = {
         type: "session.created",
         payload: {
           cwd: request.cwd,
           ...(request.metadata === undefined ? {} : { metadata: request.metadata }),
         },
-      }]);
+      };
+      const base = snapshot(request.id, expandTransactions(request.id, [this.#transaction(request.id, 1, [created])]));
+      assertSessionSurfaceAppend(base, request.initialEvents ?? []);
+      const transaction = this.#transaction(request.id, 1, [created, ...(request.initialEvents ?? [])]);
       await mkdir(this.root, { recursive: true });
       await this.#writeExclusive(this.#path(request.id), transaction, request.id);
       return snapshot(request.id, expandTransactions(request.id, [transaction]));
     });
+    await announce(this.notify, request.id, result.events);
+    return result;
   }
 
   async read(id: SessionId): Promise<SessionSnapshot | undefined> {
@@ -71,14 +80,35 @@ export class JsonlSessionStore implements SessionStore {
     }
   }
 
+  locate(id: SessionId): { readonly kind: "jsonl"; readonly path: string } {
+    return { kind: "jsonl", path: this.#path(id) };
+  }
+
+  async readRaw(id: SessionId, signal?: AbortSignal): Promise<SessionRawArtifact | undefined> {
+    signal?.throwIfAborted();
+    try {
+      const content = await readFile(this.#path(id), { encoding: "utf8", signal });
+      signal?.throwIfAborted();
+      return {
+        filename: `${Buffer.from(id).toString("base64url")}.jsonl`,
+        content,
+        snapshot: snapshot(id, this.#parseRecords(id, content)),
+      };
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+      throw error;
+    }
+  }
+
   async append(request: AppendSessionRequest): Promise<SessionSnapshot> {
-    return this.#serialized(request.id, async () => {
+    const result = await this.#serialized(request.id, async () => {
       const current = await this.read(request.id);
       if (current === undefined) throw new SessionNotFoundError(request.id);
       if (current.version !== request.expectedVersion) {
         throw new SessionConflictError(request.id, request.expectedVersion, current.version);
       }
       if (request.events.length === 0) return current;
+      assertSessionSurfaceAppend(current, request.events);
 
       const transaction = this.#transaction(
         request.id,
@@ -99,37 +129,16 @@ export class JsonlSessionStore implements SessionStore {
         ...expandTransactions(request.id, [transaction], current.version + 1),
       ]);
     });
+    if (request.events.length > 0) await announce(this.notify, request.id, result.events.slice(-request.events.length));
+    return result;
   }
 
   async fork(request: ForkSessionRequest): Promise<SessionSnapshot> {
     const source = await this.read(request.sourceId);
     if (source === undefined) throw new SessionNotFoundError(request.sourceId);
-    const throughVersion = request.throughVersion ?? source.version;
-    if (throughVersion < 1 || throughVersion > source.version) {
-      throw new RangeError(`Invalid fork version ${throughVersion} for session ${request.sourceId}`);
-    }
-    const selected = source.events.slice(0, throughVersion);
-    const created = selected.find((entry) => entry.event.type === "session.created");
-    if (created?.event.type !== "session.created") {
-      throw new Error(`Source session has no creation event: ${request.sourceId}`);
-    }
-    const events: SessionEvent[] = [
-      {
-        type: "session.created",
-        payload: created.event.payload,
-      },
-      {
-        type: "session.forked",
-        payload: { sourceSessionId: request.sourceId, sourceVersion: throughVersion },
-      },
-      ...selected.flatMap((entry) =>
-        entry.event.type === "message.appended" || entry.event.type === "context.compacted"
-          ? [entry.event]
-          : [],
-      ),
-    ];
+    const events = materializeForkEvents(source, request.throughVersion, request.metadata);
 
-    return this.#serialized(request.targetId, async () => {
+    const result = await this.#serialized(request.targetId, async () => {
       await mkdir(this.root, { recursive: true });
       const transaction = this.#transaction(request.targetId, 1, events);
       const targetPath = this.#path(request.targetId);
@@ -153,9 +162,28 @@ export class JsonlSessionStore implements SessionStore {
         expandTransactions(request.targetId, [transaction]),
       );
     });
+    await announce(this.notify, request.targetId, result.events);
+    return result;
   }
 
   async list(): Promise<readonly SessionSnapshot[]> {
+    return this.listExisting();
+  }
+
+  async delete(id: SessionId): Promise<boolean> {
+    return this.#serialized(id, async () => {
+      try {
+        // Retain a recoverable artifact outside the active .jsonl catalog.
+        await rename(this.#path(id), this.#path(id) + "." + randomUUID() + ".deleted");
+        return true;
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+        throw error;
+      }
+    });
+  }
+
+  private async listExisting(): Promise<readonly SessionSnapshot[]> {
     try {
       const entries = await readdir(this.root, { withFileTypes: true });
       const sessions: SessionSnapshot[] = [];
@@ -175,6 +203,10 @@ export class JsonlSessionStore implements SessionStore {
 
   async #readRecords(id: SessionId): Promise<StoredSessionEvent[]> {
     const content = await readFile(this.#path(id), "utf8");
+    return this.#parseRecords(id, content);
+  }
+
+  #parseRecords(id: SessionId, content: string): StoredSessionEvent[] {
     const lines = content.split("\n");
     const transactions: JsonlTransaction[] = [];
     let expectedSequence = 1;
@@ -251,9 +283,12 @@ export const jsonlSessionPlugin = definePlugin<JsonlSessionConfig, SealHarnessEv
   name: "session-jsonl",
   provides: [sessionStoreToken],
   setup(context, config) {
-    context.provide(sessionStoreToken, new JsonlSessionStore(config.root, config.now));
+    context.provide(sessionStoreToken, new JsonlSessionStore(config.root, config.now, (sessionId, events) => context.emit("session.appended", { sessionId, events })));
   },
 });
+
+type SessionNotifier = (sessionId: SessionId, events: readonly StoredSessionEvent[]) => Promise<void>;
+async function announce(notify: SessionNotifier, sessionId: SessionId, events: readonly StoredSessionEvent[]): Promise<void> { try { await notify(sessionId, events); } catch { /* persistence remains authoritative when an observer fails */ } }
 
 function validateTransaction(
   transaction: JsonlTransaction,

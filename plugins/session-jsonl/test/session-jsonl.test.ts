@@ -9,6 +9,23 @@ const temporary: string[] = [];
 afterEach(async () => Promise.all(temporary.splice(0).map((path) => rm(path, { recursive: true, force: true }))));
 
 describe("JsonlSessionStore", () => {
+  it("removes only the chosen session from the persistent catalog", async () => {
+    const root = await directory(); const store = new JsonlSessionStore(root);
+    const id = sessionId("delete-test");
+    await store.create({ id, cwd: "/workspace" });
+    expect(await store.delete(id)).toBe(true);
+    expect(await new JsonlSessionStore(root).read(id)).toBeUndefined();
+    expect(await store.list()).toEqual([]);
+    expect(await store.delete(id)).toBe(false);
+  });
+  it("commits initial events in the exclusive creation transaction", async () => {
+    const root = await directory(); const id = sessionId("seeded-jsonl");
+    const store = new JsonlSessionStore(root, () => new Date("2026-01-01T00:00:00Z"));
+    const created = await store.create({ id, cwd: "/workspace", initialEvents: [{ type: "message.appended", payload: { messageId: messageId("seed"), message: userMessage("seed") } }] });
+    expect(created.version).toBe(2);
+    await expect(new JsonlSessionStore(root).read(id)).resolves.toEqual(created);
+  });
+
   it("persists and reloads ordered events", async () => {
     const root = await directory();
     const id = sessionId("session/with-safe-filename");
@@ -25,6 +42,11 @@ describe("JsonlSessionStore", () => {
 
     expect(appended.version).toBe(2);
     await expect(new JsonlSessionStore(root).read(id)).resolves.toEqual(appended);
+    expect(store.locate(id)).toEqual({ kind: "jsonl", path: join(root, `${Buffer.from(id).toString("base64url")}.jsonl`) });
+    const raw = await store.readRaw(id);
+    expect(raw?.filename).toBe(`${Buffer.from(id).toString("base64url")}.jsonl`);
+    expect(raw?.content.endsWith("\n")).toBe(true);
+    expect(raw?.snapshot).toEqual(appended);
     await expect(store.list()).resolves.toEqual([appended]);
     await expect(store.append({ id, expectedVersion: 1, events: [] }))
       .rejects.toBeInstanceOf(SessionConflictError);
