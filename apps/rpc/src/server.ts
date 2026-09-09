@@ -2,6 +2,7 @@ import { createInterface } from "node:readline";
 import {
   agentServiceToken,
   modelServiceToken,
+  planModeServiceToken,
   sessionId,
   sessionStoreToken,
   text,
@@ -33,7 +34,7 @@ export async function runRpcServer(profile: Profile, io: RpcIo): Promise<void> {
       try {
         request = parseRequest(line);
       } catch (error) {
-        write(io, { id: null, error: message(error) });
+        write(io, { id: null, error: { code: -32700, message: message(error) } });
         continue;
       }
 
@@ -45,7 +46,7 @@ export async function runRpcServer(profile: Profile, io: RpcIo): Promise<void> {
         const result = await dispatch(kernel, request, io);
         write(io, { id: request.id, result });
       } catch (error) {
-        write(io, { id: request.id, error: message(error) });
+        write(io, { id: request.id, error: { code: -32603, message: message(error) } });
       }
     }
   } finally {
@@ -59,6 +60,9 @@ async function dispatch(
   request: RpcRequest,
   io: RpcIo,
 ): Promise<JsonValue> {
+  if (request.method === "initialize") {
+    return { serverInfo: { name: "seal-harness", version: "0.3.4" } };
+  }
   if (request.method === "listModels") {
     return await kernel.use(modelServiceToken).list() as unknown as JsonValue;
   }
@@ -77,6 +81,18 @@ async function dispatch(
     });
     return { id: fork.id, version: fork.version };
   }
+  if (request.method === "plan.get") {
+    const params = requiredParams(request);
+    if (!kernel.has(planModeServiceToken)) throw new Error("Plan mode is not available in this Profile");
+    return await kernel.use(planModeServiceToken).get(sessionId(stringParam(params, "sessionId"))) as unknown as JsonValue;
+  }
+  if (request.method === "plan.set") {
+    const params = requiredParams(request);
+    if (!kernel.has(planModeServiceToken)) throw new Error("Plan mode is not available in this Profile");
+    const active = params.active;
+    if (typeof active !== "boolean") throw new Error("active must be a boolean");
+    return await kernel.use(planModeServiceToken).set(sessionId(stringParam(params, "sessionId")), active) as unknown as JsonValue;
+  }
   if (request.method === "prompt") {
     const params = requiredParams(request);
     const promptRequest: AgentPromptRequest = {
@@ -92,6 +108,9 @@ async function dispatch(
       ...(optionalStringParam(params, "reasoning") === undefined
         ? {}
         : { reasoning: reasoningParam(params) }),
+      ...(optionalNumberParam(params, "maxTokens") === undefined
+        ? {}
+        : { maxTokens: positiveIntegerParam(params, "maxTokens") }),
     };
     const execution = await kernel.use(agentServiceToken).prompt(promptRequest);
     for await (const event of execution) {
@@ -113,12 +132,21 @@ async function dispatch(
   throw new Error(`Unknown RPC method: ${request.method}`);
 }
 
+function positiveIntegerParam(params: JsonObject, name: string): number {
+  const value = optionalNumberParam(params, name);
+  if (value === undefined || !Number.isInteger(value) || value <= 0) {
+    throw new Error(`${name} must be a positive integer`);
+  }
+  return value;
+}
+
 function parseRequest(line: string): RpcRequest {
   const value = JSON.parse(line) as unknown;
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new Error("RPC request must be an object");
   }
   const record = value as Record<string, unknown>;
+  if (record.jsonrpc !== undefined && record.jsonrpc !== "2.0") throw new Error("RPC jsonrpc must be 2.0");
   if (!(typeof record.id === "string" || typeof record.id === "number" || record.id === null)) {
     throw new Error("RPC id must be a string, number, or null");
   }
@@ -169,7 +197,7 @@ function reasoningParam(params: JsonObject): "off" | "low" | "medium" | "high" |
 }
 
 function write(io: RpcIo, value: unknown): void {
-  io.output.write(`${JSON.stringify(value)}\n`);
+  io.output.write(`${JSON.stringify(typeof value === "object" && value !== null ? { jsonrpc: "2.0", ...value } : value)}\n`);
 }
 
 function message(error: unknown): string {

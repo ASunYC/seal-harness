@@ -32,6 +32,7 @@ describe("RPC server", () => {
     });
     input.end([
       JSON.stringify({ id: 1, method: "listModels" }),
+      JSON.stringify({ jsonrpc: "1.0", id: 99, method: "listModels" }),
       JSON.stringify({
         id: 2,
         method: "prompt",
@@ -46,6 +47,8 @@ describe("RPC server", () => {
 
     const messages = output.trim().split("\n").map((line) => JSON.parse(line));
     expect(messages).toContainEqual(expect.objectContaining({ id: 1, result: [expect.any(Object)] }));
+    expect(messages.every((message) => message.jsonrpc === "2.0")).toBe(true);
+    expect(messages).toContainEqual({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "RPC jsonrpc must be 2.0" } });
     expect(messages).toContainEqual(expect.objectContaining({
       method: "event",
       params: expect.objectContaining({ requestId: 2, event: { type: "text_delta", delta: "rpc-ok" } }),
