@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/attachment-local",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Content-addressed local attachment plugin for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,7 +17,8 @@
   },
   "dependencies": {
     "@seal-harness/core": "workspace:^",
-    "@seal-harness/kernel": "workspace:^"
+    "@seal-harness/kernel": "workspace:^",
+    "sharp": "0.35.4"
   },
   "license": "MIT"
 }
