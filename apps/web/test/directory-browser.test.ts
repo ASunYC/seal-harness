@@ -1,0 +1,16 @@
+import { describe, expect, it } from "vitest";
+import { directoryDraftParts, displayDirectoryCrumbs, editableDirectoryPath, matchingDirectoryEntry, parentDirectoryCrumb, validDirectoryName, visibleDirectoryEntries } from "../public/directory-browser.js";
+
+describe("directory browser", () => {
+  const listing = { home: "/home/me", crumbs: [{ name: "/", path: "/", hidden: false }, { name: "home", path: "/home", hidden: false }, { name: "me", path: "/home/me", hidden: false }, { name: "src", path: "/home/me/src", hidden: false }] };
+  it("collapses breadcrumbs to Home inside the home subtree", () => expect(displayDirectoryCrumbs(listing, "Home").map((entry) => entry.name)).toEqual(["Home", "src"]));
+  it("filters host-marked hidden directories", () => expect(visibleDirectoryEntries([{ name: ".x", hidden: true }, { name: "src", hidden: false }], false)).toHaveLength(1));
+  it("prefix-filters and explicitly reveals dot matches", () => { const entries = [{ name: ".config", hidden: true }, { name: "src", hidden: false }, { name: "test", hidden: false }]; expect(visibleDirectoryEntries(entries, false, "s").map((entry) => entry.name)).toEqual(["src"]); expect(visibleDirectoryEntries(entries, false, ".c").map((entry) => entry.name)).toEqual([".config"]); expect(visibleDirectoryEntries(entries, false, "none").map((entry) => entry.name)).toEqual(["src", "test"]); });
+  it("keeps the selected row visible while hidden entries or prefixes are filtered", () => { const entries = [{ name: ".chosen", path: "/.chosen", hidden: true }, { name: "src", path: "/src", hidden: false }]; expect(visibleDirectoryEntries(entries, false, "s", "/.chosen").map((entry) => entry.name)).toEqual([".chosen", "src"]); });
+  it("accepts only one non-special folder-name segment", () => { expect(validDirectoryName("child")).toBe(true); expect(validDirectoryName("../child")).toBe(false); expect(validDirectoryName(" ")).toBe(false); });
+  it("seeds editable paths with the host platform separator", () => { expect(editableDirectoryPath({ home: "/home/me", path: "/tmp" })).toBe("/tmp/"); expect(editableDirectoryPath({ home: "C:\\Users\\me", path: "D:\\src" })).toBe("D:\\src\\"); });
+  it("splits draft directories without filtering an unrelated current level", () => { expect(directoryDraftParts({ home: "/home/me", path: "/home/me" }, "/tmp/so")).toEqual({ directory: "/tmp/", tail: null }); expect(directoryDraftParts({ home: "C:\\Users\\me", path: "D:\\src" }, "D:/src/te", { directory: "D:/src/", landed: "D:\\src" })).toEqual({ directory: "D:/src/", tail: "te" }); });
+  it("filters directly when the draft directory already names the listing", () => expect(directoryDraftParts({ home: "/home/me", path: "/tmp" }, "/tmp/so")).toEqual({ directory: "/tmp/", tail: "so" }));
+  it("finds the actual parent leg only below the displayed root", () => { expect(parentDirectoryCrumb(listing, "Home")?.path).toBe("/home/me"); expect(parentDirectoryCrumb({ ...listing, crumbs: listing.crumbs.slice(0, 3) }, "Home")).toBeNull(); });
+  it("matches parent entries with host-platform path casing", () => { expect(matchingDirectoryEntry({ home: "C:\\Users\\me", entries: [{ path: "C:\\Work", name: "Work" }] }, "c:\\work")?.name).toBe("Work"); expect(matchingDirectoryEntry({ home: "/home/me", entries: [{ path: "/Work", name: "Work" }] }, "/work")).toBeNull(); });
+});
