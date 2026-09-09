@@ -6,13 +6,14 @@ describe("WebApprovalService", () => {
     const service = new WebApprovalService();
     const controller = new AbortController();
     const result = service.request({
+      sessionId: "session-approval" as never,
       title: "Allow shell",
       message: "Run tests",
       signal: controller.signal,
     });
     const pending = service.list();
     expect(pending).toHaveLength(1);
-    expect(pending[0]).toMatchObject({ title: "Allow shell", message: "Run tests" });
+    expect(pending[0]).toMatchObject({ sessionId: "session-approval", title: "Allow shell", message: "Run tests" });
     expect(service.decide(pending[0]?.id ?? "", true)).toBe(true);
     await expect(result).resolves.toBe(true);
     expect(service.list()).toHaveLength(0);

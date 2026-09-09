@@ -3,6 +3,7 @@ import type { ApprovalRequest, ApprovalService, JsonObject } from "@seal-harness
 
 export interface PendingWebApproval {
   readonly id: string;
+  readonly sessionId?: string;
   readonly title: string;
   readonly message: string;
   readonly details?: JsonObject;
@@ -30,6 +31,7 @@ export class WebApprovalService implements ApprovalService {
       };
       const value: PendingWebApproval = {
         id,
+        ...(request.sessionId === undefined ? {} : { sessionId: request.sessionId }),
         title: request.title,
         message: request.message,
         ...(request.details === undefined ? {} : { details: request.details }),
