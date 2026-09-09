@@ -10,6 +10,17 @@ const temporary: string[] = [];
 afterEach(async () => Promise.all(temporary.splice(0).map((path) => rm(path, { recursive: true, force: true }))));
 
 describe("SqliteSessionStore", () => {
+  it("commits initial events in the same database creation transaction", async () => {
+    const root = await mkdtemp(join(tmpdir(), "seal-harness-sqlite-seed-")); temporary.push(root);
+    const path = join(root, "sessions.db"); const id = sessionId("seeded-sqlite");
+    const store = new SqliteSessionStore(path, () => new Date("2026-01-01T00:00:00Z"));
+    try {
+      const created = await store.create({ id, cwd: "/workspace", initialEvents: [{ type: "message.appended", payload: { messageId: messageId("seed"), message: userMessage("seed") } }] });
+      expect(created.version).toBe(2); expect((await store.read(id))?.events).toHaveLength(2);
+    } finally { store.close(); }
+    const reopened = new SqliteSessionStore(path); try { await expect(reopened.read(id)).resolves.toMatchObject({ version: 2 }); } finally { reopened.close(); }
+  });
+
   it("atomically creates, appends, reloads, lists, and forks", async () => {
     const root = await mkdtemp(join(tmpdir(), "seal-harness-sqlite-"));
     temporary.push(root);

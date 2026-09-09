@@ -3,6 +3,8 @@ import { dirname, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import {
   SessionAlreadyExistsError,
+  assertSessionSurfaceAppend,
+  materializeForkEvents,
   SessionConflictError,
   SessionNotFoundError,
   sessionId,
@@ -43,6 +45,7 @@ export class SqliteSessionStore implements SessionStore {
   constructor(
     path: string,
     readonly now: () => Date = () => new Date(),
+    readonly notify: SessionNotifier = async () => {},
   ) {
     if (path !== ":memory:") mkdirSync(dirname(resolve(path)), { recursive: true });
     this.database = new DatabaseSync(path);
@@ -83,16 +86,20 @@ export class SqliteSessionStore implements SessionStore {
         ...(request.metadata === undefined ? {} : { metadata: request.metadata }),
       },
     };
+    const initialEvents = request.initialEvents ?? [];
+    assertSessionSurfaceAppend({ id: request.id, version: 1, events: [{ sequence: 1, timestamp: new Date(0).toISOString(), event }] }, initialEvents);
     this.database.exec("BEGIN IMMEDIATE");
     try {
       this.database.prepare(
-        "INSERT INTO sessions (id, version, cwd, metadata_json) VALUES (?, 1, ?, ?)",
+        "INSERT INTO sessions (id, version, cwd, metadata_json) VALUES (?, ?, ?, ?)",
       ).run(
         request.id,
+        1 + initialEvents.length,
         request.cwd,
         request.metadata === undefined ? null : JSON.stringify(request.metadata),
       );
       this.#insertEvent(request.id, 1, event);
+      for (const [index, initial] of initialEvents.entries()) this.#insertEvent(request.id, index + 2, initial);
       this.database.exec("COMMIT");
     } catch (error) {
       this.database.exec("ROLLBACK");
@@ -103,6 +110,7 @@ export class SqliteSessionStore implements SessionStore {
     }
     const created = await this.read(request.id);
     if (created === undefined) throw new Error(`Failed to read created session: ${request.id}`);
+    await announce(this.notify, request.id, created.events);
     return created;
   }
 
@@ -129,6 +137,10 @@ export class SqliteSessionStore implements SessionStore {
   }
 
   async append(request: AppendSessionRequest): Promise<SessionSnapshot> {
+    const before = await this.read(request.id);
+    if (before === undefined) throw new SessionNotFoundError(request.id);
+    if (before.version !== request.expectedVersion) throw new SessionConflictError(request.id, request.expectedVersion, before.version);
+    assertSessionSurfaceAppend(before, request.events);
     this.database.exec("BEGIN IMMEDIATE");
     try {
       const row = this.database.prepare("SELECT version FROM sessions WHERE id = ?").get(
@@ -154,33 +166,16 @@ export class SqliteSessionStore implements SessionStore {
     }
     const updated = await this.read(request.id);
     if (updated === undefined) throw new SessionNotFoundError(request.id);
+    if (request.events.length > 0) await announce(this.notify, request.id, updated.events.slice(-request.events.length));
     return updated;
   }
 
   async fork(request: ForkSessionRequest): Promise<SessionSnapshot> {
     const source = await this.read(request.sourceId);
     if (source === undefined) throw new SessionNotFoundError(request.sourceId);
-    const throughVersion = request.throughVersion ?? source.version;
-    if (throughVersion < 1 || throughVersion > source.version) {
-      throw new RangeError(`Invalid fork version ${throughVersion} for session ${request.sourceId}`);
-    }
-    const selected = source.events.slice(0, throughVersion);
-    const created = selected.find((entry) => entry.event.type === "session.created");
-    if (created?.event.type !== "session.created") {
-      throw new Error(`Source session has no creation event: ${request.sourceId}`);
-    }
-    const events: SessionEvent[] = [
-      { type: "session.created", payload: created.event.payload },
-      {
-        type: "session.forked",
-        payload: { sourceSessionId: request.sourceId, sourceVersion: throughVersion },
-      },
-      ...selected.flatMap((entry) =>
-        entry.event.type === "message.appended" || entry.event.type === "context.compacted"
-          ? [entry.event]
-          : [],
-      ),
-    ];
+    const events = materializeForkEvents(source, request.throughVersion, request.metadata);
+    const created = events[0];
+    if (created?.type !== "session.created") throw new Error(`Source session has no creation event: ${request.sourceId}`);
 
     this.database.exec("BEGIN IMMEDIATE");
     try {
@@ -189,10 +184,10 @@ export class SqliteSessionStore implements SessionStore {
       ).run(
         request.targetId,
         events.length,
-        created.event.payload.cwd,
-        created.event.payload.metadata === undefined
+        created.payload.cwd,
+        created.payload.metadata === undefined
           ? null
-          : JSON.stringify(created.event.payload.metadata),
+          : JSON.stringify(created.payload.metadata),
       );
       for (const [index, event] of events.entries()) {
         this.#insertEvent(request.targetId, index + 1, event);
@@ -207,10 +202,19 @@ export class SqliteSessionStore implements SessionStore {
     }
     const target = await this.read(request.targetId);
     if (target === undefined) throw new Error(`Failed to read forked session: ${request.targetId}`);
+    await announce(this.notify, request.targetId, target.events);
     return target;
   }
 
   async list(): Promise<readonly SessionSnapshot[]> {
+    return this.listExisting();
+  }
+
+  async delete(id: SessionId): Promise<boolean> {
+    return Number(this.database.prepare("DELETE FROM sessions WHERE id = ?").run(id).changes) > 0;
+  }
+
+  private async listExisting(): Promise<readonly SessionSnapshot[]> {
     const rows = this.database.prepare("SELECT id FROM sessions ORDER BY rowid").all() as unknown as Array<{ id: string }>;
     const sessions: SessionSnapshot[] = [];
     for (const row of rows) {
@@ -231,8 +235,11 @@ export const sqliteSessionPlugin = definePlugin<SqliteSessionConfig, SealHarness
   name: "session-sqlite",
   provides: [sessionStoreToken],
   setup(context, config) {
-    const store = new SqliteSessionStore(config.path, config.now);
+    const store = new SqliteSessionStore(config.path, config.now, (sessionId, events) => context.emit("session.appended", { sessionId, events }));
     context.provide(sessionStoreToken, store);
     context.effect(() => store.close());
   },
 });
+
+type SessionNotifier = (sessionId: SessionId, events: readonly StoredSessionEvent[]) => Promise<void>;
+async function announce(notify: SessionNotifier, sessionId: SessionId, events: readonly StoredSessionEvent[]): Promise<void> { try { await notify(sessionId, events); } catch { /* persistence remains authoritative when an observer fails */ } }
