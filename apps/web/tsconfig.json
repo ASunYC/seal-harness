@@ -1,5 +1,5 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "noEmit": true, "types": ["node", "vitest/globals"] },
+  "compilerOptions": { "noEmit": true, "types": ["node", "vitest/globals"], "lib": ["ES2024", "DOM", "DOM.Iterable"] },
   "include": ["src/**/*.ts", "test/**/*.ts"]
 }
