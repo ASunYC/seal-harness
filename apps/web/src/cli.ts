@@ -15,7 +15,7 @@ export async function runWebCli(argv: readonly string[], environment: WebCliEnvi
     return 0;
   }
   if (!args.allowRemote && args.host !== undefined && !isLoopback(args.host)) {
-    throw new Error("Non-loopback --host requires --allow-remote; the Web UI has no user authentication");
+    throw new Error("Non-loopback --host requires --allow-remote");
   }
   const running = await startWebServer({
     cwd: args.cwd ?? environment.cwd,
@@ -24,9 +24,10 @@ export async function runWebCli(argv: readonly string[], environment: WebCliEnvi
     ...(args.provider === undefined ? {} : { provider: args.provider }),
     ...(args.pluginHome === undefined ? {} : { pluginHome: args.pluginHome }),
     pluginProfile: args.pluginProfile,
+    authenticate: true,
   });
-  environment.stdout.write(`Seal Harness Web UI: ${running.url}\n`);
-  if (!args.noOpen) openBrowser(running.url, environment.stderr);
+  environment.stdout.write(`Seal Harness Web UI: ${running.launchUrl}\n`);
+  if (!args.noOpen) openBrowser(running.launchUrl, environment.stderr);
   await waitForShutdown();
   await running.close();
   return 0;
@@ -113,4 +114,4 @@ function openBrowser(url: string, stderr: WebCliEnvironment["stderr"]): void {
   child.unref();
 }
 
-const HELP = `Seal Harness Web UI\n\nUsage:\n  seal-harness web [options]\n\nOptions:\n  --cwd <path>       Initial workspace (default: current directory)\n  --host <address>   Listen address (default: 127.0.0.1)\n  --port <number>    Listen port (default: 3080; 0 selects a free port)\n  --provider <name>  Initially selected provider (default: deepseek)\n  --profile <name>   Optional plugin profile (default: web)\n  --home <path>      Seal Harness home (default: ~/.seal-harness)\n  --no-open          Do not open the default browser\n  --allow-remote     Permit a non-loopback host (no user authentication)\n  -h, --help         Show help\n`;
+const HELP = `Seal Harness Web UI\n\nUsage:\n  seal-harness web [options]\n\nOptions:\n  --cwd <path>       Initial workspace (default: current directory)\n  --host <address>   Listen address (default: 127.0.0.1)\n  --port <number>    Listen port (default: 3080; 0 selects a free port)\n  --provider <name>  Initially selected provider (default: deepseek)\n  --profile <name>   Optional plugin profile (default: web)\n  --home <path>      Seal Harness home (default: ~/.seal-harness)\n  --no-open          Do not open the default browser\n  --allow-remote     Permit a non-loopback host (token authentication remains enabled)\n  -h, --help         Show help\n`;
