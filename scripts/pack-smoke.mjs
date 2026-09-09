@@ -293,15 +293,27 @@ async function smokeWeb(bin, cwd) {
       fetch(new URL("/api/health", authenticatedUrl), { headers }),
     ]);
     const indexText = await index.text();
-    if (
-      !index.ok
-      || !indexText.includes("Seal Harness")
-      || !indexText.includes('data-pane="conversation"')
-      || !indexText.includes("/vendor/client-runtime.mjs")
-      || !indexText.includes('id="settings-modal"')
-      || !indexText.includes('data-settings-page="plugins"')
-    ) {
-      throw new Error(`Packed Web UI index smoke failed: ${index.status}`);
+    const missingMarkers = [
+      "Seal Harness",
+      'data-pane="conversation"',
+      "/client-bootstrap.js",
+      'id="settings-modal"',
+      'data-settings-page="plugins"',
+    ].filter((marker) => !indexText.includes(marker));
+    if (!index.ok || missingMarkers.length > 0) {
+      throw new Error(`Packed Web UI index smoke failed: ${index.status}; missing: ${missingMarkers.join(", ")}`);
+    }
+    const bootstrapPath = /src="(\/client-bootstrap\.js[^"]*)"/.exec(indexText)?.[1];
+    if (bootstrapPath === undefined) throw new Error("Packed Web UI bootstrap script is missing");
+    const bootstrap = await fetch(new URL(bootstrapPath, authenticatedUrl), { headers });
+    const bootstrapText = await bootstrap.text();
+    const runtimePath = /import\("(\/vendor\/client-runtime\.mjs[^"]*)"\)/.exec(bootstrapText)?.[1];
+    if (!bootstrap.ok || runtimePath === undefined) {
+      throw new Error(`Packed Web UI bootstrap smoke failed: ${bootstrap.status}`);
+    }
+    const runtime = await fetch(new URL(runtimePath, authenticatedUrl), { headers });
+    if (!runtime.ok || !runtime.headers.get("content-type")?.includes("javascript") || (await runtime.text()).trim().length === 0) {
+      throw new Error(`Packed Web UI runtime asset smoke failed: ${runtime.status}`);
     }
     if (!health.ok || (await health.json()).status !== "ok") {
       throw new Error(`Packed Web UI health smoke failed: ${health.status}`);
