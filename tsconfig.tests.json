@@ -3,7 +3,8 @@
   "compilerOptions": {
     "composite": false,
     "noEmit": true,
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals"],
+    "lib": ["ES2024", "DOM", "DOM.Iterable"]
   },
   "include": [
     "packages/*/src/**/*.ts",
