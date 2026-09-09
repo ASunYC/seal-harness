@@ -37,7 +37,7 @@ export class ContextRegistry implements ContextService {
   async prepare(request: ContextRequest): Promise<PreparedContext> {
     request.signal.throwIfAborted();
     const sections = [this.baseSystemPrompt];
-    const prompt: UserMessage = { role: "user", content: request.prompt };
+    const prompt: UserMessage = { role: "user", content: request.prompt, ...(request.promptMessageId === undefined ? {} : { id: request.promptMessageId }), ...(request.promptSource === undefined ? {} : { source: request.promptSource }) };
     let additions: AgentMessage[] = [prompt];
     let messages: AgentMessage[] = [...request.history, prompt];
     for (const source of this.#sources.values()) {

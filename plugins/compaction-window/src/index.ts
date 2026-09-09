@@ -81,7 +81,8 @@ function renderMessage(message: AgentMessage, max: number): string {
     const parts = message.content.map((block) => {
       if (block.type === "text") return block.text;
       if (block.type === "reasoning") return "[reasoning omitted]";
-      return `[tool call ${block.name}]`;
+      if (block.type === "tool_call") return `[tool call ${block.name}]`;
+      return block.type === "attachment" ? `[image attachment ${block.id}]` : `[image ${block.mimeType}]`;
     });
     value = `assistant: ${parts.join(" ")}`;
   }

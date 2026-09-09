@@ -16,6 +16,7 @@ describe("WindowCompactionService", () => {
     const result = await service.compact({
       sessionId: sessionId("session"),
       messages,
+      model: { provider: "mock", model: "mock" },
       signal: new AbortController().signal,
     });
 
@@ -31,6 +32,7 @@ describe("WindowCompactionService", () => {
     await expect(service.compact({
       sessionId: sessionId("session"),
       messages: [userMessage("one")],
+      model: { provider: "mock", model: "mock" },
       signal: new AbortController().signal,
     })).resolves.toBeUndefined();
   });
