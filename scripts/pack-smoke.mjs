@@ -153,6 +153,18 @@ if (events.join(",") !== "packed,disposed") throw new Error("packed DSH plugin d
   if (!result.stdout.includes("packed-install-ok")) {
     throw new Error(`Packed CLI smoke output was unexpected: ${result.stdout}`);
   }
+  await writeFile(join(installRoot, "sdk-smoke.mjs"), `
+import { SealHarness } from "@seal-harness/sdk";
+await using harness = new SealHarness({
+  cwd: ${JSON.stringify(installRoot)},
+  configPath: ${JSON.stringify(join(installRoot, "seal-harness.config.mjs"))},
+  provider: "scripted",
+  model: "packed",
+});
+const result = await harness.run("sdk smoke", { sessionId: "packed-sdk" });
+if (result.finalResponse !== "packed-install-ok") throw new Error("packed SDK did not complete");
+`);
+  await run(process.execPath, [join(installRoot, "sdk-smoke.mjs")], installRoot, true);
   const launcherResult = await run(
     process.execPath,
     [join(installRoot, "node_modules", "@seal-harness", "launcher", "dist", "bin.js"), "help"],
@@ -162,12 +174,16 @@ if (events.join(",") !== "packed,disposed") throw new Error("packed DSH plugin d
   if (!launcherResult.stdout.includes("seal-harness web")) {
     throw new Error(`Packed launcher smoke output was unexpected: ${launcherResult.stdout}`);
   }
+  const acpHelp = await run(process.execPath, [packedLauncher, "acp", "--help"], installRoot, true);
+  if (!acpHelp.stdout.includes("Seal Harness ACP")) {
+    throw new Error(`Packed ACP launcher smoke output was unexpected: ${acpHelp.stdout}`);
+  }
   await smokeWeb(
     join(installRoot, "node_modules", "@seal-harness", "web", "dist", "bin.js"),
     installRoot,
   );
   process.stdout.write(
-    `Packed ${packages.length} packages and verified CLI, launcher, Web UI, plugin add/remove, DSH compatibility, and a clean install.\n`,
+    `Packed ${packages.length} packages and verified CLI, SDK, ACP, launcher, Web UI, plugin add/remove, DSH compatibility, and a clean install.\n`,
   );
 } finally {
   await rm(installRoot, { recursive: true, force: true });
@@ -264,16 +280,24 @@ async function smokeWeb(bin, cwd) {
     });
   });
   try {
+    const exchange = await fetch(url, { redirect: "manual" });
+    const cookie = exchange.headers.get("set-cookie")?.split(";", 1)[0];
+    if (exchange.status !== 303 || cookie === undefined) {
+      throw new Error(`Packed Web UI authentication exchange failed: ${exchange.status}`);
+    }
+    const authenticatedUrl = new URL(url);
+    authenticatedUrl.search = "";
+    const headers = { cookie };
     const [index, health] = await Promise.all([
-      fetch(url),
-      fetch(`${url}/api/health`),
+      fetch(authenticatedUrl, { headers }),
+      fetch(new URL("/api/health", authenticatedUrl), { headers }),
     ]);
     const indexText = await index.text();
     if (
       !index.ok
       || !indexText.includes("Seal Harness")
       || !indexText.includes('data-pane="conversation"')
-      || !indexText.includes("/client-runtime.js")
+      || !indexText.includes("/vendor/client-runtime.mjs")
       || !indexText.includes('id="settings-modal"')
       || !indexText.includes('data-settings-page="plugins"')
     ) {
