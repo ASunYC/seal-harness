@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/host",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Profile loading and kernel startup for Seal Harness",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,10 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "sideEffects": false,
   "engines": {
     "node": ">=22.19.0"
@@ -23,6 +26,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@deepseek-ai/dsh-http-proxy": "0.1.3-alpha.2",
     "@seal-harness/kernel": "workspace:^"
   },
   "license": "MIT"
