@@ -14,6 +14,7 @@ describe("Seal Harness launcher", () => {
     });
     expect(code).toBe(0);
     expect(stdout).toContain("seal-harness web");
+    expect(stdout).toContain("seal-harness acp");
     expect(stdout).toContain("seal-harness run");
     expect(stdout).toContain("seal-harness plugin");
   });

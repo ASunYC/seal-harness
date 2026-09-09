@@ -5,6 +5,7 @@
   "exclude": ["test/**/*.ts"],
   "references": [
     { "path": "../../packages/plugin-manager/tsconfig.build.json" },
+    { "path": "../acp/tsconfig.build.json" },
     { "path": "../cli/tsconfig.build.json" },
     { "path": "../web/tsconfig.build.json" }
   ]
