@@ -78,7 +78,8 @@ apps/cli
 
 插件是拥有 Node.js 进程权限的代码，安装即信任代码来源。模型可调用的有副作用
 能力必须经过独立的 Policy 服务；Tool 插件不能自行绕开 Policy。进程级文件、
-网络和命令隔离由可选 Sandbox 插件或部署容器实现。
+命令隔离通过可替换 `SandboxService` 实现；默认 Windows Profile 使用 ACL restricted
+token 对 Shell 和持久 PTY 实施文件写入边界。网络隔离仍由部署容器负责。
 
 默认 Profile 的目标是 `workspace-write + ask`：工作区外写入和高风险命令必须
 拒绝或请求审批。任何 API key 都只能由 Credential 服务按请求解析，不进入
@@ -104,7 +105,7 @@ Pi API 只能在 `runtime-pi` 和 `provider-pi-ai` 内出现。其他插件依�
 - 第一版不把全部 Provider、UI 和高级工具塞入默认安装。
 
 WebUI 是独立 `apps/web` 宿主，通过公共 Agent、Session 和 Model 服务工作；微内核和
-能力插件不依赖浏览器代码。`apps/launcher` 只负责选择 Headless 或 Web runner。
+能力插件不依赖浏览器代码。`apps/launcher` 只负责选择 Headless、Web 或 ACP runner。
 
 ## 9. DSH 兼容层
 
@@ -112,7 +113,11 @@ WebUI 是独立 `apps/web` 宿主，通过公共 Agent、Session 和 Model 服�
 Cordis Context。Web 产品携带轻量兼容运行时以保证开箱可安装，但第三方插件、主题素材和
 插件专有依赖只进入用户的隔离 Profile，不进入默认应用依赖闭包。
 
-`@seal-harness/plugin-manager` 只负责安装与发现，不把第三方插件编译进产品。每个 Profile
+`@seal-harness/plugin-manager` 负责隔离安装与发现，不把第三方插件编译进产品本身。每个 Profile
 拥有独立的 `package.json`、lockfile、`node_modules` 和 DSH patch。GitHub `#path:` 依赖
 使用 partial clone，只 checkout 包的运行时文件。Web Host 按 Profile 启动 Cordis Host
 插件，并从同源 `/plugins/.../client.js` 提供浏览器 Bundle。
+
+Profile 使用 hoisted linker 且关闭自动 peer 安装，与 DSH Profile 的插件解析边界一致。
+源码包的 `prepare`/构建脚本由 pnpm 10 的 Profile 级 `allowBuilds` 白名单控制；插件安装本身
+不会绕过 pnpm 的构建脚本信任门禁。

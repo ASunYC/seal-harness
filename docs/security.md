@@ -5,6 +5,10 @@
 Seal Harness 插件是任意 Node.js 代码，拥有启动进程授予的系统权限。安装插件等价于
 信任其源代码和依赖。微内核提供生命周期隔离，不提供进程级安全沙箱。
 
+Host 会在插件启动前把标准 HTTP 代理环境解析成统一的进程级网络策略。所有回环地址
+强制直连，非法或不支持的代理 URL 会被拒绝并输出不含凭据的诊断；Kernel 停止时恢复
+此前的 dispatcher 和代理环境。
+
 模型输出不可信。模型提供的工具参数必须经过：
 
 ```text
@@ -51,13 +55,16 @@ WebUI 的 Credential API 只更新当前进程持有的内存映射，不回传�
 
 ## Web Host
 
-Web Host 默认绑定 `127.0.0.1`，对带 `Origin` 的请求执行同源校验，并发送 CSP、
+Web Host 默认绑定 `127.0.0.1`，CLI 每次启动生成一次性 launch token，将其交换为
+`HttpOnly; SameSite=Strict` Cookie；Cookie 凭据以仅所有者可读的模式持久化，因此浏览器
+授权可跨 Host 重启继续使用。Host header 必须与实际监听 authority 完全相同，不能用伪造的
+`localhost` Host 绕过回环边界。服务还会对带 `Origin` 的请求执行同源校验，并发送 CSP、
 `X-Content-Type-Options`、`X-Frame-Options` 和禁用缓存的 API 响应头。非回环地址需要
 CLI 显式 `--allow-remote`。
 
-当前 Web Host 不包含用户身份认证或租户隔离。不得把它直接暴露到公网；远程使用应
-置于可信网络、SSH 转发或带 TLS 与认证的反向代理之后。工作区路径和 Session 内容均
-属于敏感本地数据。
+该令牌只提供单用户 Host 访问控制，不提供 TLS、用户账户、权限分级或租户隔离。不得直接
+暴露到公网；远程使用仍应置于可信网络、SSH 转发或带 TLS 的反向代理之后。启动 URL 中的
+token 与持久 Cookie 都属于敏感凭据。工作区路径和 Session 内容也属于敏感本地数据。
 
 ## Session
 
@@ -79,6 +86,20 @@ Shell 使用工作区作为 cwd，设置超时并在中止时终止进程树。�
 一旦批准，命令仍可能访问启动用户可访问的文件、网络和凭据。高保证部署必须在
 容器、虚拟机或系统沙箱中运行整个 Seal Harness 进程。
 
+Workflow 脚本在独立 Worker 和独立 `vm` Context 中运行，Worker 不继承宿主环境变量或
+Node 启动参数，并限制同步执行时间、并发 Agent、总 Agent 数及单次集合大小。它只暴露
+编排 Hook，不直接提供文件系统、网络、计时器或 Node API。该边界用于故障和生命周期
+隔离，不应视为对恶意 JavaScript 的操作系统级安全沙箱；高保证部署仍应隔离整个进程。
+
+配置给 `lsp-stdio` 的 language server 是受信任本地程序，继承当前执行用户和 workspace
+访问权。启动环境会清除名称含 `KEY`、`PASSWORD`、`SECRET`、`TOKEN` 以及 `DSH_`、`SEAL_HARNESS_` 前缀的
+变量；查询源在启动前经过 canonical workspace containment、普通文件、UTF-8 和大小检查。
+
+默认 Web 抓取只接受不含凭据的 HTTP(S) URL。主机名的全部 DNS 结果必须是公共地址，实际
+socket 固定到已验证地址以避免 DNS rebinding；自动重定向只允许同 origin，并对 URL、跳转、
+响应字节、解码字符和执行时间分别设限。外部正文进入模型上下文时始终带不可信数据标记，
+HTML 的脚本、样式、隐藏节点、iframe、object 和 embed 在转换前移除。
+
 ## MCP
 
 MCP Server 是独立信任边界。发现到的工具不会直接交给 Runtime，而是注册进同一个
@@ -98,7 +119,6 @@ ToolService；默认风险是 `external`，因此默认 Policy 要求审批。st
 ## 尚未完成
 
 - 插件签名和来源白名单；
-- 进程级 Sandbox 插件；
 - Session 静态加密；
 - 网络域名 Policy；
 - Windows Job Object/POSIX cgroup 级子进程保证。
