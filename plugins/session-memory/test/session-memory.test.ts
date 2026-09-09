@@ -68,4 +68,15 @@ describe("MemorySessionStore", () => {
       event: { payload: { sourceSessionId: sourceId, sourceVersion: 2 } },
     });
   });
+
+  it("announces every committed mutation and contains observer failures", async () => {
+    const announced: Array<{ id: string; types: string[] }> = [];
+    const store = new MemorySessionStore(undefined, async (id, events) => { announced.push({ id, types: events.map((entry) => entry.event.type) }); });
+    const id = sessionId("observed"); const created = await store.create({ id, cwd: "/workspace" });
+    await store.append({ id, expectedVersion: created.version, events: [{ type: "message.appended", payload: { messageId: messageId("observed-message"), message: userMessage("hello") } }] });
+    expect(announced).toEqual([{ id, types: ["session.created"] }, { id, types: ["message.appended"] }]);
+
+    const resilient = new MemorySessionStore(undefined, async () => { throw new Error("observer failed"); });
+    await expect(resilient.create({ id: sessionId("resilient"), cwd: "/workspace" })).resolves.toMatchObject({ version: 1 });
+  });
 });

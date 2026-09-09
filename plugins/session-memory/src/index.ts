@@ -1,5 +1,7 @@
 import {
   SessionAlreadyExistsError,
+  assertSessionSurfaceAppend,
+  materializeForkEvents,
   SessionConflictError,
   SessionNotFoundError,
   sessionStoreToken,
@@ -21,7 +23,7 @@ export interface MemorySessionConfig {
 export class MemorySessionStore implements SessionStore {
   readonly #sessions = new Map<SessionId, SessionSnapshot>();
 
-  constructor(readonly now: () => Date = () => new Date()) {}
+  constructor(readonly now: () => Date = () => new Date(), readonly notify: SessionNotifier = async () => {}) {}
 
   async create(request: CreateSessionRequest): Promise<SessionSnapshot> {
     if (this.#sessions.has(request.id)) throw new SessionAlreadyExistsError(request.id);
@@ -36,16 +38,26 @@ export class MemorySessionStore implements SessionStore {
         },
       },
     };
+    const base: SessionSnapshot = { id: request.id, version: 1, events: [created] };
+    assertSessionSurfaceAppend(base, request.initialEvents ?? []);
+    const initial = (request.initialEvents ?? []).map((event, index): StoredSessionEvent => ({ sequence: index + 2, timestamp: this.now().toISOString(), event }));
     const snapshot: SessionSnapshot = {
       id: request.id,
-      version: 1,
-      events: [created],
+      version: 1 + initial.length,
+      events: [created, ...initial],
     };
     this.#sessions.set(request.id, clone(snapshot));
+    await announce(this.notify, request.id, snapshot.events);
     return clone(snapshot);
   }
 
   async read(id: SessionId): Promise<SessionSnapshot | undefined> {
+    return this.readExisting(id);
+  }
+
+  async delete(id: SessionId): Promise<boolean> { return this.#sessions.delete(id); }
+
+  private async readExisting(id: SessionId): Promise<SessionSnapshot | undefined> {
     const snapshot = this.#sessions.get(id);
     return snapshot === undefined ? undefined : clone(snapshot);
   }
@@ -57,6 +69,7 @@ export class MemorySessionStore implements SessionStore {
       throw new SessionConflictError(request.id, request.expectedVersion, current.version);
     }
     if (request.events.length === 0) return clone(current);
+    assertSessionSurfaceAppend(current, request.events);
 
     const appended = request.events.map((event, index): StoredSessionEvent => ({
       sequence: current.version + index + 1,
@@ -69,6 +82,7 @@ export class MemorySessionStore implements SessionStore {
       events: [...current.events, ...appended],
     };
     this.#sessions.set(request.id, clone(next));
+    await announce(this.notify, request.id, appended);
     return clone(next);
   }
 
@@ -78,30 +92,7 @@ export class MemorySessionStore implements SessionStore {
     }
     const source = this.#sessions.get(request.sourceId);
     if (source === undefined) throw new SessionNotFoundError(request.sourceId);
-    const throughVersion = request.throughVersion ?? source.version;
-    if (throughVersion < 1 || throughVersion > source.version) {
-      throw new RangeError(`Invalid fork version ${throughVersion} for session ${request.sourceId}`);
-    }
-    const selected = source.events.slice(0, throughVersion);
-    const created = selected.find((entry) => entry.event.type === "session.created");
-    if (created?.event.type !== "session.created") {
-      throw new Error(`Source session has no creation event: ${request.sourceId}`);
-    }
-    const events = [
-      {
-        type: "session.created" as const,
-        payload: created.event.payload,
-      },
-      {
-        type: "session.forked" as const,
-        payload: { sourceSessionId: request.sourceId, sourceVersion: throughVersion },
-      },
-      ...selected.flatMap((entry) =>
-        entry.event.type === "message.appended" || entry.event.type === "context.compacted"
-          ? [entry.event]
-          : [],
-      ),
-    ];
+    const events = materializeForkEvents(source, request.throughVersion, request.metadata);
     const stored = events.map((event, index): StoredSessionEvent => ({
       sequence: index + 1,
       timestamp: this.now().toISOString(),
@@ -113,6 +104,7 @@ export class MemorySessionStore implements SessionStore {
       events: stored,
     };
     this.#sessions.set(request.targetId, clone(target));
+    await announce(this.notify, request.targetId, stored);
     return clone(target);
   }
 
@@ -125,10 +117,13 @@ export const memorySessionPlugin = definePlugin<MemorySessionConfig, SealHarness
   name: "session-memory",
   provides: [sessionStoreToken],
   setup(context, config) {
-    context.provide(sessionStoreToken, new MemorySessionStore(config.now));
+    context.provide(sessionStoreToken, new MemorySessionStore(config.now, (sessionId, events) => context.emit("session.appended", { sessionId, events })));
   },
 });
 
 function clone<T>(value: T): T {
   return structuredClone(value);
 }
+
+type SessionNotifier = (sessionId: SessionId, events: readonly StoredSessionEvent[]) => Promise<void>;
+async function announce(notify: SessionNotifier, sessionId: SessionId, events: readonly StoredSessionEvent[]): Promise<void> { try { await notify(sessionId, events); } catch { /* persistence remains authoritative when an observer fails */ } }
