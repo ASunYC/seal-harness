@@ -17,7 +17,8 @@ const MODEL: Model<any> = {
 
 describe("Pi message conversion", () => {
   it("preserves opaque reasoning and tool signatures across a round trip", () => {
-    const source: AssistantMessage = {
+    const replayState = { response: "opaque-response", blocks: [null, { thoughtSignature: "signature-2" }] } as const;
+    const source: AssistantMessage & { sealReplayState: typeof replayState } = {
       role: "assistant",
       content: [
         {
@@ -49,10 +50,14 @@ describe("Pi message conversion", () => {
       },
       stopReason: "toolUse",
       timestamp: 123,
+      sealReplayState: replayState,
     };
 
     const core = fromPiAssistantMessage(source);
     const restored = toPiMessage(core, MODEL);
+
+    expect(core.replayState).toEqual(replayState);
+    expect((restored as AssistantMessage & { sealReplayState?: unknown }).sealReplayState).toEqual(replayState);
 
     expect(restored).toMatchObject({
       role: "assistant",

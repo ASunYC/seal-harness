@@ -38,7 +38,9 @@ export function toPiMessage(message: CoreMessage, model: Model<any>): PiMessage 
       role: "user",
       content: message.content.map(toPiVisibleBlock),
       timestamp: now,
-    };
+      ...(message.source === undefined ? {} : { sealSource: message.source }),
+      ...(message.id === undefined ? {} : { sealMessageId: message.id }),
+    } as PiMessage;
   }
 
   if (message.role === "tool") {
@@ -61,6 +63,7 @@ export function toPiMessage(message: CoreMessage, model: Model<any>): PiMessage 
     usage: EMPTY_USAGE,
     stopReason: toPiStopReason(readString(message.providerData, "stopReason")),
     timestamp: readNumber(message.providerData, "timestamp") ?? now,
+    ...(message.replayState === undefined ? {} : { sealReplayState: message.replayState }),
   };
 }
 
@@ -73,7 +76,9 @@ export function fromPiMessage(message: PiMessage): CoreMessage {
     const content = typeof message.content === "string"
       ? [{ type: "text" as const, text: message.content }]
       : message.content.map(fromPiVisibleBlock);
-    return { role: "user", content };
+    const source = readJsonObject(message as unknown as Record<string, unknown>, "sealSource");
+    const id = readString(message as unknown as JsonObject, "sealMessageId");
+    return { role: "user", content, ...(id === undefined ? {} : { id: id as import("@seal-harness/core").MessageId }), ...(source === undefined ? {} : { source }) };
   }
 
   if (message.role === "toolResult") {
@@ -91,6 +96,7 @@ export function fromPiMessage(message: PiMessage): CoreMessage {
 }
 
 export function fromPiAssistantMessage(message: PiAssistantMessage): CoreAssistantMessage {
+  const replayState = (message as PiAssistantMessage & { sealReplayState?: import("@seal-harness/core").ModelReplayState }).sealReplayState;
   return {
     role: "assistant",
     content: message.content.map((block): AssistantContentBlock => {
@@ -126,6 +132,7 @@ export function fromPiAssistantMessage(message: PiAssistantMessage): CoreAssista
       rawStopReason: message.rawStopReason,
       timestamp: message.timestamp,
     }),
+    ...(replayState === undefined ? {} : { replayState }),
   };
 }
 
@@ -149,6 +156,8 @@ function fromPiVisibleBlock(block: PiTextContent | PiImageContent): ContentBlock
 
 function toPiAssistantBlock(block: AssistantContentBlock): PiAssistantMessage["content"][number] {
   if (block.type === "text") return { type: "text", text: block.text };
+  if (block.type === "image") return { type: "text", text: `[assistant image ${block.mimeType}]` };
+  if (block.type === "attachment") throw new TypeError(`Assistant attachment ${block.id} must be resolved before entering the Pi runtime`);
   if (block.type === "reasoning") {
     const thinkingSignature = readString(block.providerData, "thinkingSignature");
     const redacted = readBoolean(block.providerData, "redacted");
@@ -196,6 +205,11 @@ function readNumber(object: JsonObject | undefined, key: string): number | undef
 function readBoolean(object: JsonObject | undefined, key: string): boolean | undefined {
   const value = object?.[key];
   return typeof value === "boolean" ? value : undefined;
+}
+
+function readJsonObject(object: Record<string, unknown>, key: string): JsonObject | undefined {
+  const value = object[key];
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? value as JsonObject : undefined;
 }
 
 function compactJson(values: Record<string, JsonValue | undefined>): JsonObject {

@@ -12,6 +12,7 @@ import type {
   JsonObject,
   JsonSchema,
   ModelInfo,
+  ModelRef,
   ModelService,
   ModelStopReason,
   ModelUsage,
@@ -37,14 +38,35 @@ export function createModelBridge(modelService: ModelService): StreamFn {
   return (model, context, options) => bridgeRequest(modelService, model, context, options);
 }
 
+export interface ModelBridgeRetry {
+  (failure: { readonly message: string; readonly code: string }, provider: string, signal: AbortSignal): Promise<{
+    readonly model: Model<any>;
+    readonly options: SimpleStreamOptions;
+  } | undefined>;
+}
+
+export function createRetryableModelBridge(modelService: ModelService, retry: ModelBridgeRetry): StreamFn {
+  return (model, context, options) => bridgeRequest(modelService, model, context, options, retry);
+}
+
+/** Internal zero-content response used when a pre-step interceptor rejects before provider I/O. */
+export function createRejectedStepStream(model: Model<any>): AssistantMessageEventStream {
+  const output = createAssistantMessageEventStream();
+  const partial = createPartial(model);
+  output.push({ type: "start", partial });
+  finish(output, partial, "stop");
+  return output;
+}
+
 function bridgeRequest(
   modelService: ModelService,
   model: Model<any>,
   context: Context,
   options?: SimpleStreamOptions,
+  retry?: ModelBridgeRetry,
 ): AssistantMessageEventStream {
   const output = createAssistantMessageEventStream();
-  void pump(modelService, model, context, options, output);
+  void pump(modelService, model, context, options, output, retry);
   return output;
 }
 
@@ -54,11 +76,16 @@ async function pump(
   context: Context,
   options: SimpleStreamOptions | undefined,
   output: AssistantMessageEventStream,
+  retry?: ModelBridgeRetry,
 ): Promise<void> {
-  const partial = createPartial(model);
+  let activeModel = model;
+  let activeOptions = options;
+  const partial = createPartial(activeModel);
   output.push({ type: "start", partial });
   let open: { type: "text" | "thinking"; index: number } | undefined;
   let terminal = false;
+  const settledUsage: RoutedUsage[] = [];
+  let currentUsage: RoutedUsage | undefined;
 
   const closeOpenBlock = (): void => {
     if (open === undefined) return;
@@ -71,9 +98,9 @@ async function pump(
     open = undefined;
   };
 
-  try {
+  while (true) try {
     const stream = modelService.stream({
-      model: { provider: model.provider, model: model.id },
+      model: { provider: activeModel.provider, model: activeModel.id },
       systemPrompt: context.systemPrompt ?? "",
       messages: fromPiMessages(context.messages),
       tools: (context.tools ?? []).map((tool) => ({
@@ -81,10 +108,10 @@ async function pump(
         description: tool.description,
         inputSchema: toJsonSchema(tool.parameters),
       })),
-      signal: options?.signal ?? new AbortController().signal,
-      ...(options?.temperature === undefined ? {} : { temperature: options.temperature }),
-      ...(options?.maxTokens === undefined ? {} : { maxOutputTokens: options.maxTokens }),
-      ...(options?.reasoning === undefined ? {} : { reasoning: normalizeReasoning(options.reasoning) }),
+      signal: activeOptions?.signal ?? new AbortController().signal,
+      ...(activeOptions?.temperature === undefined ? {} : { temperature: activeOptions.temperature }),
+      ...(activeOptions?.maxTokens === undefined ? {} : { maxOutputTokens: activeOptions.maxTokens }),
+      ...(activeOptions?.reasoning === undefined ? {} : { reasoning: normalizeReasoning(activeOptions.reasoning) }),
     });
 
     for await (const event of stream) {
@@ -130,10 +157,16 @@ async function pump(
           break;
         }
         case "usage":
-          partial.usage = toPiUsage(event.usage);
+          currentUsage = toPiUsage(event.usage, { provider: activeModel.provider, model: activeModel.id });
+          partial.usage = aggregatePiUsage([...settledUsage, currentUsage]);
           break;
         case "done": {
           closeOpenBlock();
+          if (event.stopReason === "error" && retry !== undefined) throw new Error("Model request failed");
+          if (currentUsage !== undefined || settledUsage.length > 0) partial.usage = aggregatePiUsage([...settledUsage, ...(currentUsage === undefined ? [] : [currentUsage])]);
+          if (event.replayState !== undefined && event.stopReason !== "error" && event.stopReason !== "aborted") {
+            (partial as AssistantMessage & { sealReplayState?: import("@seal-harness/core").ModelReplayState }).sealReplayState = event.replayState;
+          }
           terminal = true;
           finish(output, partial, event.stopReason);
           break;
@@ -144,13 +177,36 @@ async function pump(
 
     if (!terminal) {
       closeOpenBlock();
-      finish(output, partial, options?.signal?.aborted === true ? "aborted" : "stop");
+      finish(output, partial, activeOptions?.signal?.aborted === true ? "aborted" : "stop");
     }
+    return;
   } catch (error) {
     closeOpenBlock();
-    partial.stopReason = options?.signal?.aborted === true ? "aborted" : "error";
+    const signal = activeOptions?.signal ?? new AbortController().signal;
+    if (!signal.aborted && retry !== undefined) {
+      const message = error instanceof Error ? error.message : String(error);
+      const next = await retry({ message, code: "UNKNOWN" }, activeModel.provider, signal);
+      signal.throwIfAborted();
+      if (next !== undefined) {
+        if (currentUsage !== undefined) settledUsage.push(currentUsage);
+        currentUsage = undefined;
+        activeModel = next.model;
+        activeOptions = next.options;
+        partial.content.splice(0);
+        partial.provider = activeModel.provider;
+        partial.model = activeModel.id;
+        partial.stopReason = "pending";
+        partial.usage = settledUsage.length === 0 ? { ...EMPTY_USAGE, cost: { ...EMPTY_USAGE.cost } } : aggregatePiUsage(settledUsage);
+        delete partial.errorMessage;
+        terminal = false;
+        continue;
+      }
+    }
+    partial.stopReason = signal.aborted ? "aborted" : "error";
+    if (currentUsage !== undefined || settledUsage.length > 0) partial.usage = aggregatePiUsage([...settledUsage, ...(currentUsage === undefined ? [] : [currentUsage])]);
     partial.errorMessage = error instanceof Error ? error.message : String(error);
     output.push({ type: "error", reason: partial.stopReason, error: partial });
+    return;
   }
 }
 
@@ -204,13 +260,17 @@ function normalizeReasoning(value: string): "off" | "low" | "medium" | "high" | 
   return "off";
 }
 
-function toPiUsage(usage: ModelUsage): Usage {
+type RoutedUsage = Usage & { readonly sealRoutes?: readonly ModelRef[] };
+
+function toPiUsage(usage: ModelUsage, fallbackRoute?: ModelRef): RoutedUsage {
   return {
     input: usage.inputTokens,
     output: usage.outputTokens,
     cacheRead: usage.cacheReadTokens ?? 0,
     cacheWrite: usage.cacheWriteTokens ?? 0,
-    totalTokens: usage.inputTokens + usage.outputTokens + (usage.cacheReadTokens ?? 0) + (usage.cacheWriteTokens ?? 0),
+    ...(usage.reasoningTokens === undefined ? {} : { reasoning: usage.reasoningTokens }),
+    ...((usage.routes ?? (fallbackRoute === undefined ? undefined : [fallbackRoute])) === undefined ? {} : { sealRoutes: usage.routes ?? [fallbackRoute!] }),
+    totalTokens: usage.totalTokens ?? usage.inputTokens + usage.outputTokens + (usage.cacheReadTokens ?? 0) + (usage.cacheWriteTokens ?? 0),
     cost: {
       input: 0,
       output: 0,
@@ -219,6 +279,36 @@ function toPiUsage(usage: ModelUsage): Usage {
       total: usage.costUsd ?? 0,
     },
   };
+}
+
+function aggregatePiUsage(values: readonly RoutedUsage[]): RoutedUsage {
+  const sum = (select: (usage: Usage) => number): number => values.reduce((total, usage) => total + select(usage), 0);
+  const reasoning = values.every((usage) => usage.reasoning !== undefined) ? sum((usage) => usage.reasoning!) : undefined;
+  const cacheWrite1h = values.every((usage) => usage.cacheWrite1h !== undefined) ? sum((usage) => usage.cacheWrite1h!) : undefined;
+  const routes = values.every((usage) => usage.sealRoutes !== undefined) ? uniqueRoutes(values.flatMap((usage) => usage.sealRoutes!)) : undefined;
+  return {
+    input: sum((usage) => usage.input),
+    output: sum((usage) => usage.output),
+    cacheRead: sum((usage) => usage.cacheRead),
+    cacheWrite: sum((usage) => usage.cacheWrite),
+    ...(cacheWrite1h === undefined ? {} : { cacheWrite1h }),
+    ...(reasoning === undefined ? {} : { reasoning }),
+    ...(routes === undefined ? {} : { sealRoutes: routes }),
+    totalTokens: sum((usage) => usage.totalTokens),
+    cost: {
+      input: sum((usage) => usage.cost.input),
+      output: sum((usage) => usage.cost.output),
+      cacheRead: sum((usage) => usage.cost.cacheRead),
+      cacheWrite: sum((usage) => usage.cost.cacheWrite),
+      total: sum((usage) => usage.cost.total),
+    },
+  };
+}
+
+function uniqueRoutes(routes: readonly ModelRef[]): readonly ModelRef[] {
+  const unique = new Map<string, ModelRef>();
+  for (const route of routes) unique.set(`${route.provider}\0${route.model}`, route);
+  return [...unique.values()];
 }
 
 function toJsonSchema(value: unknown): JsonSchema {
