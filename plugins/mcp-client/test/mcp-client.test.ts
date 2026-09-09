@@ -29,9 +29,11 @@ describe("MCP client plugin", () => {
       async close() {},
     };
     let registered: ToolDefinition | undefined;
+    let registeredOwner: string | undefined;
     const tools: ToolService = {
-      register(tool) {
+      register(tool, options) {
         registered = tool;
+        registeredOwner = options?.ownerSession;
         return () => { registered = undefined; };
       },
       definitions: () => [],
@@ -42,8 +44,10 @@ describe("MCP client plugin", () => {
       transport: { type: "http", url: "https://example.test/mcp" },
     };
 
-    const disposers = await registerMcpTools(client, server, tools);
+    const ownerSession = sessionId("owned-session");
+    const disposers = await registerMcpTools(client, server, tools, { ownerSession });
     expect(registered?.name).toBe("orders_api__lookup-order");
+    expect(registeredOwner).toBe(ownerSession);
     expect(registered?.classify({ id: "A-1" }, {
       callId: toolCallId("call"),
       sessionId: sessionId("session"),

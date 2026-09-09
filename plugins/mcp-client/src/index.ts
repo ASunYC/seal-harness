@@ -16,6 +16,7 @@ import {
   type ToolDefinition,
   type ToolRisk,
   type ToolService,
+  type ToolRegistrationOptions,
 } from "@seal-harness/core";
 import { definePlugin } from "@seal-harness/kernel";
 
@@ -60,7 +61,7 @@ export const mcpClientPlugin = definePlugin<McpClientConfig, SealHarnessEvents>(
   async setup(context, config) {
     const toolService = context.use(toolServiceToken);
     for (const server of config.servers) {
-      const client = await connectServer(server);
+      const client = await connectMcpServer(server);
       // Registered tools unwind before the connection closes.
       context.effect(() => client.close());
       for (const dispose of await registerMcpTools(client, server, toolService)) {
@@ -74,6 +75,7 @@ export async function registerMcpTools(
   client: McpClientLike,
   server: McpServerConfig,
   toolService: ToolService,
+  registration: ToolRegistrationOptions = {},
 ): Promise<Array<() => void>> {
   const { tools } = await client.listTools();
   const prefix = sanitizeName(server.toolPrefix ?? server.id);
@@ -109,11 +111,11 @@ export async function registerMcpTools(
         };
       },
     };
-    return toolService.register(definition);
+    return toolService.register(definition, registration);
   });
 }
 
-async function connectServer(config: McpServerConfig): Promise<McpClientLike> {
+export async function connectMcpServer(config: McpServerConfig): Promise<McpClientLike> {
   const client = new Client({ name: "seal-harness", version: "0.1.0" });
   if (config.transport.type === "stdio") {
     await client.connect(new StdioClientTransport({
