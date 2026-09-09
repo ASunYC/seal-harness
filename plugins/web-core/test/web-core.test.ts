@@ -1,0 +1,6 @@
+import { describe, expect, it, vi } from "vitest";
+import { DefaultWebAccessService } from "../src/index.js";
+describe("DefaultWebAccessService", () => {
+  it("selects the unique usable provider and caps sources", async () => { const service = new DefaultWebAccessService(); service.registerSearchProvider({ id: "a", available: () => true, search: vi.fn(async () => ({ sources: [{ url: "1" }, { url: "2" }] })) }); await expect(service.search({ query: "q", maxResults: 1 })).resolves.toEqual({ sources: [{ url: "1" }], truncated: true }); });
+  it("rejects ambiguous, missing configured, and duplicate providers", async () => { const service = new DefaultWebAccessService(); const p = (id: string) => ({ id, available: () => true, search: vi.fn(async () => ({ sources: [] })) }); service.registerSearchProvider(p("a")); service.registerSearchProvider(p("b")); await expect(service.search({ query: "q", maxResults: 1 })).rejects.toMatchObject({ code: "WEB_PROVIDER_AMBIGUOUS" }); expect(() => service.registerSearchProvider(p("a"))).toThrow(); await expect(new DefaultWebAccessService({ searchProvider: "x" }).search({ query: "q", maxResults: 1 })).rejects.toMatchObject({ code: "WEB_PROVIDER_CONFIGURED_MISSING" }); });
+});
