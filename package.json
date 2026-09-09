@@ -1,6 +1,6 @@
 {
   "name": "seal-harness-workspace",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
@@ -9,15 +9,17 @@
   },
   "scripts": {
     "build": "pnpm -r build",
-    "check": "pnpm typecheck && pnpm test",
+    "check": "pnpm typecheck && pnpm test && pnpm test:python",
     "clean": "pnpm -r run clean",
     "seal-harness": "node apps/launcher/dist/bin.js",
     "seal-harness:headless": "node apps/cli/dist/bin.js",
     "seal-harness:web": "node apps/web/dist/bin.js",
+    "seal-harness:acp": "node apps/acp/dist/bin.js",
     "seal-harness:rpc": "node apps/rpc/dist/bin.js",
     "pack:smoke": "node scripts/pack-smoke.mjs",
     "release:bundle": "node scripts/build-release-bundle.mjs",
     "test": "vitest run",
+    "test:python": "python python/sdk/run-tests.py",
     "test:watch": "vitest",
     "typecheck": "tsc -b --pretty false && tsc -p tsconfig.tests.json --pretty false"
   },
