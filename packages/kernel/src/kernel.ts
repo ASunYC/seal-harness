@@ -29,6 +29,7 @@ export class Kernel<TEvents extends EventMap = EventMap> {
   readonly #services = new ServiceRegistry();
   readonly #initialTokens: ServiceToken<unknown>[] = [];
   readonly #active: ActivePlugin<TEvents>[] = [];
+  #specs: readonly AnyPluginSpec<TEvents>[] = [];
   #state: KernelState = "idle";
 
   constructor(options: KernelOptions = {}) {
@@ -41,6 +42,9 @@ export class Kernel<TEvents extends EventMap = EventMap> {
   get state(): KernelState {
     return this.#state;
   }
+
+  /** Active plugin instance ids in dependency/start order. */
+  get pluginIds(): readonly string[] { return this.#active.map((entry) => entry.definition.id); }
 
   has<T>(token: ServiceToken<T>): boolean {
     return this.#services.has(token);
@@ -67,6 +71,7 @@ export class Kernel<TEvents extends EventMap = EventMap> {
         currentPluginId = definition.id;
         await this.#startPlugin(definition);
       }
+      this.#specs = [...specs];
       this.#state = "running";
     } catch (cause) {
       await this.#disposeAll();
@@ -74,6 +79,33 @@ export class Kernel<TEvents extends EventMap = EventMap> {
       if (cause instanceof PluginStartError) throw cause;
       throw new PluginStartError(currentPluginId, { cause });
     }
+  }
+
+  /** Replace the live plugin graph, restoring the previous graph if the new one fails to start. */
+  async reconfigure(specs: readonly AnyPluginSpec<TEvents>[]): Promise<void> {
+    if (this.#state !== "running") throw new KernelStateError(`Cannot reconfigure kernel while state is ${this.#state}`);
+    const ordered = resolveProfile(specs, this.#initialTokens);
+    const previous = this.#specs;
+    const previousOrdered = resolveProfile(previous, this.#initialTokens);
+    const retained = commonPrefixLength(previousOrdered, ordered);
+    if (retained === previousOrdered.length && retained === ordered.length) { this.#specs = [...specs]; return; }
+    this.#state = "stopping";
+    const disposalErrors = await this.#disposeTo(retained);
+    if (disposalErrors.length > 0) { await this.#disposeAll(); this.#state = "failed"; throw new AggregateError(disposalErrors, "Plugin graph failed to stop for reconfiguration"); }
+    this.#state = "starting";
+    let failure: unknown;
+    try { for (const definition of ordered.slice(retained)) await this.#startPlugin(definition); }
+    catch (error) { failure = error; }
+    if (failure === undefined) { this.#specs = [...specs]; this.#state = "running"; return; }
+    const failedGraphDisposal = await this.#disposeTo(retained);
+    try {
+      for (const definition of previousOrdered.slice(retained)) await this.#startPlugin(definition);
+      this.#specs = previous; this.#state = "running";
+    } catch (restoreFailure) {
+      const restoreDisposal = await this.#disposeAll(); this.#state = "failed";
+      throw new AggregateError([failure, ...failedGraphDisposal, restoreFailure, ...restoreDisposal], "Plugin reconfiguration and rollback both failed");
+    }
+    throw new PluginStartError("$reconfigure", { cause: new AggregateError([failure, ...failedGraphDisposal], "New plugin graph failed; previous graph was restored") });
   }
 
   async stop(): Promise<void> {
@@ -160,8 +192,12 @@ export class Kernel<TEvents extends EventMap = EventMap> {
   }
 
   async #disposeAll(): Promise<unknown[]> {
+    return this.#disposeTo(0);
+  }
+
+  async #disposeTo(retained: number): Promise<unknown[]> {
     const errors: unknown[] = [];
-    while (this.#active.length > 0) {
+    while (this.#active.length > retained) {
       const active = this.#active.pop();
       if (active !== undefined) errors.push(...(await this.#disposePlugin(active)));
     }
@@ -192,4 +228,40 @@ export class Kernel<TEvents extends EventMap = EventMap> {
     }
     return errors;
   }
+}
+
+function commonPrefixLength<TEvents extends EventMap>(
+  left: readonly ResolvedPlugin<TEvents>[],
+  right: readonly ResolvedPlugin<TEvents>[],
+): number {
+  const length = Math.min(left.length, right.length);
+  let index = 0;
+  while (index < length && samePlugin(left[index]!, right[index]!)) index += 1;
+  return index;
+}
+
+function samePlugin<TEvents extends EventMap>(left: ResolvedPlugin<TEvents>, right: ResolvedPlugin<TEvents>): boolean {
+  return left.id === right.id && left.spec.plugin === right.spec.plugin && configsEqual(left.spec.config, right.spec.config);
+}
+
+function configsEqual(left: unknown, right: unknown): boolean {
+  try { return sameConfig(left, right, new WeakMap()); }
+  catch { return false; }
+}
+
+function sameConfig(left: unknown, right: unknown, seen: WeakMap<object, object>): boolean {
+  if (Object.is(left, right)) return true;
+  if (typeof left === "object" && left !== null && typeof right === "object" && right !== null) {
+    const known = seen.get(left); if (known !== undefined) return known === right; seen.set(left, right);
+  }
+  if (Array.isArray(left) || Array.isArray(right)) return Array.isArray(left) && Array.isArray(right) && left.length === right.length && left.every((value, index) => sameConfig(value, right[index], seen));
+  if (!plainConfig(left) || !plainConfig(right)) return false;
+  const leftKeys = Object.keys(left); const rightKeys = Object.keys(right);
+  return leftKeys.length === rightKeys.length && leftKeys.every((key) => Object.prototype.hasOwnProperty.call(right, key) && sameConfig(left[key], right[key], seen));
+}
+
+function plainConfig(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== "object" || value === null) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
 }

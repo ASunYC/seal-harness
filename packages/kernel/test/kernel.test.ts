@@ -223,4 +223,59 @@ describe("Kernel", () => {
       (error: PluginStartError) => error.cause instanceof DuplicatePluginIdError,
     );
   });
+
+  it("reconfigures a live graph and disposes the previous graph in dependency order", async () => {
+    const value = createServiceToken<string>("dynamic-value"); const order: string[] = [];
+    const provider = (name: string) => definePlugin({ name, provides: [value], setup(ctx) { order.push(`start:${name}`); ctx.provide(value, name); return () => { order.push(`stop:${name}`); }; } });
+    const consumer = definePlugin({ name: "consumer", requires: [value], setup(ctx) { order.push(`consume:${ctx.use(value)}`); return () => { order.push("stop:consumer"); }; } });
+    const kernel = new Kernel(); await kernel.start([plugin(provider("one"), undefined), plugin(consumer, undefined)]);
+    await kernel.reconfigure([plugin(provider("two"), undefined), plugin(consumer, undefined)]);
+    expect(kernel.pluginIds).toEqual(["two", "consumer"]); expect(kernel.use(value)).toBe("two");
+    expect(order).toEqual(["start:one", "consume:one", "stop:consumer", "stop:one", "start:two", "consume:two"]);
+    await kernel.stop();
+  });
+
+  it("retains the unchanged prefix and restarts only the changed plugin and its downstream", async () => {
+    const value = createServiceToken<string>("retained-value"); const order: string[] = [];
+    const stable = definePlugin({ name: "stable-prefix", provides: [value], setup(ctx, config: { value: string }) { order.push(`start:stable:${config.value}`); ctx.provide(value, config.value); return () => { order.push("stop:stable"); }; } });
+    const leaf = definePlugin({ name: "changing-leaf", requires: [value], setup(ctx, config: { value: string }) { order.push(`start:leaf:${ctx.use(value)}:${config.value}`); return () => { order.push(`stop:leaf:${config.value}`); }; } });
+    const kernel = new Kernel(); await kernel.start([plugin(stable, { value: "same" }), plugin(leaf, { value: "one" })]);
+    await kernel.reconfigure([plugin(stable, { value: "same" }), plugin(leaf, { value: "two" })]);
+    expect(order).toEqual(["start:stable:same", "start:leaf:same:one", "stop:leaf:one", "start:leaf:same:two"]);
+    expect(kernel.use(value)).toBe("same");
+    await kernel.stop();
+    expect(order.slice(-2)).toEqual(["stop:leaf:two", "stop:stable"]);
+  });
+
+  it("preserves the stable prefix while rolling back a failed suffix", async () => {
+    const value = createServiceToken<string>("partial-rollback-value"); const order: string[] = [];
+    const stable = definePlugin({ name: "partial-stable", provides: [value], setup(ctx) { order.push("start:stable"); ctx.provide(value, "stable"); return () => { order.push("stop:stable"); }; } });
+    const oldLeaf = definePlugin({ name: "partial-old", requires: [value], setup(ctx) { order.push(`start:old:${ctx.use(value)}`); return () => { order.push("stop:old"); }; } });
+    const brokenLeaf = definePlugin({ name: "partial-broken", requires: [value], setup(ctx) { order.push(`start:broken:${ctx.use(value)}`); throw new Error("suffix failed"); } });
+    const kernel = new Kernel(); const stableSpec = plugin(stable, undefined); await kernel.start([stableSpec, plugin(oldLeaf, undefined)]);
+    await expect(kernel.reconfigure([stableSpec, plugin(brokenLeaf, undefined)])).rejects.toMatchObject({ name: "PluginStartError", pluginId: "$reconfigure" });
+    expect(kernel.state).toBe("running"); expect(kernel.pluginIds).toEqual(["partial-stable", "partial-old"]); expect(kernel.use(value)).toBe("stable");
+    expect(order).toEqual(["start:stable", "start:old:stable", "stop:old", "start:broken:stable", "start:old:stable"]);
+    await kernel.stop();
+  });
+
+  it("compares cyclic plain-object configs without overflowing", async () => {
+    let starts = 0; const configured = definePlugin({ name: "cyclic-config", setup() { starts += 1; } });
+    const first: Record<string, unknown> = { value: 1 }; first.self = first;
+    const second: Record<string, unknown> = { value: 1 }; second.self = second;
+    const kernel = new Kernel(); await kernel.start([plugin(configured, first)]);
+    await kernel.reconfigure([plugin(configured, second)]);
+    expect(starts).toBe(1);
+    await kernel.stop();
+  });
+
+  it("restores the previous live graph when reconfiguration fails", async () => {
+    const value = createServiceToken<string>("rollback-value"); let starts = 0;
+    const stable = definePlugin({ name: "stable", provides: [value], setup(ctx) { starts += 1; ctx.provide(value, `stable-${starts}`); } });
+    const broken = definePlugin({ name: "broken", setup() { throw new Error("broken graph"); } });
+    const kernel = new Kernel(); await kernel.start([plugin(stable, undefined)]);
+    await expect(kernel.reconfigure([plugin(broken, undefined)])).rejects.toMatchObject({ name: "PluginStartError", pluginId: "$reconfigure" });
+    expect(kernel.state).toBe("running"); expect(kernel.pluginIds).toEqual(["stable"]); expect(kernel.use(value)).toBe("stable-2");
+    await kernel.stop();
+  });
 });
