@@ -8,18 +8,44 @@
     { "path": "../../packages/core/tsconfig.build.json" },
     { "path": "../../packages/host/tsconfig.build.json" },
     { "path": "../../plugins/agent-core/tsconfig.build.json" },
+    { "path": "../../plugins/agent-presets/tsconfig.build.json" },
+    { "path": "../../plugins/ask-user-tool/tsconfig.build.json" },
     { "path": "../../plugins/attachment-local/tsconfig.build.json" },
     { "path": "../../plugins/approval-stdio/tsconfig.build.json" },
     { "path": "../../plugins/context-core/tsconfig.build.json" },
     { "path": "../../plugins/context-files/tsconfig.build.json" },
-    { "path": "../../plugins/compaction-window/tsconfig.build.json" },
+    { "path": "../../plugins/compaction-llm/tsconfig.build.json" },
+    { "path": "../../plugins/commands/tsconfig.build.json" },
     { "path": "../../plugins/credentials-env/tsconfig.build.json" },
+    { "path": "../../plugins/feedback-tools/tsconfig.build.json" },
     { "path": "../../plugins/policy-basic/tsconfig.build.json" },
     { "path": "../../plugins/provider-pi-ai/tsconfig.build.json" },
     { "path": "../../plugins/runtime-pi/tsconfig.build.json" },
     { "path": "../../plugins/session-jsonl/tsconfig.build.json" },
+    { "path": "../../plugins/schedule-tools/tsconfig.build.json" },
+    { "path": "../../plugins/session-query-tools/tsconfig.build.json" },
+    { "path": "../../plugins/subagent-tools/tsconfig.build.json" },
+    { "path": "../../plugins/jobs-local/tsconfig.build.json" },
+    { "path": "../../plugins/lsp-core/tsconfig.build.json" },
+    { "path": "../../plugins/lsp-stdio/tsconfig.build.json" },
+    { "path": "../../plugins/lsp-tools/tsconfig.build.json" },
+    { "path": "../../plugins/goal-tools/tsconfig.build.json" },
+    { "path": "../../plugins/goal-round-driver/tsconfig.build.json" },
+    { "path": "../../plugins/todo-tools/tsconfig.build.json" },
+    { "path": "../../plugins/plan-mode/tsconfig.build.json" },
+    { "path": "../../plugins/permission-presets/tsconfig.build.json" },
+    { "path": "../../plugins/sandbox-local/tsconfig.build.json" },
+    { "path": "../../plugins/terminal-pty/tsconfig.build.json" },
     { "path": "../../plugins/telemetry-noop/tsconfig.build.json" },
     { "path": "../../plugins/tools-core/tsconfig.build.json" },
-    { "path": "../../plugins/workspace-tools/tsconfig.build.json" }
+    { "path": "../../plugins/spill-local/tsconfig.build.json" },
+    { "path": "../../plugins/settings-file/tsconfig.build.json" },
+    { "path": "../../plugins/user-questions/tsconfig.build.json" },
+    { "path": "../../plugins/workspace-tools/tsconfig.build.json" },
+    { "path": "../../plugins/workflow-tools/tsconfig.build.json" }
+    ,{ "path": "../../plugins/web-core/tsconfig.build.json" }
+    ,{ "path": "../../plugins/web-fetch-http/tsconfig.build.json" }
+    ,{ "path": "../../plugins/web-search-exa/tsconfig.build.json" }
+    ,{ "path": "../../plugins/web-tools/tsconfig.build.json" }
   ]
 }

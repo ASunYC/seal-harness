@@ -1,6 +1,6 @@
 {
   "name": "@seal-harness/cli",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Headless CLI for Seal Harness",
   "type": "module",
   "bin": { "seal-harness-headless": "./dist/bin.js" },
@@ -17,25 +17,54 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@seal-harness/agent-team": "workspace:^",
+    "@seal-harness/agent-team-tools": "workspace:^",
     "@seal-harness/agent-core": "workspace:^",
+    "@seal-harness/agent-presets": "workspace:^",
+    "@seal-harness/ask-user-tool": "workspace:^",
     "@seal-harness/attachment-local": "workspace:^",
     "@seal-harness/approval-stdio": "workspace:^",
     "@seal-harness/context-core": "workspace:^",
     "@seal-harness/context-files": "workspace:^",
-    "@seal-harness/compaction-window": "workspace:^",
+    "@seal-harness/compaction-llm": "workspace:^",
+    "@seal-harness/commands": "workspace:^",
     "@seal-harness/core": "workspace:^",
     "@seal-harness/credentials-env": "workspace:^",
+    "@seal-harness/feedback-tools": "workspace:^",
     "@seal-harness/host": "workspace:^",
     "@seal-harness/kernel": "workspace:^",
+    "@seal-harness/jobs-local": "workspace:^",
+    "@seal-harness/lsp-core": "workspace:^",
+    "@seal-harness/lsp-stdio": "workspace:^",
+    "@seal-harness/lsp-tools": "workspace:^",
+    "@seal-harness/goal-tools": "workspace:^",
+    "@seal-harness/goal-round-driver": "workspace:^",
+    "@seal-harness/todo-tools": "workspace:^",
+    "@seal-harness/plan-mode": "workspace:^",
+    "@seal-harness/permission-presets": "workspace:^",
+    "@seal-harness/sandbox-local": "workspace:^",
     "@seal-harness/policy-basic": "workspace:^",
     "@seal-harness/provider-pi-ai": "workspace:^",
     "@seal-harness/runtime-pi": "workspace:^",
     "@seal-harness/session-jsonl": "workspace:^",
+    "@seal-harness/schedule-tools": "workspace:^",
+    "@seal-harness/session-query-tools": "workspace:^",
+    "@seal-harness/subagent-tools": "workspace:^",
+    "@seal-harness/terminal-pty": "workspace:^",
     "@seal-harness/telemetry-noop": "workspace:^",
     "@seal-harness/tools-core": "workspace:^",
-    "@seal-harness/workspace-tools": "workspace:^"
+    "@seal-harness/spill-local": "workspace:^",
+    "@seal-harness/settings-file": "workspace:^",
+    "@seal-harness/user-questions": "workspace:^",
+    "@seal-harness/workspace-tools": "workspace:^",
+    "@seal-harness/workflow-tools": "workspace:^"
+    ,"@seal-harness/web-core": "workspace:^"
+    ,"@seal-harness/web-fetch-http": "workspace:^"
+    ,"@seal-harness/web-search-exa": "workspace:^"
+    ,"@seal-harness/web-tools": "workspace:^"
   },
   "devDependencies": {
+    "@seal-harness/compaction-window": "workspace:^",
     "@seal-harness/model-scripted": "workspace:^",
     "@seal-harness/session-memory": "workspace:^"
   },
