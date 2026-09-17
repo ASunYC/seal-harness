@@ -189,7 +189,7 @@
     "@seal-harness/kernel": "workspace:^",
     "node-addon-require-builtin": "0.1.4",
     "sharp": "0.35.4",
-    "zod": "4.4.3"
+    "zod": "4.6.5"
   },
   "license": "MIT",
   "devDependencies": {
