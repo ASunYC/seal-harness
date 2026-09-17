@@ -1423,8 +1423,8 @@ importers:
         specifier: workspace:^
         version: link:../runtime-pi
       typebox:
-        specifier: 1.3.7
-        version: 1.3.7
+        specifier: 1.3.28
+        version: 1.3.28
 
   plugins/runtime-pi:
     dependencies:
@@ -1444,8 +1444,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/kernel
       typebox:
-        specifier: 1.3.7
-        version: 1.3.7
+        specifier: 1.3.28
+        version: 1.3.28
 
   plugins/runtime-scripted:
     dependencies:
@@ -1586,8 +1586,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/kernel
       typebox:
-        specifier: 1.0.64
-        version: 1.0.64
+        specifier: 1.3.28
+        version: 1.3.28
     devDependencies:
       '@seal-harness/jobs-local':
         specifier: workspace:^
@@ -1643,8 +1643,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/kernel
       typebox:
-        specifier: 1.3.7
-        version: 1.3.7
+        specifier: 1.3.28
+        version: 1.3.28
 
   plugins/user-questions:
     dependencies:
@@ -1728,8 +1728,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/kernel
       typebox:
-        specifier: 1.3.7
-        version: 1.3.7
+        specifier: 1.3.28
+        version: 1.3.28
     devDependencies:
       '@seal-harness/session-memory':
         specifier: workspace:^
@@ -6777,8 +6777,8 @@ packages:
     resolution: {integrity: sha512-faYHw0anBbc/kWF3zFTEnxSFOAGUX9GFbOBthvDdLsIlEoWOFOtS0zgCiQYwIskL9iGXZL3kAXD8OoZ4GmMATA==}
     engines: {node: '>= 18'}
 
-  typebox@1.0.64:
-    resolution: {integrity: sha512-U6quDhQMzQRzBX8jvlE5mZlUnlMRTaZrG/QMAhOYVJ0D0rhq1iOXBQVSzBX0JgAh55jXQ7fWIv24i+lVimXcDw==}
+  typebox@1.3.28:
+    resolution: {integrity: sha512-5hTNlwzKj7BPPqhT91TPa4fK9bh/ZOei7mzweMpNidwLTxtduXHgr/OAbwx4mRW8aKFYu1I8fT1+0+PQtst1/g==}
 
   typebox@1.3.7:
     resolution: {integrity: sha512-meKuifc33Pccx0O6PdIzYMq3Og8zvP4TIi/a+Bw3AEMZMxOD0+RHGQvpglEe6Zdy3wZ8nqn/j95h8LUZLk/6Hg==}
@@ -12559,7 +12559,7 @@ snapshots:
       media-typer: 1.1.1
       mime-types: 3.0.2
 
-  typebox@1.0.64: {}
+  typebox@1.3.28: {}
 
   typebox@1.3.7: {}
 
