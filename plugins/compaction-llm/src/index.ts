@@ -41,6 +41,11 @@ export class LlmCompactionService implements CompactionService {
     const candidate = await this.window.compact(request);
     if (candidate === undefined) return undefined;
     request.signal.throwIfAborted();
+    const notify = (event: Parameters<NonNullable<CompactionRequest["onProgress"]>>[0]) => {
+      try { request.onProgress?.(event); } catch { /* UI observers cannot change compaction semantics. */ }
+    };
+    let outcome: "completed" | "fallback" | "failed" | "aborted" = "failed";
+    notify({ state: "started" });
     try {
       let summary = "";
       let stopReason: string | undefined;
@@ -61,14 +66,18 @@ export class LlmCompactionService implements CompactionService {
       if (normalized.length === 0 || stopReason === "error" || stopReason === "aborted") {
         throw new Error(`LLM compaction did not produce a usable summary (stop reason: ${stopReason ?? "missing"})`);
       }
+      outcome = "completed";
       return {
         summaryMessage: { role: "user", content: [text(`Conversation summary:\n${normalized}`)] },
         retainedMessages: candidate.retainedMessages,
       };
     } catch (error) {
-      if (request.signal.aborted) throw request.signal.reason ?? error;
+      if (request.signal.aborted) { outcome = "aborted"; throw request.signal.reason ?? error; }
       if (this.config.fallbackOnError === false) throw error;
+      outcome = "fallback";
       return candidate;
+    } finally {
+      notify({ state: "finished", outcome });
     }
   }
 }

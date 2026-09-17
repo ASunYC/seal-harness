@@ -130,11 +130,16 @@ describe("headless Agent E2E", () => {
           provider: "scripted", model: "test", contextWindow: 32_000, maxOutputTokens: 4_096,
         }],
         async *respond(request) {
+          if (request.systemPrompt.includes("context summarization assistant")) {
+            yield { type: "text_delta", delta: "Native PI summary of earlier work." };
+            yield { type: "done", stopReason: "stop" };
+            return;
+          }
           const first = request.messages[0];
           expect(first?.role).toBe("user");
           expect(first?.content[0]).toMatchObject({
             type: "text",
-            text: expect.stringContaining("Compacted conversation history"),
+            text: expect.stringContaining("Native PI summary of earlier work."),
           });
           yield { type: "text_delta", delta: "continued-after-compaction" };
           yield { type: "done", stopReason: "stop" };
@@ -143,7 +148,7 @@ describe("headless Agent E2E", () => {
       plugin(memorySessionPlugin, {}),
       plugin(contextCorePlugin, { systemPrompt: "test" }),
       plugin(windowCompactionPlugin, { thresholdMessages: 4, retainMessages: 2 }),
-      plugin(piRuntimePlugin, {}),
+      plugin(piRuntimePlugin, { dataHome: cwd, compaction: { keepRecentTokens: 100 } }),
       plugin(agentCorePlugin, { idFactory: sequentialIds() }),
     ]);
     const kernel = await startProfile(profile);
@@ -151,12 +156,9 @@ describe("headless Agent E2E", () => {
       const sessions = kernel.use(sessionStoreToken);
       await sessions.create({ id, cwd });
       const oldMessages = [
-        { role: "user" as const, content: [text("one")] },
-        { role: "assistant" as const, content: [text("answer one")] },
-        { role: "user" as const, content: [text("two")] },
-        { role: "assistant" as const, content: [text("answer two")] },
-        { role: "user" as const, content: [text("three")] },
-        { role: "assistant" as const, content: [text("answer three")] },
+        ...["one", "answer one", "two", "answer two", "three", "answer three"].map((value, index) => ({
+          role: index % 2 ? "assistant" as const : "user" as const, content: [text(`${value} ${"history ".repeat(3000)}`)],
+        })),
       ];
       await sessions.append({
         id,

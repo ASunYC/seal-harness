@@ -9,8 +9,13 @@ export interface SubagentSnapshot {
   readonly sessionId: SessionId;
   readonly parentSessionId: SessionId;
   readonly label: string;
+  /** Original delegation task, retained independently of subsequent messages. */
+  readonly task?: string;
   readonly status: SubagentStatus;
   readonly model: ModelRef;
+  /** Latest execution timestamps from the durable session log, not UI mount time. */
+  readonly startedAt?: string;
+  readonly finishedAt?: string;
   readonly jobId?: string;
   readonly result?: string;
   /** Validated value reported through the per-child structured_output tool. */

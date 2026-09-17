@@ -75,7 +75,7 @@ export interface ModelRetryMessageView {
   readonly retryState: "scheduled" | "started" | "cancelled";
 }
 
-export interface SystemPromptMessageView { readonly role: "system-prompt"; readonly text: string }
+export interface SystemPromptMessageView { readonly role: "system-prompt"; readonly text: string; readonly atSeq: number }
 export interface TurnMaxTokensMessageView { readonly role: "turn-max-tokens" }
 export interface TurnTailMessageView { readonly role: "turn-tail"; readonly turnId: string }
 export interface CompactionMessageView {
@@ -194,7 +194,7 @@ export function systemPromptMessageViews(events: readonly StoredSessionEvent[]):
       if (!(previous === undefined && payload.reason !== "initial") && previousImportedLocation !== location) anchor = importedStep === 1 ? importedTurnAnchor ?? importedStepAnchor ?? entry.sequence : importedStepAnchor ?? entry.sequence;
       previousImportedLocation = location;
     }
-    if (shows && system !== "") views.set(anchor, { role: "system-prompt", text: system });
+    if (shows && system !== "") views.set(anchor, { role: "system-prompt", text: system, atSeq: anchor });
     if (event.type === "request.header") nativePrompted = true;
     previous = { system, tools };
   }

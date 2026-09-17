@@ -1,7 +1,14 @@
 import { renderMarkdown } from "/markdown.js?v=0.3.4-4";
-import { normalizeLocale, translator } from "/i18n.js?v=0.3.4-75";
+import { createCompactionActivity } from "/compaction-activity.js?v=0.3.4-1";
+import { createToolCard } from "/tool-card.js?v=0.3.4-6";
+import { renderSubagentTree } from "/subagent-tree.js?v=0.3.4-2";
+import { renderChildTranscript } from "/child-transcript.js?v=0.3.4-11";
+import { createChildHistory, watchChildHistory } from "/child-history.js?v=0.3.4-4";
+import { createHistoryWindow } from "/history-window.js?v=0.3.4-1";
+import { createStreamSequence } from "/stream-sequence.js?v=0.3.4-6";
+import { normalizeLocale, translator } from "/i18n.js?v=0.3.4-76";
 import { installProviderLogin } from "/provider-login.js?v=0.3.4-1";
-import { projectTranscriptView } from "/transcript-view.js?v=0.3.4-3";
+import { projectTranscriptView, updateTranscriptActivity } from "/transcript-view.js?v=0.3.4-9";
 import { computeColumns, DETAILS_DEFAULT, DETAILS_MAX, DETAILS_MIN, effectiveSidebarCollapsed, SIDEBAR_AUTO_COLLAPSE, SIDEBAR_DEFAULT, SIDEBAR_MAX, SIDEBAR_MIN } from "/layout.js?v=0.3.4-1";
 import { resolveContentWidth } from "/conversation-width.js?v=0.3.4-1";
 import { activeTurnFromGeometry, normalizeTurnOutline } from "/turn-navigator.js?v=0.3.4-1";
@@ -22,9 +29,9 @@ import { AttachmentAdmission, canAcceptImageInput, clipboardFiles, imageAdmissio
 import { contextMessageModel } from "/context-message.js?v=0.3.4-2";
 import { readConversationDraft, writeConversationDraft } from "/conversation-draft.js?v=0.3.4-1";
 import { selectPendingInteraction } from "/pending-interaction.js?v=0.3.4-1";
-import { canAccelerateQueuedMessages, canSteerQueueItem, pendingQueueItems, queueDockItems, queueEditableText, queueImageRefs, queueImageUrl, queueItemPreview, queueItemText, queueMutable, queueSnapshotKey, shouldSteerQueueOnAcceleratedEnter } from "/queue-dock.js?v=0.3.4-8";
+import { canAccelerateQueuedMessages, canSteerQueueItem, pendingQueueItems, queueDockItems, queueEditableText, queueImageRefs, queueImageUrl, queueItemPreview, queueItemText, queueMutable, queueSnapshotKey, shouldSteerQueueOnAcceleratedEnter } from "/queue-dock.js?v=0.3.4-10";
 import { deriveSessionAncestry } from "/session-ancestry.js?v=0.3.4-1";
-import { localSessionSearchResults, mergeSessionSearchResults, sanitizeSessionSearchQuery, shouldDismissSessionSearch, SESSION_SEARCH_DEBOUNCE_MS } from "/session-search.js?v=0.3.4-5";
+import { localSessionSearchResults, mergeSessionSearchResults, sanitizeSessionSearchQuery, shouldDismissSessionSearch, locateTranscriptMatch, SESSION_SEARCH_DEBOUNCE_MS } from "/session-search.js?v=0.3.4-6";
 import { abbreviateWorkspaceHomePath, sessionDisplayTitle, sessionRelativeTime, SESSION_HOVER_DELAY_MS, SESSION_HOVER_GRACE_MS } from "/session-hover.js?v=0.3.4-3";
 import { rowActionMenuIndex, ROW_ACTION_MENU_GRACE_MS } from "/row-action-menu.js?v=0.3.4-1";
 import { collapsedSessionRows } from "/session-overflow.js?v=0.3.4-1";
@@ -50,6 +57,12 @@ import { credentialStatusModel } from "/onboarding.js?v=0.3.4-2";
 
 const $ = (id) => document.getElementById(id);
 const transcriptPositions = new Map();
+const compactionActivity = createCompactionActivity();
+const streamSequences = new WeakMap();
+let historyWindow = null;
+let historySnapshot = null;
+let historyCanTrim = false;
+let renderingHistory = false;
 const copyButtonActions = new WeakMap();
 let branchReasonSequence = 0;
 let currentLocale = normalizeLocale(localStorage.getItem("seal-harness.locale") || navigator.language);
@@ -212,6 +225,7 @@ async function api(path, options = {}) {
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
     const error = new Error(body.error || `${response.status} ${response.statusText}`);
+    error.status = response.status;
     if (typeof body.code === "string") error.code = body.code;
     if (body.details && typeof body.details === "object") error.details = body.details;
     throw error;
@@ -365,6 +379,13 @@ function initialize() {
   applyLayout();
   applyContentWidth();
   setInterval(() => { void loadApprovals(); void loadQueue(); }, 750);
+  let refreshingState = false;
+  setInterval(async () => {
+    if (refreshingState || document.hidden || !state.sessionId) return;
+    if (!state.running && !document.querySelector('.subagent-status[data-status="running"]')) return;
+    refreshingState = true;
+    try { await loadSessionState(); } finally { refreshingState = false; }
+  }, 2000);
 }
 
 function applyLocale() {
@@ -421,7 +442,7 @@ function connectLiveEvents() {
   setConnectionTransportState("connecting");
   const source = new EventSource("/api/events");
   state.eventSource = source;
-  source.addEventListener("open", () => { if (state.eventSource === source) setConnectionTransportState("open"); });
+  source.addEventListener("open", () => { if (state.eventSource === source) { setConnectionTransportState("open"); window.dispatchEvent(new Event("seal-harness:events-connected")); } });
   source.addEventListener("error", () => { if (state.eventSource === source) setConnectionTransportState(navigator.onLine === false ? "closed" : "connecting"); });
   source.addEventListener("models.updated", () => void refreshModels());
   source.addEventListener("settings.updated", (event) => {
@@ -433,6 +454,9 @@ function connectLiveEvents() {
   });
   source.addEventListener("session.appended", (event) => {
     let payload; try { payload = JSON.parse(event.data); } catch { return; }
+    window.dispatchEvent(new CustomEvent("seal-harness:session-appended", { detail: payload }));
+    const compacting = compactionActivity.consume(payload, state.sessionId);
+    if (compacting !== undefined) setStatus(compacting === 'failed' ? (currentLocale === "zh-CN" ? "上下文压缩失败" : "Context compaction failed") : compacting ? (currentLocale === "zh-CN" ? "正在压缩上下文" : "Compacting context") : state.running ? (currentLocale === "zh-CN" ? "准备模型请求" : "Preparing request") : t("status.ready"), compacting === 'failed');
     scheduleSessionRefresh(payload.sessionId);
   });
 }
@@ -514,6 +538,7 @@ async function selectAgentPreset() {
 }
 
 async function bootstrap() {
+  document.documentElement.dataset.sealBoot = "loading";
   try {
     const health = await (await api("/api/health")).json();
     hostHome = typeof health.home === "string" ? health.home : "";
@@ -530,7 +555,8 @@ async function bootstrap() {
     await loadSessions();
     const requestedSettings = new URL(window.location.href).searchParams.get("settings");
     if (["general", "models", "configuration", "plugins"].includes(requestedSettings)) openSettings(requestedSettings);
-  } catch (error) { setStatus(error.message, true); }
+    document.documentElement.dataset.sealBoot = "ready";
+  } catch (error) { document.documentElement.dataset.sealBoot = "error"; setStatus(error.message, true); }
 }
 
 async function loadBusyEnter() {
@@ -1149,7 +1175,7 @@ function renderSessionSearchResults(items) {
   for (const match of items) {
       const summary = state.sessions.find((session) => session.id === match.sessionId); const button = document.createElement("button"); button.type = "button"; button.className = `session search-result${match.sessionId === state.sessionId ? " active" : ""}`;
       button.setAttribute("role", "treeitem"); button.setAttribute("aria-selected", String(match.sessionId === state.sessionId));
-      const title = document.createElement("strong"); title.textContent = summary?.preview || match.sessionId; const meta = document.createElement("span"); meta.className = "search-result-meta"; const workspace = document.createElement("span"); workspace.className = "search-result-workspace"; workspace.textContent = match.workspace ?? state.workspaces.find((entry) => entry.sessionIds.includes(match.sessionId))?.title ?? t("workspace.ungrouped"); meta.append(workspace); if (match.snippet) { const snippet = document.createElement("span"); snippet.className = "search-result-snippet"; snippet.textContent = match.snippet; meta.append(snippet); } button.append(title, meta); button.addEventListener("click", () => void openSession(match.sessionId)); container.append(button);
+      const title = document.createElement("strong"); title.textContent = summary?.preview || match.sessionId; const meta = document.createElement("span"); meta.className = "search-result-meta"; const workspace = document.createElement("span"); workspace.className = "search-result-workspace"; workspace.textContent = match.workspace ?? state.workspaces.find((entry) => entry.sessionIds.includes(match.sessionId))?.title ?? t("workspace.ungrouped"); meta.append(workspace); if (match.snippet) { const snippet = document.createElement("span"); snippet.className = "search-result-snippet"; snippet.textContent = match.snippet; meta.append(snippet); } button.append(title, meta); button.addEventListener("click", () => void openSession(match.sessionId, { searchQuery: $("session-search-input").value.trim(), contentHit: Boolean(match.snippet) }).catch(error => setStatus(error.message, true))); container.append(button);
   }
 }
 
@@ -1559,13 +1585,18 @@ async function submitSessionRename(event) {
   catch (error) { if (sessionRenameTarget?.id !== target.id) return; sessionRenameBusy = false; $("session-rename-name").disabled = false; $("session-rename-submit").disabled = false; $("session-rename-cancel").disabled = false; $("session-rename-close").disabled = false; $("session-rename-error").textContent = error instanceof Error ? error.message : String(error); $("session-rename-error").hidden = false; }
 }
 
-async function openSession(id) {
+async function loadSessionFeedback(id) {
+  try { return await (await api(`/api/sessions/${encodeURIComponent(id)}/feedback`)).json(); }
+  catch (error) { if (error.status === 501) return []; throw error; }
+}
+
+async function openSession(id, search = null) {
   if (state.running) return;
   const savedPosition = transcriptPositions.get(id);
   const generation = ++state.sessionLoadGeneration;
   const [page, feedback] = await Promise.all([
     api(`/api/sessions/${encodeURIComponent(id)}/messages`).then((response) => response.json()),
-    api(`/api/sessions/${encodeURIComponent(id)}/feedback`).then((response) => response.json()),
+    loadSessionFeedback(id),
   ]);
   if (state.running || generation !== state.sessionLoadGeneration) return;
   state.feedback = new Map(feedback.map((item) => [item.messageId, item]));
@@ -1578,6 +1609,7 @@ async function openSession(id) {
   applyLayout();
   window.dispatchEvent(new CustomEvent("seal-harness:session-selected", { detail: { sessionId: id } }));
   renderSessionPage(page);
+  globalThis.CSS?.highlights?.delete("seal-search");
   state.trajectoryRecords = []; state.trajectoryBefore = null;
   $("agent-preset").disabled = true;
   document.querySelector(".main")?.setAttribute("data-phase", "active");
@@ -1587,63 +1619,115 @@ async function openSession(id) {
   await loadSessionState();
   if ($("trajectory-tab").getAttribute("aria-selected") === "true") await loadTrajectory();
   await updateSessionExportAvailability(id);
+  if (state.running || generation !== state.sessionLoadGeneration || state.sessionId !== id) return;
   if (savedPosition === undefined || savedPosition === null) scrollTranscriptToBottom();
   else { restoreTranscriptPosition($("transcript"), savedPosition); updateTranscriptFollow(); updateActiveTurn(); }
+  if (search && generation === state.sessionLoadGeneration && state.sessionId === id) await focusSessionSearch(search, id, generation);
+}
+
+async function focusSessionSearch({ searchQuery, contentHit }, id, generation) {
+  const active = () => !state.running && state.sessionId === id && state.sessionLoadGeneration === generation;
+  const transcript = $("transcript");
+  globalThis.CSS?.highlights?.delete("seal-search");
+  const match = await locateTranscriptMatch({
+    root: transcript, query: searchQuery, active,
+    cursor: () => contentHit && (state.messageBefore !== null || historyWindow?.hidden) ? `${state.messageBefore}:${historyWindow?.hidden}` : null,
+    loadEarlier: () => loadEarlierMessages(HISTORY_JUMP_MESSAGES),
+  });
+  if (!active()) return;
+  if (!match) { setStatus(currentLocale === "zh-CN" ? (contentHit ? "已打开会话，未在可显示正文中找到匹配内容" : "已打开匹配的会话标题或工作区") : "Session opened; no matching displayed text found"); return; }
+  for (let parent = match.element.parentElement; parent && parent !== transcript; parent = parent.parentElement) if (parent.tagName === "DETAILS") parent.open = true;
+  if (globalThis.CSS?.highlights && globalThis.Highlight) CSS.highlights.set("seal-search", new Highlight(match.range));
+  match.element.tabIndex = -1;
+  match.element.focus({ preventScroll: true });
+  match.element.scrollIntoView({ block: "center" });
+  state.transcriptFollowing = false; updateTranscriptFollow(); updateActiveTurn();
+  setStatus(currentLocale === "zh-CN" ? "已定位匹配内容" : "Matching text located");
+}
+
+function transcriptInteractionActive() {
+  const transcript = $("transcript");
+  if (!transcript) return false;
+  if (transcript.querySelector(".review-confirmation")) return true;
+  const focused = document.activeElement;
+  if (transcript.contains(focused) && focused?.matches("button, input, textarea, select, summary, a[href], [contenteditable]")) return true;
+  const selection = window.getSelection();
+  if (!selection || selection.isCollapsed) return false;
+  for (let index = 0; index < selection.rangeCount; index++) {
+    if (selection.getRangeAt(index).intersectsNode(transcript)) return true;
+  }
+  return false;
+}
+
+function deferSessionRefresh(id) {
+  state.sessionInvalidated = true;
+  clearTimeout(state.sessionRefreshTimer);
+  state.sessionRefreshTimer = setTimeout(() => {
+    if (state.sessionId === id && !state.running) flushInvalidatedSession();
+  }, 250);
 }
 
 async function refreshOpenSession(id) {
   if (state.running || state.sessionId !== id) return;
+  if (transcriptInteractionActive()) { deferSessionRefresh(id); return; }
   const limit = refreshedHistorySize(state.loadedMessageCount);
   const [page, feedback] = await Promise.all([
     api(`/api/sessions/${encodeURIComponent(id)}/messages?limit=${limit}`).then((response) => response.json()),
-    api(`/api/sessions/${encodeURIComponent(id)}/feedback`).then((response) => response.json()),
+    loadSessionFeedback(id),
   ]);
   if (state.running || state.sessionId !== id) return;
+  // The user may begin interacting while the history request is in flight.
+  if (transcriptInteractionActive()) { deferSessionRefresh(id); return; }
   state.feedback = new Map(feedback.map((item) => [item.messageId, item]));
   const transcript = $("transcript"); const atBottom = state.transcriptFollowing; const position = atBottom ? null : captureTranscriptPosition(transcript);
-  renderSessionPage(page); await loadSessionState();
+  renderSessionPage(page, !atBottom); await loadSessionState();
   if ($("trajectory-tab").getAttribute("aria-selected") === "true") await loadTrajectory();
   if (atBottom) scrollTranscriptToBottom(); else { restoreTranscriptPosition(transcript, position); updateTranscriptFollow(); updateActiveTurn(); }
 }
 
 function updateTranscriptFollow() { const transcript = $("transcript"); state.transcriptFollowing = isTranscriptNearBottom(transcript); if (state.sessionId) transcriptPositions.set(state.sessionId, state.transcriptFollowing ? null : captureTranscriptPosition(transcript)); $("back-to-bottom").hidden = state.transcriptFollowing; }
-function scrollTranscriptToBottom() { const transcript = $("transcript"); state.transcriptFollowing = true; transcript.scrollTop = transcript.scrollHeight; if (state.sessionId) transcriptPositions.set(state.sessionId, null); $("back-to-bottom").hidden = true; updateActiveTurn(); }
+function scrollTranscriptToBottom() { const transcript = $("transcript"); if (!state.running && historyCanTrim && historySnapshot && historyWindow?.canTrim) renderSessionPage({ ...historySnapshot, messages: historyWindow.messages }); state.transcriptFollowing = true; transcript.scrollTop = transcript.scrollHeight; if (state.sessionId) transcriptPositions.set(state.sessionId, null); $("back-to-bottom").hidden = true; updateActiveTurn(); }
 
-function renderSessionPage(page) {
+function renderSessionPage(page, preserveReading = false) {
+  historySnapshot = page;
+  historyCanTrim = true;
+  historyWindow = createHistoryWindow(page.messages, preserveReading ? page.messages.length : 60);
   const transcript = $("transcript"); const earlier = $("load-earlier"); const turnNav = $("turn-navigator-slot"); const toBottom = $("back-to-bottom-slot");
   state.activeTurn = null; state.sessionMetrics = page.sessionMetrics ?? null; renderStatsLine();
   for (const host of liveToolHosts) window.SealDshPlugins?.unmountToolView?.(host);
   disposeCopyActions(transcript);
   transcript.replaceChildren(earlier);
   liveToolViews.clear(); settledToolResults.clear(); liveToolHosts.clear();
-  for (const message of page.messages) renderAnchoredMessage(message);
+  renderHistoryMessages(historyWindow.visible);
   transcript.append(turnNav, toBottom);
   state.turnOutline = normalizeTurnOutline(page.turnOutline); renderTurnNavigator();
   applyTranscriptView();
   updateMessageActionVisibility();
   state.messageBefore = page.window.nextBefore; state.loadedMessageCount = page.messages.length;
-  earlier.hidden = !page.window.hasMore; earlier.disabled = false;
+  earlier.hidden = !page.window.hasMore && !historyWindow.hidden; earlier.disabled = false;
 }
 
 async function loadEarlierMessages(maxMessages = HISTORY_PAGE_MESSAGES) {
-  if (!state.sessionId || state.messageBefore === null) return;
+  if (!state.sessionId || (state.messageBefore === null && !historyWindow?.hidden)) return;
   const sessionId = state.sessionId; const before = state.messageBefore;
   const button = $("load-earlier"); button.disabled = true;
   try {
-    const page = await (await api(`/api/sessions/${encodeURIComponent(sessionId)}/messages?before=${before}&limit=${maxMessages}`)).json();
+    const local = historyWindow?.hidden > 0;
+    const page = local ? { ...historySnapshot, messages: historyWindow.reveal(maxMessages) } : await (await api(`/api/sessions/${encodeURIComponent(sessionId)}/messages?before=${before}&limit=${maxMessages}`)).json();
     if (state.sessionId !== sessionId || state.messageBefore !== before) { button.disabled = false; return; }
     const transcript = $("transcript"); const height = transcript.scrollHeight; const anchor = button.nextSibling;
-    for (const message of page.messages) { const node = renderAnchoredMessage(message); if (node) transcript.insertBefore(node, anchor); }
+    renderHistoryMessages(page.messages, anchor);
     applyTranscriptView();
     updateMessageActionVisibility();
-    state.messageBefore = page.window.nextBefore; state.loadedMessageCount += page.messages.length;
-    button.hidden = !page.window.hasMore; button.disabled = false; transcript.scrollTop += transcript.scrollHeight - height;
+    if (!local) { historyWindow?.prepend(page.messages); if (historySnapshot) historySnapshot = { ...historySnapshot, window: page.window, turnOutline: page.turnOutline }; state.messageBefore = page.window.nextBefore; state.loadedMessageCount += page.messages.length; }
+    button.hidden = !page.window.hasMore && !historyWindow?.hidden; button.disabled = false; transcript.scrollTop += transcript.scrollHeight - height;
     state.turnOutline = normalizeTurnOutline(page.turnOutline); renderTurnNavigator();
   } catch (error) { button.disabled = false; setStatus(error.message, true); }
 }
 
 function newSession(stagedPreset = null) {
   if (state.running) return;
+  historyWindow = null; historySnapshot = null;
   state.sessionLoadGeneration += 1;
   state.pendingAttachments = attachmentDrafts.switch(state.sessionId, null, state.pendingAttachments);
   state.sessionId = null;
@@ -1680,11 +1764,14 @@ function newSession(stagedPreset = null) {
   void loadSessions();
 }
 
+let sessionStateRevision = 0;
 async function loadSessionState() {
   if (!state.sessionId) return;
+  const requestedSessionId = state.sessionId;
+  const revision = ++sessionStateRevision;
   try {
     const snapshot = await (await api(`/api/sessions/${encodeURIComponent(state.sessionId)}/state`)).json();
-    if (!state.sessionId) return;
+    if (state.sessionId !== requestedSessionId || revision !== sessionStateRevision) return;
     state.contextPressure = snapshot.contextPressure; renderContextMeter();
     state.goal = snapshot.goal; renderGoalBar();
     state.todos = snapshot.todos; renderTodoPanel();
@@ -1692,10 +1779,54 @@ async function loadSessionState() {
     state.jobs = snapshot.jobs; renderJobControl();
     state.schedules = Array.isArray(snapshot.schedules) ? snapshot.schedules : []; renderScheduleCatalog();
     const presetSelect = $("agent-preset"); const session = state.sessions.find((item) => item.id === state.sessionId); if (snapshot.agentPreset && state.presets.some((preset) => preset.id === snapshot.agentPreset && !preset.broken)) presetSelect.value = snapshot.agentPreset; presetSelect.dataset.committed = presetSelect.value; presetSelect.disabled = state.running || session?.blank !== true || agentPresetSelectBusy;
-    const cards = $("state-cards"); cards.replaceChildren();
-    cards.append(agentPresetCard(snapshot.agentPreset), permissionCard(snapshot.permissions), planCard(snapshot.plan), goalCard(snapshot.goal), listCard("Todos", snapshot.todos, todoLine, "No active checklist"), listCard("Schedules", snapshot.schedules, scheduleLine, "No reminders"), listCard("Jobs", snapshot.jobs, jobLine, "No background jobs"), listCard("Subagents", snapshot.subagents, agentLine, "No child agents"), listCard("Terminals", snapshot.terminals, terminalLine, "No terminals"));
+    const cards = $("state-cards");
+    const expandedIds = new Set([...cards.querySelectorAll("details[data-subagent-id][open]")].map(node => node.dataset.subagentId));
+    cards.replaceChildren();
+    const agents = stateCard(currentLocale === "zh-CN" ? "子任务调用树" : "Delegation tree");
+    agents.append(renderSubagentTree(snapshot.subagents, requestedSessionId, {
+      locale: currentLocale, onOpen: inspectSubagentSession, expandedIds,
+      onAbort: async id => { await api(`/api/sessions/${encodeURIComponent(requestedSessionId)}/subagents/${encodeURIComponent(id)}/abort`, { method: "POST" }); await loadSessionState(); },
+    }));
+    cards.append(agentPresetCard(snapshot.agentPreset), permissionCard(snapshot.permissions), planCard(snapshot.plan), goalCard(snapshot.goal), listCard("Todos", snapshot.todos, todoLine, "No active checklist"), listCard("Schedules", snapshot.schedules, scheduleLine, "No reminders"), listCard("Jobs", snapshot.jobs, jobLine, "No background jobs"), agents, listCard("Terminals", snapshot.terminals, terminalLine, "No terminals"));
     cards.hidden = $("trajectory-tab").getAttribute("aria-selected") === "true"; $("state-empty").hidden = true;
-  } catch (error) { $("state-empty").textContent = error.message; $("state-empty").hidden = false; }
+  } catch (error) { if (state.sessionId !== requestedSessionId || revision !== sessionStateRevision) return; $("state-empty").textContent = error.message; $("state-empty").hidden = false; }
+}
+
+async function inspectSubagentSession(id) {
+  if (!state.running) return openSession(id);
+  const dialog = document.createElement("dialog"); dialog.className = "onboarding-dialog subagent-inspector";
+  const title = document.createElement("h2"); title.textContent = currentLocale === "zh-CN" ? "子任务会话" : "Child session";
+  const note = document.createElement("p"); note.textContent = currentLocale === "zh-CN" ? "只读查看子任务；不会中断主任务。" : "Read-only child session; the parent task continues.";
+  const content = document.createElement("div"); const refresh = document.createElement("button"); refresh.textContent = currentLocale === "zh-CN" ? "刷新" : "Refresh";
+  const close = document.createElement("button"); close.textContent = currentLocale === "zh-CN" ? "关闭" : "Close";
+  const older = document.createElement("button"); older.type = "button"; older.hidden = true; older.textContent = currentLocale === "zh-CN" ? "加载更早消息" : "Load earlier messages";
+  dialog.append(title, note, older, content, refresh, close); document.body.append(dialog); dialog.showModal();
+  const canRefresh = () => !document.hidden && content.scrollHeight - content.scrollTop - content.clientHeight <= 64 && !document.getSelection()?.toString();
+  const history = createChildHistory({
+    canPoll: canRefresh,
+    fetchPage: async before => {
+      const query = before !== null ? `?before=${encodeURIComponent(before)}` : "";
+      const page = await (await api(`/api/sessions/${encodeURIComponent(id)}/messages${query}`)).json();
+      return { ...page, messages: [...page.messages, ...(before === null ? page.liveMessages ?? [] : [])] };
+    },
+    onBusy: busy => { refresh.disabled = busy; older.disabled = busy; },
+    onError: error => { note.textContent = error.message; },
+    onPage: ({ messages, hasMore, kind }) => {
+      const height = content.scrollHeight; const scroll = content.scrollTop;
+      const disclosures = new Map([...content.querySelectorAll("details")].filter(node => node.dataset.childDisclosure).map(node => [node.dataset.childDisclosure, node.open]));
+      content.replaceChildren(renderChildTranscript(messages, { locale: currentLocale, sessionId: id, markdown: renderMarkdown, loadReview: async snapshotId => (await api(`/api/sessions/${encodeURIComponent(id)}/reviews/${encodeURIComponent(snapshotId)}`)).json() }));
+      for (const detail of content.querySelectorAll("details")) if (disclosures.has(detail.dataset.childDisclosure)) detail.open = disclosures.get(detail.dataset.childDisclosure);
+      older.hidden = !hasMore;
+      content.scrollTop = kind === "older" ? scroll + content.scrollHeight - height : content.scrollHeight;
+      note.textContent = currentLocale === "zh-CN" ? (kind === "older" ? "正在阅读历史，自动更新已暂停；刷新返回最新消息。" : "只读查看；已保存的消息变化时自动更新。") : (kind === "older" ? "Reading history; refresh to resume live updates." : "Read-only; updates when saved messages change.");
+    },
+  });
+  const stopWatching = watchChildHistory({ sessionId: id, target: window, refresh: () => history.load("poll"),
+    canRefresh,
+  });
+  close.onclick = () => dialog.close();
+  dialog.addEventListener("close", () => { stopWatching(); history.dispose(); dialog.remove(); }, { once: true });
+  older.onclick = () => void history.load("older"); refresh.onclick = () => void history.load(); await history.load();
 }
 
 function renderContextMeter() {
@@ -1878,7 +2009,6 @@ function todoLine(todo) { return stateRow(todo.content, "", todo.status.replace(
 function scheduleLine(schedule) { const action = stateAction("Delete", sessionActionPath("schedules", schedule.id, "delete")); return stateRow(schedule.prompt, new Date(schedule.scheduledAt).toLocaleString(), schedule.kind, action); }
 function sessionActionPath(kind, id, action) { return `/api/sessions/${encodeURIComponent(state.sessionId)}/${kind}/${encodeURIComponent(id)}/${action}`; }
 function jobLine(job) { const action = ["running", "stopping"].includes(job.status) ? stateAction("Cancel", sessionActionPath("jobs", job.id, "kill")) : undefined; return stateRow(job.label || job.id, `${job.kind} · ${job.id}`, job.status, action); }
-function agentLine(agent) { const action = agent.status === "running" ? stateAction("Abort", sessionActionPath("subagents", agent.sessionId, "abort")) : undefined; return stateRow(agent.label || agent.sessionId, agent.sessionId, agent.status, action); }
 function terminalLine(terminal) { const action = terminal.status === "running" ? stateAction("Kill", sessionActionPath("terminals", terminal.id, "kill")) : undefined; return stateRow(terminal.id, `pid ${terminal.pid} · ${terminal.sandbox?.mode || "unconfined"}`, terminal.status, action); }
 function goalCard(goal) { const card = stateCard("Goal"); if (!goal) { card.append(emptyLine("No active goal")); return card; } card.append(stateRow(goal.objective, `${goal.roundsStarted}/${goal.maxGoalRounds} rounds · rev ${goal.revision}`, goal.phase)); if (goal.blockedReason) card.append(emptyLine(goal.blockedReason.message)); return card; }
 function planCard(plan) { const card = stateCard("Plan mode"); const controls = document.createElement("div"); controls.className = "state-plan"; const target = planModeTarget(plan); const label = document.createElement("span"); label.textContent = target ? "Planning guidance active" : "Default execution mode"; const toggle = document.createElement("button"); toggle.type = "button"; toggle.textContent = target ? "Turn off" : "Turn on"; toggle.disabled = !plan; toggle.addEventListener("click", async () => { try { await setPlanMode(!target); } catch (error) { setStatus(error.message, true); } }); controls.append(label, toggle); card.append(controls); return card; }
@@ -1924,14 +2054,15 @@ async function submit(event) {
     try {
       const mode = $("delivery-mode").value;
       const outgoingAttachments = [...state.pendingAttachments];
-      const pending = mode === "followUp" ? { requestId, sessionId: state.sessionId, placement: "queued", message: { content: [...(prompt ? [{ type: "text", text: prompt }] : []), ...outgoingAttachments.map((block) => ({ ...block, type: "seal/attachment" }))] } } : null;
+      const pending = { requestId, sessionId: state.sessionId, placement: mode === "steer" ? "steering" : "queued", message: { content: [...(prompt ? [{ type: "text", text: prompt }] : []), ...outgoingAttachments.map((block) => ({ ...block, type: "seal/attachment" }))] } };
       if (pending) { state.pendingQueueSubmissions.push(pending); state.queueKey = null; renderQueue(state.queueItems); }
       attachmentAdmissionLocked = true; renderAttachmentChips();
       await api(`/api/runs/${encodeURIComponent(state.runId)}/messages`, {
         method: "POST", body: JSON.stringify({ prompt, mode, attachments: outgoingAttachments, requestId }),
       });
       attachmentAdmissionLocked = false; setComposerDraft(""); consumeAttachments(outgoingAttachments);
-      const bubble = appendBubble("user", prompt); renderMediaBlocks(bubble.querySelector(".content"), outgoingAttachments, false);
+      // Pending messages remain in the queue dock until PI consumes them.
+      // The user_message event inserts the durable message at that boundary.
       scrollTranscriptToBottom();
       setStatus(t(mode === "steer" ? "status.steeringQueued" : "status.followUpQueued"));
       await loadQueue();
@@ -1969,12 +2100,19 @@ async function submit(event) {
   scrollTranscriptToBottom();
   setStatus(t("status.running"));
   let runStarted = false;
+  const startupController = new AbortController();
+  state.startupController = startupController;
   try {
     const response = await api("/api/runs", {
       method: "POST",
-      body: JSON.stringify({ cwd, provider, model, prompt, attachments: outgoingAttachments, sessionId: state.sessionId, agentPreset: state.sessionId ? undefined : $("agent-preset").value || undefined, reasoning: $("reasoning").value || undefined }),
+      signal: startupController.signal,
+      body: JSON.stringify({ startupProgress: true, cwd, provider, model, prompt, attachments: outgoingAttachments, sessionId: state.sessionId, agentPreset: state.sessionId ? undefined : $("agent-preset").value || undefined, reasoning: $("reasoning").value || undefined }),
     });
-    await readLines(response.body, (message) => { if (message.type === "started") { runStarted = true; attachmentAdmissionLocked = false; attachmentAdmission.accepted(); } handleStream(message, assistant); });
+    await readLines(response.body, (message) => {
+      if (!runStarted && message.type === "error") throw new Error(message.error);
+      if (message.type === "started") { runStarted = true; state.startupController = null; attachmentAdmissionLocked = false; attachmentAdmission.accepted(); }
+      handleStream(message, assistant);
+    });
     attachmentAdmissionLocked = false; attachmentAdmission.accepted();
     await loadSessions();
     await loadSessionState();
@@ -1984,9 +2122,11 @@ async function submit(event) {
       if (!$("prompt").value) setComposerDraft(prompt);
       attachmentAdmissionLocked = false; attachmentAdmission.failed();
     }
-    appendNotice(error.message, true);
-    setStatus(t("status.failed"), true);
+    const stoppedBeforeRun = !runStarted && startupController.signal.aborted;
+    if (!stoppedBeforeRun) appendNotice(error.message, true);
+    setStatus(stoppedBeforeRun ? (currentLocale === "zh-CN" ? "已停止启动，输入已保留" : "Startup stopped; input retained") : t("status.failed"), !stoppedBeforeRun);
   } finally {
+    if (state.startupController === startupController) state.startupController = null;
     attachmentAdmissionLocked = false; state.running = false; $("agent-preset").disabled = state.sessionId !== null && state.sessions.find((session) => session.id === state.sessionId)?.blank !== true; renderPlanControl();
     state.runId = null;
     $("delivery-picker").hidden = true;
@@ -2117,7 +2257,17 @@ async function readLines(stream, receive) {
 }
 
 function handleStream(message, assistant) {
-  if (message.type === "started") {
+  let sequence = streamSequences.get(assistant);
+  if (!sequence) { sequence = createStreamSequence(assistant, () => appendBubble("assistant", "")); streamSequences.set(assistant, sequence); }
+  // Once live events arrive, the saved page is no longer a complete snapshot.
+  // Keep local older rows available, but never rebuild from stale tail data.
+  historyCanTrim = false;
+  if (message.type === "startup_activity" && message.activity === "compaction") {
+    const active = message.state === "started";
+    assistant.dataset.startupActivity = active ? "compacting" : "preparing";
+    setStatus(currentLocale === "zh-CN" ? (active ? "正在压缩上下文" : "准备模型请求") : (active ? "Compacting context" : "Preparing request"));
+  } else if (message.type === "started") {
+    delete assistant.dataset.startupActivity;
     state.runId = message.runId;
     renderComposerPrimary();
     if (state.sessionId !== message.sessionId) attachmentDrafts.adopt(state.sessionId, message.sessionId, state.pendingAttachments);
@@ -2125,30 +2275,78 @@ function handleStream(message, assistant) {
     window.dispatchEvent(new CustomEvent("seal-harness:session-selected", { detail: { sessionId: message.sessionId } }));
     $("session-title").textContent = message.sessionId;
   } else if (message.type === "event") {
+    delete assistant.dataset.startupActivity;
     const event = message.event;
-    if (event.type === "text_delta") {
+    let structureChanged = false;
+    if (event.type === "user_message" && !sequence.claimUser(event.message.id)) return;
+    if (event.type === "turn_start") sequence.start(event.turnId);
+    assistant = sequence.accept(event.type);
+    if (event.type === "compaction_activity") {
+      const active = event.state === "started";
+      sequence.track(assistant); assistant.dataset.activityPhase = active ? "compacting" : "preparing"; structureChanged = true;
+      setStatus(currentLocale === "zh-CN"
+        ? (active ? "正在压缩上下文" : event.outcome === "failed" ? "上下文压缩失败" : event.outcome === "aborted" ? "已停止压缩" : "准备模型请求")
+        : (active ? "Compacting context" : event.outcome === "failed" ? "Context compaction failed" : event.outcome === "aborted" ? "Compaction stopped" : "Preparing request"));
+    }
+    else if (event.type === "runtime_activity") {
+      if (event.phase === "preparing" || event.phase === "waiting-model") {
+        sequence.track(assistant); assistant.dataset.activityPhase = event.phase === "preparing" ? "preparing" : "waiting"; structureChanged = true;
+        setStatus(currentLocale === "zh-CN" ? (event.phase === "preparing" ? "准备模型请求" : "等待模型") : (event.phase === "preparing" ? "Preparing request" : "Waiting for model"));
+      }
+    }
+    else if (event.type === "request_header") {
+      sequence.track(assistant); if (assistant.dataset.activityPhase !== "preparing") assistant.dataset.activityPhase = "waiting"; structureChanged = true;
+    }
+    else if (event.type === "user_message") {
+      renderAnchoredMessage({ ...event.message, messageId: event.message.id });
+      structureChanged = true;
+    }
+    else if (event.type === "text_delta") {
+      assistant.dataset.activityPhase = "writing";
+      structureChanged = assistant.dataset.reply !== "true";
+      sequence.track(assistant); assistant.dataset.reply = "true";
       const content = assistant.querySelector(".content");
       content.dataset.source = (content.dataset.source || "") + event.delta;
       disposeCopyActions(content); content.innerHTML = renderMarkdown(content.dataset.source);
       localizeCodeCopyButtons(content);
     }
-    else if (event.type === "reasoning_delta") { appendReasoningDelta(assistant, event.delta); setStatus(t("status.reasoning")); }
-    else if (event.type === "tool_call") appendToolCall(event.call);
-    else if (event.type === "tool_result") appendToolResult(event);
-    else if (event.type === "tool_progress") setStatus(t("status.toolRunning"));
+    else if (event.type === "reasoning_delta") {
+      assistant.dataset.activityPhase = "thinking";
+      structureChanged = !assistant.querySelector(".reasoning");
+      sequence.track(assistant); appendReasoningDelta(assistant, event.delta); setStatus(t("status.reasoning"));
+    }
+    else if (event.type === "tool_call") {
+      structureChanged = true;
+      const fragment = document.createDocumentFragment(); const card = appendToolCall(event.call, fragment);
+      if (card?.dataset) card.dataset.toolCallCount = "1";
+      for (const node of [...fragment.childNodes]) { sequence.track(node); appendTranscriptNode(node); }
+    }
+    else if (event.type === "tool_result") { appendToolResult(event); structureChanged = true; }
+    else if (event.type === "tool_progress") {
+      liveToolViews.get(event.callId)?.native?.progress(event.content);
+      setStatus(t("status.toolRunning"));
+    }
+    else if (event.type === "turn_end") { sequence.finish(event.turnId); structureChanged = true; }
+    if (structureChanged) applyTranscriptView();
+    else updateTranscriptActivity($("transcript"), currentLocale);
     if (state.transcriptFollowing) scrollTranscriptToBottom();
   } else if (message.type === "completed") {
-    const reasoning = assistant.querySelector(".reasoning"); if (reasoning) reasoning.open = false;
-    setStatus(t(message.stopReason === "error" ? "status.failed" : "status.ready"), message.stopReason === "error");
+    delete assistant.dataset.startupActivity;
+    sequence.finish(); applyTranscriptView();
+    for (const item of sequence.assistants) { const reasoning = item.querySelector(".reasoning"); if (reasoning) reasoning.open = false; }
+    setStatus(t(message.stopReason === "error" ? "status.failed" : message.stopReason === "aborted" ? "status.stopped" : "status.ready"), message.stopReason === "error");
+    if (message.stopReason === "aborted") appendNotice(t("status.stopped"));
     if (message.errorMessage) appendNotice(message.errorMessage, true);
   } else if (message.type === "error") {
+    delete assistant.dataset.startupActivity;
+    sequence.finish(); applyTranscriptView();
     appendNotice(message.error, true);
     setStatus(t("status.failed"), true);
   }
 }
 
 async function cancelRun() {
-  if (!state.runId) return;
+  if (!state.runId) { state.startupController?.abort(); return; }
   await api(`/api/runs/${encodeURIComponent(state.runId)}`, { method: "DELETE" }).catch((error) => setStatus(error.message, true));
 }
 
@@ -2250,6 +2448,7 @@ function renderQueue(items) {
 
 function queueRow(item, single = false) {
   const row = document.createElement("li"); row.className = "queue-row"; row.dataset.queueItemId = item.id;
+  if (item.placement === "steering") { const label = document.createElement("small"); label.textContent = t("composer.steering"); row.append(label); }
   if (single) { const lead = document.createElement("span"); lead.className = "queue-lead"; lead.textContent = "◷"; lead.setAttribute("aria-hidden", "true"); row.append(lead); }
   const images = queueImageRefs(item);
   if (images.length > 0) {
@@ -2361,6 +2560,7 @@ async function decideApproval(id, approved) {
 }
 
 function appendTranscriptNode(node) {
+  if (!renderingHistory) historyCanTrim = false;
   const transcript = $("transcript");
   localizeCodeCopyButtons(node);
   transcript.insertBefore(node, $("turn-navigator-slot")?.parentElement === transcript ? $("turn-navigator-slot") : null);
@@ -2370,6 +2570,20 @@ function updateMessageActionVisibility() {
   const messages = [...$("transcript").querySelectorAll(".message.user, .message.assistant")];
   const modes = messageActionRevealModes(messages.map((message) => message.classList.contains("user") ? "user" : "assistant"));
   messages.forEach((message, index) => { message.dataset.actionsReveal = modes[index]; });
+}
+
+function renderHistoryMessages(messages, anchor) {
+  renderingHistory = true;
+  try {
+    for (const message of messages) {
+      const transcript = $("transcript");
+      const existing = anchor ? new Set(transcript.children) : null;
+      renderAnchoredMessage(message);
+      if (anchor) for (const node of [...transcript.children]) {
+        if (!existing.has(node)) transcript.insertBefore(node, anchor);
+      }
+    }
+  } finally { renderingHistory = false; }
 }
 
 function renderAnchoredMessage(message) {
@@ -2417,15 +2631,22 @@ function renderMessage(message) {
     }
     if (message.role === "assistant" && blocksText(message.content).trim()) item.dataset.reply = "true";
     if (message.role === "assistant") {
-      const calls = (message.content ?? []).filter((block) => block.type === "tool_call");
-      const subagents = calls.filter((block) => block.name === "subagent" || block.name?.startsWith("subagent_")).length;
-      item.dataset.toolCallCount = String(calls.length - subagents); item.dataset.subagentCount = String(subagents);
+      item.dataset.toolCallCount = "0"; item.dataset.subagentCount = "0";
     }
     renderMediaBlocks(item.querySelector(".content"), message.content);
     if (message.role === "assistant") {
       const reasoning = (message.content ?? []).filter((block) => block.type === "reasoning").map((block) => block.text).join("\n");
       if (reasoning) renderReasoning(item, reasoning, false);
-      for (const block of message.content ?? []) if (block.type === "tool_call") appendToolCall(block, item);
+      for (const block of message.content ?? []) if (block.type === "tool_call") {
+        const fragment = document.createDocumentFragment();
+        const card = appendToolCall(block, fragment);
+        if (card?.dataset) {
+          const subagent = block.name === "subagent" || block.name?.startsWith("subagent_");
+          card.dataset.toolCallCount = subagent ? "0" : "1";
+          card.dataset.subagentCount = subagent ? "1" : "0";
+        }
+        for (const node of [...fragment.childNodes]) { attachTurnMetadata(node, message); appendTranscriptNode(node); }
+      }
     }
     return item;
   }
@@ -2689,7 +2910,7 @@ async function navigateToTurn(item) {
   state.busyTurn = item.turn; renderTurnNavigator();
   try {
     let node = document.querySelector(`[data-turn-id="${CSS.escape(item.turnId)}"]`);
-    while (!node && state.messageBefore !== null) { const before = state.messageBefore; await loadEarlierMessages(HISTORY_JUMP_MESSAGES); node = document.querySelector(`[data-turn-id="${CSS.escape(item.turnId)}"]`); if (!node && state.messageBefore === before) break; }
+    while (!node && (state.messageBefore !== null || historyWindow?.hidden)) { const before = state.messageBefore; const hidden = historyWindow?.hidden; await loadEarlierMessages(HISTORY_JUMP_MESSAGES); node = document.querySelector(`[data-turn-id="${CSS.escape(item.turnId)}"]`); if (!node && state.messageBefore === before && historyWindow?.hidden === hidden) break; }
     node?.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   } finally { state.busyTurn = null; renderTurnNavigator(); }
 }
@@ -2702,7 +2923,7 @@ function applyTranscriptView() {
     if (messages > 0) labels.push(t("transcript.processMessages").replace("{count}", String(messages)));
     if (subagents > 0) labels.push(t("transcript.processSubagents").replace("{count}", String(subagents)));
     return labels.length === 0 ? t("transcript.processThought") : labels.join(t("transcript.processSeparator"));
-  });
+  }, currentLocale);
 }
 
 function blocksText(content = []) { return content.filter((block) => block.type === "text").map((block) => block.text).join("\n"); }
@@ -2867,6 +3088,18 @@ function appendTool(titleValue, value, parent = $("transcript")) {
 }
 const liveToolViews = new Map(); const settledToolResults = new Map(); const liveToolHosts = new Set();
 function appendToolCall(call, parent = $("transcript")) {
+  const reviewSessionId = state.sessionId;
+  const reviewUrl = id => `/api/sessions/${encodeURIComponent(reviewSessionId)}/reviews/${encodeURIComponent(id)}`;
+  const native = createToolCard(call, currentLocale, document, {
+    loadReview: async id => (await api(reviewUrl(id))).json(),
+    rollbackReview: async id => (await api(`${reviewUrl(id)}/rollback`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirm: true }) })).json(),
+  });
+  if (native) {
+    parent.append(native.root); liveToolViews.set(call.id, { host: native.root, native });
+    const settled = settledToolResults.get(call.id);
+    if (settled) { settledToolResults.delete(call.id); settled.fallback.remove(); appendToolResult(settled.event); }
+    return native.root;
+  }
   const argsRaw = typeof call.providerData?.dshArguments === "string" ? call.providerData.dshArguments : JSON.stringify(call.arguments ?? {});
   const fallback = appendTool(`→ ${call.name}`, typeof call.providerData?.dshArguments === "string" ? argsRaw : JSON.stringify(call.arguments, null, 2), parent);
   const host = document.createElement("div"); host.className = "dsh-tool-view";
@@ -2886,6 +3119,12 @@ function appendToolResult(event) {
   const pending = liveToolViews.get(event.callId);
   if (!pending) { const fallback = appendToolResultFallback(event); settledToolResults.set(event.callId, { event, fallback }); return fallback; }
   liveToolViews.delete(event.callId);
+  if (pending.native) {
+    pending.native.update(event.result);
+    const media = document.createElement("div"); media.className = "tool-result-media"; renderMediaBlocks(media, event.result.content ?? []);
+    if (media.childElementCount) pending.host.append(media);
+    return pending.host;
+  }
   window.SealDshPlugins?.mountToolView?.(pending.host, { callId: event.callId, toolName: event.name, block: { kind: "tool-result", call: { name: event.name, argsRaw: JSON.stringify(pending.args ?? {}) }, content: event.result.content ?? [], isError: event.result.isError === true, error: event.result.error, meta: event.result.details ?? event.result.meta } });
   return pending.host;
 }

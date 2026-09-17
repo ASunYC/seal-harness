@@ -1,589 +1,335 @@
-import { Agent, type AgentEvent, type AgentTool } from "@earendil-works/pi-agent-core";
 import { randomUUID } from "node:crypto";
-import type { AssistantMessage as PiAssistantMessage, Model, Usage } from "@earendil-works/pi-ai";
-import type {
-  AgentMessage,
-  AgentRun,
-  AgentRuntime,
-  ModelService,
-  ModelStopReason,
-  ModelUsage,
-  PendingAgentMessage,
-  PendingMessageAction,
-  PendingMessageUpdate,
-  RuntimeEvent,
-  RuntimeResult,
-  RuntimeStartRequest,
-  ToolResult,
-  ToolService,
-} from "@seal-harness/core";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import type { AgentEvent } from "@earendil-works/pi-agent-core";
+import { DefaultResourceLoader, SessionManager, SettingsManager, type AgentSession, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { AgentMessage, AgentRun, AgentRuntime, ModelService, PendingAgentMessage, PendingMessageAction, PendingMessageUpdate, RuntimeEvent, RuntimeResult, RuntimeStartRequest, ToolService, UserMessage } from "@seal-harness/core";
 import { messageId, toolCallId } from "@seal-harness/core";
-import { Type } from "typebox";
 import { AsyncChannel } from "./async-channel.js";
-import { createModelBridge, createPiModel, createRejectedStepStream, createRetryableModelBridge } from "./model-bridge.js";
-import { fromPiAssistantMessage, fromPiMessages, toPiMessage, toPiMessages } from "./messages.js";
+import { createSealCodingSession, selectSealCodingModel } from "./coding-session.js";
+import { createPiModel } from "./model-bridge.js";
+import { fromPiAssistantMessage, fromPiMessages, toPiMessage } from "./messages.js";
+import { createPiTools, fromPiToolContent, fromPiToolResult, fromPiStopReason, fromPiUsage } from "./runtime-tools.js";
+import { importSealHistory } from "./session-import.js";
+import { openNativeSession } from "./session-storage.js";
 
 export interface PiRuntimeOptions {
+  readonly dataHome?: string;
   readonly toolExecution?: "parallel" | "sequential";
   readonly steeringMode?: "all" | "one-at-a-time";
   readonly followUpMode?: "all" | "one-at-a-time";
+  /** Passed to PI SettingsManager; PI alone decides when/how to compact. */
+  readonly compaction?: { readonly enabled?: boolean; readonly reserveTokens?: number; readonly keepRecentTokens?: number };
 }
-
 export class PiAgentRuntime implements AgentRuntime {
-  constructor(
-    readonly modelService: ModelService,
-    readonly toolService: ToolService | undefined,
-    readonly options: PiRuntimeOptions = {},
-  ) {}
-
-  start(request: RuntimeStartRequest): AgentRun {
-    return new PiAgentRun(this.modelService, this.toolService, this.options, request);
-  }
+  readonly managesCompaction = true;
+  constructor(readonly modelService: ModelService, readonly toolService: ToolService | undefined, readonly options: PiRuntimeOptions = {}) {}
+  start(request: RuntimeStartRequest): AgentRun { return new PiAgentRun(this.modelService, this.toolService, this.options, request); }
 }
-
 class PiAgentRun implements AgentRun {
   readonly #channel = new AsyncChannel<RuntimeEvent>();
-  readonly #abortController = new AbortController();
-  readonly #pendingSteering: AgentMessage[] = [];
-  readonly #pendingFollowUps: AgentMessage[] = [];
+  readonly #abort = new AbortController();
   readonly #listeners = new Set<(event: RuntimeEvent) => void | Promise<void>>();
   readonly #pendingListeners = new Set<(messages: readonly PendingAgentMessage[]) => void>();
-  readonly #durableNextTurn: import("@seal-harness/core").UserMessage[] = [];
-  readonly #durableNextStep: import("@seal-harness/core").UserMessage[] = [];
-  readonly #toolControl = { concludesTurn: false, errors: new Map<string, boolean>() };
-  #preStepRejected = false;
-  #inboxDurability: Promise<void> = Promise.resolve();
-  #agent?: Agent;
+  readonly #pending: PendingAgentMessage[] = [];
+  readonly #claimed: UserMessage[] = [];
+  readonly #control = { concludesTurn: false, errors: new Map<string, boolean>() };
+  #session: AgentSession | undefined;
+  #durability = Promise.resolve();
+  #turn = -1;
+  #firstTokenAt: number | undefined;
+  #initial: UserMessage | undefined;
+  #inputRejected = false;
+  #extensionFailure: Error | undefined;
+  #config: import("@seal-harness/core").RuntimeModelRequestConfig;
   readonly result: Promise<RuntimeResult>;
-
-  constructor(
-    modelService: ModelService,
-    toolService: ToolService | undefined,
-    options: PiRuntimeOptions,
-    readonly request: RuntimeStartRequest,
-  ) {
-    for (const entry of request.pendingMessages ?? []) {
-      (entry.placement === "queued" ? this.#pendingFollowUps : this.#pendingSteering).push(entry.message);
-      (entry.placement === "queued" ? this.#durableNextTurn : this.#durableNextStep).push(structuredClone(entry.message));
-    }
-    if (request.signal !== undefined) {
-      if (request.signal.aborted) this.#abortController.abort(request.signal.reason);
-      else request.signal.addEventListener("abort", () => this.abort(request.signal?.reason), { once: true });
-    }
-    this.result = this.#execute(modelService, toolService, options);
+  constructor(models: ModelService, tools: ToolService | undefined, options: PiRuntimeOptions, readonly request: RuntimeStartRequest) {
+    this.#config = { model: { provider: request.model.provider, model: request.model.model }, ...(request.reasoning === undefined ? {} : { reasoning: request.reasoning }), ...(request.maxTokens === undefined ? {} : { maxTokens: request.maxTokens }) };
+    this.#pending.push(...structuredClone(request.pendingMessages ?? []));
+    if (request.signal?.aborted) this.#abort.abort(request.signal.reason);
+    else request.signal?.addEventListener("abort", () => this.abort(request.signal?.reason), { once: true });
+    this.result = this.#execute(models, tools, options);
   }
-
-  [Symbol.asyncIterator](): AsyncIterator<RuntimeEvent> {
-    return this.#channel[Symbol.asyncIterator]();
-  }
-
+  [Symbol.asyncIterator](): AsyncIterator<RuntimeEvent> { return this.#channel[Symbol.asyncIterator](); }
+  subscribe(listener: (event: RuntimeEvent) => void | Promise<void>): () => void { this.#listeners.add(listener); return () => { this.#listeners.delete(listener); }; }
+  subscribePending(listener: (messages: readonly PendingAgentMessage[]) => void): () => void { this.#pendingListeners.add(listener); return () => { this.#pendingListeners.delete(listener); }; }
   abort(reason?: unknown): void {
-    if (!this.#abortController.signal.aborted) this.#abortController.abort(reason);
-    this.#agent?.abort();
+    this.#abort.abort(reason);
+    // Preserve Seal's durable pending records, but prevent SDK post-run queue
+    // continuation from starting another request after the user pressed stop.
+    this.#session?.clearQueue();
+    // Settings are run-local. Stop post-turn automatic work after a user abort.
+    this.#session?.setAutoCompactionEnabled(false);
+    this.#session?.abortCompaction();
+    void this.#session?.abort();
   }
-
-  steer(message: AgentMessage): void {
-    const identified = identifyUserMessage(message);
-    const start = this.pendingMessages().filter((entry) => entry.placement === "steering").length;
-    if (this.#agent === undefined) this.#pendingSteering.push(identified);
-    else this.#agent.steer(toPiMessage(identified, this.#agent.state.model));
-    if (identified.role === "user") this.#recordInbox({ target: "next-step", start, inserted: [identified] });
-    this.#publishPending();
+  pendingMessages(): readonly PendingAgentMessage[] { return structuredClone(this.#pending); }
+  steer(message: AgentMessage): void { this.#enqueue(message, "steering"); }
+  followUp(message: AgentMessage): void { this.#enqueue(message, "queued"); }
+  #enqueue(message: AgentMessage, placement: PendingAgentMessage["placement"]): void {
+    if (message.role !== "user") throw new TypeError("PI session queues accept user messages only");
+    this.splicePending(placement, this.#pending.filter(entry => entry.placement === placement).length, 0, [message]);
   }
-
-  followUp(message: AgentMessage): void {
-    const identified = identifyUserMessage(message);
-    const start = this.pendingMessages().filter((entry) => entry.placement === "queued").length;
-    if (this.#agent === undefined) this.#pendingFollowUps.push(identified);
-    else this.#agent.followUp(toPiMessage(identified, this.#agent.state.model));
-    if (identified.role === "user") this.#recordInbox({ target: "next-turn", start, inserted: [identified] });
-    this.#publishPending();
-  }
-
-  pendingMessages(): readonly PendingAgentMessage[] {
-    if (this.#agent === undefined) return [
-      ...pendingCore(this.#pendingFollowUps, "queued"),
-      ...pendingCore(this.#pendingSteering, "steering"),
-    ];
-    const queues = piQueues(this.#agent);
-    return [
-      ...pendingPi(queues.followUpQueue.messages, "queued"),
-      ...pendingPi(queues.steeringQueue.messages, "steering"),
-    ];
-  }
-
   updatePendingMessage(id: import("@seal-harness/core").MessageId, action: PendingMessageAction): PendingMessageUpdate {
-    const before = this.pendingMessages();
-    if (this.#agent === undefined) {
-      const result = updateCoreQueue(this.#pendingFollowUps, this.#pendingSteering, id, action);
-      if (result === "updated") { this.#recordPendingUpdate(before, id, action); this.#publishPending(); }
-      return result;
-    }
-    const queues = piQueues(this.#agent); const model = this.#agent.state.model;
-    const followIndex = piMessageIndex(queues.followUpQueue.messages, id);
-    const steeringIndex = piMessageIndex(queues.steeringQueue.messages, id);
-    const target = followIndex >= 0 ? { messages: queues.followUpQueue.messages, index: followIndex, placement: "queued" as const } : steeringIndex >= 0 ? { messages: queues.steeringQueue.messages, index: steeringIndex, placement: "steering" as const } : undefined;
-    if (target === undefined) return "not-found";
-    if (action.kind === "steer" && target.placement !== "queued") return "steer-unavailable";
-    const current = target.messages[target.index];
-    if (current === undefined) return "not-found";
-    if (action.kind === "edit") {
-      const core = fromPiMessages([current])[0];
-      if (core?.role !== "user") return "not-found";
-      target.messages[target.index] = toPiMessage({ ...core, content: action.content }, model);
-    } else {
-      target.messages.splice(target.index, 1);
-      if (action.kind === "steer") this.#agent.steer(current);
-    }
-    this.#publishPending();
-    this.#recordPendingUpdate(before, id, action);
+    const entry = this.#pending.find(item => item.id === id);
+    if (!entry) return "not-found";
+    if (action.kind === "steer" && entry.placement !== "queued") return "steer-unavailable";
+    const index = this.#pending.filter(item => item.placement === entry.placement).findIndex(item => item.id === id);
+    this.splicePending(entry.placement, index, 1, action.kind === "edit" ? [{ ...entry.message, content: action.content }] : []);
+    if (action.kind === "steer") this.#enqueue(entry.message, "steering");
     return "updated";
   }
-
-  splicePending(placement: PendingAgentMessage["placement"], start: number, deleteCount: number, inserted: readonly import("@seal-harness/core").UserMessage[]): readonly import("@seal-harness/core").UserMessage[] {
-    const identified = inserted.map((message) => identifyUserMessage(message) as import("@seal-harness/core").UserMessage);
-    assertUniquePending(this.pendingMessages(), identified, placement, start, deleteCount);
-    if (this.#agent === undefined) {
-      const target = placement === "queued" ? this.#pendingFollowUps : this.#pendingSteering;
-      const removed = target.splice(start, deleteCount, ...identified);
-      const offset = start < 0 ? Math.max(target.length - identified.length + removed.length + start, 0) : Math.min(start, target.length - identified.length + removed.length);
-      this.#recordInbox({ target: placement === "queued" ? "next-turn" : "next-step", start: offset, ...(removed.length === 0 ? {} : { removedCount: removed.length, outcome: "canceled" as const }), inserted: identified });
-      this.#publishPending();
-      return removed.filter((message): message is import("@seal-harness/core").UserMessage => message.role === "user");
+  splicePending(placement: PendingAgentMessage["placement"], start: number, deleteCount: number, inserted: readonly UserMessage[]): readonly UserMessage[] {
+    if (!Number.isInteger(start) || !Number.isInteger(deleteCount) || deleteCount < 0) throw new TypeError("Invalid pending splice");
+    const target = this.#pending.filter(entry => entry.placement === placement);
+    const offset = start < 0 ? Math.max(target.length + start, 0) : Math.min(start, target.length);
+    const removed = target.slice(offset, offset + deleteCount);
+    const removedIds = new Set(removed.map(entry => entry.id));
+    const ids = new Set(this.#pending.filter(entry => !removedIds.has(entry.id)).map(entry => entry.id));
+    const added = inserted.map(message => {
+      queueContent(message); // Reject unresolved/unsupported blocks before changing either queue.
+      const id = message.id ?? messageId(randomUUID());
+      if (ids.has(id)) throw new Error(`pending message id is already queued: ${id}`);
+      ids.add(id);
+      return { id, placement, message: { ...structuredClone(message), id } };
+    });
+    target.splice(offset, deleteCount, ...added);
+    const others = this.#pending.filter(entry => entry.placement !== placement);
+    this.#pending.splice(0, this.#pending.length, ...others, ...target);
+    this.#record({ type: "inbox_spliced", target: placement === "queued" ? "next-turn" : "next-step", start: offset,
+      ...(removed.length ? { removedCount: removed.length, removed: removed.map(entry => entry.message), outcome: "canceled" as const } : {}),
+      inserted: added.map(entry => entry.message) });
+    this.#syncQueue(); this.#notifyPending();
+    return removed.map(entry => entry.message);
+  }
+  #syncQueue(): void {
+    const session = this.#session; if (!session) return;
+    session.clearQueue();
+    for (const entry of this.#pending) {
+      const [first, ...images] = queueContent(entry.message);
+      const text = first.text;
+      const operation = entry.placement === "queued" ? session.followUp(text, images) : session.steer(text, images);
+      void operation.catch(error => this.abort(error));
     }
-    const queues = piQueues(this.#agent);
-    const target = placement === "queued" ? queues.followUpQueue.messages : queues.steeringQueue.messages;
-    const removed = target.splice(start, deleteCount, ...identified.map((message) => toPiMessage(message, this.#agent!.state.model)));
-    const offset = start < 0 ? Math.max(target.length - identified.length + removed.length + start, 0) : Math.min(start, target.length - identified.length + removed.length);
-    this.#recordInbox({ target: placement === "queued" ? "next-turn" : "next-step", start: offset, ...(removed.length === 0 ? {} : { removedCount: removed.length, outcome: "canceled" as const }), inserted: identified });
-    this.#publishPending();
-    return fromPiMessages(removed).filter((message): message is import("@seal-harness/core").UserMessage => message.role === "user");
   }
+  #notifyPending(): void { for (const listener of this.#pendingListeners) listener(this.pendingMessages()); }
+  #record(event: RuntimeEvent): void { this.#durability = this.#durability.then(() => this.#publish(event)); }
+  async #publish(event: RuntimeEvent): Promise<void> { for (const listener of this.#listeners) await listener(event); this.#channel.push(event); }
 
-  subscribePending(listener: (messages: readonly PendingAgentMessage[]) => void): () => void {
-    this.#pendingListeners.add(listener);
-    return () => this.#pendingListeners.delete(listener);
-  }
-
-  subscribe(listener: (event: RuntimeEvent) => void | Promise<void>): () => void {
-    this.#listeners.add(listener);
-    return () => this.#listeners.delete(listener);
-  }
-
-  async #execute(
-    modelService: ModelService,
-    toolService: ToolService | undefined,
-    options: PiRuntimeOptions,
-  ): Promise<RuntimeResult> {
-    let messages: readonly AgentMessage[] = this.request.messages;
-    let requestStep = 0;
-    try {
-      if (this.#abortController.signal.aborted) {
-        await this.#inboxDurability;
-        await this.#publish({ type: "run_end", stopReason: "aborted" });
-        return { messages, stopReason: "aborted" };
+  #extensions(api: ExtensionAPI, models: ModelService): void {
+    api.on("input", async () => {
+      const original = this.#initial;
+      let replacement = original;
+      if (original && this.request.hooks?.preStep) {
+        const decision = await this.request.hooks.preStep({ turn: 1, step: 1, signal: this.#abort.signal, messages: [original] });
+        this.#abort.signal.throwIfAborted();
+        await this.#publish({ type: "pre_step", original: [original], messages: decision.kind === "enter" ? decision.messages : [], rejected: decision.kind === "reject" });
+        if (decision.kind === "reject") { this.#inputRejected = true; this.#initial = undefined; return { action: "handled" }; }
+        if (decision.messages.length === 0) { this.#inputRejected = true; this.#initial = undefined; return { action: "handled" }; }
+        // PI's prompt API accepts one user input. Persist preceding context via
+        // SessionManager's public append API, then restore its authoritative
+        // context through Agent's documented state.messages setter before prompting.
+        // No queue internals or execution loop are accessed here.
+        const session = this.#session!;
+        const preceding = decision.messages.slice(0, -1).map(message => toPiMessage(message, session.model!));
+        for (const message of preceding) session.sessionManager.appendMessage(message);
+        if (preceding.length) session.agent.state.messages = session.sessionManager.buildSessionContext().messages;
+        replacement = decision.messages.at(-1)!;
+        this.#initial = replacement;
+      }
+      if (replacement && replacement !== original) return { action: "transform",
+        text: replacement.content.filter(block => block.type === "text").map(block => block.text).join("\n"),
+        images: replacement.content.flatMap(block => block.type === "image" ? [{ type: "image" as const, data: block.data, mimeType: block.mimeType }] : []) };
+      return { action: "continue" };
+    });
+    api.on("context", async event => {
+      await this.#durability;
+      await this.#publish({ type: "runtime_activity", phase: "preparing" });
+      if (this.request.hooks?.request) {
+        this.#config = await this.request.hooks.request({ turn: 1, step: this.#turn + 1, signal: this.#abort.signal, config: this.#config });
+        this.#abort.signal.throwIfAborted();
+        await selectSealCodingModel(this.#session!, models, this.#config);
+      }
+      // Compatibility context producers may enqueue plugin context during input
+      // preflight (e.g. time/sandbox notes). Materialize it before the first PI
+      // prompt rather than allowing it to become a second user turn.
+      const contextEntries = this.#pending.filter(entry => entry.placement === "steering" && entry.message.source?.kind === "plugin");
+      for (const entry of contextEntries) {
+        const offset = this.#pending.filter(item => item.placement === "steering").findIndex(item => item.id === entry.id);
+        this.#pending.splice(this.#pending.findIndex(item => item.id === entry.id), 1);
+        this.#record({ type: "inbox_spliced", target: "next-step", start: offset, removedCount: 1, removed: [entry.message], inserted: [] });
+        await this.#durability;
+        this.#session!.sessionManager.appendMessage(toPiMessage(entry.message, this.#session!.model!));
+        await this.#publish({ type: "user_message", message: entry.message });
+      }
+      if (contextEntries.length) {
+        this.#session!.agent.state.messages = this.#session!.sessionManager.buildSessionContext().messages;
+        this.#syncQueue(); this.#notifyPending();
       }
 
-      const model = await createPiModel(
-        modelService,
-        this.request.model.provider,
-        this.request.model.model,
-      );
-      let requestConfig: import("@seal-harness/core").RuntimeModelRequestConfig = {
-        model: { provider: this.request.model.provider, model: this.request.model.model },
-        ...(this.request.reasoning === undefined ? {} : { reasoning: this.request.reasoning }),
-        ...(this.request.maxTokens === undefined ? {} : { maxTokens: this.request.maxTokens }),
-      };
-      let requestHeaderKey: string | undefined;
-      let requestHeaderStep = 0;
-      let agent!: Agent;
-      const initialMessages = toPiMessages(this.request.messages, model);
-      let knownMessageCount = Math.max(0, initialMessages.length - (this.request.initialStepMessages?.length ?? 0));
-      const tools = toolService === undefined ? [] : createPiTools(toolService, this.request, this.#toolControl, (message) => agent.steer(toPiMessage(message, model)), (event) => this.#publish({ type: "tool_dispatch", event }));
-      const requestTools = toolService?.definitions(this.request.sessionId).map(({ name, description, inputSchema }) => ({ name, description, inputSchema })) ?? [];
-      agent = new Agent({
-        initialState: {
-          systemPrompt: this.request.systemPrompt,
-          model,
-          thinkingLevel: this.request.reasoning ?? "off",
-          tools,
-          messages: initialMessages,
-        },
-        transformContext: async (messages, signal) => {
-          const activeSignal = signal ?? this.#abortController.signal;
-          const suffix = messages.slice(knownMessageCount);
-          const claimed = fromPiMessages(suffix).filter((message): message is import("@seal-harness/core").UserMessage => message.role === "user");
-          const decision = await this.request.hooks?.preStep?.({ turn: 1, step: requestStep + 1, signal: activeSignal, messages: claimed })
-            ?? { kind: "enter" as const, messages: claimed };
-          activeSignal.throwIfAborted();
-          if (this.request.hooks?.preStep !== undefined) await this.#publish({ type: "pre_step", original: claimed, messages: decision.kind === "enter" ? decision.messages : [], rejected: decision.kind === "reject" });
-          const applyDecision = (target: typeof messages): void => {
-            const indices = target.map((message, index) => ({ message, index })).filter(({ message, index }) => index >= knownMessageCount && message.role === "user").map(({ index }) => index);
-            const insertAt = indices[0] ?? target.length;
-            for (const index of indices.reverse()) target.splice(index, 1);
-            if (decision.kind === "enter") target.splice(insertAt, 0, ...decision.messages.map((message) => toPiMessage(message, agent.state.model)));
-          };
-          applyDecision(messages);
-          if (agent.state.messages !== messages) applyDecision(agent.state.messages);
-          if (decision.kind === "reject") this.#preStepRejected = true;
-          knownMessageCount = messages.length;
-          return messages;
-        },
-        streamFn: async (activeModel, context, streamOptions) => {
-          if (this.#preStepRejected) return createRejectedStepStream(activeModel);
-          const signal = streamOptions?.signal ?? this.#abortController.signal;
-          const { reasoning: _reasoning, maxTokens: _maxTokens, ...forwardedOptions } = streamOptions ?? {};
-          const step = ++requestStep;
-          const prepare = async (fallbackModel: Model<any>) => {
-            const selected = await this.request.hooks?.request?.({ turn: 1, step, signal, config: requestConfig }) ?? requestConfig;
-            signal.throwIfAborted(); requestConfig = selected;
-            const header = { config: { provider: selected.model.provider, model: selected.model.model, ...(selected.reasoning === undefined ? {} : { reasoningEffort: selected.reasoning }), ...(selected.maxTokens === undefined ? {} : { maxTokens: selected.maxTokens }) }, ...(this.request.systemPrompt === "" ? {} : { system: this.request.systemPrompt }), ...(requestTools.length === 0 ? {} : { tools: requestTools }) };
-            const key = JSON.stringify(header); const startsSeries = requestHeaderStep !== step;
-            if (requestHeaderKey === undefined) await this.#publish({ type: "request_header", header, reason: "initial" });
-            else if (requestHeaderKey !== key) await this.#publish({ type: "request_header", header, reason: "change", ...(startsSeries ? { startsSeries: true } : {}) });
-            else if (startsSeries) await this.#publish({ type: "request_header", header, reason: "series" });
-            requestHeaderKey = key; requestHeaderStep = step;
-            const selectedModel = selected.model.provider === fallbackModel.provider && selected.model.model === fallbackModel.id
-              ? fallbackModel
-              : await createPiModel(modelService, selected.model.provider, selected.model.model);
-            return { model: selectedModel, options: { ...forwardedOptions, ...(selected.reasoning === undefined || selected.reasoning === "off" ? {} : { reasoning: selected.reasoning }), ...(selected.maxTokens === undefined ? {} : { maxTokens: selected.maxTokens }) } };
-          };
-          const initial = await prepare(activeModel);
-          if (this.request.hooks?.requestError === undefined) return createModelBridge(modelService)(initial.model, context, initial.options);
-          return createRetryableModelBridge(modelService, async (failure, provider, retrySignal) => {
-            const action = await this.request.hooks!.requestError!({ turn: 1, step, signal: retrySignal, provider, failure });
-            retrySignal.throwIfAborted();
-            return action === "retry" ? prepare(initial.model) : undefined;
-          })(initial.model, context, initial.options);
-        },
-        sessionId: this.request.sessionId,
-        toolExecution: options.toolExecution ?? "parallel",
-        steeringMode: options.steeringMode ?? "one-at-a-time",
-        followUpMode: options.followUpMode ?? "one-at-a-time",
-        afterToolCall: async ({ toolCall }) => {
-          const isError = this.#toolControl.errors.get(toolCall.id);
-          this.#toolControl.errors.delete(toolCall.id);
-          return isError === undefined ? undefined : { isError };
-        },
-        prepareNextTurnWithContext: async ({ message }) => {
-          const hasToolCalls = message.content.some((block) => block.type === "toolCall");
-          const stopping = !hasToolCalls || this.#toolControl.concludesTurn;
-          if (!this.#preStepRejected && stopping && this.pendingMessages().every((entry) => entry.placement !== "steering")) {
-            await this.request.hooks?.turnStopping?.({ turn: 1, signal: this.#abortController.signal });
-            this.#abortController.signal.throwIfAborted();
+      await this.#publish({ type: "pre_step", original: [], messages: [], rejected: false });
+      await this.#publish({ type: "request_header", reason: this.#turn <= 0 ? "initial" : "series", header: {
+        config: { provider: this.#config.model.provider, model: this.#config.model.model,
+          ...(this.#config.reasoning === undefined ? {} : { reasoningEffort: this.#config.reasoning }),
+          ...(this.#config.maxTokens === undefined ? {} : { maxTokens: this.#config.maxTokens }) },
+        ...(this.request.systemPrompt ? { system: this.request.systemPrompt } : {}),
+      } });
+      await this.#publish({ type: "runtime_activity", phase: "waiting-model" });
+      return { messages: contextEntries.length ? this.#session!.sessionManager.buildSessionContext().messages : event.messages };
+    });
+    api.on("message_start", event => {
+      if (event.message.role !== "user" || this.#initial) return;
+      const content = JSON.stringify(event.message.content);
+      // SDK steer/followUp join text and place images after it. Match that public
+      // input representation, then restore the original blocks at message_end.
+      // Steering wins over follow-up when both carry identical visible content.
+      const candidates = this.#pending.filter(entry => JSON.stringify(queueContent(entry.message)) === content);
+      const selected = candidates.find(entry => entry.placement === "steering") ?? candidates[0];
+      const index = selected ? this.#pending.indexOf(selected) : -1;
+      if (index < 0) return;
+      const entry = this.#pending[index]!;
+      const offset = this.#pending.slice(0, index).filter(item => item.placement === entry.placement).length;
+      this.#pending.splice(index, 1); this.#claimed.push(entry.message);
+      this.#record({ type: "inbox_spliced", target: entry.placement === "queued" ? "next-turn" : "next-step", start: offset, removedCount: 1, removed: [entry.message], inserted: [] });
+      this.#notifyPending();
+    });
+    api.on("message_end", async event => {
+      if (event.message.role === "user") {
+        const core = this.#initial ?? this.#claimed.shift(); this.#initial = undefined;
+        const original = core ? toPiMessage(core, this.#session!.model!) : undefined;
+        const message = original?.role === "user" ? { ...original, timestamp: event.message.timestamp } : event.message;
+        await this.#handleEvent({ type: "message_end", message }); return { message };
+      }
+      await this.#handleEvent(event as AgentEvent);
+      if (event.message.role === "assistant" && event.message.stopReason === "error" && !this.#abort.signal.aborted) {
+        // Compatibility notification only. PI owns retry classification, budget,
+        // backoff and continuation; a DSH callback cannot force another attempt.
+        await this.request.hooks?.requestError?.({ turn: 1, step: this.#turn + 1, signal: this.#abort.signal,
+          provider: event.message.provider, failure: { message: event.message.errorMessage ?? "Model request failed", code: "UNKNOWN" } });
+      }
+    });
+    api.on("agent_start", event => this.#handleEvent(event));
+    api.on("turn_start", event => this.#handleEvent(event));
+    api.on("message_update", event => this.#handleEvent(event));
+    api.on("tool_execution_update", event => this.#handleEvent(event));
+    api.on("tool_execution_end", event => this.#handleEvent(event));
+    api.on("turn_end", async event => {
+      await this.#handleEvent(event);
+      const stopping = event.message.role === "assistant" && !event.message.content.some(block => block.type === "toolCall");
+      if (stopping && !this.#abort.signal.aborted) await this.request.hooks?.turnStopping?.({ turn: 1, signal: this.#abort.signal });
+      if (this.#control.concludesTurn && this.#pending.length === 0) void this.#session?.abort();
+    });
+    api.on("tool_result", event => { const isError = this.#control.errors.get(event.toolCallId); this.#control.errors.delete(event.toolCallId); return isError === undefined ? undefined : { isError }; });
+  }
+  async #execute(models: ModelService, tools: ToolService | undefined, options: PiRuntimeOptions): Promise<RuntimeResult> {
+    let messages = this.request.messages;
+    let release: (() => Promise<void>) | undefined;
+    try {
+      this.#abort.signal.throwIfAborted();
+      const model = await createPiModel(models, this.request.model.provider, this.request.model.model);
+      for (const entry of this.#pending) queueContent(entry.message);
+      const last = this.request.messages.at(-1);
+      if (last?.role !== "user") throw new Error("A PI coding session requires a final user input");
+      this.#initial = last;
+      const inputs = this.request.inputMessages ?? [last];
+      if (inputs.length === 0 || inputs.length > this.request.messages.length || inputs.at(-1)?.role !== "user") throw new Error("Invalid native session input suffix");
+      if (JSON.stringify(inputs) !== JSON.stringify(this.request.messages.slice(-inputs.length))) throw new Error("Native session inputs must match the prepared suffix");
+      const storage = options.dataHome === undefined ? undefined : await openNativeSession(options.dataHome, this.request.sessionId, this.request.cwd);
+      release = storage?.release;
+      const manager = storage?.manager ?? SessionManager.inMemory(this.request.cwd);
+      importSealHistory(manager, this.request.sessionId, this.request.messages.slice(0, -inputs.length), model);
+      for (const message of inputs.slice(0, -1)) manager.appendMessage(toPiMessage(message, model));
+      const settings = SettingsManager.inMemory({ compaction: { enabled: true,
+        reserveTokens: Math.min(16384, Math.max(1, Math.floor(model.contextWindow / 4))),
+        keepRecentTokens: Math.min(20000, Math.max(1, Math.floor(model.contextWindow / 3))), ...options.compaction }, retry: { enabled: true },
+        steeringMode: options.steeringMode ?? "one-at-a-time", followUpMode: options.followUpMode ?? "one-at-a-time" });
+      const agentDir = options.dataHome === undefined ? join(tmpdir(), "seal-sdk-isolated") : join(options.dataHome, "pi-agent");
+      const loader = new DefaultResourceLoader({ cwd: this.request.cwd, agentDir, settingsManager: settings,
+        noExtensions: true, noSkills: true, noPromptTemplates: true, noThemes: true, noContextFiles: true,
+        systemPromptOverride: () => this.request.systemPrompt, extensionFactories: [api => this.#extensions(api, models)] });
+      await loader.reload();
+      const piTools = tools ? createPiTools(tools, this.request, this.#control, message => this.steer(message), event => this.#publish({ type: "tool_dispatch", event })) : [];
+      this.#session = await createSealCodingSession({ request: this.request, modelService: models, agentDir,
+        sessionManager: manager, settingsManager: settings, resourceLoader: loader,
+        tools: piTools.map(tool => ({ ...tool, executionMode: options.toolExecution ?? "parallel" })), requestConfig: () => this.#config, signal: this.#abort.signal });
+      await this.#session.bindExtensions({ onError: error => {
+        this.#extensionFailure ??= new Error(`Seal PI extension ${error.event} failed: ${error.error}`);
+        this.abort(this.#extensionFailure);
+      } });
+      // SDK event subscribers are synchronous. Serialize Seal observers through
+      // the existing durability barrier, never make them another compaction loop.
+      let beforeCompaction: readonly import("@seal-harness/core").AgentMessage[] = [];
+      this.#session.subscribe(event => {
+        if (event.type === "compaction_start") {
+          beforeCompaction = fromPiMessages(manager.buildSessionContext().messages);
+          this.#record({ type: "compaction_activity", reason: event.reason, state: "started" });
+        } else if (event.type === "compaction_end") {
+          if (event.result) {
+            const context = fromPiMessages(manager.buildSessionContext().messages);
+            const summary = context[0];
+            const replacedCount = beforeCompaction.length - (context.length - 1);
+            if (summary?.role === "user" && replacedCount > 0) this.#record({ type: "context_compacted",
+              summaryMessage: summary, replacedMessages: beforeCompaction.slice(0, replacedCount) });
           }
-          return undefined;
-        },
-        shouldStopAfterTurn: () => this.#preStepRejected || (this.#toolControl.concludesTurn && !agent.hasQueuedMessages()),
+          this.#record({ type: "compaction_activity", reason: event.reason, state: "finished",
+          outcome: event.aborted || this.#abort.signal.aborted ? "aborted" : event.result ? "completed" : "failed",
+          ...(event.errorMessage === undefined ? {} : { errorMessage: event.errorMessage }) });
+        }
       });
-      this.#agent = agent;
-      const unsubscribe = agent.subscribe((event) => this.#handleEvent(event));
-      this.#abortController.signal.addEventListener("abort", () => agent.abort(), { once: true });
-
-      for (const message of this.#pendingSteering.splice(0)) agent.steer(toPiMessage(message, model));
-      for (const message of this.#pendingFollowUps.splice(0)) agent.followUp(toPiMessage(message, model));
-      this.#publishPending();
-
-      await agent.continue();
-      unsubscribe();
-      messages = fromPiMessages(agent.state.messages);
-      if (this.#preStepRejected && messages.at(-1)?.role === "assistant" && messages.at(-1)?.content.length === 0) messages = messages.slice(0, -1);
-      const lastAssistant = [...agent.state.messages].reverse().find(
-        (message): message is PiAssistantMessage => message.role === "assistant",
-      );
-      const stopReason = lastAssistant === undefined
-        ? (this.#abortController.signal.aborted ? "aborted" : "stop")
-        : fromPiStopReason(lastAssistant.stopReason);
-      const result: RuntimeResult = {
-        messages,
-        stopReason,
-        ...(lastAssistant === undefined ? {} : { usage: fromPiUsage(lastAssistant.usage) }),
-        ...(agent.state.errorMessage === undefined ? {} : { errorMessage: agent.state.errorMessage }),
-      };
-      if (stopReason === "error") await this.#publish({ type: "run_error", step: requestStep, error: new Error(result.errorMessage ?? "Model request failed") });
-      await this.#inboxDurability;
-      await this.#publish({ type: "run_end", stopReason });
-      return result;
+      this.#abort.signal.throwIfAborted(); this.#syncQueue();
+      const input = toPiMessage(last, model);
+      if (input.role !== "user") throw new Error("Invalid user input");
+      await this.#session.sendUserMessage(input.content, { expandPromptTemplates: false });
+      if (this.#extensionFailure) throw this.#extensionFailure;
+      await this.#durability;
+      messages = fromPiMessages(this.#session.messages);
+      const assistant = this.#inputRejected ? undefined : [...this.#session.messages].reverse().find(message => message.role === "assistant");
+      const stopReason = this.#abort.signal.aborted ? "aborted" : this.#control.concludesTurn ? "stop" : assistant ? fromPiStopReason(assistant.stopReason) : "stop";
+      const result: RuntimeResult = { messages, stopReason, ...(assistant ? { usage: fromPiUsage(assistant.usage) } : {}), ...(assistant?.errorMessage ? { errorMessage: assistant.errorMessage } : {}) };
+      if (stopReason === "error") await this.#publish({ type: "run_error", step: this.#turn + 1, error: new Error(result.errorMessage ?? "Model request failed") });
+      await this.#publish({ type: "run_end", stopReason }); return { ...result, messagesEmitted: true };
     } catch (error) {
-      const stopReason = this.#abortController.signal.aborted ? "aborted" : "error";
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (this.#agent !== undefined) messages = fromPiMessages(this.#agent.state.messages);
-      if (stopReason === "error") await this.#publish({ type: "run_error", step: requestStep, error });
-      await this.#inboxDurability;
-      await this.#publish({ type: "run_end", stopReason });
-      return { messages, stopReason, errorMessage };
+      const stopReason = this.#abort.signal.aborted && !this.#extensionFailure ? "aborted" : "error";
+      if (this.#session) messages = fromPiMessages(this.#session.messages);
+      if (stopReason === "error") await this.#publish({ type: "run_error", step: this.#turn + 1, error });
+      await this.#publish({ type: "run_end", stopReason }); return { messages, stopReason, messagesEmitted: true, errorMessage: String(error) };
     } finally {
-      this.#channel.close();
+      this.#session?.dispose();
+      try { await release?.(); } finally { this.#channel.close(); }
     }
   }
-
   async #handleEvent(event: AgentEvent): Promise<void> {
     switch (event.type) {
       case "agent_start":
-        await this.#publish({ type: "run_start", runId: this.request.runId });
+        // PI may finish a cancelled preflight compaction and enter prompt();
+        // cancel that native run through its public API before provider I/O.
+        if (this.#abort.signal.aborted) void this.#session?.abort();
+        await this.#publish({ type: "run_start", runId: this.request.runId }); break;
+      case "turn_start": this.#firstTokenAt = undefined; await this.#publish({ type: "turn_start", index: ++this.#turn }); break;
+      case "message_update": {
+        const update = event.assistantMessageEvent;
+        if (update.type === "text_delta" || update.type === "thinking_delta") { this.#firstTokenAt ??= Date.now(); await this.#publish({ type: update.type === "text_delta" ? "text_delta" : "reasoning_delta", delta: update.delta }); }
+        else if (update.type === "toolcall_end") await this.#publish({ type: "tool_call", call: { type: "tool_call", id: toolCallId(update.toolCall.id), name: update.toolCall.name, arguments: update.toolCall.arguments } });
         break;
-      case "turn_start":
-        this.#turnIndex += 1;
-        this.#firstTokenAt = undefined;
-        await this.#publish({ type: "turn_start", index: this.#turnIndex });
-        break;
-      case "message_update":
-        if ((event.assistantMessageEvent.type === "text_delta" || event.assistantMessageEvent.type === "thinking_delta") && this.#firstTokenAt === undefined) this.#firstTokenAt = Date.now();
-        if (event.assistantMessageEvent.type === "text_delta") {
-          await this.#publish({ type: "text_delta", delta: event.assistantMessageEvent.delta });
-        } else if (event.assistantMessageEvent.type === "thinking_delta") {
-          await this.#publish({ type: "reasoning_delta", delta: event.assistantMessageEvent.delta });
-        } else if (event.assistantMessageEvent.type === "toolcall_end") {
-          const call = event.assistantMessageEvent.toolCall;
-          await this.#publish({
-            type: "tool_call",
-            call: {
-              type: "tool_call",
-              id: toolCallId(call.id),
-              name: call.name,
-              arguments: call.arguments,
-            },
-          });
-        }
-        break;
+      }
       case "message_end":
-        if (event.message.role === "assistant") {
-          if (this.#preStepRejected && event.message.content.length === 0) break;
-          const stopReason = fromPiStopReason(event.message.stopReason);
-          await this.#publish({
-            type: "assistant_message",
-            message: fromPiAssistantMessage(event.message),
-            usage: fromPiUsage(event.message.usage),
-            stopReason,
-            ...(stopReason === "aborted" ? { interrupted: true } : {}),
-          });
-        } else if (event.message.role === "user") {
-          const message = fromPiMessages([event.message])[0];
-          if (message?.role === "user") {
-            this.#recordClaim(message);
-            await this.#inboxDurability;
-            await this.#publish({ type: "user_message", message });
-            this.#publishPending();
-          }
-        }
+        if (event.message.role === "assistant") await this.#publish({ type: "assistant_message", message: fromPiAssistantMessage(event.message), usage: fromPiUsage(event.message.usage), stopReason: fromPiStopReason(event.message.stopReason), ...(event.message.stopReason === "aborted" ? { interrupted: true as const } : {}) });
+        else if (event.message.role === "user") { await this.#durability; const message = fromPiMessages([event.message])[0]; if (message?.role === "user") await this.#publish({ type: "user_message", message }); }
         break;
-      case "tool_execution_start":
-        break;
-      case "tool_execution_update":
-        await this.#publish({
-          type: "tool_progress",
-          callId: toolCallId(event.toolCallId),
-          content: fromPiToolContent(event.partialResult?.content ?? []),
-        });
-        break;
-      case "tool_execution_end":
-        await this.#publish({
-          type: "tool_result",
-          callId: toolCallId(event.toolCallId),
-          name: event.toolName,
-          result: fromPiToolResult(event.result, event.isError),
-        });
-        break;
-      case "turn_end": {
-        const assistant = event.message.role === "assistant" ? event.message : undefined;
-        await this.#publish({
-          type: "turn_end",
-          index: this.#turnIndex,
-          ...(assistant === undefined ? {} : { usage: fromPiUsage(assistant.usage) }),
-          ...(assistant === undefined ? {} : { stopReason: fromPiStopReason(assistant.stopReason) }),
-          ...(this.#firstTokenAt === undefined ? {} : { firstTokenAt: this.#firstTokenAt }),
-        });
-        break;
-      }
-      case "agent_end":
-      case "message_start":
-        break;
+      case "tool_execution_update": await this.#publish({ type: "tool_progress", callId: toolCallId(event.toolCallId), content: fromPiToolContent(event.partialResult?.content ?? []) }); break;
+      case "tool_execution_end": await this.#publish({ type: "tool_result", callId: toolCallId(event.toolCallId), name: event.toolName, result: fromPiToolResult(event.result, event.isError) }); break;
+      case "turn_end": await this.#publish({ type: "turn_end", index: this.#turn, ...(event.message.role === "assistant" ? { usage: fromPiUsage(event.message.usage), stopReason: fromPiStopReason(event.message.stopReason) } : {}), ...(this.#firstTokenAt ? { firstTokenAt: this.#firstTokenAt } : {}) }); break;
     }
   }
+}
 
-  #turnIndex = -1;
-  #firstTokenAt: number | undefined = undefined;
-
-  async #publish(event: RuntimeEvent): Promise<void> {
-    for (const listener of this.#listeners) await listener(event);
-    this.#channel.push(event);
+/** Exactly the visible representation accepted by PI's public queue methods. */
+function queueContent(message: UserMessage): [import("@earendil-works/pi-ai").TextContent, ...import("@earendil-works/pi-ai").ImageContent[]] {
+  for (const block of message.content) {
+    if (block.type !== "text" && block.type !== "image") throw new TypeError("PI queue requires resolved text/image content");
   }
-
-  #recordInbox(event: Omit<Extract<RuntimeEvent, { type: "inbox_spliced" }>, "type">): void {
-    const target = event.target === "next-turn" ? this.#durableNextTurn : this.#durableNextStep;
-    const removed = target.splice(event.start, event.removedCount ?? 0, ...structuredClone(event.inserted));
-    this.#inboxDurability = this.#inboxDurability.then(() => this.#publish({ type: "inbox_spliced", ...event, ...(removed.length === 0 ? {} : { removed }) }));
-  }
-
-  #recordClaim(message: import("@seal-harness/core").UserMessage): void {
-    if (message.id === undefined) return;
-    for (const [target, queue] of [["next-step", this.#durableNextStep], ["next-turn", this.#durableNextTurn]] as const) {
-      const index = queue.findIndex((entry) => entry.id === message.id);
-      if (index >= 0) { this.#recordInbox({ target, start: index, removedCount: 1, inserted: [] }); return; }
-    }
-  }
-
-  #recordPendingUpdate(before: readonly PendingAgentMessage[], id: import("@seal-harness/core").MessageId, action: PendingMessageAction): void {
-    const prior = before.find((entry) => entry.id === id); if (prior === undefined) return;
-    const same = before.filter((entry) => entry.placement === prior.placement); const start = same.findIndex((entry) => entry.id === id);
-    const target = prior.placement === "queued" ? "next-turn" as const : "next-step" as const;
-    if (action.kind === "edit") {
-      const current = this.pendingMessages().find((entry) => entry.id === id)?.message;
-      if (current !== undefined) this.#recordInbox({ target, start, removedCount: 1, inserted: [current], outcome: "canceled" });
-    } else {
-      this.#recordInbox({ target, start, removedCount: 1, inserted: [], outcome: "canceled" });
-      if (action.kind === "steer") {
-        const current = this.pendingMessages().find((entry) => entry.id === id)?.message;
-        if (current !== undefined) this.#recordInbox({ target: "next-step", start: this.pendingMessages().filter((entry) => entry.placement === "steering").length - 1, inserted: [current] });
-      }
-    }
-  }
-
-  #publishPending(): void {
-    const snapshot = this.pendingMessages();
-    for (const listener of this.#pendingListeners) listener(snapshot);
-  }
-}
-
-interface PiMutableQueue { messages: import("@earendil-works/pi-agent-core").AgentMessage[] }
-interface PiQueueOwner { steeringQueue: PiMutableQueue; followUpQueue: PiMutableQueue }
-
-/** Pinned pi-agent-core 0.84.3 stores the actual consumed inbox in these arrays. */
-function piQueues(agent: Agent): PiQueueOwner {
-  const candidate = agent as unknown as Partial<PiQueueOwner>;
-  if (!Array.isArray(candidate.steeringQueue?.messages) || !Array.isArray(candidate.followUpQueue?.messages)) throw new Error("pi-agent-core queue layout is incompatible with Seal Harness");
-  return candidate as PiQueueOwner;
-}
-
-function identifyUserMessage(message: AgentMessage): AgentMessage {
-  return message.role === "user" && message.id === undefined ? { ...message, id: messageId(randomUUID()) } : message;
-}
-
-function pendingCore(messages: readonly AgentMessage[], placement: PendingAgentMessage["placement"]): PendingAgentMessage[] {
-  return messages.flatMap((message) => message.role === "user" && message.id !== undefined ? [{ id: message.id, placement, message }] : []);
-}
-
-function pendingPi(messages: readonly import("@earendil-works/pi-agent-core").AgentMessage[], placement: PendingAgentMessage["placement"]): PendingAgentMessage[] {
-  return pendingCore(fromPiMessages(messages), placement);
-}
-
-function assertUniquePending(current: readonly PendingAgentMessage[], inserted: readonly import("@seal-harness/core").UserMessage[], placement: PendingAgentMessage["placement"], start: number, deleteCount: number): void {
-  if (!Number.isInteger(start) || !Number.isInteger(deleteCount) || deleteCount < 0) throw new TypeError("pending splice requires integer start and non-negative deleteCount");
-  const target = current.filter((entry) => entry.placement === placement);
-  const offset = start < 0 ? Math.max(target.length + start, 0) : Math.min(start, target.length);
-  const removed = new Set(target.slice(offset, offset + deleteCount).map((entry) => entry.id));
-  const ids = new Set(current.filter((entry) => !removed.has(entry.id)).map((entry) => entry.id));
-  for (const message of inserted) {
-    if (message.id === undefined) throw new Error("pending splice failed to assign a message id");
-    if (ids.has(message.id)) throw new Error(`pending message id is already queued: ${message.id}`);
-    ids.add(message.id);
-  }
-}
-
-function piMessageIndex(messages: readonly import("@earendil-works/pi-agent-core").AgentMessage[], id: import("@seal-harness/core").MessageId): number {
-  return messages.findIndex((message) => fromPiMessages([message])[0]?.role === "user" && (fromPiMessages([message])[0] as import("@seal-harness/core").UserMessage).id === id);
-}
-
-function updateCoreQueue(followUps: AgentMessage[], steering: AgentMessage[], id: import("@seal-harness/core").MessageId, action: PendingMessageAction): PendingMessageUpdate {
-  const followIndex = followUps.findIndex((message) => message.role === "user" && message.id === id);
-  const steeringIndex = steering.findIndex((message) => message.role === "user" && message.id === id);
-  const target = followIndex >= 0 ? { values: followUps, index: followIndex, placement: "queued" as const } : steeringIndex >= 0 ? { values: steering, index: steeringIndex, placement: "steering" as const } : undefined;
-  if (target === undefined) return "not-found";
-  if (action.kind === "steer" && target.placement !== "queued") return "steer-unavailable";
-  const current = target.values[target.index];
-  if (current?.role !== "user") return "not-found";
-  if (action.kind === "edit") target.values[target.index] = { ...current, content: action.content };
-  else {
-    target.values.splice(target.index, 1);
-    if (action.kind === "steer") steering.push(current);
-  }
-  return "updated";
-}
-
-function createPiTools(
-  toolService: ToolService,
-  request: RuntimeStartRequest,
-  control: { concludesTurn: boolean; errors: Map<string, boolean> },
-  injectContext: (message: AgentMessage) => void,
-  reportDispatch: (event: import("@seal-harness/core").ToolDispatchEvent) => Promise<void>,
-): AgentTool[] {
-  return toolService.definitions(request.sessionId).map((definition): AgentTool => ({
-    name: definition.name,
-    label: definition.name,
-    description: definition.description,
-    parameters: Type.Unsafe({ ...definition.inputSchema }),
-    async execute(callId, params, signal, onUpdate) {
-      const result = await toolService.execute({
-        callId: toolCallId(callId),
-        sessionId: request.sessionId,
-        cwd: request.cwd,
-        name: definition.name,
-        input: params as import("@seal-harness/core").JsonObject,
-        signal: signal ?? new AbortController().signal,
-        reportProgress: (content) => {
-          onUpdate?.({ content: toPiToolContent(content), details: {} });
-        },
-        reportDispatch,
-      });
-      control.errors.set(callId, result.isError === true);
-      for (const message of result.additionalContexts ?? []) injectContext(message);
-      if (result.concludesTurn === true) control.concludesTurn = true;
-      return {
-        content: toPiToolContent(result.content),
-        details: result.details ?? {},
-      };
-    },
-  }));
-}
-
-function toPiToolContent(content: readonly import("@seal-harness/core").ContentBlock[]) {
-  return content.map((block) => {
-    if (block.type === "text") return { type: "text" as const, text: block.text };
-    if (block.type === "image") {
-      return { type: "image" as const, data: block.data, mimeType: block.mimeType };
-    }
-    return { type: "text" as const, text: `[attachment:${block.id}]` };
-  });
-}
-
-function fromPiToolContent(content: readonly any[]): import("@seal-harness/core").ContentBlock[] {
-  const converted: import("@seal-harness/core").ContentBlock[] = [];
-  for (const block of content) {
-    if (block?.type === "text" && typeof block.text === "string") {
-      converted.push({ type: "text", text: block.text });
-      continue;
-    }
-    if (block?.type === "image" && typeof block.data === "string" && typeof block.mimeType === "string") {
-      converted.push({ type: "image", data: block.data, mimeType: block.mimeType });
-    }
-  }
-  return converted;
-}
-
-function fromPiToolResult(result: any, isError: boolean): ToolResult {
-  return {
-    content: fromPiToolContent(result?.content ?? []),
-    ...(result?.details === undefined ? {} : { details: result.details }),
-    isError,
-  };
-}
-
-function fromPiStopReason(reason: PiAssistantMessage["stopReason"]): ModelStopReason {
-  if (reason === "toolUse" || reason === "deferred") return "tool_call";
-  if (reason === "pending") return "stop";
-  return reason;
-}
-
-function fromPiUsage(usage: Usage): ModelUsage {
-  const routes = (usage as Usage & { readonly sealRoutes?: readonly import("@seal-harness/core").ModelRef[] }).sealRoutes;
-  return {
-    inputTokens: usage.input,
-    outputTokens: usage.output,
-    totalTokens: usage.totalTokens,
-    cacheReadTokens: usage.cacheRead,
-    cacheWriteTokens: usage.cacheWrite,
-    ...(usage.reasoning === undefined ? {} : { reasoningTokens: usage.reasoning }),
-    ...(routes === undefined ? {} : { routes }),
-    costUsd: usage.cost.total,
-  };
+  return [
+    { type: "text", text: message.content.filter(block => block.type === "text").map(block => block.text).join("\n") },
+    ...message.content.flatMap(block => block.type === "image" ? [{ type: "image" as const, data: block.data, mimeType: block.mimeType }] : []),
+  ];
 }

@@ -34,6 +34,7 @@ import { definePlugin } from "@seal-harness/kernel";
 
 const PARENT_KEY = "sealHarness.parentSessionId";
 const LABEL_KEY = "sealHarness.subagentLabel";
+const TASK_KEY = "sealHarness.subagentTask";
 
 export interface SubagentToolsConfig {
   readonly maxConcurrentChildrenPerParent?: number;
@@ -75,7 +76,7 @@ export class DefaultSubagentService implements SubagentService {
     const childId = request.sessionId ?? sessionId(`agent-${this.idFactory()}`);
     if (await this.sessions.read(childId) !== undefined) throw new Error(`subagent session already exists: ${childId}`);
     const label = request.label?.trim() || `Agent ${children.length + 1}`;
-    const childMetadata = { ...metadata(parent), [PARENT_KEY]: request.parentSessionId, [LABEL_KEY]: label };
+    const childMetadata = { ...metadata(parent), [PARENT_KEY]: request.parentSessionId, [LABEL_KEY]: label, [TASK_KEY]: request.prompt };
     if (request.inheritParentContext === true) {
       const completed = [...parent.events].reverse().find(entry => entry.event.type === "run.completed");
       if (completed !== undefined) {
@@ -440,8 +441,8 @@ function definitions(service: SubagentService): ToolDefinition[] {
 
 function snapshot(session: SessionSnapshot, live: LiveChild | undefined, structuredResult?: JsonValue): SubagentSnapshot {
   const meta = metadata(session);
-  const completion = [...session.events].reverse().find(entry => entry.event.type === "run.completed");
   const run = [...session.events].reverse().find(entry => entry.event.type === "run.started");
+  const completion = [...session.events].reverse().find(entry => entry.event.type === "run.completed" && (run === undefined || entry.sequence > run.sequence));
   const status = live !== undefined ? "running" : completion?.event.type === "run.completed"
     ? completion.event.payload.outcome === "completed" ? "completed" : completion.event.payload.outcome
     : "failed";
@@ -451,8 +452,11 @@ function snapshot(session: SessionSnapshot, live: LiveChild | undefined, structu
     sessionId: session.id,
     parentSessionId: sessionId(String(meta[PARENT_KEY])),
     label: typeof meta[LABEL_KEY] === "string" ? meta[LABEL_KEY] : session.id,
+    ...(typeof meta[TASK_KEY] === "string" ? { task: meta[TASK_KEY] } : {}),
     status,
     model: run?.event.type === "run.started" ? run.event.payload.model : latestModel(session),
+    ...(run === undefined ? {} : { startedAt: run.timestamp }),
+    ...(live !== undefined || completion === undefined ? {} : { finishedAt: completion.timestamp }),
     ...(live?.jobId === undefined ? {} : { jobId: live.jobId }),
     ...(lastAssistant === undefined ? {} : { result: messageText(lastAssistant) }),
     ...(structuredResult === undefined ? {} : { structuredResult }),

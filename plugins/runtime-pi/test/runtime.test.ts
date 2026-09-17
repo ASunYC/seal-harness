@@ -26,6 +26,60 @@ const MODEL: ModelInfo = {
 };
 
 describe("PiAgentRuntime", () => {
+  it.each(["one-at-a-time", "all"] as const)("preserves mixed queued blocks and IDs in %s mode", async mode => {
+    let release!: () => void; let announce!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    const started = new Promise<void>(resolve => { announce = resolve; });
+    const requests: ModelRequest[] = [];
+    const service = scriptedModel(async function* (request) {
+      requests.push(request);
+      if (requests.length === 1) { announce(); await gate; }
+      yield { type: "text_delta", delta: "done" }; yield { type: "done", stopReason: "stop" };
+    });
+    const run = new PiAgentRuntime(service, undefined, { followUpMode: mode, steeringMode: mode }).start({
+      runId: runId(`mixed-${mode}`), sessionId: sessionId(`mixed-${mode}`), cwd: process.cwd(), model: MODEL,
+      systemPrompt: "test", messages: [userMessage("start")],
+    });
+    await started;
+    const content = [text("first"), { type: "image" as const, data: "aW1hZ2U=", mimeType: "image/png" }, text("last")];
+    const queued = { role: "user" as const, id: messageId("mixed-queued"), source: { kind: "user-rpc", rpcId: "queued" }, content };
+    const steering = { ...queued, id: messageId("mixed-steering"), source: { kind: "user-rpc", rpcId: "steering" } };
+    const second = { ...queued, id: messageId("mixed-second") };
+    run.followUp(queued); run.followUp(second); run.steer(steering);
+    release(); const events = await collect(run); const result = await run.result;
+    const delivered = result.messages.filter(message => message.role === "user" && message.id?.startsWith("mixed-"));
+    expect(delivered).toEqual([steering, queued, second]);
+    expect(run.pendingMessages?.()).toEqual([]);
+    expect(events.filter(event => event.type === "user_message").map(event => event.message.id)).toEqual([undefined, steering.id, queued.id, second.id]);
+    expect(requests.at(-1)?.messages.filter(message => message.role === "user" && message.id?.startsWith("mixed-"))).toEqual([steering, queued, second]);
+  });
+
+  it("rejects unsupported queued content before mutating the pending records", async () => {
+    let release!: () => void; let announce!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    const started = new Promise<void>(resolve => { announce = resolve; });
+    const service = scriptedModel(async function* () { announce(); await gate; yield { type: "done", stopReason: "stop" }; });
+    const run = new PiAgentRuntime(service, undefined).start({ runId: runId("queue-validate"), sessionId: sessionId("queue-validate"),
+      cwd: process.cwd(), model: MODEL, systemPrompt: "test", messages: [userMessage("start")] });
+    await started;
+    try {
+      expect(() => run.followUp({ role: "user", content: [{ type: "attachment" } as never] })).toThrow("resolved text/image");
+      expect(run.pendingMessages?.()).toEqual([]);
+    } finally { release(); }
+    await collect(run); expect((await run.result).stopReason).toBe("stop");
+  });
+
+  it.each(["preStep", "request"] as const)("fails closed when a %s compatibility extension throws", async (hook) => {
+    const stream = vi.fn(async function* () { yield { type: "done" as const, stopReason: "stop" as const }; });
+    const run = new PiAgentRuntime(scriptedModel(stream), undefined).start({
+      runId: runId(`extension-error-${hook}`), sessionId: sessionId(`extension-error-${hook}`), cwd: process.cwd(), model: MODEL,
+      systemPrompt: "test", messages: [userMessage("do not bypass policy")],
+      hooks: { [hook]: async () => { throw new Error("policy unavailable"); } },
+    });
+    await collect(run);
+    expect(stream).not.toHaveBeenCalled();
+    expect(await run.result).toMatchObject({ stopReason: "error", errorMessage: expect.stringContaining("policy unavailable") });
+  });
   it("runs a text response through the real Pi Agent loop", async () => {
     const requests: ModelRequest[] = [];
     const model = scriptedModel(async function* (request) {
@@ -54,12 +108,18 @@ describe("PiAgentRuntime", () => {
 
     expect(requests).toHaveLength(1);
     expect(requests[0]).toMatchObject({
-      systemPrompt: "Be concise.",
+      systemPrompt: expect.stringContaining("Be concise."),
       reasoning: "high",
       maxOutputTokens: 1234,
       messages: [{ role: "user", source: { kind: "user-rpc", rpcId: "request-1" } }],
     });
     expect(events.map((event) => event.type)).toContain("text_delta");
+    expect(events).toContainEqual({ type: "pre_step", original: [], messages: [], rejected: false });
+    expect(events).toContainEqual({ type: "runtime_activity", phase: "preparing" });
+    expect(events).toContainEqual({ type: "runtime_activity", phase: "waiting-model" });
+    expect(events.findIndex(event => event.type === "runtime_activity" && event.phase === "preparing")).toBeLessThan(events.findIndex(event => event.type === "pre_step"));
+    expect(events.findIndex(event => event.type === "runtime_activity" && event.phase === "waiting-model")).toBeLessThan(events.findIndex(event => event.type === "text_delta"));
+    expect(events.findIndex(event => event.type === "pre_step")).toBeLessThan(events.findIndex(event => event.type === "text_delta"));
     expect(events).toContainEqual({ type: "request_header", reason: "initial", header: { config: { provider: "scripted", model: "test-model", reasoningEffort: "high", maxTokens: 1234 }, system: "Be concise." } });
     expect(events).toContainEqual(expect.objectContaining({ type: "turn_end", firstTokenAt: expect.any(Number), stopReason: "stop" }));
     expect(events.at(-1)).toEqual({ type: "run_end", stopReason: "stop" });
@@ -302,7 +362,7 @@ describe("PiAgentRuntime", () => {
     expect(requests).toHaveLength(2);
   });
 
-  it("returns tool failures to the model so it can recover", async () => {
+  it.each([false, true])("returns tool failures to the model so it can recover (partial output: %s)", async (withProgress) => {
     const requests: ModelRequest[] = [];
     const tools: ToolService = {
       register: () => () => {},
@@ -311,7 +371,10 @@ describe("PiAgentRuntime", () => {
         description: "Always fail",
         inputSchema: { type: "object", additionalProperties: false },
       }],
-      async execute() { throw new Error("expected failure"); },
+      async execute(request) {
+        if(withProgress) request.reportProgress?.([text('partial-output:'+ 'x'.repeat(60_000))]);
+        throw new Error("expected failure");
+      },
     };
     const model = scriptedModel(async function* (request) {
       requests.push(request);
@@ -344,6 +407,11 @@ describe("PiAgentRuntime", () => {
     const result = await run.result;
     const toolMessage = requests[1]?.messages.find((message) => message.role === "tool");
     expect(toolMessage).toMatchObject({ role: "tool", isError: true });
+    if(withProgress) {
+      const output=toolMessage!.content.filter(block=>block.type==='text').map(block=>block.text).join('');
+      expect(output).toContain('expected failure');expect(output).toContain('partial-output:');
+      expect(output.length).toBeLessThan(51_000);
+    }
     expect(result.messages.at(-1)).toMatchObject({
       role: "assistant",
       content: [{ type: "text", text: "recovered" }],
@@ -451,7 +519,7 @@ describe("PiAgentRuntime", () => {
     expect(result.messages.at(-1)).toMatchObject({ role: "assistant", replayState: { response: ["opaque", 1] } });
   });
 
-  it("lets request-error retry the same step through request selection again", async () => {
+  it("notifies request-error without allowing compatibility code to force a retry", async () => {
     const requests: ModelRequest[] = []; let attempts = 0;
     const service = scriptedModel(async function* (request) {
       requests.push(request); attempts += 1;
@@ -470,8 +538,29 @@ describe("PiAgentRuntime", () => {
       systemPrompt: "test", messages: [userMessage("retry")], hooks: { request: select, requestError },
     });
     await collect(run); const result = await run.result;
-    expect(requestError).toHaveBeenCalledOnce(); expect(select).toHaveBeenCalledTimes(2); expect(requests).toHaveLength(2);
-    expect(result).toMatchObject({ stopReason: "stop", usage: { inputTokens: 7, outputTokens: 3, totalTokens: 13, cacheReadTokens: 3, reasoningTokens: 2, routes: [{ provider: "scripted", model: "test-model" }] }, messages: [expect.anything(), expect.objectContaining({ role: "assistant", content: [{ type: "text", text: "recovered" }] })] });
+    expect(requestError).toHaveBeenCalledOnce(); expect(select).toHaveBeenCalledOnce(); expect(requests).toHaveLength(1);
+    expect(result.stopReason).toBe("error");
+    expect(result.errorMessage).toContain("temporary outage");
+  });
+
+  it("lets the native SDK retry a transient provider failure without a compatibility retry decision", async () => {
+    let attempts = 0;
+    const requestError = vi.fn(async () => undefined);
+    const service = scriptedModel(async function* () {
+      if (++attempts === 1) throw new Error("503 Service Unavailable");
+      yield { type: "text_delta", delta: "native recovery" };
+      yield { type: "done", stopReason: "stop" };
+    });
+    const run = new PiAgentRuntime(service, undefined).start({
+      runId: runId("native-retry"), sessionId: sessionId("native-retry"), cwd: process.cwd(), model: MODEL,
+      systemPrompt: "test", messages: [userMessage("retry")], hooks: { requestError },
+    });
+    await collect(run);
+    expect(attempts).toBe(2);
+    expect(requestError).toHaveBeenCalledOnce();
+    expect(await run.result).toMatchObject({ stopReason: "stop", messages: expect.arrayContaining([
+      expect.objectContaining({ role: "assistant", content: [{ type: "text", text: "native recovery" }] }),
+    ]) });
   });
 
   it("awaits turn-stopping and re-reads steering before closing the run", async () => {

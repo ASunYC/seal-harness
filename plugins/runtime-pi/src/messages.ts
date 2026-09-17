@@ -15,6 +15,7 @@ import type {
   ImageContent as PiImageContent,
 } from "@earendil-works/pi-ai";
 import type { AgentMessage as PiAgentMessage } from "@earendil-works/pi-agent-core";
+import { convertToLlm } from "@earendil-works/pi-coding-agent";
 
 type PiMessage = PiLlmMessage;
 
@@ -68,7 +69,11 @@ export function toPiMessage(message: CoreMessage, model: Model<any>): PiMessage 
 }
 
 export function fromPiMessages(messages: readonly PiAgentMessage[]): CoreMessage[] {
-  return messages.flatMap((message) => isPiMessage(message) ? [fromPiMessage(message)] : []);
+  return messages.flatMap((message) => {
+    if (isPiMessage(message)) return [fromPiMessage(message)];
+    if (message.role === "compactionSummary") return convertToLlm([message]).map(fromPiMessage);
+    return [];
+  });
 }
 
 export function fromPiMessage(message: PiMessage): CoreMessage {

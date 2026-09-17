@@ -5,7 +5,11 @@ Optional compatibility host for DeepSeek Harness plugins built on
 
 The package runs plugins on a real Cordis `Context`. Function, class, object and module-style
 plugins keep their Cordis `apply`, `inject`, `Config`, event, service, Fiber and Effect semantics.
-The package is not part of the default Seal Harness Profile or self-contained launcher closure.
+The Web host enables this compatibility surface by default unless `dshCompatibility` is false.
+It does not replace Seal's PI Agent execution kernel. The upstream system-prompt
+identity opener is disabled: Seal owns its product identity, while compatible
+tool guidance, runtime context and configured personas remain available.
+The legacy `systemPrompt.includeHarnessIdentity` option is accepted but ignored.
 
 ## Profile usage
 
@@ -124,7 +128,9 @@ Supported:
   the default owner-only local YAML credential provider with atomic updates and optional hot reload,
   the default content-addressed local image store with official admission and normalization limits,
   opt-in read-only import and execution of existing Claude Code and Codex command-hook configurations,
-  opt-in generic ACP, native Claude Code/Codex, and isolated DSH SDK out-of-process subagent providers,
+  opt-in generic ACP transport and Seal PI-backed subagent bridging; legacy
+  `externalSubagents.claudeCode` / `codex` configurations are rejected and their
+  coding-agent binaries are not bundled,
   the official in-process spawn and completed-turn-prefix fork providers by default for standalone hosts,
   the optional official bundled `dsh-badge` provider (disabled by default) alongside filesystem-discovered skills,
   the official fail-closed local sandbox selector, including Windows ACL capabilities, Linux Landlock/bwrap,

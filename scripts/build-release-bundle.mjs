@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { chmod, copyFile, cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { downloadNodeLicense } from "./node-license.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const version = normalizeVersion(argument("--version") ?? process.env.RELEASE_VERSION ?? "0.3.4");
@@ -143,10 +144,7 @@ async function workspacePackages(root) {
 }
 
 async function writeNodeLicense(path) {
-  const url = `https://raw.githubusercontent.com/nodejs/node/${process.version}/LICENSE`;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Could not download Node.js license (${response.status}): ${url}`);
-  await writeFile(path, await response.text());
+  await writeFile(path, await downloadNodeLicense(process.version));
 }
 
 async function smokeBundle(root, runtime, launcher) {
@@ -181,7 +179,10 @@ async function smokeBundle(root, runtime, launcher) {
     });
   });
   try {
-    const response = await fetch(url);
+    const exchange = await fetch(url, { redirect: "manual" });
+    const cookie = exchange.headers.get("set-cookie")?.split(";")[0];
+    if (exchange.status !== 303 || !cookie) throw new Error("Release authentication exchange failed");
+    const response = await fetch(new URL("/", url), { headers: { cookie } });
     if (!response.ok || !(await response.text()).includes("Seal Harness")) {
       throw new Error(`Release Web UI smoke failed: ${response.status}`);
     }

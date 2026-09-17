@@ -1,5 +1,5 @@
 import type { AgentMessage, AssistantMessage, ContentBlock, ToolCall, UserMessage } from "./content.js";
-import type { RunId, SessionId, ToolCallId } from "./ids.js";
+import type { RunId, SessionId, ToolCallId, TurnId } from "./ids.js";
 import type { ModelRef, ModelStopReason, ModelToolDefinition, ModelUsage } from "./model.js";
 import type { ToolResult } from "./tool.js";
 import type { ToolDispatchEvent } from "./tool.js";
@@ -13,6 +13,8 @@ export interface RuntimeStartRequest {
   readonly maxTokens?: number;
   readonly systemPrompt: string;
   readonly messages: readonly AgentMessage[];
+  /** Newly submitted suffix; native-session runtimes must not replay prior history. */
+  readonly inputMessages?: readonly AgentMessage[];
   readonly pendingMessages?: readonly PendingAgentMessage[];
   /** User messages claimed for the first proposed step, excluding prior history. */
   readonly initialStepMessages?: readonly UserMessage[];
@@ -40,6 +42,7 @@ export interface AgentRuntimeHooks {
     readonly signal: AbortSignal;
     readonly config: RuntimeModelRequestConfig;
   }): Promise<RuntimeModelRequestConfig>;
+  /** Native PI runtimes notify this observer but retain ownership of retry policy. */
   requestError?(input: {
     readonly turn: number;
     readonly step: number;
@@ -54,8 +57,12 @@ export interface AgentRuntimeHooks {
 }
 
 export type RuntimeEvent =
+  | { readonly type: "context_compacted"; readonly summaryMessage: UserMessage; readonly replacedMessages: readonly AgentMessage[] }
+  | { readonly type: "compaction_activity"; readonly reason: "manual" | "threshold" | "overflow"; readonly state: "started" }
+  | { readonly type: "compaction_activity"; readonly reason: "manual" | "threshold" | "overflow"; readonly state: "finished"; readonly outcome: "completed" | "failed" | "aborted"; readonly errorMessage?: string }
+  | { readonly type: "runtime_activity"; readonly phase: "preparing" | "waiting-model" }
   | { readonly type: "run_start"; readonly runId: RunId }
-  | { readonly type: "turn_start"; readonly index: number }
+  | { readonly type: "turn_start"; readonly index: number; readonly turnId?: TurnId }
   | { readonly type: "text_delta"; readonly delta: string }
   | { readonly type: "reasoning_delta"; readonly delta: string }
   | { readonly type: "user_message"; readonly message: UserMessage }
@@ -67,11 +74,13 @@ export type RuntimeEvent =
   | { readonly type: "tool_dispatch"; readonly event: ToolDispatchEvent }
   | { readonly type: "inbox_spliced"; readonly target: "next-turn" | "next-step"; readonly start: number; readonly removedCount?: number; readonly removed?: readonly UserMessage[]; readonly inserted: readonly UserMessage[]; readonly outcome?: "canceled" }
   | { readonly type: "tool_result"; readonly callId: ToolCallId; readonly name: string; readonly result: ToolResult }
-  | { readonly type: "turn_end"; readonly index: number; readonly usage?: ModelUsage; readonly firstTokenAt?: number; readonly stopReason?: ModelStopReason }
+  | { readonly type: "turn_end"; readonly index: number; readonly turnId?: TurnId; readonly usage?: ModelUsage; readonly firstTokenAt?: number; readonly stopReason?: ModelStopReason }
   | { readonly type: "run_end"; readonly stopReason: ModelStopReason }
   | { readonly type: "run_error"; readonly step: number; readonly error: unknown };
 
 export interface RuntimeResult {
+  /** Every new message was emitted; messages is a context snapshot, not a replay tail. */
+  readonly messagesEmitted?: boolean;
   readonly messages: readonly AgentMessage[];
   readonly stopReason: ModelStopReason;
   readonly usage?: ModelUsage;
@@ -106,5 +115,7 @@ export interface AgentRun extends AsyncIterable<RuntimeEvent> {
 }
 
 export interface AgentRuntime {
+  /** Runtime owns native compaction; hosts must not compact a second time. */
+  readonly managesCompaction?: boolean;
   start(request: RuntimeStartRequest): AgentRun;
 }

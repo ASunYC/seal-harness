@@ -1,0 +1,45 @@
+name: Desktop builds
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - if: runner.os == 'Windows'
+        run: pnpm desktop:verify
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a pnpm desktop:verify
+      - run: pnpm desktop:dist
+      - if: runner.os == 'Windows'
+        run: pnpm desktop:verify:packaged
+      - if: runner.os == 'Linux'
+        run: xvfb-run -a pnpm desktop:verify:packaged
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: desktop-verification-${{ runner.os }}
+          path: .artifacts/desktop-verification
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v7
+        with:
+          name: seal-desktop-${{ runner.os }}
+          path: |
+            .artifacts/desktop/*.exe
+            .artifacts/desktop/*.AppImage
+          if-no-files-found: error

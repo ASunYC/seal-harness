@@ -8,8 +8,12 @@ import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { gzip } from "node:zlib";
 import sharp from "sharp";
+import { liveAssistantPreview } from "./live-assistant.js";
 import {
   agentServiceToken,
+  foldSessionInbox,
+  reviewServiceToken,
+  policyServiceToken,
   agentPresetServiceToken,
   attachmentServiceToken,
   commandServiceToken,
@@ -202,6 +206,8 @@ class DshControlHub {
 
 export interface WebServerOptions {
   readonly cwd: string;
+  /** Optional application-wide persistence root, independent of workspace cwd. */
+  readonly dataHome?: string;
   readonly host?: string;
   readonly port?: number;
   readonly provider?: PiAiBuiltinProvider;
@@ -239,7 +245,7 @@ export async function startWebServer(options: WebServerOptions): Promise<Running
   const questionAnswerer = options.questionAnswerer ?? new WebQuestionAnswerer();
   const credentialEnvironment = options.credentialEnvironment ?? {};
   const authenticator = options.authenticate === true
-    ? new WebAuthenticator(options.authCredentialPath ?? join(options.pluginHome ?? join(cwd, ".seal-harness"), "web-auth-token"))
+    ? new WebAuthenticator(options.authCredentialPath ?? join(options.dataHome ?? options.pluginHome ?? join(cwd, ".seal-harness"), "web-auth-token"))
     : undefined;
   await authenticator?.start();
   const manager = new PluginProfileManager({
@@ -265,6 +271,7 @@ export async function startWebServer(options: WebServerOptions): Promise<Running
   });
   const baseProfile = options.profile ?? createDefaultProfile({
     cwd,
+    ...(options.dataHome === undefined ? {} : { dataHome: options.dataHome }),
     provider: options.provider ?? "deepseek",
     providers: options.providers ?? PROVIDERS,
     ...(options.customProviders === undefined ? {} : { customProviders: options.customProviders }),
@@ -320,7 +327,7 @@ export async function startWebServer(options: WebServerOptions): Promise<Running
     throw error;
   }
   const workspaces = kernel.has(sessionStoreToken)
-    ? new WorkspaceRegistry(options.workspaceRegistryPath ?? join(cwd, ".seal-harness", "workspaces.json"), kernel.use(sessionStoreToken))
+    ? new WorkspaceRegistry(options.workspaceRegistryPath ?? join(options.dataHome ?? join(cwd, ".seal-harness"), "workspaces.json"), kernel.use(sessionStoreToken))
     : undefined;
   await workspaces?.start();
   const dshWorkspaceRegistry = workspaces === undefined ? undefined : new DshWorkspaceRegistryBridge(workspaces);
@@ -1345,10 +1352,48 @@ async function dispatch(
       messages: selected.map((sequence) => { const tail = tails.get(sequence); const max = maxTokens.get(sequence); return commands.get(sequence) ?? compactions.get(sequence) ?? retries.get(sequence) ?? prompts.get(sequence) ?? turnErrors.get(sequence) ?? (max === undefined ? undefined : tail === undefined ? max : { ...tail, role: "turn-max-tokens" as const }) ?? unknown.get(sequence) ?? workflows.get(sequence) ?? tail ?? messageViewAt(value, sequence, forkMetadata, steeringSequences, referenceLabels); }),
       turnOutline: turnOutline(value, projection.nodes, forkMetadata),
       sessionMetrics,
+      liveMessages: before === total ? liveAssistantPreview(value.events) : [],
       window: { start, end: before, total, hasMore: start > 0, nextBefore: start > 0 ? start : null },
       replaceGeneration: projection.replaceGeneration,
     });
     return;
+  }
+  const reviewMatch = /^\/api\/sessions\/([^/]+)\/reviews\/([^/]+)(\/rollback)?$/.exec(url.pathname);
+  if (reviewMatch !== null && ((method === "GET" && !reviewMatch[3]) || (method === "POST" && reviewMatch[3]))) {
+    const id = sessionId(decodeURIComponent(reviewMatch[1] ?? "")); const snapshotId = decodeURIComponent(reviewMatch[2] ?? "");
+    const session = await context.kernel.use(sessionStoreToken).read(id);
+    if (!session || !context.kernel.has(reviewServiceToken)) throw new RequestError(404, "Review snapshot not found");
+    const snapshot = await context.kernel.use(reviewServiceToken).read(id, snapshotId);
+    const linked = snapshot && session.events.some(({ event }) => {
+      if (event.type !== "tool.completed" || event.payload.callId !== snapshot.callId) return false;
+      const details = event.payload.result.details;
+      if (!details || typeof details !== "object" || Array.isArray(details)) return false;
+      const review = (details as Record<string, unknown>).review;
+      return review && typeof review === "object" && !Array.isArray(review) && (review as Record<string, unknown>).snapshotId === snapshot.id;
+    });
+    if (!snapshot || !linked) throw new RequestError(404, "Review snapshot not found");
+    if (method === "POST") {
+      const body = await readObject(request);
+      if (body.confirm !== true) throw new RequestError(400, "Explicit rollback confirmation is required");
+      const service = context.kernel.use(reviewServiceToken);
+      if (!service.rollback || !context.kernel.has(policyServiceToken)) throw new RequestError(501, "Rollback is unavailable in this Profile");
+      if ([...context.runs.values()].some(run => run.sessionId === id) || (context.kernel.has(agentServiceToken) && context.kernel.use(agentServiceToken).active?.(id))) throw new RequestError(409, "Stop the session before rollback");
+      if (context.kernel.has(jobServiceToken) && context.kernel.use(jobServiceToken).list(id).some(job => job.status === "running" || job.status === "stopping")) throw new RequestError(409, "Stop background jobs before rollback");
+      if (context.kernel.has(subagentServiceToken)) {
+        const agents = context.kernel.use(subagentServiceToken);
+        if ((await (agents.listDescendants?.(id) ?? agents.list(id))).some(agent => agent.status === "running")) throw new RequestError(409, "Stop child agents before rollback");
+      }
+      if (context.kernel.has(terminalServiceToken) && context.kernel.use(terminalServiceToken).list(id).some(terminal => terminal.status === "running")) throw new RequestError(409, "Close session terminals before rollback");
+      const cwd = sessionCwd(session);
+      if (!cwd) throw new RequestError(409, "Session workspace is unavailable");
+      const decision = await context.kernel.use(policyServiceToken).decide({ kind: "tool", toolName: "review.rollback", risk: "workspace-write", summary: `Rollback ${snapshot.path}`, target: resolve(cwd, snapshot.path) }, { sessionId: id, cwd });
+      if (decision.outcome !== "allow") throw new RequestError(403, decision.reason ?? "Rollback is not allowed by this Profile");
+      const outcome = await service.rollback(id, snapshotId, cwd);
+      if (outcome === "conflict" || outcome === "busy") throw new RequestError(409, outcome === "conflict" ? "File changed since this edit; rollback refused" : "Rollback is busy or its lock cannot be safely recovered");
+      if (outcome === "unavailable") throw new RequestError(404, "Rollback snapshot unavailable");
+      json(response, 200, { outcome }); return;
+    }
+    json(response, 200, snapshot); return;
   }
   const sessionTitleMatch = /^\/api\/sessions\/([^/]+)\/title$/.exec(url.pathname);
   const sessionTrajectoryMatch = /^\/api\/sessions\/([^/]+)\/trajectory$/.exec(url.pathname);
@@ -2002,7 +2047,7 @@ async function dispatch(
       context.kernel.has(planModeServiceToken) ? context.kernel.use(planModeServiceToken).get(id) : undefined,
       context.kernel.has(permissionPresetServiceToken) ? context.kernel.use(permissionPresetServiceToken).select(id) : undefined,
       context.kernel.has(agentPresetServiceToken) ? context.kernel.use(agentPresetServiceToken).current(id) : undefined,
-      context.kernel.has(subagentServiceToken) ? context.kernel.use(subagentServiceToken).list(id) : [],
+      context.kernel.has(subagentServiceToken) ? (() => { const service = context.kernel.use(subagentServiceToken); return service.listDescendants?.(id) ?? service.list(id); })() : [],
       context.kernel.has(scheduleServiceToken) ? context.kernel.use(scheduleServiceToken).list(id) : [],
       sessionContextPressure(session, context.kernel.use(modelServiceToken)),
     ]);
@@ -2051,7 +2096,9 @@ async function dispatch(
     if (!context.kernel.has(subagentServiceToken)) throw new RequestError(501, "Subagents are not available in this Profile");
     const parentSessionId = sessionId(decodeURIComponent(subagentAbortMatch[1] ?? ""));
     const childSessionId = sessionId(decodeURIComponent(subagentAbortMatch[2] ?? ""));
-    const aborted = await context.kernel.use(subagentServiceToken).abort(parentSessionId, childSessionId, new Error("Aborted from Web UI"));
+    const subagents = context.kernel.use(subagentServiceToken);
+    const aborted = await (subagents.interrupt?.(parentSessionId, childSessionId, new Error("Aborted from Web UI"))
+      ?? subagents.abort(parentSessionId, childSessionId, new Error("Aborted from Web UI")));
     if (!aborted) throw new RequestError(404, "Subagent not found or no longer running");
     json(response, 200, { aborted: true });
     return;
@@ -2144,10 +2191,12 @@ async function dispatch(
     await assertAttachmentsAvailable(context, attachments);
     const mode = optionalString(body, "mode") ?? "steer";
     const requestId = optionalString(body, "requestId");
-    const message = { role: "user" as const, content: [...(prompt === "" ? [] : [text(prompt)]), ...attachments], ...(requestId === undefined ? {} : { source: { kind: "user-rpc" as const, rpcId: requestId } }) };
-    if (mode === "steer") run.steer(message);
-    else if (mode === "followUp") run.followUp(message);
-    else throw new RequestError(400, "mode must be steer or followUp");
+    const message = { id: messageId(randomUUID()), role: "user" as const, content: [...(prompt === "" ? [] : [text(prompt)]), ...attachments], ...(requestId === undefined ? {} : { source: { kind: "user-rpc" as const, rpcId: requestId } }) };
+    if (mode !== "steer" && mode !== "followUp") throw new RequestError(400, "mode must be steer or followUp");
+    const runtimeContent = await runtimePromptContent(context, message.content);
+    const runtimeMessage = runtimeContent === message.content ? message : { ...message, content: runtimeContent };
+    if (mode === "steer") run.steer(message, runtimeMessage);
+    else run.followUp(message, runtimeMessage);
     json(response, 202, { queued: true, mode });
     return;
   }
@@ -2210,6 +2259,15 @@ async function runAgent(
     { id: promptMessageId, placement: "queued", message: { id: promptMessageId, role: "user", content: durableContent } },
   ];
   const first = admitted.shift()!;
+  let disconnected = false;
+  response.once("close", () => {
+    if (!response.writableEnded) { disconnected = true; controller.abort(new Error("Web client disconnected")); }
+  });
+  const openStream = () => {
+    if (response.headersSent || response.destroyed) return;
+    response.writeHead(200, securityHeaders({ "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store", connection: "keep-alive" }));
+    response.flushHeaders();
+  };
   let execution: AgentExecution;
   try {
     execution = await context.kernel.use(agentServiceToken).prompt({
@@ -2222,9 +2280,14 @@ async function runAgent(
       ...(reasoning === undefined ? {} : { reasoning }),
       ...(agentPreset === undefined ? {} : { agentPreset }),
       signal: controller.signal,
+      ...(body.startupProgress === true ? { onCompactionProgress: (event: Parameters<NonNullable<import("@seal-harness/core").AgentPromptRequest["onCompactionProgress"]>>[0]) => {
+        if (disconnected || response.destroyed) return;
+        openStream(); writeLine(response, { type: "startup_activity", activity: "compaction", ...event });
+      } } : {}),
     });
   } catch (error) {
     if (targetSession !== undefined) context.dshControl.restore(targetSession, parked);
+    if (response.headersSent) { if (!disconnected) writeLine(response, { type: "error", error: message(error) }); response.end(); return; }
     throw error;
   }
   await context.dshWorkspaceRegistry?.refresh();
@@ -2234,19 +2297,7 @@ async function runAgent(
     const runtimeContent = await runtimePromptContent(context, item.message.content); const runtimeMessage = runtimeContent === item.message.content ? item.message : { ...item.message, content: runtimeContent };
     if (item.placement === "steering") execution.steer(item.message, runtimeMessage); else execution.followUp(item.message, runtimeMessage);
   }
-  response.writeHead(200, securityHeaders({
-    "content-type": "application/x-ndjson; charset=utf-8",
-    "cache-control": "no-store",
-    connection: "keep-alive",
-  }));
-  response.flushHeaders();
-  let disconnected = false;
-  response.once("close", () => {
-    if (!response.writableEnded) {
-      disconnected = true;
-      controller.abort(new Error("Web client disconnected"));
-    }
-  });
+  openStream();
   writeLine(response, { type: "started", runId: execution.runId, sessionId: execution.sessionId });
   try {
     for await (const event of execution) writeLine(response, { type: "event", event });
@@ -2318,6 +2369,11 @@ function attachmentDimension(value: unknown, label: string): number | undefined 
 }
 
 function sessionAttachmentReference(session: import("@seal-harness/core").SessionSnapshot, attachmentId: string): AttachmentBlock | undefined {
+  const inbox = foldSessionInbox(session.events);
+  for (const message of [...inbox.nextTurn, ...inbox.nextStep]) {
+    const found = message.content.find(block => block.type === "attachment" && block.id === attachmentId);
+    if (found?.type === "attachment") return found;
+  }
   for (const entry of session.events) {
     if (entry.event.type !== "message.appended") continue;
     const found = entry.event.payload.message.content.find((block) => block.type === "attachment" && block.id === attachmentId);

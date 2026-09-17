@@ -22,6 +22,18 @@ import { MemorySessionStore } from "@seal-harness/session-memory";
 import { DefaultAgentService } from "../src/index.js";
 
 describe("DefaultAgentService", () => {
+  it("does not run host compaction when the runtime owns compaction", async () => {
+    let hostCompactions = 0;
+    const runtime: AgentRuntime = {
+      managesCompaction: true,
+      start(request) { return completedRun(async () => ({ messages: request.messages, stopReason: "stop" })); },
+    };
+    const service = new DefaultAgentService(new MemorySessionStore(), passthroughContext(), runtime,
+      async () => {}, sequentialIds(), { async compact() { hostCompactions++; return undefined; } });
+    const execution = await service.prompt({ cwd: "/workspace", model: { provider: "test", model: "test" }, prompt: [text("hello")] });
+    await execution.result;
+    expect(hostCompactions).toBe(0);
+  });
   it("persists additions before runtime and generated messages after completion", async () => {
     const sessions = new MemorySessionStore(() => new Date("2026-01-01T00:00:00Z"));
     const context: ContextService = {
@@ -76,6 +88,33 @@ describe("DefaultAgentService", () => {
       "message.appended",
       "run.completed",
     ]);
+  });
+
+  it("keeps durable turn identities when a consumer reads only after the run completes", async () => {
+    const sessions = new MemorySessionStore();
+    const captured: RuntimeEvent[] = [];
+    const runtime: AgentRuntime = { start(request) {
+      const run = new ControlledRun(async publish => {
+        for (let index = 0; index < 2; index++) {
+          for (const event of [{ type: "turn_start", index }, { type: "turn_end", index }] as RuntimeEvent[]) {
+            captured.push(event); await publish(event);
+          }
+        }
+        return { messages: request.messages, stopReason: "stop" };
+      });
+      run[Symbol.asyncIterator] = async function* () { await run.result; yield* captured; };
+      return run;
+    } };
+    const service = new DefaultAgentService(sessions, passthroughContext(), runtime, async () => {}, sequentialIds());
+    const execution = await service.prompt({ sessionId: sessionId("slow-consumer"), cwd: "/workspace", model: { provider: "test", model: "test" }, prompt: [text("hello")] });
+    const result = await execution.result;
+    const saved = result.session.events.filter(entry => entry.event.type === "turn.started").map(entry => (entry.event as any).payload.turnId);
+    const observed: RuntimeEvent[] = [];
+    for await (const event of execution) observed.push(event);
+    expect(saved).toHaveLength(2);
+    expect(new Set(saved).size).toBe(2);
+    expect(observed.map(event => (event as any).turnId)).toEqual([saved[0], saved[0], saved[1], saved[1]]);
+    expect(captured.every(event => !("turnId" in event))).toBe(true);
   });
 
   it("persists runtime events through the awaited subscription without UI iteration", async () => {
@@ -213,6 +252,7 @@ describe("DefaultAgentService", () => {
   });
 
   it("queues a runtime projection while persisting the durable message representation", async () => {
+    const delivered: RuntimeEvent[] = [];
     const sessions = new MemorySessionStore(() => new Date("2026-01-01T00:00:00Z")); const listeners = new Set<(event: RuntimeEvent) => void | Promise<void>>();
     let queued: import("@seal-harness/core").UserMessage | undefined; let settle!: (value: RuntimeResult) => void;
     const runtimeResult = new Promise<RuntimeResult>((resolve) => { settle = resolve; });
@@ -220,7 +260,7 @@ describe("DefaultAgentService", () => {
       result: runtimeResult, abort() {}, followUp(message) { if (message.role === "user") queued = message; }, steer() {},
       pendingMessages() { return queued?.id === undefined ? [] : [{ id: queued.id, placement: "queued" as const, message: queued }]; },
       updatePendingMessage() { return "not-found" as const; }, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
-      async *[Symbol.asyncIterator](): AsyncIterator<RuntimeEvent> {},
+      async *[Symbol.asyncIterator](): AsyncIterator<RuntimeEvent> { yield* delivered; },
     }; } };
     const service = new DefaultAgentService(sessions, passthroughContext(), runtime, async () => {}, sequentialIds());
     const execution = await service.prompt({ sessionId: sessionId("projected-queue"), cwd: "/workspace", model: { provider: "test", model: "test" }, prompt: [text("initial")] });
@@ -229,9 +269,17 @@ describe("DefaultAgentService", () => {
     const projected = { ...durable, content: [{ type: "image" as const, mimeType: "image/png", data: "AA==" }] };
     execution.followUp(durable, projected);
     expect(queued).toEqual(projected); expect(execution.pendingMessages?.()[0]?.message).toEqual(durable);
-    for (const event of [{ type: "turn_start", index: 0 }, { type: "user_message", message: projected }, { type: "turn_end", index: 0 }] as RuntimeEvent[]) for (const listener of listeners) await listener(event);
+    for (const event of [{ type: "inbox_spliced", target: "next-turn", start: 0, inserted: [projected] }, { type: "turn_start", index: 0 }, { type: "user_message", message: projected }, { type: "turn_end", index: 0 }] as RuntimeEvent[]) {
+      for (const listener of listeners) await listener(event);
+      delivered.push(event);
+    }
     settle({ messages: [projected], stopReason: "stop" }); const result = await execution.result;
     expect(result.session.events.find((entry) => entry.event.type === "message.appended" && entry.event.payload.messageId === id)?.event).toMatchObject({ payload: { message: durable } });
+    expect(result.session.events.find(entry => entry.event.type === "agent/inbox.spliced")?.event).toMatchObject({ payload: { inserted: [durable] } });
+    const forwarded: RuntimeEvent[] = [];
+    for await (const event of execution) forwarded.push(event);
+    expect(forwarded.find(event => event.type === "user_message")).toEqual({ type: "user_message", message: durable });
+    expect(delivered.find(event => event.type === "user_message")).toEqual({ type: "user_message", message: projected });
   });
 
   it("stops later effects when a durability barrier fails and records the failed run", async () => {

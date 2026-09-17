@@ -11,7 +11,7 @@ describe("queue dock projection", () => {
     expect(queueItemText(queued)).toBe("first\nsecond");
     expect(queueSnapshotKey([queued])).toBe(queueSnapshotKey([{ ...queued }]));
     expect(queueSnapshotKey([{ ...queued, placement: "steering" }])).not.toBe(queueSnapshotKey([queued]));
-    expect(queueDockItems([queued, { ...queued, id: "m2", placement: "steering" }])).toEqual([queued]);
+    expect(queueDockItems([queued, { ...queued, id: "m2", placement: "steering" }])).toEqual([queued, { ...queued, id: "m2", placement: "steering" }]);
     expect(queueItemPreview({ message: { content: [{ type: "text", text: " first\n\tsecond " }, { type: "seal/attachment" }] } })).toBe("first second [seal/attachment]");
     expect(queueItemPreview({ message: { content: [{ type: "text", text: "😀".repeat(201) }] } })).toBe(`${"😀".repeat(200)}…`);
     expect(queueItemPreview({ message: { content: [{ type: "image" }] } })).toBe("");
@@ -42,7 +42,7 @@ describe("queue dock projection", () => {
       { requestId: "rpc-3", sessionId: "s1", placement: "steering" },
       { requestId: "rpc-4", sessionId: "s2", placement: "queued" },
     ];
-    expect(pendingQueueItems([{ ...queued, rpcId: "rpc-1" }], pending, "s1")).toEqual([pending[1]]);
+    expect(pendingQueueItems([{ ...queued, rpcId: "rpc-1" }], pending, "s1")).toEqual([pending[1], pending[2]]);
   });
   it("makes subagent queues read-only", async () => {
     const { queueMutable } = await import(moduleUrl);

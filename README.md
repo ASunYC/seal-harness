@@ -5,7 +5,7 @@
 </p>
 
 Seal Harness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
-“能力皆插件”为设计原则，并将 Pi Agent 作为默认、可替换的运行时插件。
+“能力皆插件”为设计原则，Seal 产品使用 Pi Agent 作为唯一 Agent 执行内核。
 
 需要复用 DeepSeek Harness 插件时，可使用内置的 `seal-harness plugin` 管理器按需安装；
 第三方插件与素材保存在隔离 Profile，不进入默认安装包。兼容边界见
@@ -57,6 +57,18 @@ Seal Harness 是一个面向 Node.js/TypeScript 的轻量 Agent Harness。它以
 Pi 当前也要求 Node.js 22.19 以上。低版本 Node 可能在启动测试工具之前就失败。
 
 ## 下载即用
+
+### 桌面窗口版（本地候选，尚未正式发布）
+
+新增 Electron 桌面壳，继续使用 Seal 的 Web 界面和 PI 后台，不需要自己打开浏览器、
+启动服务或粘贴 token。Windows 支持便携单文件 `.exe` 和 NSIS 安装版；
+Linux 配置了 AppImage 构建目标，尚待 Linux 实机验证。
+
+开发时执行 `pnpm desktop:dev` 打开桌面窗口；执行 `pnpm desktop:dist` 构建当前平台产物。
+用户数据默认保存在用户目录下的 `.seal-harness`，不写入便携程序的临时解包目录。
+详细启动、数据、构建与验收边界见 [桌面版说明](docs/desktop.md)。
+
+### 原有 Web / CLI 压缩包
 
 普通用户可从 [GitHub Releases](https://github.com/ASunYC/seal-harness/releases) 下载对应系统
 的自包含压缩包。发行包已内置 Node.js 和生产依赖，解压后直接运行：

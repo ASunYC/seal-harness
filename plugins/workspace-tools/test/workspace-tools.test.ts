@@ -52,6 +52,19 @@ describe("workspace tools", () => {
     expect(result.isError).toBe(false);
     expect(result.content[0]).toMatchObject({ text: expect.stringContaining("ok") });
   });
+  it("publishes a partial shell snapshot before the process exits", async () => {
+    const cwd=await directory();
+    const tool=createWorkspaceTools({shellTimeoutMs:5000}).find(tool=>tool.name==='shell')!;
+    const updates: string[]=[];let finished=false;let sawLive=false;
+    const result=await tool.execute({command:`"${process.execPath}" -e "process.stdout.write('first');setTimeout(()=>{process.stderr.write('warning');process.stdout.write(' second')},500)"`},{
+      callId:toolCallId('progress'),sessionId:sessionId('progress'),cwd,signal:new AbortController().signal,
+      reportProgress(content){updates.push(content.filter(block=>block.type==='text').map(block=>block.text).join(''));if(!finished)sawLive=true;}
+    }).finally(()=>{finished=true;});
+    expect(sawLive).toBe(true);
+    expect(updates.some(value=>value.includes('first') && !value.includes('second'))).toBe(true);
+    expect(updates.at(-1)).toContain('first second');expect(updates.at(-1)).toContain('warning');
+    expect(result.isError).toBe(false);
+  });
 
   it("aborts the shell process tree without leaving a child effect", async () => {
     const cwd = await directory();

@@ -1,6 +1,45 @@
 export const SESSION_SEARCH_DEBOUNCE_MS = 250;
 export const SESSION_SEARCH_MAX_CODE_UNITS = 500;
 
+// Match across inline Markdown nodes without replacing renderer-owned markup.
+export function findTranscriptMatch(root, query) {
+  const needle = sanitizeSessionSearchQuery(query).trim();
+  if (!needle) return null;
+  const pattern = new RegExp(needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "iu");
+  for (const content of root.querySelectorAll(".content, .reasoning-content, .semantic-tool-block pre, .context-content")) {
+    const walker = root.ownerDocument.createTreeWalker(content, 4);
+    const nodes = []; let value = "";
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.parentElement?.closest("button, script, style, [aria-hidden='true']")) continue;
+      nodes.push({ node, start: value.length, end: value.length + node.textContent.length });
+      value += node.textContent;
+    }
+    const match = pattern.exec(value);
+    if (!match) continue;
+    const start = nodes.find(part => part.end > match.index);
+    const end = nodes.find(part => part.end >= match.index + match[0].length);
+    if (!start || !end) continue;
+    const range = root.ownerDocument.createRange();
+    range.setStart(start.node, match.index - start.start);
+    range.setEnd(end.node, match.index + match[0].length - end.start);
+    return { range, element: content };
+  }
+  return null;
+}
+
+export async function locateTranscriptMatch({ root, query, active, cursor, loadEarlier }) {
+  while (active()) {
+    const match = findTranscriptMatch(root, query);
+    if (match) return match;
+    const before = cursor();
+    if (before === null) return null;
+    await loadEarlier();
+    if (!active() || cursor() === before) return null;
+  }
+  return null;
+}
+
 export function sanitizeSessionSearchQuery(value) {
   const clean = String(value ?? "").replaceAll("\0", "");
   if (clean.length <= SESSION_SEARCH_MAX_CODE_UNITS) return clean;

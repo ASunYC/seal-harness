@@ -1,0 +1,33 @@
+{
+  "name": "@seal-harness/desktop",
+  "version": "0.3.4",
+  "private": true,
+  "type": "module",
+  "description": "Seal Harness desktop shell with the existing PI runtime",
+  "author": "Seal Harness contributors",
+  "license": "MIT",
+  "main": "src/main.mjs",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "dist": "electron-builder --publish never"
+  },
+  "devDependencies": {
+    "@seal-harness/web": "workspace:^",
+    "electron": "43.4.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "dev.seal-harness.desktop",
+    "productName": "Seal Harness",
+    "icon": "../../assets/brand/seal-harness-mascot.png",
+    "directories": { "output": "../../.artifacts/desktop" },
+    "files": ["src/main.mjs", "src/host.mjs", "package.json", "!node_modules/**/*"],
+    "extraResources": [{ "from": "../../.artifacts/desktop-runtime", "to": "backend" }],
+    "npmRebuild": false,
+    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }, { "target": "portable", "arch": ["x64"] }] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "artifactName": "Seal-Harness-Setup-${version}.${ext}" },
+    "portable": { "artifactName": "Seal-Harness-Portable-${version}.${ext}", "requestExecutionLevel": "user", "useZip": true },
+    "linux": { "target": ["AppImage"], "category": "Development", "artifactName": "Seal-Harness-${version}-${arch}.${ext}" }
+  }
+}

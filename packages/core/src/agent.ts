@@ -22,6 +22,8 @@ export interface AgentPromptRequest {
   readonly maxTokens?: number;
   readonly agentPreset?: string;
   readonly signal?: AbortSignal;
+  /** Startup compaction can precede creation of the execution event stream. */
+  readonly onCompactionProgress?: import("./compaction.js").CompactionRequest["onProgress"];
   /** Runtime-bound lifecycle interception supplied by a compatibility host. */
   readonly runtimeHooks?: import("./runtime.js").AgentRuntimeHooks;
   /** Plugin-owned events committed atomically before this prompt's messages and run start. */

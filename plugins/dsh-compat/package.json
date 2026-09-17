@@ -139,8 +139,6 @@
     "@deepseek-ai/dsh-storage-sqlite": "0.1.2-rc.1",
     "@deepseek-ai/dsh-subagent": "0.1.2-rc.1",
     "@deepseek-ai/dsh-subagent-acp": "0.1.2-rc.1",
-    "@deepseek-ai/dsh-subagent-claude-code": "0.1.2-rc.1",
-    "@deepseek-ai/dsh-subagent-codex": "0.1.2-rc.1",
     "@deepseek-ai/dsh-subagent-fork-in-process": "0.1.2-rc.1",
     "@deepseek-ai/dsh-subagent-in-process-driver": "0.1.2-rc.1",
     "@deepseek-ai/dsh-subagent-spawn-in-process": "0.1.2-rc.1",

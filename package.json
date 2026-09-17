@@ -8,8 +8,12 @@
     "node": ">=22.19.0"
   },
   "scripts": {
+    "desktop:dev": "pnpm --filter @seal-harness/web... build && pnpm --filter @seal-harness/desktop dev",
+    "desktop:dist": "node apps/desktop/scripts/package.mjs",
+    "desktop:verify": "pnpm build && node apps/desktop/scripts/verify.mjs",
+    "desktop:verify:packaged": "node apps/desktop/scripts/verify.mjs --packaged",
     "build": "pnpm -r build",
-    "check": "pnpm typecheck && pnpm test && pnpm test:python",
+    "check": "pnpm typecheck && pnpm test && pnpm test:python && pnpm test:release",
     "clean": "pnpm -r run clean",
     "seal-harness": "node apps/launcher/dist/bin.js",
     "seal-harness:headless": "node apps/cli/dist/bin.js",
@@ -20,6 +24,7 @@
     "release:bundle": "node scripts/build-release-bundle.mjs",
     "test": "vitest run",
     "test:python": "python python/sdk/run-tests.py",
+    "test:release": "node --test scripts/node-license.test.mjs scripts/artifact-check.test.mjs",
     "test:watch": "vitest",
     "typecheck": "tsc -b --pretty false && tsc -p tsconfig.tests.json --pretty false"
   },

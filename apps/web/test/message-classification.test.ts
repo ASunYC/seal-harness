@@ -132,7 +132,7 @@ describe("steering message classification", () => {
       stored(4, { type: "dsh.imported", payload: { type: "request/header", data: { header: header("changed", [{ name: "read" }]), reason: "change" } } }),
       stored(5, { type: "dsh.imported", payload: { type: "request/header", data: { header: header(""), reason: "series" } } }),
     ];
-    expect([...systemPromptMessageViews(events)]).toEqual([[1, { role: "system-prompt", text: "base" }], [2, { role: "system-prompt", text: "base" }], [4, { role: "system-prompt", text: "changed" }]]);
+    expect([...systemPromptMessageViews(events)]).toEqual([[1, { role: "system-prompt", text: "base", atSeq: 1 }], [2, { role: "system-prompt", text: "base", atSeq: 2 }], [4, { role: "system-prompt", text: "changed", atSeq: 4 }]]);
     expect(transcriptNodeSequences(events)).toEqual([1, 2, 4]);
   });
 
@@ -149,7 +149,7 @@ describe("steering message classification", () => {
       stored(8, { type: "dsh.imported", payload: { type: "step/start", data: { turn: 2, step: 2 } } }),
       stored(9, { type: "dsh.imported", payload: { type: "request/header", data: { header: header("step two"), reason: "series" } } }),
     ];
-    expect([...systemPromptMessageViews(events)]).toEqual([[1, { role: "system-prompt", text: "native" }], [4, { role: "system-prompt", text: "imported" }], [7, { role: "system-prompt", text: "changed" }], [8, { role: "system-prompt", text: "step two" }]]);
+    expect([...systemPromptMessageViews(events)]).toEqual([[1, { role: "system-prompt", text: "native", atSeq: 1 }], [4, { role: "system-prompt", text: "imported", atSeq: 4 }], [7, { role: "system-prompt", text: "changed", atSeq: 7 }], [8, { role: "system-prompt", text: "step two", atSeq: 8 }]]);
     expect(transcriptNodeSequences(events)).toEqual([1, 2, 4, 7, 8]);
   });
 

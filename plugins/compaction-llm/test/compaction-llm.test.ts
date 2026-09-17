@@ -13,6 +13,29 @@ const MESSAGES = [
 ];
 
 describe("LlmCompactionService", () => {
+  it.each(['completed', 'fallback', 'failed', 'aborted'] as const)("reports the real summary lifecycle: %s", async outcome => {
+    const events: unknown[] = []; const controller = new AbortController();
+    const service = new LlmCompactionService(fakeModels(async function* () {
+      expect(events).toEqual([{state:'started'}]);
+      if (outcome === 'aborted') controller.abort(new Error('stop'));
+      if (outcome !== 'completed') throw new Error('offline');
+      yield {type:'text_delta', delta:'summary'};
+      yield {type:'done', stopReason:'stop'};
+    }), {thresholdMessages:4, retainMessages:2, fallbackOnError:outcome !== 'failed'});
+    const result = service.compact({sessionId:sessionId('s'),messages:MESSAGES,model:MODEL,signal:controller.signal,onProgress:event=>events.push(event)});
+    if (outcome === 'failed' || outcome === 'aborted') await expect(result).rejects.toThrow();
+    else await result;
+    expect(events).toEqual([{state:'started'},{state:'finished',outcome}]);
+  });
+  it("does not announce compaction below threshold and isolates observer failures", async () => {
+    const events: unknown[] = [];
+    const service = new LlmCompactionService(fakeModels(async function* () {
+      yield {type:'text_delta',delta:'summary'}; yield {type:'done',stopReason:'stop'};
+    }), {thresholdMessages:4,retainMessages:2});
+    const request = {sessionId:sessionId('s'),messages:[],model:MODEL,signal:new AbortController().signal,onProgress:(event: unknown)=>events.push(event)};
+    expect(await service.compact(request)).toBeUndefined(); expect(events).toEqual([]);
+    expect(await service.compact({...request,messages:MESSAGES,onProgress:()=>{throw new Error('UI failed');}})).toBeDefined();
+  });
   it("summarizes the dropped window without exposing tools or entering the Agent loop", async () => {
     let captured: ModelRequest | undefined;
     const models = fakeModels(async function* (request) {

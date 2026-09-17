@@ -1,4 +1,5 @@
 import { createServiceToken } from "@seal-harness/kernel";
+import type { ReviewService } from "./review.js";
 import type { AgentService, SessionInitializer } from "./agent.js";
 import type { AttachmentService } from "./attachment.js";
 import type { CompactionService } from "./compaction.js";
@@ -30,6 +31,7 @@ import type { SettingsService } from "./settings.js";
 import type { TeamService } from "./team.js";
 
 export const modelServiceToken = createServiceToken<ModelService>("seal-harness.model");
+export const reviewServiceToken = createServiceToken<ReviewService>("seal-harness.review");
 export const runtimeToken = createServiceToken<AgentRuntime>("seal-harness.runtime");
 export const sessionStoreToken = createServiceToken<SessionStore>("seal-harness.session-store");
 export const toolServiceToken = createServiceToken<ToolService>("seal-harness.tools");

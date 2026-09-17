@@ -20,7 +20,7 @@ export function queueItemPreview(item, maxCharacters = 200) {
 
 export function queueImageRefs(item) {
   return (item?.message?.content ?? []).flatMap((block) => {
-    if (block?.type === "seal/attachment" && typeof block.id === "string" && /^image\//i.test(block.mimeType ?? "")) {
+    if ((block?.type === "attachment" || block?.type === "seal/attachment") && typeof block.id === "string" && /^image\//i.test(block.mimeType ?? "")) {
       return [{ id: block.id, name: block.name, mimeType: block.mimeType }];
     }
     const attachment = block?.type === "image" ? block.attachment : undefined;
@@ -46,12 +46,12 @@ export function queueSnapshotKey(items) {
 }
 
 export function queueDockItems(items) {
-  return (items ?? []).filter((item) => item?.placement === "queued");
+  return (items ?? []).filter((item) => item?.placement === "queued" || item?.placement === "steering");
 }
 
 export function pendingQueueItems(items, pending, sessionId) {
   const admitted = new Set((items ?? []).flatMap((item) => typeof item?.rpcId === "string" ? [item.rpcId] : []));
-  return (pending ?? []).filter((item) => item?.placement === "queued" && (sessionId === undefined || item.sessionId === sessionId) && !admitted.has(item.requestId));
+  return (pending ?? []).filter((item) => (item?.placement === "queued" || item?.placement === "steering") && (sessionId === undefined || item.sessionId === sessionId) && !admitted.has(item.requestId));
 }
 
 export function queueMutable(sessionId, sessions) {

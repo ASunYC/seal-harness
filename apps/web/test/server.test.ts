@@ -17,6 +17,9 @@ import { permissionPresetsPlugin } from "@seal-harness/permission-presets";
 import { jsonlSessionPlugin } from "@seal-harness/session-jsonl";
 import {
   approvalServiceToken,
+  compactionServiceToken,
+  reviewServiceToken,
+  policyServiceToken,
   agentServiceToken,
   attachmentServiceToken,
   credentialServiceToken,
@@ -52,6 +55,8 @@ import { WebApprovalService } from "../src/approval.js";
 import { DshConnectionBridge, WebRouteRegistry } from "../src/plugin-host.js";
 import { startWebServer, type RunningWebServer } from "../src/server.js";
 import { dshCompatServiceToken } from "@seal-harness/dsh-compat";
+import { llmCompactionPlugin } from "../../../plugins/compaction-llm/src/index.js";
+import { scriptedRuntimePlugin } from "../../../plugins/runtime-scripted/src/index.js";
 
 const cleanup: Array<() => Promise<void>> = [];
 afterEach(async () => {
@@ -60,6 +65,173 @@ afterEach(async () => {
 });
 
 describe("Seal Harness Web server", () => {
+  it("streams native PI compaction, persists its summary and restores it on the next run", async () => {
+    const cwd=await mkdtemp(join(tmpdir(),'seal-llm-compaction-')); cleanup.push(()=>rm(cwd,{recursive:true,force:true}));
+    let summaryCalls=0, agentCalls=0; const summarizedInputs: string[] = [];
+    const server=await startWebServer({cwd,port:0,pluginHome:cwd,profile:defineProfile([
+      plugin(memorySessionPlugin,{}),plugin(contextCorePlugin,{systemPrompt:'Seal compaction test'}),
+      plugin(scriptedModelPlugin,{models:[{provider:'scripted',model:'summary-test',contextWindow:10000,maxOutputTokens:1000}],async *respond(request){
+        if(request.systemPrompt.includes('context summarization assistant')) {
+          summaryCalls++; expect(request.tools ?? []).toEqual([]);
+          summarizedInputs.push(JSON.stringify(request.messages));
+          yield {type:'text_delta',delta:'Preserve the project requirements.'};
+        } else {
+          agentCalls++; const content=JSON.stringify(request.messages);
+          expect(content).toContain('Preserve the project requirements.');
+          expect(content).toContain('historical-79');
+          expect(content).not.toContain('historical-0');
+          yield {type:'text_delta',delta:'Continued after compaction'};
+        }
+        yield {type:'done',stopReason:'stop'};
+      }}),plugin(llmCompactionPlugin,{thresholdMessages:20,retainMessages:4,fallbackOnError:false}),plugin(piRuntimePlugin,{dataHome:cwd,compaction:{keepRecentTokens:100}}),plugin(agentCorePlugin,{})
+    ])}); cleanup.push(()=>server.close());
+    const store=server.kernel.use(sessionStoreToken); const id=sessionId('long-history');
+    const initial=await store.create({id,cwd});
+    await store.append({id,expectedVersion:initial.version,events:Array.from({length:80},(_,index)=>({
+      type:'message.appended' as const,payload:{messageId:messageId(`history-${index}`),message:{role:index%2?'assistant' as const:'user' as const,content:[text(`historical-${index} ${'context '.repeat(100)}`)]}}
+    }))});
+    const response=await fetch(`${server.url}/api/runs`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cwd,sessionId:id,provider:'scripted',model:'summary-test',prompt:'Continue',startupProgress:true})});
+    const events=(await response.text()).trim().split('\n').map(line=>JSON.parse(line));
+    expect(events.filter(event=>event.type==='event' && event.event.type==='compaction_activity').map(event=>event.event)).toMatchObject([
+      {state:'started',reason:'threshold'}, {state:'finished',outcome:'completed',reason:'threshold'}
+    ]);
+    expect(events.at(-1)).toMatchObject({type:'completed',stopReason:'stop'});
+    expect(summaryCalls).toBeGreaterThan(0); expect(agentCalls).toBe(1);
+    expect(summarizedInputs.join('\n')).toContain('historical-0');
+    const completedSummaryCalls = summaryCalls;
+    const saved=await store.read(id);
+    expect(saved!.events.filter(entry=>entry.event.type==='context.compacted')).toHaveLength(1);
+    expect(JSON.stringify(saved!.events.find(entry=>entry.event.type==='context.compacted'))).toContain('Preserve the project requirements.');
+    const page=await (await fetch(`${server.url}/api/sessions/${id}/messages`)).json();
+    expect(JSON.stringify(page)).toContain('Preserve the project requirements.');
+    const next=await fetch(`${server.url}/api/runs`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cwd,sessionId:id,provider:'scripted',model:'summary-test',prompt:'Continue again',startupProgress:true})});
+    const nextEvents=(await next.text()).trim().split('\n').map(line=>JSON.parse(line));
+    expect(nextEvents.some(event=>event.type==='startup_activity')).toBe(false);
+    expect(nextEvents.at(-1)).toMatchObject({type:'completed',stopReason:'stop'});
+    expect(summaryCalls).toBe(completedSummaryCalls); expect(agentCalls).toBe(2);
+  });
+  it("preserves startup-compaction errors and cancellation for non-native runtimes", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), 'seal-startup-progress-')); cleanup.push(() => rm(cwd, {recursive:true,force:true}));
+    let waitForCancel = false; let cancelled = false;
+    const compaction = definePlugin<{}, SealHarnessEvents>({name:'startup-compaction-fixture',provides:[compactionServiceToken],setup(ctx) {
+      ctx.provide(compactionServiceToken,{async compact(request) {
+        request.onProgress?.({state:'started'});
+        if (waitForCancel) {
+          await new Promise<void>((resolve) => { if (request.signal.aborted) resolve(); else request.signal.addEventListener('abort',()=>resolve(),{once:true}); });
+          cancelled = true;
+          request.onProgress?.({state:'finished',outcome:'aborted'});
+          request.signal.throwIfAborted();
+        }
+        request.onProgress?.({state:'finished',outcome:'failed'});
+        throw new Error('summary failed');
+      }});
+    }});
+    const server = await startWebServer({cwd,host:'127.0.0.1',port:0,profile:defineProfile([
+      plugin(memorySessionPlugin,{}),plugin(contextCorePlugin,{}),plugin(scriptedModelPlugin,{models:[{provider:'scripted',model:'test',contextWindow:10000,maxOutputTokens:1000}],async *respond(){yield {type:'done',stopReason:'stop'};}}),plugin(scriptedRuntimePlugin,{execute:()=>{throw new Error('Failed startup must never enter the runtime');}}),plugin(compaction,{}),plugin(agentCorePlugin,{})
+    ])}); cleanup.push(()=>server.close());
+    const send = (startupProgress: boolean) => fetch(`${server.url}/api/runs`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cwd,provider:'scripted',model:'test',prompt:'hello',startupProgress})});
+    const streaming = await send(true);
+    expect(streaming.status).toBe(200);
+    const events = (await streaming.text()).trim().split('\n').map(line=>JSON.parse(line));
+    expect(events).toEqual([
+      {type:'startup_activity',activity:'compaction',state:'started'},
+      {type:'startup_activity',activity:'compaction',state:'finished',outcome:'failed'},
+      {type:'error',error:'summary failed'},
+    ]);
+    const legacy = await send(false); expect(legacy.status).toBe(500);
+    expect(await legacy.json()).toMatchObject({error:'summary failed'});
+    waitForCancel = true;
+    const controller = new AbortController();
+    const pending = await fetch(`${server.url}/api/runs`,{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({cwd,provider:'scripted',model:'test',prompt:'hello',startupProgress:true})});
+    const reader = pending.body!.getReader();
+    expect(new TextDecoder().decode((await reader.read()).value)).toContain('startup_activity');
+    controller.abort();
+    await expect.poll(()=>cancelled).toBe(true);
+  });
+  it("persists real PI file-write evidence through the run API and server restart", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "seal-review-run-")); cleanup.push(() => rm(cwd, { recursive: true, force: true }));
+    const data = await mkdtemp(join(tmpdir(), "seal-review-data-")); cleanup.push(() => rm(data, { recursive: true, force: true }));
+    await writeFile(join(cwd, "review.txt"), "original\n"); let calls = 0;
+    const profile = defineProfile([
+      plugin(scriptedModelPlugin, { models: [{ provider: "scripted", model: "review", contextWindow: 10_000, maxOutputTokens: 1_000 }], async *respond() {
+        if (calls++ === 0) { yield { type: "reasoning_delta", delta: "Inspect before writing" }; yield { type: "text_delta", delta: "Updating the file" }; yield { type: "tool_call", call: { type: "tool_call", id: toolCallId("write-review"), name: "write_file", arguments: { path: "review.txt", content: "changed\n" } } }; yield { type: "done", stopReason: "tool_call" }; }
+        else { yield { type: "reasoning_delta", delta: "Verify the result" }; yield { type: "text_delta", delta: "Done" }; yield { type: "done", stopReason: "stop" }; }
+      } }),
+      plugin(jsonlSessionPlugin, { root: join(data, "sessions") }),
+      plugin(contextCorePlugin, {}), plugin(basicPolicyPlugin, { mode: "workspace-write" }),
+      plugin(toolsCorePlugin, {}), plugin(workspaceToolsPlugin, { enableShell: false, reviewRoot: join(data, "reviews") }),
+      plugin(piRuntimePlugin, {}), plugin(agentCorePlugin, {}),
+    ]);
+    const server = await startWebServer({ cwd, port: 0, profile, pluginHome: data });
+    cleanup.push(() => server.close());
+    const response = await fetch(`${server.url}/api/runs`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cwd, sessionId: "review-run", provider: "scripted", model: "review", prompt: "Update review.txt" }) });
+    expect(response.status).toBe(200);
+    const stream = (await response.text()).trim().split("\n").map(line => JSON.parse(line));
+    const activity = stream.filter(item => item.type === "event").map(item => item.event).filter(event => ["reasoning_delta", "text_delta", "tool_call", "tool_result"].includes(event.type));
+    expect(activity.map(event => event.type)).toEqual(["reasoning_delta", "text_delta", "tool_call", "tool_result", "reasoning_delta", "text_delta"]);
+    expect(activity.filter(event => event.type === "text_delta").map(event => event.delta)).toEqual(["Updating the file", "Done"]);
+    expect(await readFile(join(cwd, "review.txt"), "utf8")).toBe("changed\n");
+    const session = await server.kernel.use(sessionStoreToken).read(sessionId("review-run"));
+    const liveStarts = stream.filter(item => item.type === "event" && item.event.type === "turn_start").map(item => item.event.turnId);
+    const liveEnds = stream.filter(item => item.type === "event" && item.event.type === "turn_end").map(item => item.event.turnId);
+    const savedTurns = session!.events.filter(({ event }) => event.type === "turn.started").map(({ event }) => (event as any).payload.turnId);
+    expect(savedTurns.length).toBeGreaterThan(0);
+    expect(liveStarts).toEqual(savedTurns);
+    expect(liveEnds).toEqual(savedTurns);
+    const completed = session!.events.find(({ event }) => event.type === "tool.completed");
+    const snapshotId = (completed!.event as any).payload.result.details.review.snapshotId;
+    const page = await (await fetch(`${server.url}/api/sessions/review-run/messages`)).json();
+    const assistantText = page.messages.filter((m: any) => m.role === "assistant").map((m: any) => m.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join(""));
+    expect(assistantText).toEqual(["Updating the file", "Done"]);
+    expect(page.messages.filter((m: any) => m.role === "tool").map((m: any) => m.toolMeta ?? m.providerData)).toEqual(expect.arrayContaining([expect.objectContaining({ review: expect.objectContaining({ snapshotId }) })]));
+    const endpoint = `/api/sessions/review-run/reviews/${snapshotId}`;
+    expect(await (await fetch(`${server.url}${endpoint}`)).json()).toMatchObject({ before: "original\n", after: "changed\n", status: "applied" });
+    await server.close();
+    await writeFile(join(cwd, "review.txt"), "later user change\n");
+    const reopened = await startWebServer({ cwd, port: 0, profile, pluginHome: data }); cleanup.push(() => reopened.close());
+    expect(await (await fetch(`${reopened.url}${endpoint}`)).json()).toMatchObject({ before: "original\n", after: "changed\n" });
+    const rollback = (body: unknown) => fetch(`${reopened.url}${endpoint}/rollback`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    expect((await rollback({})).status).toBe(400);
+    expect((await rollback({ confirm: true })).status).toBe(409);
+    expect(await readFile(join(cwd, "review.txt"), "utf8")).toBe("later user change\n");
+    await writeFile(join(cwd, "review.txt"), "changed\n");
+    const active = vi.spyOn(reopened.kernel.use(agentServiceToken), "active").mockReturnValue({ sessionId: sessionId("review-run") } as any);
+    expect((await rollback({ confirm: true })).status).toBe(409); active.mockRestore();
+    const policy = vi.spyOn(reopened.kernel.use(policyServiceToken), "decide").mockResolvedValueOnce({ outcome: "deny", reason: "Read-only mode" });
+    expect((await rollback({ confirm: true })).status).toBe(403); policy.mockRestore();
+    expect(await (await rollback({ confirm: true })).json()).toEqual({ outcome: "rolled-back" });
+    expect(await readFile(join(cwd, "review.txt"), "utf8")).toBe("original\n");
+    expect(await (await rollback({ confirm: true })).json()).toEqual({ outcome: "already-rolled-back" });
+  });
+  it("serves review evidence only when linked to this session's completed tool", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "seal-review-api-")); cleanup.push(() => rm(cwd, { recursive: true, force: true }));
+    const server = await startWebServer({ cwd, port: 0, credentialEnvironment: {} }); cleanup.push(() => server.close());
+    const store = server.kernel.use(sessionStoreToken); const id = sessionId("review-owner");
+    const session = await store.create({ id, cwd });
+    vi.spyOn(server.kernel.use(reviewServiceToken), "read").mockResolvedValue({ id: "snapshot", callId: "call", path: "a.txt", createdAt: "2026-09-12T00:00:00Z", status: "applied", existed: true, before: "old", after: "new" });
+    expect((await fetch(`${server.url}/api/sessions/review-owner/reviews/snapshot`)).status).toBe(404);
+    await store.append({ id, expectedVersion: session.version, events: [{ type: "tool.completed", payload: { runId: "run", turnId: "turn", callId: "call", name: "write_file", result: { content: [], details: { review: { snapshotId: "snapshot" } } } } }] as any });
+    const response = await fetch(`${server.url}/api/sessions/review-owner/reviews/snapshot`);
+    expect(response.status).toBe(200); expect(await response.json()).toMatchObject({ before: "old", after: "new" });
+    expect((await fetch(`${server.url}/api/sessions/missing/reviews/snapshot`)).status).toBe(404);
+  });
+  it("exposes descendants and routes ancestor stop through ownership-aware interruption", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "seal-tree-api-")); cleanup.push(() => rm(cwd, { recursive: true, force: true }));
+    const server = await startWebServer({ cwd, port: 0, credentialEnvironment: {} }); cleanup.push(() => server.close());
+    await server.kernel.use(sessionStoreToken).create({ id: sessionId("tree-root"), cwd });
+    const service = server.kernel.use(subagentServiceToken);
+    const descendants = vi.spyOn(service, "listDescendants").mockResolvedValue([
+      { sessionId: sessionId("child"), parentSessionId: sessionId("tree-root"), label: "Child", status: "running", model: { provider: "mock", model: "m" } },
+      { sessionId: sessionId("grandchild"), parentSessionId: sessionId("child"), label: "Grandchild", status: "running", model: { provider: "mock", model: "m" } },
+    ]);
+    const interrupt = vi.spyOn(service, "interrupt").mockResolvedValue(true);
+    const state = await (await fetch(`${server.url}/api/sessions/tree-root/state`)).json();
+    expect(state.subagents.map((agent: { sessionId: string }) => agent.sessionId)).toEqual(["child", "grandchild"]);
+    expect(descendants).toHaveBeenCalledWith("tree-root");
+    expect((await fetch(`${server.url}/api/sessions/tree-root/subagents/grandchild/abort`, { method: "POST" })).status).toBe(200);
+    expect(interrupt).toHaveBeenCalledWith("tree-root", "grandchild", expect.any(Error));
+  });
+
   it("deletes only the selected session and persists skin selection", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "seal-delete-skin-")); cleanup.push(() => rm(cwd, { recursive: true, force: true }));
     const server = await startWebServer({ cwd, port: 0, credentialEnvironment: {} }); cleanup.push(() => server.close());
@@ -745,7 +917,7 @@ describe("Seal Harness Web server", () => {
     expect(indexText).toContain('id="permission-risk-dialog"');
     expect(indexText).toContain('id="permission-risk-ack"');
     expect(indexText).toContain('id="add-workspace"');
-    expect(indexText).toContain('/app.js?v=0.3.4-205');
+    expect(indexText).toContain('/app.js?v=0.3.4-241');
     expect(indexText).not.toContain('id="credential-onboarding"');
     expect(indexText).toContain('id="model-settings-open"');
     expect(indexText).toContain('id="agent-preset-copy-dialog"');
@@ -758,7 +930,7 @@ describe("Seal Harness Web server", () => {
     expect(indexText).toContain('id="session-group-by"');
     expect(indexText).toContain('id="session-search-input"');
     expect(indexText).toContain('id="session-breadcrumbs"');
-    expect(indexText).toContain('/styles.css?v=0.3.4-107');
+    expect(indexText).toContain('/styles.css?v=0.3.4-120');
     expect(indexText).toContain('<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">');
     expect(indexText).toContain('id="plugin-inventory-search"');
     expect(indexText).toContain('id="workspace-rename-dialog"');

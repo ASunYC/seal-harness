@@ -167,6 +167,7 @@ describe("dshCompatPlugin", () => {
     await kernel.start([plugin(dshCompatPlugin, { timeContext: { timeZone: "UTC" }, sessionTitle: { llm: false }, plugins: [{ plugin: consumer }] })]);
     await exercise();
     const injected = requests[0].messages.find((message: any) => message.source?.kind === "plugin" && message.source?.plugin === "time-context");
+    expect(injected, JSON.stringify(requests[0].messages)).toBeDefined();
     expect(injected?.content[0]?.text).toContain("Time sampled while preparing turn 1, step 1:");
     expect(injected?.content[0]?.text).toContain("Browser time zone for this request: Asia/Shanghai.");
     expect(events.filter((event) => event.type === "user/message").map(event => event.data)).toEqual(expect.arrayContaining([expect.objectContaining({ source: expect.objectContaining({ plugin: "time-context" }) })]));
@@ -960,15 +961,21 @@ describe("dshCompatPlugin", () => {
 
   it("registers external and in-process subagent providers without starting child processes", async () => {
     const kernel = new Kernel<SealHarnessEvents>();
-    await kernel.start([plugin(dshCompatPlugin, { externalSubagents: { acp: { command: "test-acp-agent" }, claudeCode: {}, codex: {} }, inProcessSubagents: { spawn: {}, fork: {} } })]);
+    await kernel.start([plugin(dshCompatPlugin, { externalSubagents: { acp: { command: "test-acp-agent" } }, inProcessSubagents: { spawn: {}, fork: {} } })]);
     const subagents = kernel.use(dshCompatServiceToken).context.get("subagents") as any;
-    expect([...subagents.providers.keys()].sort()).toEqual(["acp", "claude-code", "codex", "fork", "spawn"]);
+    expect([...subagents.providers.keys()].sort()).toEqual(["acp", "fork", "spawn"]);
     expect(subagents.providers.get("acp")).toMatchObject({ name: "acp", inheritsParentContext: false, capabilities: { outputSchema: false, agentOptions: false } });
-    expect(subagents.providers.get("claude-code")).toMatchObject({ name: "claude-code", inheritsParentContext: false, capabilities: { outputSchema: false, agentOptions: false } });
-    expect(subagents.providers.get("codex")).toMatchObject({ name: "codex", inheritsParentContext: false, capabilities: { outputSchema: false, agentOptions: false } });
+    expect(subagents.providers.has("claude-code")).toBe(false);
+    expect(subagents.providers.has("codex")).toBe(false);
     expect(subagents.providers.has("dsh-sdk")).toBe(false);
     expect(subagents.providers.get("spawn")).toMatchObject({ name: "spawn", inheritsParentContext: false, capabilities: { outputSchema: true, agentOptions: true, depthLimit: true, toolFilter: true, persona: true } });
     expect(subagents.providers.get("fork")).toMatchObject({ name: "fork", inheritsParentContext: true, capabilities: { outputSchema: true, agentOptions: true, depthLimit: true, toolFilter: true, persona: true } });
+    await kernel.stop();
+  });
+
+  it.each(["claudeCode", "codex"])("rejects the legacy %s engine before startup", async name => {
+    const kernel = new Kernel<SealHarnessEvents>();
+    await expect(kernel.start([plugin(dshCompatPlugin, { externalSubagents: { [name]: {} } })])).rejects.toMatchObject({ cause: { message: expect.stringContaining("PI as its only agent engine") } });
     await kernel.stop();
   });
 
@@ -1664,15 +1671,16 @@ describe("dshCompatPlugin", () => {
     await kernel.start([plugin(dshCompatPlugin, { plugins: [{ plugin: contributor }] })]);
     const contribution = await promptSource!.contribute({ sessionId: "prompt-session" as never, cwd: process.cwd(), prompt: [], history: [], signal: new AbortController().signal }, []);
     expect(contribution?.systemPrompt).toContain("Work in Seal.");
+    expect(contribution?.systemPrompt).not.toContain("powered by DeepSeek Harness");
     expect(contribution?.additions).toEqual([expect.objectContaining({ role: "user", content: [{ type: "text", text: "Runtime policy is active." }], source: { kind: "plugin", plugin: "dsh-system-prompt:test:policy" } })]);
     await kernel.stop();
   });
 
-  it("configures the official deployment persona and runtime-context policy", async () => {
+  it.each([false, true])("preserves deployment persona without foreign identity (legacy flag %s)", async (includeHarnessIdentity) => {
     let promptSource: ContextSource | undefined;
     const contexts: ContextService = { register(source) { promptSource = source; return () => { if (promptSource === source) promptSource = undefined; }; }, async prepare() { throw new Error("not used"); } };
     const kernel = new Kernel({ initialServices: [[contextServiceToken, contexts]] });
-    await kernel.start([plugin(dshCompatPlugin, { systemPrompt: { includeHarnessIdentity: false, includeRuntimeContext: false, persona: "Configured deployment persona." } })]);
+    await kernel.start([plugin(dshCompatPlugin, { systemPrompt: { includeHarnessIdentity, includeRuntimeContext: false, persona: "Configured deployment persona." } })]);
     const contribution = await promptSource!.contribute({ sessionId: "persona-session" as never, cwd: process.cwd(), prompt: [], history: [], signal: new AbortController().signal }, []);
     expect(contribution?.systemPrompt).toBe("Configured deployment persona.");
     expect(contribution?.additions).toBeUndefined();

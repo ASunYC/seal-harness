@@ -41,10 +41,11 @@ describe("DefaultSubagentService", () => {
     await agents.complete(started.sessionId, "finished");
     const waited = await service.wait(parent, [started.sessionId], 1000);
     expect(waited).toEqual({ completed: [expect.objectContaining({ status: "completed", result: "finished" })], timedOut: false });
+    expect(waited.completed[0]).toMatchObject({ startedAt: expect.any(String), finishedAt: expect.any(String) });
     expect(jobs.read("subagent-1", parent)).toMatchObject({ job: { status: "completed" }, output: "finished" });
 
     const restored = new DefaultSubagentService(agents, sessions);
-    expect(await restored.list(parent)).toEqual([expect.objectContaining({ sessionId: "reserved-child", status: "completed" })]);
+    expect(await restored.list(parent)).toEqual([expect.objectContaining({ sessionId: "reserved-child", status: "completed", task: "inspect" })]);
   });
 
   it("rejects control of a child owned by another Session", async () => {

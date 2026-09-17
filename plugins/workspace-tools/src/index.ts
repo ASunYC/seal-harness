@@ -11,6 +11,7 @@ import {
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import {
   text,
+  reviewServiceToken,
   sandboxServiceToken,
   permissionPresetServiceToken,
   toolServiceToken,
@@ -25,8 +26,10 @@ import {
   type PermissionPresetService,
 } from "@seal-harness/core";
 import { definePlugin } from "@seal-harness/kernel";
+import { reviewedWrite, readReviewSnapshot, rollbackReviewSnapshot } from "./review-snapshot.js";
 
 export interface WorkspaceToolsConfig {
+  readonly reviewRoot?: string;
   readonly maxReadBytes?: number;
   readonly maxOutputBytes?: number;
   readonly maxListEntries?: number;
@@ -39,9 +42,14 @@ export interface WorkspaceToolsConfig {
 
 export const workspaceToolsPlugin = definePlugin<WorkspaceToolsConfig, SealHarnessEvents>({
   name: "workspace-tools",
+  provides: [reviewServiceToken],
   requires: [toolServiceToken],
   optional: [sandboxServiceToken, permissionPresetServiceToken],
   setup(context, config) {
+    context.provide(reviewServiceToken, {
+      read: (sessionId, snapshotId) => readReviewSnapshot(config.reviewRoot, sessionId, snapshotId),
+      rollback: (sessionId, snapshotId, cwd) => config.reviewRoot ? rollbackReviewSnapshot(config.reviewRoot, sessionId, snapshotId, cwd) : Promise.resolve("unavailable"),
+    });
     const tools = createWorkspaceTools(config, context.has(sandboxServiceToken) ? context.use(sandboxServiceToken) : undefined, context.has(permissionPresetServiceToken) ? context.use(permissionPresetServiceToken) : undefined);
     const registry = context.use(toolServiceToken);
     for (const tool of tools) context.effect(registry.register(tool));
@@ -86,10 +94,10 @@ export function createWorkspaceTools(config: WorkspaceToolsConfig = {}, sandbox?
       async execute(input, context) {
         const path = await writableWorkspacePath(context.cwd, stringInput(input, "path"));
         const content = stringInput(input, "content");
-        await writeFile(path, content, "utf8");
+        const review = await reviewedWrite(config.reviewRoot, path, relativePath(context.cwd, path), content, context, () => writeFile(path, content, "utf8"));
         return {
           content: [text(`Wrote ${Buffer.byteLength(content)} bytes to ${relativePath(context.cwd, path)}`)],
-          details: { path: relativePath(context.cwd, path), bytes: Buffer.byteLength(content) },
+          details: { path: relativePath(context.cwd, path), bytes: Buffer.byteLength(content), ...(review ? { review } : {}) },
         };
       },
     },
@@ -116,10 +124,10 @@ export function createWorkspaceTools(config: WorkspaceToolsConfig = {}, sandbox?
           throw new Error("oldText is not unique");
         }
         const updated = content.slice(0, first) + newText + content.slice(first + oldText.length);
-        await writeFile(path, updated, "utf8");
+        const review = await reviewedWrite(config.reviewRoot, path, relativePath(context.cwd, path), updated, context, () => writeFile(path, updated, "utf8"), content);
         return {
           content: [text(`Updated ${relativePath(context.cwd, path)}`)],
-          details: { path: relativePath(context.cwd, path) },
+          details: { path: relativePath(context.cwd, path), ...(review ? { review } : {}) },
         };
       },
     },
@@ -217,6 +225,7 @@ export function createWorkspaceTools(config: WorkspaceToolsConfig = {}, sandbox?
           sandbox,
           permissions === undefined ? sandboxMode : permissions.resolve(await permissions.current(context.sessionId)).sandbox,
           context.sessionId,
+          context.reportProgress,
         );
         const rendered = [
           result.stdout.length === 0 ? "" : `stdout:\n${result.stdout}`,
@@ -260,6 +269,7 @@ async function runShell(
   sandbox: SandboxService | undefined,
   sandboxMode: SandboxMode,
   sessionId: SessionId,
+  reportProgress: (content: readonly ContentBlock[]) => void,
 ): Promise<ShellResult> {
   signal.throwIfAborted();
   const shellArgv = process.platform === "win32"
@@ -292,6 +302,20 @@ async function runShell(
     let stderr: Buffer<ArrayBufferLike> = Buffer.alloc(0);
     let truncated = false;
     let timedOut = false;
+    let progressTimer: ReturnType<typeof setTimeout> | undefined;
+    let lastProgress = "";
+    const publishProgress = (): void => {
+      progressTimer = undefined;
+      if (signal.aborted) return;
+      const output = [stdout.length ? `stdout:\n${decodeShellOutput(stdout)}` : "", stderr.length ? `stderr:\n${decodeShellOutput(stderr)}` : "", truncated ? "[output truncated]" : ""].filter(Boolean).join("\n\n");
+      if (!output || output === lastProgress) return;
+      lastProgress = output;
+      try { reportProgress([text(output)]); }
+      catch (error) { void terminate(); reject(error); }
+    };
+    const scheduleProgress = (): void => {
+      progressTimer ??= setTimeout(publishProgress, 100);
+    };
 
     const collect = (
       current: Buffer<ArrayBufferLike>,
@@ -305,8 +329,8 @@ async function runShell(
       if (chunk.length > remaining) truncated = true;
       return Buffer.concat([current, chunk.subarray(0, remaining)]);
     };
-    child.stdout?.on("data", (chunk: Buffer) => { stdout = collect(stdout, chunk); });
-    child.stderr?.on("data", (chunk: Buffer) => { stderr = collect(stderr, chunk); });
+    child.stdout?.on("data", (chunk: Buffer) => { stdout = collect(stdout, chunk); scheduleProgress(); });
+    child.stderr?.on("data", (chunk: Buffer) => { stderr = collect(stderr, chunk); scheduleProgress(); });
 
     let termination: Promise<void> | undefined;
     const terminate = (): Promise<void> => {
@@ -321,11 +345,13 @@ async function runShell(
     }, timeoutMs);
 
     child.once("error", (error) => {
+      clearTimeout(progressTimer);
       clearTimeout(timeout);
       signal.removeEventListener("abort", onAbort);
       reject(error);
     });
     child.once("close", async (exitCode) => {
+      clearTimeout(progressTimer);
       clearTimeout(timeout);
       signal.removeEventListener("abort", onAbort);
       if (signal.aborted) {
@@ -334,6 +360,7 @@ async function runShell(
         return;
       }
       const stdoutText = decodeShellOutput(stdout);
+      publishProgress();
       const stderrText = decodeShellOutput(stderr);
       const diagnosticText = `${stdoutText}\n${stderrText}`.toLowerCase();
       if (exitCode !== 0 && confined?.runnerFailureSignatures.some(signature => stderrText.toLowerCase().includes(signature.toLowerCase()))) {

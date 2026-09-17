@@ -35,8 +35,6 @@ import * as DshSessionTitleFirstPromptLlm from "@deepseek-ai/dsh-session-title-f
 import * as DshSessionTitleAllPromptsLlm from "@deepseek-ai/dsh-session-title-all-prompts-llm";
 import DshSubagentRuntime from "@deepseek-ai/dsh-subagent";
 import * as DshSubagentAcp from "@deepseek-ai/dsh-subagent-acp";
-import * as DshSubagentClaudeCode from "@deepseek-ai/dsh-subagent-claude-code";
-import * as DshSubagentCodex from "@deepseek-ai/dsh-subagent-codex";
 import * as DshSubagentForkInProcess from "@deepseek-ai/dsh-subagent-fork-in-process";
 import * as DshSubagentSpawnInProcess from "@deepseek-ai/dsh-subagent-spawn-in-process";
 import * as DshToolSubagent from "@deepseek-ai/dsh-tool-subagent";
@@ -271,6 +269,7 @@ export interface DshCompatConfig {
   };
   /** Official deployment-wide system-prompt identity, persona, and tool ordering. */
   readonly systemPrompt?: {
+    /** @deprecated Retained for config compatibility; Seal always owns harness identity. */
     readonly includeHarnessIdentity?: boolean;
     readonly includeRuntimeContext?: boolean;
     readonly persona?: string;
@@ -600,8 +599,10 @@ export interface DshCompatConfig {
       readonly disposeEofGraceMs?: number;
       readonly disposeGraceMs?: number;
     };
-    readonly claudeCode?: false | DshSubagentClaudeCode.Config;
-    readonly codex?: false | DshSubagentCodex.Config;
+    /** Legacy configuration is rejected: Seal does not launch a second coding-agent engine. */
+    readonly claudeCode?: false | Readonly<Record<string, unknown>>;
+    /** Legacy configuration is rejected: use Seal's PI-backed subagents instead. */
+    readonly codex?: false | Readonly<Record<string, unknown>>;
   };
   /** Official same-process child providers: fresh spawn and completed-turn-prefix fork. */
   readonly inProcessSubagents?: false | {
@@ -828,6 +829,10 @@ export class DshCompatRuntime implements DshCompatService {
   ) {}
 
   async start(): Promise<void> {
+    const legacyExternal = this.config.externalSubagents;
+    if (legacyExternal && [legacyExternal.claudeCode, legacyExternal.codex].some(value => value !== undefined && value !== false)) {
+      throw new Error("Seal uses PI as its only agent engine; externalSubagents.claudeCode/codex are no longer supported. Use Seal PI-backed subagents.");
+    }
     if (this.config.plugins !== undefined && !Array.isArray(this.config.plugins)) throw new TypeError("DSH compatibility plugins must be an array");
     if (this.config.configFile !== undefined && (typeof this.config.configFile !== "string" || this.config.configFile.trim().length === 0)) throw new TypeError("DSH compatibility configFile must be a non-empty path or file URL");
     if (this.config.hmr !== undefined && this.config.configFile === undefined) throw new TypeError("DSH compatibility hmr requires configFile");
@@ -1331,12 +1336,7 @@ export class DshCompatRuntime implements DshCompatService {
       : this.config.inProcessSubagents ?? (this.subagents === undefined ? { spawn: {}, fork: {} } : undefined);
     const inProcessSubagentsEnabled = inProcessSubagents?.spawn !== undefined && inProcessSubagents.spawn !== false
       || inProcessSubagents?.fork !== undefined && inProcessSubagents.fork !== false;
-    const externalSubagentsEnabled = externalSubagents?.acp !== undefined && externalSubagents.acp !== false
-      || externalSubagents?.claudeCode !== undefined && externalSubagents.claudeCode !== false
-      || externalSubagents?.codex !== undefined && externalSubagents.codex !== false;
-    const subprocessExternalSubagentsEnabled = externalSubagents?.acp !== undefined && externalSubagents.acp !== false
-      || externalSubagents?.claudeCode !== undefined && externalSubagents.claudeCode !== false
-      || externalSubagents?.codex !== undefined && externalSubagents.codex !== false;
+    const externalSubagentsEnabled = externalSubagents?.acp !== undefined && externalSubagents.acp !== false;
     if (this.subagents !== undefined && this.context.get("subagents") === undefined) new SealSubagentRuntime(this.context, this.subagents, this.agents);
     if (this.subagents === undefined && (externalSubagentsEnabled || inProcessSubagentsEnabled) && this.context.get("subagents") === undefined) new DshSubagentRuntime(this.context);
     if (inProcessSubagentsEnabled) {
@@ -1352,20 +1352,10 @@ export class DshCompatRuntime implements DshCompatService {
     }
     if (externalSubagentsEnabled) {
       if (this.context.get("subagents") === undefined) throw new Error("dsh-compat: external subagents require the official subagents service");
-      if (subprocessExternalSubagentsEnabled && this.context.get("subprocess") === undefined) throw new Error("dsh-compat: ACP, Claude Code, and Codex subagents require the official subprocess service");
-      if (externalSubagents?.acp !== undefined && externalSubagents.acp !== false) {
+      if (this.context.get("subprocess") === undefined) throw new Error("dsh-compat: ACP subagents require the subprocess service");
+      {
         const config = externalSubagents.acp;
         const fiber = this.context.plugin(DshSubagentAcp, { ...config, providerName: config.providerName ?? "acp", args: [...(config.args ?? [])], permission: config.permission ?? "reject", env: { ...(config.env ?? {}) }, disposeEofGraceMs: config.disposeEofGraceMs ?? 6_000, disposeGraceMs: config.disposeGraceMs ?? 3_000 });
-        this.fibers.push(fiber); await fiber;
-      }
-      if (externalSubagents?.claudeCode !== undefined && externalSubagents.claudeCode !== false) {
-        const config = externalSubagents.claudeCode;
-        const fiber = this.context.plugin(DshSubagentClaudeCode, { ...config, env: { ...(config.env ?? {}) }, permissionMode: config.permissionMode ?? "dontAsk", disposeGraceMs: config.disposeGraceMs ?? 3_000 });
-        this.fibers.push(fiber); await fiber;
-      }
-      if (externalSubagents?.codex !== undefined && externalSubagents.codex !== false) {
-        const config = externalSubagents.codex;
-        const fiber = this.context.plugin(DshSubagentCodex, { ...config, env: { ...(config.env ?? {}) }, permissionMode: config.permissionMode ?? "never", disposeGraceMs: config.disposeGraceMs ?? 3_000 });
         this.fibers.push(fiber); await fiber;
       }
     }
@@ -1425,6 +1415,7 @@ export class DshCompatRuntime implements DshCompatService {
     const { toolOrder: systemPromptToolOrder, ...systemPromptOptions } = systemPromptConfig;
     const systemPrompt = this.context.get("systemPrompt") ?? new DshSystemPrompt(this.context, {
       ...systemPromptOptions,
+      includeHarnessIdentity: false,
       ...(systemPromptToolOrder === undefined ? {} : { toolOrder: [...systemPromptToolOrder] }),
     });
     // Execution belongs to Seal; compatible templates read its Agent context.

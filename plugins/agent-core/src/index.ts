@@ -105,8 +105,9 @@ export class DefaultAgentService implements AgentService {
     }
 
     let history = deriveSessionMessages(session);
-    if (this.compaction !== undefined) {
+    if (this.compaction !== undefined && !this.runtime.managesCompaction) {
       const compacted = await this.compaction.compact({
+        ...(request.onCompactionProgress === undefined ? {} : { onProgress: request.onCompactionProgress }),
         sessionId,
         messages: history,
         model: request.model,
@@ -181,6 +182,7 @@ export class DefaultAgentService implements AgentService {
       ...(request.maxTokens === undefined ? {} : { maxTokens: request.maxTokens }),
       systemPrompt: prepared.systemPrompt,
       messages: prepared.messages,
+      inputMessages: prepared.messages.slice(-((request.injectedMessages?.length ?? 0) + prepared.additions.length)),
       pendingMessages: [
         ...restoredInbox.nextTurn.map((message) => ({ id: message.id!, placement: "queued" as const, message })),
         ...restoredInbox.nextStep.map((message) => ({ id: message.id!, placement: "steering" as const, message })),
@@ -215,6 +217,9 @@ class PersistedExecution implements AgentExecution {
   readonly result: Promise<AgentExecutionResult>;
   #version: number;
   #currentTurnId: import("@seal-harness/core").TurnId | undefined;
+  // Capture each event's durable identity before the runtime advances. Reading
+  // currentTurnId from a slow iterator would attach a later turn (or undefined).
+  readonly #turnEvents = new WeakMap<RuntimeEvent, RuntimeEvent>();
   #currentStep: number | undefined;
   #nextStep = 0;
   #nextBlock = 0;
@@ -242,7 +247,7 @@ class PersistedExecution implements AgentExecution {
   }
 
   async *[Symbol.asyncIterator](): AsyncIterator<RuntimeEvent> {
-    yield* this.runtimeRun;
+    for await (const event of this.runtimeRun) yield this.#turnEvents.get(event) ?? event;
   }
 
   abort(reason?: unknown): void { this.runtimeRun.abort(reason); }
@@ -267,6 +272,20 @@ class PersistedExecution implements AgentExecution {
   async #onRuntimeEvent(event: RuntimeEvent): Promise<void> {
     await this.emit("runtime.event", { sessionId: this.sessionId, event });
     switch (event.type) {
+      case "context_compacted": {
+        const snapshot = await this.sessions.read(this.sessionId);
+        if (!snapshot) throw new Error(`Session disappeared: ${this.sessionId}`);
+        const history = deriveSessionMessages(snapshot);
+        const count = event.replacedMessages.length;
+        if (count === 0 || count > history.length || event.replacedMessages.some((message, index) => !sameVisibleMessage(message, history[index]!))) {
+          throw new Error("Native PI compaction projection diverged from Seal history; original events retained");
+        }
+        const shadowed = foldSessionSurface(snapshot.events).nodes.slice(0, count);
+        await this.#append([{ type: "context.compacted", payload: { summaryMessage: event.summaryMessage,
+          sourceMessageCount: history.length, retainedMessageCount: history.length - count },
+          surfaceOp: { op: "replace", start: shadowed[0]!, end: shadowed.at(-1)! }, sourceEventSeqs: shadowed }]);
+        break;
+      }
       case "turn_start": {
         this.#currentTurnId = asTurnId(`turn-${this.idFactory()}`);
         this.#currentStep = undefined;
@@ -275,16 +294,24 @@ class PersistedExecution implements AgentExecution {
           type: "turn.started",
           payload: { runId: this.runId, turnId: this.#currentTurnId },
         }]);
+        this.#turnEvents.set(event, { ...event, turnId: this.#currentTurnId });
         break;
       }
-      case "user_message":
-        await this.#appendMessage(this.#durableMessage(event.message));
+      case "user_message": {
+        const message = this.#durableMessage(event.message);
+        await this.#appendMessage(message);
+        // Consumers must receive the same attachment references and producer
+        // identity as history, not the model-only projection (e.g. image bytes).
+        if (message.role === "user") this.#turnEvents.set(event, { ...event, message });
         break;
+      }
       case "pre_step": {
-        const turnId = this.#requireTurn();
-        const boundaries: SessionEvent[] = this.#currentStep === undefined ? [] : [{ type: "step.completed", payload: { runId: this.runId, turnId, step: this.#currentStep } }];
+        // PI input extensions run before agent_start/turn_start. They may
+        // transform or reject input without opening a model turn at all.
+        const turnId = this.#currentTurnId;
+        const boundaries: SessionEvent[] = this.#currentStep === undefined || turnId === undefined ? [] : [{ type: "step.completed", payload: { runId: this.runId, turnId, step: this.#currentStep } }];
         this.#currentStep = undefined;
-        if (!event.rejected) {
+        if (!event.rejected && turnId !== undefined) {
           this.#currentStep = this.#nextStep++;
           this.#nextBlock = 0;
           this.#streamBlock = undefined;
@@ -465,7 +492,7 @@ class PersistedExecution implements AgentExecution {
         break;
       }
       case "inbox_spliced":
-        await this.#append([{ type: "agent/inbox.spliced", payload: { target: event.target, start: event.start, inserted: event.inserted, ...(event.removedCount === undefined ? {} : { removedCount: event.removedCount }), ...(event.outcome === undefined ? {} : { outcome: event.outcome }) } }]);
+        await this.#append([{ type: "agent/inbox.spliced", payload: { target: event.target, start: event.start, inserted: event.inserted.map(message => message.id === undefined ? message : this.#durableQueuedMessages.get(message.id) ?? message), ...(event.removedCount === undefined ? {} : { removedCount: event.removedCount }), ...(event.outcome === undefined ? {} : { outcome: event.outcome }) } }]);
         break;
       case "turn_end": {
         const turnId = this.#requireTurn();
@@ -482,6 +509,7 @@ class PersistedExecution implements AgentExecution {
           },
           },
         ]);
+        this.#turnEvents.set(event, { ...event, turnId });
         this.#currentStep = undefined;
         this.#currentTurnId = undefined;
         break;
@@ -533,7 +561,7 @@ class PersistedExecution implements AgentExecution {
   async #complete(runtimeResult: Promise<import("@seal-harness/core").RuntimeResult>): Promise<AgentExecutionResult> {
     const runtime = await runtimeResult;
     this.#unsubscribe();
-    const unpersisted = runtime.messages.slice(
+    const unpersisted = runtime.messagesEmitted ? [] : runtime.messages.slice(
       this.inputMessageCount + this.#inputMessageAdjustment + this.#persistedGeneratedMessages,
     );
     const completionEvents: SessionEvent[] = [
@@ -580,6 +608,13 @@ class PersistedExecution implements AgentExecution {
     }
     return this.#currentTurnId;
   }
+}
+
+function sameVisibleMessage(left: AgentMessage, right: AgentMessage): boolean {
+  if (left.role !== right.role) return false;
+  if (left.role === "user" && right.role === "user" && left.id && right.id) return left.id === right.id;
+  return JSON.stringify(left.content) === JSON.stringify(right.content)
+    && (left.role !== "tool" || (right.role === "tool" && left.callId === right.callId && left.name === right.name));
 }
 
 export const agentCorePlugin = definePlugin<AgentCoreConfig, SealHarnessEvents>({

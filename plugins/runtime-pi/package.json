@@ -23,6 +23,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@earendil-works/pi-coding-agent": "0.84.3",
     "@earendil-works/pi-agent-core": "0.84.3",
     "@earendil-works/pi-ai": "0.84.3",
     "@seal-harness/core": "workspace:^",

@@ -56,6 +56,8 @@ import type { UserQuestionAnswerer } from "@seal-harness/core";
 
 export interface DefaultProfileOptions {
   readonly cwd: string;
+  /** Persistent application data; defaults to the workspace for CLI compatibility. */
+  readonly dataHome?: string;
   readonly provider: PiAiBuiltinProvider;
   readonly providers?: readonly PiAiBuiltinProvider[];
   readonly customProviders?: readonly PiAiCustomProvider[];
@@ -73,10 +75,11 @@ export interface DefaultProfileOptions {
 }
 
 export function createDefaultProfile(options: DefaultProfileOptions) {
+  const dataHome = options.dataHome ?? join(options.cwd, ".seal-harness");
   return defineProfile([
     plugin(noopTelemetryPlugin, undefined),
     plugin(environmentCredentialPlugin, {
-      path: join(options.cwd, ".seal-harness", "credentials.json"),
+      path: join(dataHome, "credentials.json"),
       ...(options.credentialEnvironment === undefined
         ? {}
         : { environment: options.credentialEnvironment }),
@@ -86,12 +89,12 @@ export function createDefaultProfile(options: DefaultProfileOptions) {
       ...(options.customProviders === undefined ? {} : { customProviders: options.customProviders }),
     }),
     plugin(jsonlSessionPlugin, {
-      root: options.sessionRoot ?? join(options.cwd, ".seal-harness", "sessions"),
+      root: options.sessionRoot ?? join(dataHome, "sessions"),
     }),
-    plugin(fileSettingsPlugin, { path: join(options.cwd, ".seal-harness", "settings.yaml") }),
+    plugin(fileSettingsPlugin, { path: join(dataHome, "settings.yaml") }),
     plugin(contextCorePlugin, {}),
     plugin(localAttachmentPlugin, {
-      root: options.attachmentRoot ?? join(options.cwd, ".seal-harness", "attachments"),
+      root: options.attachmentRoot ?? join(dataHome, "attachments"),
     }),
     plugin(fileContextPlugin, {}),
     plugin(llmCompactionPlugin, {}),
@@ -102,9 +105,9 @@ export function createDefaultProfile(options: DefaultProfileOptions) {
     options.approvalService === undefined
       ? plugin(stdioApprovalPlugin, { mode: options.approvalMode ?? "ask" })
       : plugin(providedApprovalPlugin, { service: options.approvalService }),
-    plugin(localSpillPlugin, { root: join(options.cwd, ".seal-harness", "spill") }),
+    plugin(localSpillPlugin, { root: join(dataHome, "spill") }),
     plugin(toolsCorePlugin, {}),
-    plugin(feedbackToolsPlugin, { root: join(options.cwd, ".seal-harness", "feedback") }),
+    plugin(feedbackToolsPlugin, { root: join(dataHome, "feedback") }),
     plugin(userQuestionsPlugin, options.questionAnswerer === undefined ? {} : { answerer: options.questionAnswerer }),
     plugin(askUserToolPlugin, undefined),
     plugin(sessionQueryToolsPlugin, {}),
@@ -114,13 +117,13 @@ export function createDefaultProfile(options: DefaultProfileOptions) {
     plugin(planModePlugin, { section: "You are in plan mode. Explore the codebase and resolve important uncertainties before proposing an implementation. Do not modify files or execute the plan yet. When the plan is complete, call exit_plan_mode with the full markdown plan for user review." }),
     plugin(localJobsPlugin, {}),
     plugin(terminalPtyPlugin, {}),
-    plugin(workspaceToolsPlugin, { enableShell: options.enableShell ?? true }),
+    plugin(workspaceToolsPlugin, { enableShell: options.enableShell ?? true, reviewRoot: join(dataHome, "review-changes") }),
     plugin(webCorePlugin, {}),
     ...(options.webFetch === false ? [] : [plugin(httpWebFetchPlugin, options.webFetch ?? {})]),
     ...(options.webSearchExa === undefined ? [] : [plugin(exaWebSearchPlugin, options.webSearchExa)]),
     plugin(webToolsPlugin, options.webTools ?? {}),
     plugin(agentPresetsPlugin, {}),
-    plugin(piRuntimePlugin, {}),
+    plugin(piRuntimePlugin, { dataHome }),
     plugin(agentCorePlugin, {}),
     plugin(scheduleToolsPlugin, {}),
     plugin(subagentToolsPlugin, { registerTools: false }),
