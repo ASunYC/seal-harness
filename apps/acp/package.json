@@ -35,7 +35,7 @@
     "@seal-harness/session-memory": "workspace:^",
     "@seal-harness/tools-core": "workspace:^",
     "@seal-harness/workspace-tools": "workspace:^",
-    "zod": "4.4.3"
+    "zod": "4.6.5"
   },
   "license": "MIT"
 }
