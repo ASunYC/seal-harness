@@ -1,0 +1,323 @@
+/**
+ * Overlay 四形态的动效与布局。
+ *
+ * 两条硬规矩（对齐迭代原型 §2.2 P3/P5）：
+ *   · 可逆过渡一律用 `transition`，禁 `@keyframes` —— keyframes 被打断会跳回起点，
+ *     transition 天然从当前呈现值续走。四形态都可能"开到一半被关掉"。
+ *   · 只动 transform / opacity / filter，禁 `transition: all`。
+ *
+ * 关于 `--ovl-*`：这些是**本文件就地声明的私有量**，不是设计 token。
+ * 原型用的 --d-pop / --spring-smooth 等尚未进 tokens.css（属 P0-1 的 S5，
+ * 阻塞于 ADR）。guard-tokens 会把各文件自身的声明并进已知集合，所以就地声明
+ * 不会被判孤儿；S5 落地后把下面那几行的**右值**改成引用 --d-pop 等 token 即可，
+ * 一次改一个文件，不阻塞。
+ *
+ * ⚠️ 本文件的注释里不要写出 `var(` + token 名的完整形态：guard-tokens 是对
+ *    原文做正则匹配的，**不剥注释**，写了会被判成孤儿变量（实测踩过）。
+ */
+
+.ovl-host {
+  /* 宿主只是 Teleport 落点：不生成盒子，免得在 flex/grid 父级里撑出空隙 */
+  display: contents;
+}
+
+.ovl {
+  /* ── 动效私有量（S5 后换成 token 引用） ── */
+  --ovl-d-pop-in: 260ms;
+  --ovl-d-pop-out: 180ms;
+  --ovl-d-modal-in: 300ms;
+  --ovl-d-modal-out: 200ms;
+  --ovl-d-panel-in: 380ms;
+  --ovl-d-panel-out: 260ms;
+  --ovl-d-toast-in: 260ms;
+  --ovl-d-toast-out: 200ms;
+  /* 临界阻尼、无回弹 */
+  --ovl-spring: linear(0, 0.094, 0.316, 0.556, 0.742, 0.865, 0.936, 0.973, 0.99, 0.997, 1);
+  /* 只给 toast 落位用 */
+  --ovl-bounce: linear(0, 0.18, 0.51, 0.803, 1.008, 1.078, 1.07, 1.032, 1.002, 0.994, 0.998, 1);
+
+  /* 形态各自改写下面八个量，过渡规则只写一遍（见文件末尾的 .ovl-enter-* 段） */
+  --ovl-in: var(--ovl-d-modal-in);
+  --ovl-out: var(--ovl-d-modal-out);
+  --ovl-ease-in: var(--ovl-spring);
+  --ovl-ease-out: var(--ovl-spring);
+  --ovl-enter-transform: none;
+  --ovl-leave-transform: none;
+  --ovl-enter-filter: none;
+  --ovl-leave-filter: none;
+
+  position: fixed;
+  inset: 0;
+  /* 根层只是定位容器：不铺 scrim 的形态不能挡住底下的点击 */
+  pointer-events: none;
+}
+
+/* z 只走阶梯，组件不接受数值（design.md 统一内建能力清单第 7 条） */
+.ovl--z-dropdown {
+  z-index: var(--z-dropdown);
+}
+.ovl--z-approval {
+  z-index: var(--z-approval);
+}
+/* drawer 的临时层：--z-drawer 尚未进 tokens.css（须走规范→gen-tokens.py），
+   这是一个显式的临时态，不是遗漏 */
+.ovl--z-scrim {
+  z-index: var(--z-scrim);
+}
+.ovl--z-modal {
+  z-index: var(--z-modal);
+}
+.ovl--z-modal-child {
+  z-index: var(--z-dropdown-modal);
+}
+.ovl--z-toast {
+  z-index: var(--z-toast);
+}
+.ovl--z-tooltip {
+  z-index: var(--z-tooltip);
+}
+
+.ovl__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+  pointer-events: auto;
+}
+
+/**
+ * ⚠️ `position: relative` 不是布局需要，是**绘制顺序**需要：`.ovl__scrim` 是定位元素，
+ *    而 modal 的面板是普通网格项。同一层叠上下文里，定位后代一律画在非定位后代之上
+ *    ——面板不定位就会整块被遮罩盖住（视觉上变暗、点按钮命中的是遮罩即误关）。
+ *    popover / drawer / toast 各自改成 absolute，同样满足这一条。
+ */
+.ovl__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: var(--bw) solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--panel);
+  box-shadow: var(--sh-3);
+  color: var(--ink);
+  pointer-events: auto;
+}
+.ovl__panel:focus {
+  outline: none;
+}
+
+.ovl__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: var(--bw) solid var(--line);
+}
+.ovl__title {
+  margin: 0;
+  color: var(--ink);
+  font: var(--fw-title) var(--fs-400) / 1.4 var(--font-sans);
+}
+.ovl__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--sp-4);
+}
+.ovl__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-top: var(--bw) solid var(--line);
+}
+
+/* ─────────── popover / menu ─────────── */
+.ovl--popover {
+  --ovl-in: var(--ovl-d-pop-in);
+  --ovl-out: var(--ovl-d-pop-out);
+  --ovl-enter-transform: scale(0.96);
+  --ovl-leave-transform: scale(0.97);
+  --ovl-enter-filter: blur(3px);
+  --ovl-leave-filter: blur(2px);
+}
+.ovl--popover .ovl__panel {
+  /* top/left/max-height/transform-origin 由 overlayPosition 算好后内联写入 */
+  position: absolute;
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-2);
+}
+.ovl--popover .ovl__body {
+  padding: var(--sp-2);
+}
+
+/* ─────────── modal ─────────── */
+.ovl--modal {
+  display: grid;
+  place-items: center;
+  padding: var(--sp-5);
+  --ovl-enter-transform: translateY(8px) scale(0.98);
+  --ovl-leave-transform: translateY(8px) scale(0.985);
+}
+.ovl--modal .ovl__panel {
+  max-height: 100%;
+  overflow: hidden;
+  transform-origin: center;
+}
+
+/* ─────────── drawer / sheet ─────────── */
+.ovl--drawer {
+  --ovl-in: var(--ovl-d-panel-in);
+  --ovl-out: var(--ovl-d-panel-out);
+}
+.ovl--drawer .ovl__panel {
+  position: absolute;
+  overflow: hidden;
+  border-radius: 0;
+}
+.ovl--drawer-right .ovl__panel {
+  inset: 0 0 0 auto;
+  transform-origin: right center;
+}
+.ovl--drawer-left .ovl__panel {
+  inset: 0 auto 0 0;
+  transform-origin: left center;
+}
+.ovl--drawer-bottom .ovl__panel {
+  inset: auto 0 0 0;
+  transform-origin: bottom center;
+}
+.ovl--drawer-top .ovl__panel {
+  inset: 0 0 auto 0;
+  transform-origin: top center;
+}
+.ovl--drawer-right {
+  --ovl-enter-transform: translateX(102%);
+  --ovl-leave-transform: translateX(102%);
+}
+.ovl--drawer-left {
+  --ovl-enter-transform: translateX(-102%);
+  --ovl-leave-transform: translateX(-102%);
+}
+.ovl--drawer-bottom {
+  --ovl-enter-transform: translateY(102%);
+  --ovl-leave-transform: translateY(102%);
+}
+.ovl--drawer-top {
+  --ovl-enter-transform: translateY(-102%);
+  --ovl-leave-transform: translateY(-102%);
+}
+
+/* ─────────── toast ─────────── */
+.ovl--toast {
+  --ovl-in: var(--ovl-d-toast-in);
+  --ovl-out: var(--ovl-d-toast-out);
+  /* 落位用 bounce，其余形态一律 spring */
+  --ovl-ease-in: var(--ovl-bounce);
+  --ovl-enter-transform: translateY(8px);
+  --ovl-leave-transform: scale(0.98);
+}
+.ovl--toast .ovl__panel {
+  position: absolute;
+  right: var(--sp-5);
+  bottom: var(--sp-5);
+  width: min(420px, calc(100vw - var(--sp-6)));
+  transform-origin: bottom;
+}
+
+/* ─────────── 无外框（chrome=false）：只留行为，外观交回内容 ─────────── */
+
+/**
+ * 迁移既有弹层时用：那些组件自带完整卡片样式（边框、底色、阴影、分区内边距），
+ * 再叠一层原语外框就是双边框。这里把外框整个撤掉，只留 scrim / 栈 / 焦点 / 退场。
+ *
+ * ⚠️ `pointer-events: none` 是**成对约定**：bare 的 modal 面板是一个铺满视口的
+ *    透明布局盒，若它还吃指针事件，点外判定（`panel.contains(target)`）会把整屏
+ *    都算作层内，点遮罩再也关不掉。所以内容必须自己把交互区打开成 `auto`。
+ */
+.ovl--bare .ovl__panel {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
+}
+.ovl--bare .ovl__body {
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+}
+.ovl--bare.ovl--modal {
+  /* 留白归内容自己的居中盒（迁移前它就在那里），免得两处各留一份 */
+  padding: 0;
+}
+.ovl--bare.ovl--modal .ovl__panel {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  overflow: visible;
+}
+.ovl--bare.ovl--modal .ovl__body {
+  height: 100%;
+}
+
+/**
+ * bare 的 drawer：面板不画外框，宽度由内容撑（贴边与滑入位移仍归面板），
+ * 所以 `overflow` 也要交回内容——带外框时那道 `hidden` 是用来裁自己的圆角的，
+ * 留在 bare 上只会把内容自己的投影沿面板边裁掉一条。
+ */
+.ovl--bare.ovl--drawer .ovl__panel {
+  overflow: visible;
+}
+
+/* ─────────── 过渡（四形态共用一套规则，差异全在上面的变量里） ─────────── */
+.ovl-enter-active {
+  transition: opacity var(--ovl-in) var(--ovl-ease-in);
+}
+.ovl-leave-active {
+  transition: opacity var(--ovl-out) var(--ovl-ease-out);
+}
+.ovl-enter-from,
+.ovl-leave-to {
+  opacity: 0;
+}
+.ovl-enter-active .ovl__panel {
+  transition:
+    transform var(--ovl-in) var(--ovl-ease-in),
+    filter var(--ovl-in) var(--ovl-ease-in);
+}
+.ovl-leave-active .ovl__panel {
+  transition:
+    transform var(--ovl-out) var(--ovl-ease-out),
+    filter var(--ovl-out) var(--ovl-ease-out);
+}
+.ovl-enter-from .ovl__panel {
+  transform: var(--ovl-enter-transform);
+  filter: var(--ovl-enter-filter);
+}
+.ovl-leave-to .ovl__panel {
+  transform: var(--ovl-leave-transform);
+  filter: var(--ovl-leave-filter);
+}
+
+/**
+ * 减弱动画：降级为**交叉淡化** —— 位移、缩放、模糊全关，只留 opacity。
+ *
+ * ⚠️ 本块必须留在文件末尾：这里的 `.ovl` 与上面各形态类同为单类特异性，
+ *    覆盖靠的是书写顺序。挪到前面就不生效，而且不会有任何报错。
+ *
+ * 与 tokens.css:227 那个把 --dur-* 归零的块并存不打架：那边管全局 token，
+ * 这边只改本原语的私有量。
+ */
+@media (prefers-reduced-motion: reduce) {
+  .ovl {
+    --ovl-in: var(--dur-1);
+    --ovl-out: var(--dur-1);
+    --ovl-ease-in: var(--ease-out);
+    --ovl-ease-out: var(--ease-out);
+    --ovl-enter-transform: none;
+    --ovl-leave-transform: none;
+    --ovl-enter-filter: none;
+    --ovl-leave-filter: none;
+  }
+}

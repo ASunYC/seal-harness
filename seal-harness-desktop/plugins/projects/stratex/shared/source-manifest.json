@@ -1,0 +1,633 @@
+{
+  "repository": "/Volumes/workspace/code/Stratex",
+  "commit": "c656400bc4baf80733a9ac5d8a1440539126c7e0",
+  "files": [
+    {
+      "source": "scripts/collab-service/tests/fixtures/evidence_link_vectors.json",
+      "target": "tests/host/fixtures/evidence_link_vectors.json",
+      "sha256": "a5123eeb06c358d77f47cb5354666f83d7e54dedc69b332ad50ab634207b90ea"
+    },
+    {
+      "source": "src/main/app/externalLinkPolicy.ts",
+      "target": "stratex/main/app/externalLinkPolicy.ts",
+      "sha256": "7c29ab110bd02afa9020a6c910ca86dd307a2dfec3966893138550dd0497314e"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlers.test.ts",
+      "target": "tests/host/main/ipc/projectCollabHandlers.test.ts",
+      "sha256": "bff314dd7ec896d5119e03ecb1dc99d85b86158464103e7c3655780a3993782d"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlers.ts",
+      "target": "stratex/main/ipc/projectCollabHandlers.ts",
+      "sha256": "abe4de1b1e354ec92e6de8122de1558955b0cf269ae749ef8c00b3636c5dff30"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersAssets.test.ts",
+      "target": "tests/host/main/ipc/projectCollabHandlersAssets.test.ts",
+      "sha256": "e9f786b20621f8f1b4f9b55e625dddb7085877929939e27d933d7160b38bf645"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersAssets.ts",
+      "target": "stratex/main/ipc/projectCollabHandlersAssets.ts",
+      "sha256": "cda56be67c39ea2cc369e342c18099b8bc8b41cea57bea67ce018d5c71a50556"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersPlanning.test.ts",
+      "target": "tests/host/main/ipc/projectCollabHandlersPlanning.test.ts",
+      "sha256": "677e79875f7dfffad8b4c3e3e04c262a27ad306239a8dacd7bf7d3e46fad82cb"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersPlanning.ts",
+      "target": "stratex/main/ipc/projectCollabHandlersPlanning.ts",
+      "sha256": "d2d828e03480a59a5d6a2577d7ade6dda1a20f73648307148027844fa685305e"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersTestCases.test.ts",
+      "target": "tests/host/main/ipc/projectCollabHandlersTestCases.test.ts",
+      "sha256": "3d9e3c2d013b1ba9119a14166870ca3bc8f335676ceda213c4b23ed858d48207"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersTestCases.ts",
+      "target": "stratex/main/ipc/projectCollabHandlersTestCases.ts",
+      "sha256": "8c421144ea84c25ecb7547f82c72945fc7e3a080f6b95674dfd282e11ae57ab4"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersTesting.lifecycle.test.ts",
+      "target": "tests/host/main/ipc/projectCollabHandlersTesting.lifecycle.test.ts",
+      "sha256": "a2409dab5c1f9a98e7ef9c1c5a6b9a9b8f8319bef6a01c40d1aee80633af01a0"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersTesting.test.ts",
+      "target": "tests/host/main/ipc/projectCollabHandlersTesting.test.ts",
+      "sha256": "a2143c6917d715f3c4e93f0b307038af44a51fa5a572288a41a7a8de4a2bba49"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersTesting.ts",
+      "target": "stratex/main/ipc/projectCollabHandlersTesting.ts",
+      "sha256": "5880c89ad3ff1711952776ca96ba101459ec76ca08345355fe221a5f810bc9a2"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersTodoCollaboration.test.ts",
+      "target": "tests/host/main/ipc/projectCollabHandlersTodoCollaboration.test.ts",
+      "sha256": "de7eab775da2859affe75aadb544457cf3c849adf48c0a8a902896e74fd303d8"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersTodoCollaboration.ts",
+      "target": "stratex/main/ipc/projectCollabHandlersTodoCollaboration.ts",
+      "sha256": "b3aa6630ad7e2614631b20d7a7c5baf955c2d1ec55673adffc53ed66e4f9dea4"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersWorkOverview.test.ts",
+      "target": "tests/host/main/ipc/projectCollabHandlersWorkOverview.test.ts",
+      "sha256": "8b2125cc0775b60ab7dbb31724f7b286b45c815471c2a897fa5441b51263189c"
+    },
+    {
+      "source": "src/main/ipc/projectCollabHandlersWorkOverview.ts",
+      "target": "stratex/main/ipc/projectCollabHandlersWorkOverview.ts",
+      "sha256": "ac883fec81a281f8db7e17783cb7042cf0f59c7711be73a8d8494619592a2899"
+    },
+    {
+      "source": "src/main/ipc/projectDataSourceHandlers.test.ts",
+      "target": "tests/host/main/ipc/projectDataSourceHandlers.test.ts",
+      "sha256": "a06d9fae01ffab534215cad7494233f2dffbc8ec09925cc6fea9c90c1aec3880"
+    },
+    {
+      "source": "src/main/ipc/projectDataSourceHandlers.ts",
+      "target": "stratex/main/ipc/projectDataSourceHandlers.ts",
+      "sha256": "101ad60858bd1e9ee64353a165a614ffffc6a6e3fc3efba117ea3d7a08c919bd"
+    },
+    {
+      "source": "src/main/ipc/projectDictionaryHandlers.test.ts",
+      "target": "tests/host/main/ipc/projectDictionaryHandlers.test.ts",
+      "sha256": "8c1b64922e3a85e2f14683f5197e4ac6d958917d45bdcc46758f3894cd0d7080"
+    },
+    {
+      "source": "src/main/ipc/projectDictionaryHandlers.ts",
+      "target": "stratex/main/ipc/projectDictionaryHandlers.ts",
+      "sha256": "6ef17cbc3e95a5542ad82eb2128f17d69cc7da33054f3a58035f53c366192cd3"
+    },
+    {
+      "source": "src/main/services/__fixtures__/documents/sample.docx",
+      "target": "tests/host/main/services/__fixtures__/documents/sample.docx",
+      "sha256": "5c3f0b93368153f09b6e321f252b687e2ea7eb8178974a8ea6e665dddd7e622a"
+    },
+    {
+      "source": "src/main/services/__fixtures__/documents/sample.pdf",
+      "target": "tests/host/main/services/__fixtures__/documents/sample.pdf",
+      "sha256": "5ac89b56d9a012f6978f1a5a452bfac597a09d438ece8007a2c928d30f33318b"
+    },
+    {
+      "source": "src/main/services/__fixtures__/documents/sample.pptx",
+      "target": "tests/host/main/services/__fixtures__/documents/sample.pptx",
+      "sha256": "4c938164b7d6ec847f80016eaeac5ca1368102342b82a9282405c78d2672bab3"
+    },
+    {
+      "source": "src/main/services/aepSseDecoder.ts",
+      "target": "stratex/main/services/aepSseDecoder.ts",
+      "sha256": "95c4b5f0cc1d9f3c3a6b47bd09f4152b64493174b2afe31c0c8e6989ff0a6a65"
+    },
+    {
+      "source": "src/main/services/collab/collabClient.assetRecovery.test.ts",
+      "target": "tests/host/main/services/collab/collabClient.assetRecovery.test.ts",
+      "sha256": "9d236e95ce9aa7aac3e493b0d533628d26a763ca06aea27957faede3ef6ab2bc"
+    },
+    {
+      "source": "src/main/services/collab/collabClient.assetVersions.test.ts",
+      "target": "tests/host/main/services/collab/collabClient.assetVersions.test.ts",
+      "sha256": "afe900b051361237eb29a1cb10f7b895c64c9932eecb6a50c10a7c5a7885a696"
+    },
+    {
+      "source": "src/main/services/collab/collabClient.test.ts",
+      "target": "tests/host/main/services/collab/collabClient.test.ts",
+      "sha256": "b9fd3ce6df7ae64921a1737e48a9f42576cc942a69cbf4099f374a4c2ee6056e"
+    },
+    {
+      "source": "src/main/services/collab/collabClient.ts",
+      "target": "stratex/main/services/collab/collabClient.ts",
+      "sha256": "355e8ca0b7450e4582f21fc555db09929fb33fc68734e789d70872fc7b9a5e6f"
+    },
+    {
+      "source": "src/main/services/collab/collabDataSourceClient.test.ts",
+      "target": "tests/host/main/services/collab/collabDataSourceClient.test.ts",
+      "sha256": "4681345a305a166cd55c4b7e3b3b03a7924f48c683b2f8d8a69e22d16bffb2ca"
+    },
+    {
+      "source": "src/main/services/collab/collabDataSourceClient.ts",
+      "target": "stratex/main/services/collab/collabDataSourceClient.ts",
+      "sha256": "72355dadb910be1c634374cc7a83565c8f8691bcd904e2bca60eababa064d83d"
+    },
+    {
+      "source": "src/main/services/collab/collabDataSourceWireMapping.ts",
+      "target": "stratex/main/services/collab/collabDataSourceWireMapping.ts",
+      "sha256": "5f725538298056c4523b724dcf1424af5fb3f2effcba9ded154468db420b6974"
+    },
+    {
+      "source": "src/main/services/collab/collabDictionaryClient.test.ts",
+      "target": "tests/host/main/services/collab/collabDictionaryClient.test.ts",
+      "sha256": "b2eabb98b633a5fc54df735f03914b06de4553a762bb623f6d779161d815fe98"
+    },
+    {
+      "source": "src/main/services/collab/collabDictionaryClient.ts",
+      "target": "stratex/main/services/collab/collabDictionaryClient.ts",
+      "sha256": "0094aabe3d0f92110d15019d81432a3966dba6f770ad049a4feb330cdd36cbc9"
+    },
+    {
+      "source": "src/main/services/collab/collabPlanningClient.lifecycle.test.ts",
+      "target": "tests/host/main/services/collab/collabPlanningClient.lifecycle.test.ts",
+      "sha256": "daf32a4507cabc30fbc95d7f6df24b75ad3d278865ffb31db97757dd34e8a611"
+    },
+    {
+      "source": "src/main/services/collab/collabPlanningClient.test.ts",
+      "target": "tests/host/main/services/collab/collabPlanningClient.test.ts",
+      "sha256": "ea3e44c70a05032bc95b5d434f3901331c09e7ac54b07a50937e759bf7b008d3"
+    },
+    {
+      "source": "src/main/services/collab/collabPlanningClient.ts",
+      "target": "stratex/main/services/collab/collabPlanningClient.ts",
+      "sha256": "3873582d11677cad421401e376b2408a53d8388fae580626ca382e2ba147f8d7"
+    },
+    {
+      "source": "src/main/services/collab/collabPlanningWireMapping.test.ts",
+      "target": "tests/host/main/services/collab/collabPlanningWireMapping.test.ts",
+      "sha256": "de68d184f0d4f643b23e3b442239059f2ac08a586ba71b8533124e0576396016"
+    },
+    {
+      "source": "src/main/services/collab/collabPlanningWireMapping.ts",
+      "target": "stratex/main/services/collab/collabPlanningWireMapping.ts",
+      "sha256": "d2f9f4d36f52cf42ccc5d91224ece5d286615fbe1a54baa3b96c94041782433b"
+    },
+    {
+      "source": "src/main/services/collab/collabStreamClient.test.ts",
+      "target": "tests/host/main/services/collab/collabStreamClient.test.ts",
+      "sha256": "690db06fa33063e7068989c015bac59e4794032c4a9a456a0472dffe112b399e"
+    },
+    {
+      "source": "src/main/services/collab/collabStreamClient.ts",
+      "target": "stratex/main/services/collab/collabStreamClient.ts",
+      "sha256": "bdbb57ab8c87695d989a774c092d94bcec4ad66290619bc560e26603b238fafd"
+    },
+    {
+      "source": "src/main/services/collab/collabSubmissionGateClient.test.ts",
+      "target": "tests/host/main/services/collab/collabSubmissionGateClient.test.ts",
+      "sha256": "4c8eb262cc7d7fa71f866629ca5813928f5e5c8979d69133a11b94d823b86a00"
+    },
+    {
+      "source": "src/main/services/collab/collabSubmissionGateClient.ts",
+      "target": "stratex/main/services/collab/collabSubmissionGateClient.ts",
+      "sha256": "a6d346e4851cafa51e491ce19e4b1065e6fd6fac73bcfa65bb40b35286475640"
+    },
+    {
+      "source": "src/main/services/collab/collabSubmissionGateWireMapping.ts",
+      "target": "stratex/main/services/collab/collabSubmissionGateWireMapping.ts",
+      "sha256": "8ca5c41a7e1f0fe240f1b03ae2c0b3a314ba1d2665883de5157965cfc2969d5b"
+    },
+    {
+      "source": "src/main/services/collab/collabSyncService.test.ts",
+      "target": "tests/host/main/services/collab/collabSyncService.test.ts",
+      "sha256": "f8db3dfb489b8fca084e52061f5eed70a2d2c4589dc376bdb6691dd0028d6e0a"
+    },
+    {
+      "source": "src/main/services/collab/collabSyncService.ts",
+      "target": "stratex/main/services/collab/collabSyncService.ts",
+      "sha256": "ad035021687a38edf8761f49791cce0a1a96dffd94d99946f3e20722faecb628"
+    },
+    {
+      "source": "src/main/services/collab/collabTestCaseWireMapping.ts",
+      "target": "stratex/main/services/collab/collabTestCaseWireMapping.ts",
+      "sha256": "6df9d447644573cae255937bebe8bcd48d35d50900c6068cc7a9975271e9d60d"
+    },
+    {
+      "source": "src/main/services/collab/collabTestDefectsClient.ts",
+      "target": "stratex/main/services/collab/collabTestDefectsClient.ts",
+      "sha256": "db7648cc7a669c8565a09f0f2fb0ebd202d5523d34847d9e41d016c9f645000f"
+    },
+    {
+      "source": "src/main/services/collab/collabTestingClient.test.ts",
+      "target": "tests/host/main/services/collab/collabTestingClient.test.ts",
+      "sha256": "8a8ad9e39e2e3c122a52606a93d690435be85e34f76bdcf42e7c58b7849bc3da"
+    },
+    {
+      "source": "src/main/services/collab/collabTestingClient.testCases.test.ts",
+      "target": "tests/host/main/services/collab/collabTestingClient.testCases.test.ts",
+      "sha256": "eb8195b3ff7d54d7dec8e616e1d19617392acdf78b455265b1d77c6539f2c6c8"
+    },
+    {
+      "source": "src/main/services/collab/collabTestingClient.ts",
+      "target": "stratex/main/services/collab/collabTestingClient.ts",
+      "sha256": "7ad84bf81405cadba6b1c0b1edfaaf58fbb9aec415038e1f1dee7258f6ea5b9c"
+    },
+    {
+      "source": "src/main/services/collab/collabTestingWireMapping.ts",
+      "target": "stratex/main/services/collab/collabTestingWireMapping.ts",
+      "sha256": "34e04ea820fec99407d26ea789c6e371b60acbf32acc363488f584522d3dc08d"
+    },
+    {
+      "source": "src/main/services/collab/collabTodoCollaborationClient.test.ts",
+      "target": "tests/host/main/services/collab/collabTodoCollaborationClient.test.ts",
+      "sha256": "63529eca8389e97b88312fb8244708191207c7eb441367fc3e4340a65383aea7"
+    },
+    {
+      "source": "src/main/services/collab/collabTodoCollaborationClient.ts",
+      "target": "stratex/main/services/collab/collabTodoCollaborationClient.ts",
+      "sha256": "f426cb438e9112afd1d6fcc7a4b311aaaa37a90fbe22c0974e7fd224334cc63d"
+    },
+    {
+      "source": "src/main/services/collab/collabTodoCollaborationWireMapping.ts",
+      "target": "stratex/main/services/collab/collabTodoCollaborationWireMapping.ts",
+      "sha256": "4edba3977af77d2644f8aec8001449220b0c4a59902927db6fda9792df16860b"
+    },
+    {
+      "source": "src/main/services/collab/collabWireMapping.test.ts",
+      "target": "tests/host/main/services/collab/collabWireMapping.test.ts",
+      "sha256": "b9a8699c50fb130c7535217fa58feaa0e62b5ffedd4ef5f509cd993a00ddd666"
+    },
+    {
+      "source": "src/main/services/collab/collabWireMapping.ts",
+      "target": "stratex/main/services/collab/collabWireMapping.ts",
+      "sha256": "1fc5ad201adf9dc164eef9042d62775afcef859222be26d3bbad68c8e23807f2"
+    },
+    {
+      "source": "src/main/services/collab/collabWorkOverviewClient.test.ts",
+      "target": "tests/host/main/services/collab/collabWorkOverviewClient.test.ts",
+      "sha256": "b6210d5085698efd3ca78944f84d7749a7d42c0bb68a8f2a24b19d27a13f2002"
+    },
+    {
+      "source": "src/main/services/collab/collabWorkOverviewClient.ts",
+      "target": "stratex/main/services/collab/collabWorkOverviewClient.ts",
+      "sha256": "fea66533b76c9918d4aaa74289b4c554935fa607cc63e039c61fdde15e986bfd"
+    },
+    {
+      "source": "src/main/services/collab/projectAssetPreviewService.test.ts",
+      "target": "tests/host/main/services/collab/projectAssetPreviewService.test.ts",
+      "sha256": "fb7df45520431cabcfbb3add8dcc3bef8b21f77b9cf8895661b98ea47832d5b6"
+    },
+    {
+      "source": "src/main/services/collab/projectAssetPreviewService.ts",
+      "target": "stratex/main/services/collab/projectAssetPreviewService.ts",
+      "sha256": "c3087ce46ca5ac7a13a92313bdcf061257d79d6704545c24ac9da97e448e0c34"
+    },
+    {
+      "source": "src/main/services/collab/projectAssetUploadFlow.test.ts",
+      "target": "tests/host/main/services/collab/projectAssetUploadFlow.test.ts",
+      "sha256": "7e67f3bd08bfd041f331239a2d5ddd93012ac592321865c5b0618345094d314a"
+    },
+    {
+      "source": "src/main/services/collab/projectAssetUploadFlow.ts",
+      "target": "stratex/main/services/collab/projectAssetUploadFlow.ts",
+      "sha256": "51aa3a9468bab7f0ca1354ab4e4e3e7ddd45992b39a559869ad2d36336f9bb14"
+    },
+    {
+      "source": "src/main/services/collab/projectNotificationRules.test.ts",
+      "target": "tests/host/main/services/collab/projectNotificationRules.test.ts",
+      "sha256": "5c0e11becccfcb7ada5ce87f15b8b9ed233bf30859d68af07944f97886e23c54"
+    },
+    {
+      "source": "src/main/services/collab/projectNotificationRules.ts",
+      "target": "stratex/main/services/collab/projectNotificationRules.ts",
+      "sha256": "07aceeef017d87ab3f68efdc8d2ff4bb59e6dbf5ed53086d3af3b54849d379b9"
+    },
+    {
+      "source": "src/main/services/collab/projectNotificationService.test.ts",
+      "target": "tests/host/main/services/collab/projectNotificationService.test.ts",
+      "sha256": "51a9ded8637ff59af1fabca54ce36e11ece3c8723bed3af5735634075a74d062"
+    },
+    {
+      "source": "src/main/services/collab/projectNotificationService.ts",
+      "target": "stratex/main/services/collab/projectNotificationService.ts",
+      "sha256": "c9bf380d6234f8b891f5316de7fa9541d8522bf4172b68c99f9466efdc71f727"
+    },
+    {
+      "source": "src/main/services/localDocumentParser.ts",
+      "target": "stratex/main/services/localDocumentParser.ts",
+      "sha256": "758465fab32fb86a10398fdb2007ab6bcc112953aa5f86900924e8774e3d6237"
+    },
+    {
+      "source": "src/main/services/localDocumentParserWorker.js",
+      "target": "stratex/main/services/localDocumentParserWorker.js",
+      "sha256": "8cdf1756d50d35c5b920671995671e5ddbd2c5a356c356ec010be84316781444"
+    },
+    {
+      "source": "src/preload/projectCollabApi.chatReliability.test.ts",
+      "target": "tests/contract/preload/projectCollabApi.chatReliability.test.ts",
+      "sha256": "3bdd412d607fc3936bb48e1c106398d514452f79664a42b2532907aea4915da6"
+    },
+    {
+      "source": "src/preload/projectCollabApi.chatSearch.test.ts",
+      "target": "tests/contract/preload/projectCollabApi.chatSearch.test.ts",
+      "sha256": "62800fa1a249bcda1a70456151a199c835a144296d2e3976c01c17a274488d13"
+    },
+    {
+      "source": "src/preload/projectCollabApi.test.ts",
+      "target": "tests/contract/preload/projectCollabApi.test.ts",
+      "sha256": "63c50e3779c7b5ed82c5d4f6ac86ef92eaad6f4b75d1a68f46c0d053669140e2"
+    },
+    {
+      "source": "src/preload/projectCollabApi.testCases.test.ts",
+      "target": "tests/contract/preload/projectCollabApi.testCases.test.ts",
+      "sha256": "04ca72768f390d0952b9e12c87b4c1b61f0cfe3015d2c87892c222b8fd508cc9"
+    },
+    {
+      "source": "src/preload/projectCollabApi.todoCollaboration.test.ts",
+      "target": "tests/contract/preload/projectCollabApi.todoCollaboration.test.ts",
+      "sha256": "b1e0e7f744ca673171bd1d28a39cc29f1be9a28d54bdc98c64d4428271470a55"
+    },
+    {
+      "source": "src/preload/projectCollabApi.ts",
+      "target": "stratex/preload/projectCollabApi.ts",
+      "sha256": "426cd404a716a932ec5098945e19ed007a32a9f377e5909f7b699d21c3c0addd"
+    },
+    {
+      "source": "src/preload/projectCollabApi.workOverview.test.ts",
+      "target": "tests/contract/preload/projectCollabApi.workOverview.test.ts",
+      "sha256": "3a69e010b53e1048109f930edf716f82886efab9a5f3ed75e1cdf9da42607673"
+    },
+    {
+      "source": "src/preload/projectDataSourceApi.ts",
+      "target": "stratex/preload/projectDataSourceApi.ts",
+      "sha256": "94bd540f1b431de8bf99ecc1b9dd8972050a21e379526416907eedd0e4dc1167"
+    },
+    {
+      "source": "src/preload/projectDictionaryApi.test.ts",
+      "target": "tests/contract/preload/projectDictionaryApi.test.ts",
+      "sha256": "eb76c8bc63f1661bebdc452b3e5b409eb0635418e77431caad65100de0beccdf"
+    },
+    {
+      "source": "src/preload/projectDictionaryApi.ts",
+      "target": "stratex/preload/projectDictionaryApi.ts",
+      "sha256": "9cf78450c32250508ccde0915f232261ca48ec4d38da35c9a708a02ec9af7c88"
+    },
+    {
+      "source": "src/preload/projectSpecAssistApi.test.ts",
+      "target": "tests/contract/preload/projectSpecAssistApi.test.ts",
+      "sha256": "a4a15571a83eac7cdc9bf7824fc729b497a9b244b1af7877f211e32b3c404c62"
+    },
+    {
+      "source": "src/preload/projectSpecAssistApi.ts",
+      "target": "stratex/preload/projectSpecAssistApi.ts",
+      "sha256": "c1be384bbe3fa451713364b9a8382136a3f1721765d0cd4f33f728d94e7547c1"
+    },
+    {
+      "source": "src/preload/projectWorkspaceApi.test.ts",
+      "target": "tests/contract/preload/projectWorkspaceApi.test.ts",
+      "sha256": "2f15187b778d95b0a5391da59a47887fb5f1b670d41d4aac52a11d3d6cb9a95b"
+    },
+    {
+      "source": "src/preload/projectWorkspaceApi.ts",
+      "target": "stratex/preload/projectWorkspaceApi.ts",
+      "sha256": "91e2174c8d7009276b64764ace7d23ff1f26581ef001817c163f50accfe83853"
+    },
+    {
+      "source": "src/shared/ipc/api.ts",
+      "target": "stratex/shared/ipc/api.ts",
+      "sha256": "f5277d903d12a76b8f4dd09ef4509b19ffb6f86125080c6a08c34ee602148886"
+    },
+    {
+      "source": "src/shared/ipc/channels.ts",
+      "target": "stratex/shared/ipc/channels.ts",
+      "sha256": "ada506f6f0eb1058e20633a95eb79942558ad0c9723b983194b24076ac88b53f"
+    },
+    {
+      "source": "src/shared/protocol/project-chat-search.test.ts",
+      "target": "tests/contract/shared/protocol/project-chat-search.test.ts",
+      "sha256": "64d29107615bd4a8c61c32b2c7898b62d39fe57cf64a7d07cda75b24d0523e24"
+    },
+    {
+      "source": "src/shared/protocol/project-collab-assets.contracts.test.ts",
+      "target": "tests/contract/shared/protocol/project-collab-assets.contracts.test.ts",
+      "sha256": "71eadef9ffe116e2a1971bbf19167387f922e9edaa9c3fa0afc81c3199702880"
+    },
+    {
+      "source": "src/shared/protocol/project-collab-assets.recovery.test.ts",
+      "target": "tests/contract/shared/protocol/project-collab-assets.recovery.test.ts",
+      "sha256": "76e2334429b9d637664b8ee20779a90eb21eb8ae4e3786c924be74a0e38e84a7"
+    },
+    {
+      "source": "src/shared/protocol/project-collab-assets.test.ts",
+      "target": "tests/contract/shared/protocol/project-collab-assets.test.ts",
+      "sha256": "fe81c0c4522df753be1d6b59ad9325de3a69c6658b238d79d84b9fe16dcca83e"
+    },
+    {
+      "source": "src/shared/protocol/project-collab-assets.ts",
+      "target": "stratex/shared/protocol/project-collab-assets.ts",
+      "sha256": "243e34a9697849a12ba98ece4e03868451483cbfceace32c8be0ccd391748566"
+    },
+    {
+      "source": "src/shared/protocol/project-collab-capabilities.test.ts",
+      "target": "tests/contract/shared/protocol/project-collab-capabilities.test.ts",
+      "sha256": "4a29319d317416baeac935e58b6f569e1fa7eb1ef47fe7bb121fc7b40388a66e"
+    },
+    {
+      "source": "src/shared/protocol/project-collab-capabilities.ts",
+      "target": "stratex/shared/protocol/project-collab-capabilities.ts",
+      "sha256": "c86c871e8f613a39b3547798f18869d42e99b418cfbabacfea8986c3d66ddcb7"
+    },
+    {
+      "source": "src/shared/protocol/project-collab-dictionaries.test.ts",
+      "target": "tests/contract/shared/protocol/project-collab-dictionaries.test.ts",
+      "sha256": "5d86081b8b58fa8080b6cc5278110c52b736f3091c5e4bd2df5e339131d67ca9"
+    },
+    {
+      "source": "src/shared/protocol/project-collab-dictionaries.ts",
+      "target": "stratex/shared/protocol/project-collab-dictionaries.ts",
+      "sha256": "8a88543fc48d6a195d1911319fc99952131fa2906ca71fa45401de72979ade30"
+    },
+    {
+      "source": "src/shared/protocol/project-collab-plan-dates.test.ts",
+      "target": "tests/contract/shared/protocol/project-collab-plan-dates.test.ts",
+      "sha256": "0acefbd751874a86d0df9b8d1d0dccd46b346145b116ba7fbb33bbcf2618b7ea"
+    },
+    {
+      "source": "src/shared/protocol/project-collab-plan-dates.ts",
+      "target": "stratex/shared/protocol/project-collab-plan-dates.ts",
+      "sha256": "f46f5a1cc272b340f9af6653d3ea767b7096a2f2deaa09ce56f90575f3bf5cf7"
+    },
+    {
+      "source": "src/shared/protocol/project-collab.test.ts",
+      "target": "tests/contract/shared/protocol/project-collab.test.ts",
+      "sha256": "dd8a6fe4a4bc7fc9933c6986779fee0a6c342f9b4cb57e28eaba769b85384ecb"
+    },
+    {
+      "source": "src/shared/protocol/project-collab.ts",
+      "target": "stratex/shared/protocol/project-collab.ts",
+      "sha256": "5b1703ce02b64749817bcb57f1131dd2f3ad53fc0b2315417570455053a775d9"
+    },
+    {
+      "source": "src/shared/protocol/project-datasource.test.ts",
+      "target": "tests/contract/shared/protocol/project-datasource.test.ts",
+      "sha256": "1ece85480b9fc8cfada54632f79819e1d1183a681422c654bb9d01dcdded33c2"
+    },
+    {
+      "source": "src/shared/protocol/project-datasource.ts",
+      "target": "stratex/shared/protocol/project-datasource.ts",
+      "sha256": "63191c6f1de3289bb6accd384be9592fcaa6f1ca63b7faa228dd36b36905bfe9"
+    },
+    {
+      "source": "src/shared/protocol/project-dictionary-api.ts",
+      "target": "stratex/shared/protocol/project-dictionary-api.ts",
+      "sha256": "4f2fd8f60ce7d16f354a13885800321998fd06481b0efa30f097d70e07caef25"
+    },
+    {
+      "source": "src/shared/protocol/project-notifications.ts",
+      "target": "stratex/shared/protocol/project-notifications.ts",
+      "sha256": "2be573778aa7cf743579b4397b6dda494fac9fba24baafdcc7d0103ce954b2b2"
+    },
+    {
+      "source": "src/shared/protocol/project-planning-draft.test.ts",
+      "target": "tests/contract/shared/protocol/project-planning-draft.test.ts",
+      "sha256": "9b5a9deb4714fb82570d27cc1fb9586b21ee6fc8a969d158e38853e1895a4059"
+    },
+    {
+      "source": "src/shared/protocol/project-planning-draft.ts",
+      "target": "stratex/shared/protocol/project-planning-draft.ts",
+      "sha256": "c982394523c14e2ca3660f92f54a4a392ed7abbc32d8dfab44c629b22052a23f"
+    },
+    {
+      "source": "src/shared/protocol/project-planning-lifecycle.test.ts",
+      "target": "tests/contract/shared/protocol/project-planning-lifecycle.test.ts",
+      "sha256": "120afb1e8da8a77c236dcccddc25b3b4b9dee432b264e00b3df8be7b4da2c4e8"
+    },
+    {
+      "source": "src/shared/protocol/project-planning-lifecycle.ts",
+      "target": "stratex/shared/protocol/project-planning-lifecycle.ts",
+      "sha256": "0e156beaf126a6193c3c0205e15c745574930b3e252804fd59b8422dedf79136"
+    },
+    {
+      "source": "src/shared/protocol/project-planning-schedule.test.ts",
+      "target": "tests/contract/shared/protocol/project-planning-schedule.test.ts",
+      "sha256": "86d23c712dcbecfabc67c3a380e8385909402e426e12c63b2be32c6249a41797"
+    },
+    {
+      "source": "src/shared/protocol/project-planning-schedule.ts",
+      "target": "stratex/shared/protocol/project-planning-schedule.ts",
+      "sha256": "1b8d034dff5a77af19f29fce712771f8de0716f73fb41703c4124d413b8c896b"
+    },
+    {
+      "source": "src/shared/protocol/project-planning.test.ts",
+      "target": "tests/contract/shared/protocol/project-planning.test.ts",
+      "sha256": "a5a79f45e40819c14b4dafde0b99eaba43b6bcc44d8e2caba143451c5dde2fac"
+    },
+    {
+      "source": "src/shared/protocol/project-planning.ts",
+      "target": "stratex/shared/protocol/project-planning.ts",
+      "sha256": "a0cd579d9d7c1c1398bbf2db140a64100933a8b6c1f955be15f809fbc0762e2e"
+    },
+    {
+      "source": "src/shared/protocol/project-spec-assist.test.ts",
+      "target": "tests/contract/shared/protocol/project-spec-assist.test.ts",
+      "sha256": "5ba8ab9f5f44d95f400968e6c338b3e8a7ccf4df02d206c2cab637ad1a8370a6"
+    },
+    {
+      "source": "src/shared/protocol/project-spec-assist.ts",
+      "target": "stratex/shared/protocol/project-spec-assist.ts",
+      "sha256": "5729abe2f9ca85062c4688e9b07c6c21f6780b51ca36b6f4c7401a5a97b8f740"
+    },
+    {
+      "source": "src/shared/protocol/project-submission-gate.test.ts",
+      "target": "tests/contract/shared/protocol/project-submission-gate.test.ts",
+      "sha256": "7d5ff911b0684ec67deb7ae6011020aacf3e3a40004ea45dd729ea7ff757c3e4"
+    },
+    {
+      "source": "src/shared/protocol/project-submission-gate.ts",
+      "target": "stratex/shared/protocol/project-submission-gate.ts",
+      "sha256": "a084ccf03608c198a26504987a9d9317da1e734f14d861864b5bb2a3c84abbba"
+    },
+    {
+      "source": "src/shared/protocol/project-testing-cases.test.ts",
+      "target": "tests/contract/shared/protocol/project-testing-cases.test.ts",
+      "sha256": "ffbebed1a2a4270ebe2491d0bf9e8cfe807ef1b8f894803e638870211fb3cdf3"
+    },
+    {
+      "source": "src/shared/protocol/project-testing-cases.ts",
+      "target": "stratex/shared/protocol/project-testing-cases.ts",
+      "sha256": "49a1ddaba1ac6c9e272e45a33cc87972204130d8a027ec914ce21e33a66a3426"
+    },
+    {
+      "source": "src/shared/protocol/project-testing-defects.test.ts",
+      "target": "tests/contract/shared/protocol/project-testing-defects.test.ts",
+      "sha256": "5be49013bca4fce158105619b9b60271e58f3135c73c4c899028147a8811a2ed"
+    },
+    {
+      "source": "src/shared/protocol/project-testing-defects.ts",
+      "target": "stratex/shared/protocol/project-testing-defects.ts",
+      "sha256": "623b227d4e2a79da4f3f4297bb003c570525f3c3d0a6de1e05b00c589cfac952"
+    },
+    {
+      "source": "src/shared/protocol/project-testing.test.ts",
+      "target": "tests/contract/shared/protocol/project-testing.test.ts",
+      "sha256": "479d23e2bf8128ff09521000ac86248275298c9c7803abc3c6eeb8cf57a60d72"
+    },
+    {
+      "source": "src/shared/protocol/project-testing.ts",
+      "target": "stratex/shared/protocol/project-testing.ts",
+      "sha256": "8f26522800eede13d8e9d2ba50481d16c5ccc67c7816eb0759e7dee24d9623b1"
+    },
+    {
+      "source": "src/shared/protocol/project-todo-collaboration.ts",
+      "target": "stratex/shared/protocol/project-todo-collaboration.ts",
+      "sha256": "40639a571395b83de4f507885f65a04bd21954e15ebe8b2268948f95517e44c7"
+    },
+    {
+      "source": "src/shared/protocol/project-work-overview.ts",
+      "target": "stratex/shared/protocol/project-work-overview.ts",
+      "sha256": "7ea7409795e429138b41671871bf624011a79611ba1b21d9dfb19e2fddec8c16"
+    },
+    {
+      "source": "src/shared/protocol/project-workspace.test.ts",
+      "target": "tests/contract/shared/protocol/project-workspace.test.ts",
+      "sha256": "0c1c8a5b1e047f859d3d914ab07f8463ca6f6908c01a0ea5cb059dfc52376ecf"
+    },
+    {
+      "source": "src/shared/protocol/project-workspace.ts",
+      "target": "stratex/shared/protocol/project-workspace.ts",
+      "sha256": "e3ade01cb1238ffa2f557f110c8fbaa7b22e102fba5423e9c9f805c1b5fc9d84"
+    }
+  ],
+  "adaptations": [
+    "Project-only API and channel extraction",
+    "DSH SessionId nonempty string instead of old local UUID",
+    "Browser download URL and external link result extensions",
+    "DSH credential provider replaces Electron safeStorage ticket store",
+    "Fixture paths and old Electron policy assertions adapted to DSH Connection"
+  ]
+}

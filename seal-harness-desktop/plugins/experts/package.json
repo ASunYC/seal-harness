@@ -1,0 +1,45 @@
+{
+  "name": "@seal-harness/experts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Seal Harness专家",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json",
+    "./expert-runtime": "./lib/runtime.js"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-ui-workspace",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-api-workspace-controller",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-api-remotes",
+        "@seal-harness/identity"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-agent-preset-registry": "0.1.7-alpha.2",
+    "@deepseek-ai/dsh-home-paths": "0.1.7-alpha.2",
+    "@deepseek-ai/dsh-scope": "0.1.7-alpha.2",
+    "@deepseek-ai/dsh-agent": "0.1.7-alpha.2",
+    "react": "18.3.1",
+    "zod": "4.4.3",
+    "yaml": "2.9.0",
+    "adm-zip": "0.6.0",
+    "@deepseek-ai/dsh-client-connection": "0.1.7-alpha.2",
+    "@deepseek-ai/dsh-mcp-client": "0.1.7-alpha.2",
+    "@deepseek-ai/dsh-skill": "0.1.7-alpha.2",
+    "@modelcontextprotocol/client": "2.0.0"
+  }
+}

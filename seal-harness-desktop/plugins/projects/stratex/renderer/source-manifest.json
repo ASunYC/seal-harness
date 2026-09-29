@@ -1,0 +1,894 @@
+{
+  "repository": "Stratex",
+  "commit": "c656400bc4baf80733a9ac5d8a1440539126c7e0",
+  "files": [
+    {
+      "path": "src/renderer/src/components/project/ArchivedPlanningSection.vue",
+      "sha256": "6fba6bff2d597fbd732de9b291bde7d45930d1aa9e288f841baba2baf7190a4c"
+    },
+    {
+      "path": "src/renderer/src/components/project/IterationDetailDialog.vue",
+      "sha256": "fc0c58241a4a3d8a5f3adc16da6facb7e70ebc4423779c777f9321a64b02f375"
+    },
+    {
+      "path": "src/renderer/src/components/project/IterationFormDialog.vue",
+      "sha256": "ad8993abeed8f58bd13eb5b0985e2abdfad6318c4b7fe27b727c8f8f0e4b0301"
+    },
+    {
+      "path": "src/renderer/src/components/project/IterationFormFields.vue",
+      "sha256": "254a360ed4aa6ba9972282b7a7a0b4e8b8d28eeada31a207c02d614bd9995e49"
+    },
+    {
+      "path": "src/renderer/src/components/project/IterationPlanViewSwitch.vue",
+      "sha256": "1ec298e9e74d9e3332bade0531e3f67db08c12d7808810216ee6aa019f4bd33c"
+    },
+    {
+      "path": "src/renderer/src/components/project/IterationScheduleBanner.vue",
+      "sha256": "3324c1c2079798cb85eb4dda2498106ce0985766545c747082bd13d2811aba9c"
+    },
+    {
+      "path": "src/renderer/src/components/project/MilestoneFormDialog.vue",
+      "sha256": "7a9a9f104b26561129d348b1a56945bfc77d0a2e51aa354a75843a2d3d731fa9"
+    },
+    {
+      "path": "src/renderer/src/components/project/MilestoneFormFields.vue",
+      "sha256": "43b060326629e3d2902321543d675bd980097d6a4a80aa17bd356e3dc27072fc"
+    },
+    {
+      "path": "src/renderer/src/components/project/MilestoneGoalRecord.vue",
+      "sha256": "83816829cfad18746ca30eb974e7d93bfd4a2c28b782f75077b4f301e9d01e60"
+    },
+    {
+      "path": "src/renderer/src/components/project/MilestoneIterationBoard.vue",
+      "sha256": "2e5d24f7ddd6415d415a53ec056a1124883bf3aa17755fa1051877e2736488a5"
+    },
+    {
+      "path": "src/renderer/src/components/project/MilestoneIterationGantt.vue",
+      "sha256": "8d97c85665a465561d2b652cf5d233836caaae1be37e054e043d59d695847eff"
+    },
+    {
+      "path": "src/renderer/src/components/project/MilestoneIterationList.vue",
+      "sha256": "f6d1ac9786fe02b38c0fdb4eb7eb0070e89b152c163f9cfb7e331ab0f59adfea"
+    },
+    {
+      "path": "src/renderer/src/components/project/PlanWindowStatus.vue",
+      "sha256": "c53077be9e4b69e788e42b69957feaba9e13db26a9e0fa2af6f84a338a07e822"
+    },
+    {
+      "path": "src/renderer/src/components/project/PlanningEvidenceRefs.vue",
+      "sha256": "c1d4fe58506a1d9e0bda89aa555645a61b4d11013f97a4cce481bc0efc9d55ee"
+    },
+    {
+      "path": "src/renderer/src/components/project/PlanningFormsLayer.vue",
+      "sha256": "7a221cf3cdc2c10e7544f2e889a46fd0ef72c89d1f8281117b9e18a5ed845088"
+    },
+    {
+      "path": "src/renderer/src/components/project/PlanningLifecycleDialog.vue",
+      "sha256": "1de1cf8b89c6d123a0c2760291fb7aad43e233d60069576549486ba8caa1501f"
+    },
+    {
+      "path": "src/renderer/src/components/project/PlanningLifecycleLayer.vue",
+      "sha256": "14680e869bea48d31f802990fed4212c292dfe5c4175218aa855260267e4d991"
+    },
+    {
+      "path": "src/renderer/src/components/project/PlanningOwnerSelect.vue",
+      "sha256": "d4731b6e0c1fcc1bfbcde26e7d4f94ec88cf1fad5097d2ab07b75daf39beac30"
+    },
+    {
+      "path": "src/renderer/src/components/project/PlanningRecordList.vue",
+      "sha256": "9c647c82ff2db3b659a6e222b62c59b0ec6209c6c75689ca26627ad0d9a9a964"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectAgreementEditor.vue",
+      "sha256": "1e7aba73fdcbdf953f6ef604579cc97bb95cc1ed713d9444b62fec86fd4cdd7e"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectAgreementsPanel.vue",
+      "sha256": "29006e10ff7a4c5dff4d1a1322ad796955005f052e1b7361c55381281610a0fb"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectAssetPreviewPanel.vue",
+      "sha256": "7a3becb4a05a54d4c3c5c5c29227bdef7ed186b2220902ad22ed3ac7ed8ded41"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectAssetTrashDialog.vue",
+      "sha256": "fa3f8a17e1eb1ecd4293ada6321d0daad9830d69e0d504870cb7d4f7bb3785f3"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectAssetVersionsDialog.vue",
+      "sha256": "d0262e83cf04dcda9cb0e60cf0b022a1886a91ef8c08eb19fa04d3cb04b26069"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectAssetVersionsSection.vue",
+      "sha256": "46a55cb0ea477e96a35519754f7df5e54b52c931ea03684b611770af2484daa0"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectAssetsPane.vue",
+      "sha256": "47d930c03d92e06e733108cdede9a6756b7d7b591a9f4aa9ece90bf5aaa5c7de"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectAvatar.vue",
+      "sha256": "de63b30d05b1257e286129c7bcebfa16c0afed8cda41e1b634e1e4d06c7691bf"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectBoardPane.vue",
+      "sha256": "015c6afd96c556ee6532841794ac8926e767dc490f20fe7c3f5ef440b9f250ec"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectCalendarView.vue",
+      "sha256": "4320ca785d8551709c839c48dcfc5ad1e45b2a65e3583932a128dafb8181e6cb"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectChatPane.vue",
+      "sha256": "ac96012277744e2956c8e3799cc19de8f47013d5a0d9ed145e2c605d04222941"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectChatSearchPanel.vue",
+      "sha256": "dc207657ebb175681ad367ada42a3ed16a4d2718d3354dd76f14e39be864e1fd"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectComposerDock.vue",
+      "sha256": "330460235b3ce0b672050169aaa1bd38645ceea89dfb883907d0185bdfcef591"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectConfigAside.vue",
+      "sha256": "e21f6072151f5260e50a908709db9d84244ed70ef24fd8ac585d96ed484c9d44"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectDataSourceDialog.vue",
+      "sha256": "6682be38081447d238a17a47c64c9165ab93e4432168f18bfe40b8c0d43d3f13"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectDataSourceForm.vue",
+      "sha256": "26c5e553f7d529eacc89ad21e7d4bf367db2464bc9be4620d2634f1731068607"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectDetailTabContent.vue",
+      "sha256": "4edc99ddc36f84dfef7cabea3a7c8ab8aa348932084cd4f3417233799b81125b"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectDialogShell.vue",
+      "sha256": "1021f38e20bc823cc905f2a62c5e09547779444ac1d05ee21f63a02ce97f89db"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectDocRequirementDialog.vue",
+      "sha256": "3d5823e6323749f710945df8e15ec7140a6ef7d9e3fc149cf48aa9f1c5577c88"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectDraftReviewDialog.vue",
+      "sha256": "fc86f273f04452719bf5d7347dbeffdb2dbb03d65575adb8d59a4dc5471ef11f"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectFeedPane.vue",
+      "sha256": "6a3e076566e4eb6063138f580cbea60d70d5351a582188953d7db7ddc9ff4d23"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectInviteDialog.vue",
+      "sha256": "19288beedfdf76e14ae7057392b62523431b5f6f2fd6c528250d632dacbbe37a"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectManageMenu.vue",
+      "sha256": "4bc3fdf584abe10f3a21281a512f3de33cc0a14cdeb564a1c89908271282b9cd"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectMembersDialog.vue",
+      "sha256": "2f75339e821c6c8a3b07f05a6776aaddbc21fc943fbd6e0d2896a9e3d9f6dffc"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectMilestonesPane.vue",
+      "sha256": "48afe4045852c6fabf3598cd0157dca9c475c355a9cfb7f892d07e5922f7e984"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectPlanningDraftCard.vue",
+      "sha256": "427058e269625bbeab4091d0770c226b0c7fa7c14c81cc2dd0e6d390acd852e4"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectPlanningDraftReviewDialog.vue",
+      "sha256": "43d8323aa09dd638b9bc677b113d57764d82e1bd25b08b3d44a36d4ba9fe1963"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectRefChip.vue",
+      "sha256": "56456a2ca3d2baff89c115b72bed58645aa3da7f36a06a28868498eeb9d272f0"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectRefComposer.vue",
+      "sha256": "1a4d27eb01433d4e9405d01cfd9ae920e22a5e51e77c7cd2160280073638c371"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectRequirementClaimDialog.vue",
+      "sha256": "a1eb68f6a0a7c0e90d58f87a22e9b30f8e73920830d0877d0ea6d1b482d45926"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectRequirementDetail.vue",
+      "sha256": "dbbda52c5211de53d5641d20faac92936d80586c38d52d83b5653192b8bef86e"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectRequirementIterationField.vue",
+      "sha256": "4448ec14c3d898211938b903ccce0ad99fe5b53b0dfd6a5c0507e52b6d0a2815"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectRequirementSubmitDialog.vue",
+      "sha256": "e5dd6c7afa007eb257bb52a9c0582e7113f0d04356568a61ea2ccf07db980760"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectServiceUpgradeNotice.vue",
+      "sha256": "18e24c3b993e3d8a211fa6d3c1e66dfcaa3c9f1fa337fb0d71dafa249e533bdc"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectSessionsPane.vue",
+      "sha256": "7ab67b65974f5316abef51b5cec951a37e788384fbbb7bc0ea3e73b42fad2541"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectSettingsDialog.vue",
+      "sha256": "29a9beaba44117bfbf1dcfa8309bb3488afbfacb030d2fcdbdbea4757eec23dc"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectSubmissionGateEditor.vue",
+      "sha256": "1fb05d1a2d099d237a51cdb44873e08dc8672c8805ce09e07fc5ab34d265e79b"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectSubmissionGatePanel.vue",
+      "sha256": "a1aa3238986258cd0acc47351f6e794f933caec591604972c8cf9e00948a2dbd"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTabOrderPopover.vue",
+      "sha256": "54ebcafb377bbd41d236c846b56323f3443de1aeb5c35b11a6af0d691578309f"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTestRoundPane.vue",
+      "sha256": "37e7748ce1617be7e07fb02c49e7f613dc61c6f7ba565f4baa4276e3f1b0531c"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTestingPane.vue",
+      "sha256": "1435ae130668e287974a61129492dde45f5702b8acf9e71f8dda38a50e402a9e"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTimelineView.vue",
+      "sha256": "12893e07e5ef2a61fe69b34fa9365cf75da13b4ac302f21eda0125b3711c4b9a"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoClassificationFields.vue",
+      "sha256": "7f4b605056c63f3cc2f37650884a24d74f1c7dd3a762f23a30e6a17fe4d533ab"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoCollaboration.vue",
+      "sha256": "f3cb6287475a477b3abb5773290b869e35cdb212e04a48fb12de2cf1471ca0e5"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoDeleteDialog.vue",
+      "sha256": "ca2cde619d38d6a00d6c5f9bc324171e33fdd8e792bad466386b285d2ba22c13"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoDialog.css",
+      "sha256": "6e5e86a06e4b61fdfd7daa48f6aa5390437ff828b339d505135d637d076b05a0"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoDialog.vue",
+      "sha256": "5ed43365b1c860d9c2d28f50e59c580ae8db344cb453c54c04b929640aa531c5"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoPageState.vue",
+      "sha256": "7ef2bb2e6b71d55500121bc1ea1daa6ef322f91463aaed55ab2f66d545b97745"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoParentFields.vue",
+      "sha256": "c96e904f24a4f2078956d2f1c694d85a78780542cf152ceb87522c2cff7f2d9d"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoPlanDatesFields.vue",
+      "sha256": "6d6ab0bd68eb8dc7c26895df58c3f320a6c0e922aa11265fb1877a25ce8ee63c"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoRelationsEditor.vue",
+      "sha256": "56c61f5ec371196d129925bea7c91b070b03c6c7eb09617b5a212d9731ecb57e"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoSpecificationFields.vue",
+      "sha256": "6f92dbab2629627cf5d47662518bc9aa24b0e10e1a6166e9edf97ecf18303073"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoTable.vue",
+      "sha256": "7d3e03bad52be6107a7658d472c9ca0d2974c5bff7f37e6befa5ee4ed3b48ffa"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectTodoToolbar.vue",
+      "sha256": "ff05356bab6f9623a55d5066786cb4030f7ee7eaff16d3f27f93ea9b0b89c405"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectViewManageDialog.vue",
+      "sha256": "4374a0a3d5fa437b6018261efa2d50f85ba14b5f6397d0b9f0c9fd4557cc1535"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectWorkOrderDialog.vue",
+      "sha256": "0eb3df55d0c3f085c968a03488f13ca7bd87dd239620eca4ffaccb734b0a00db"
+    },
+    {
+      "path": "src/renderer/src/components/project/ProjectWorkOverview.vue",
+      "sha256": "e9ff37f1b573142729ff5214e1ec1510b6391deb3ddbc02d93617d2467687a81"
+    },
+    {
+      "path": "src/renderer/src/components/project/RequirementDetailChildren.vue",
+      "sha256": "217c197eb71899ffac064578995e7589b7154c56ce5bfaf1859b1c14a90db4a1"
+    },
+    {
+      "path": "src/renderer/src/components/project/RequirementDetailMoreMenu.vue",
+      "sha256": "99a552519a24180c9a32971e8ff51d6aeb6509c0df7c1a53c2eabf12432e6527"
+    },
+    {
+      "path": "src/renderer/src/components/project/RequirementDetailPanel.vue",
+      "sha256": "9add9c693e4f4bda2ad3da6f7a2aa25f8ec75323d50b366380e0889b3c9d2bd6"
+    },
+    {
+      "path": "src/renderer/src/components/project/RequirementDetailWorkTabs.vue",
+      "sha256": "3d97064d998053d46847d5d2a7e8e46694906fdf1eecbf758298ee06e7574929"
+    },
+    {
+      "path": "src/renderer/src/components/project/RequirementPageControls.vue",
+      "sha256": "875512c69f80595a4ce5af3de6a407e560bb26c89a93005607c812096264cb74"
+    },
+    {
+      "path": "src/renderer/src/components/project/RequirementScheduleDialog.vue",
+      "sha256": "d1ed9ede5b21f3a1f6ca2dbdffc06f0675f8db92d3669309ebb784b9b770001c"
+    },
+    {
+      "path": "src/renderer/src/components/project/RequirementSubmissionBar.vue",
+      "sha256": "589a4e245e2ac4ca969a4b63d763c7959db60aa73afe1bd65ce929d582c67c9c"
+    },
+    {
+      "path": "src/renderer/src/components/project/RequirementTestRecordList.vue",
+      "sha256": "878f9a66b5a11b105ff1383476fab236070d26c4c0a80afb2fe416739943d0b5"
+    },
+    {
+      "path": "src/renderer/src/components/project/TestCaseDialog.vue",
+      "sha256": "0a2dfcf7059d84aece698c1c768bbacaf862bd6c8c8cd6ee3be495a307a3da7c"
+    },
+    {
+      "path": "src/renderer/src/components/project/TestDefectPanel.vue",
+      "sha256": "3de0d23a4d33c50857ee60b8bcf6a1ded4ab65224d1a1ad0de1b4b4ab8300676"
+    },
+    {
+      "path": "src/renderer/src/components/project/TestRoundCaseTable.vue",
+      "sha256": "246f0d8c8ccba85d444778c3ba0307ab65754898e70ab90abd2e19155355622f"
+    },
+    {
+      "path": "src/renderer/src/components/project/TestRoundDecisionPanel.vue",
+      "sha256": "01a4049dbd1959537e8a27445452dedf6b06a7e61db66e5eb4f9c17a2276733f"
+    },
+    {
+      "path": "src/renderer/src/components/project/TestRoundSnapshotPanel.vue",
+      "sha256": "23c0a71fa2670d1b44e5f7fda7882dac2621b41e3106906333c5479311742ba4"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoAcceptanceEditor.vue",
+      "sha256": "c78a8f4321aa331113cc7f73dc21361f0c73b3f62c9c82fdaf2d4dba43d7cf14"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoBatchBar.vue",
+      "sha256": "1c3dc343f1d5527bbdf5393a559e3097d7df4ded88faf53a0ffdb4d5fcf789b0"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoColumnHeader.vue",
+      "sha256": "0d53fca21a96477511e5d4cffd63ebdc62f86654f884d2480ece687d3c9fce5b"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoMetaBadges.vue",
+      "sha256": "8d5fe16321253545210bf3c51126d687be0d3dc6503ef746a6046cffbea0cb43"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoRefPicker.vue",
+      "sha256": "f7864edc0249e2ad3d3d3ad0f0c63064b6daaa6d8977b53533844077d55eb520"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoRowActions.vue",
+      "sha256": "7c0b26b9a7329993e9e6c8883f88204a086679f96227a9554ca8a33941e1b3f8"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoSpecAssistBar.vue",
+      "sha256": "b9e8af6ac34b450a4b73a076e3e883a2eddccee186e9404fd7198b5dd3670406"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoSpecAssistFieldHint.vue",
+      "sha256": "d16c4ae8b3f27e619d01ed8ce197f71317c859d508d07c9f1c3d5ff5cb271496"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoSubtreeControls.vue",
+      "sha256": "ef5ecb65c257fc9c0cbd994280cd8ec49894e3ad479b9e798d067926278a049a"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoTableAddRow.vue",
+      "sha256": "bcb528ddb46023db578f8d2ddea2c6ba5c251701da843292ab0329d120b49579"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoTitleCell.vue",
+      "sha256": "a6447f3743ce16f2d345cf30f3633c3a96505bfde69f511a4b5bd8c1332720b9"
+    },
+    {
+      "path": "src/renderer/src/components/project/TodoToolPopover.vue",
+      "sha256": "c397fb7d6dfb2a02e60d7620317e11cb38ea7c8b0b465afb52624235137e42ef"
+    },
+    {
+      "path": "src/renderer/src/components/project/asset-recovery.ts",
+      "sha256": "fec3585e872909588a8d8471e7bb5cf9bf5b8150e200bad0df6fc0f2da6bae5e"
+    },
+    {
+      "path": "src/renderer/src/components/project/iteration-list-view.ts",
+      "sha256": "e47e95e320e223ce009e8e6552afa55ebf3b2e1b9569b53202aeb0294b1ac5b6"
+    },
+    {
+      "path": "src/renderer/src/components/project/iteration-plan-preference.ts",
+      "sha256": "5db24d1264f2dbdbade6a8db583feb8cbc4f8563760df4780ead2743db21ba20"
+    },
+    {
+      "path": "src/renderer/src/components/project/iteration-schedule-view.ts",
+      "sha256": "f3488d2e0c75ce8f2553b1ff079c186ace426ad4166dddfa48a2375e967b1c50"
+    },
+    {
+      "path": "src/renderer/src/components/project/plan-window-task-scope.ts",
+      "sha256": "242b36d676b073339fabb54149b53359e34eb5550297c7ee43d1063f7005867c"
+    },
+    {
+      "path": "src/renderer/src/components/project/planning-form-view.ts",
+      "sha256": "12d036fac54a3422a2d3078c5010532e161f4ff9596e682c6c2e2e148503b5f6"
+    },
+    {
+      "path": "src/renderer/src/components/project/planning-goal-view.ts",
+      "sha256": "b3dd6078399bb9aea2fce6c37180e7fbbc7809a9c1b104e6fa82864cbbf60feb"
+    },
+    {
+      "path": "src/renderer/src/components/project/planning-lifecycle-view.ts",
+      "sha256": "aecffded8754d6c6f126b2bcceb1d3805a9b2e5bf7f82f579f3291bf4ce82302"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-board-pane.css",
+      "sha256": "9abcc1bb1f506ffd676e3bbe2c60d74278bbc16b008790c56e1d657b7a557895"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-datasource-copy.ts",
+      "sha256": "8a11571c3d82c7c16259cf70daa3e36d0e714eb95d1f331e5dea3fefa7c2544c"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-feed-view.ts",
+      "sha256": "f1807970b0f13d1bf18c9e1d2a3c64616f7a8ad49d1678df95518071062fe686"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-format.ts",
+      "sha256": "7ece4a1ad5792ceee2af200917905bffc2afee7f0b400a80b6a3b2b1efeebe0e"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-manage-actions.ts",
+      "sha256": "1aaadd18c250ef1e55356b917309cc4b112dfb9ef8417f899eb5b3ab0d725bc2"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-planning-view.ts",
+      "sha256": "246d5b11bbe748d593161b43c52da97ff1ce993932c79f62f4b33e1e46c0456f"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-ref-navigation.ts",
+      "sha256": "cb2a9b93dbb29d80450326af7ea665812fc4458d2ca2994432ca969eff65015a"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-ref-resolver.ts",
+      "sha256": "15e7d0b4d77fb6875f46d2d18802f8b827404e8c782004079b88e1b870b9512b"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-refs.ts",
+      "sha256": "1dcb95991155cc54c07c2253f08d3c1d5d446094239e53907094d14b9511887f"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-tab-preference.ts",
+      "sha256": "5056ce06906901efc573a3424b2bad6a999f52e26edb23d19fc0805392748e5e"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-tabs.ts",
+      "sha256": "103d622edc0c549d8f2c420f7ca06840b379f75ba7f7c1687952531446f0ae72"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-todo-table.css",
+      "sha256": "086ccb91fe236c62c41180529826649472ac5280121d700ee76c22f954ab780c"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-todo-toolbar.css",
+      "sha256": "0688c6013b7782cdfa4ed678899c1f946f8c61b2eb09b38e54abaa1a3abce19b"
+    },
+    {
+      "path": "src/renderer/src/components/project/project-views.ts",
+      "sha256": "aa15b0f9ffeff6dcf9bee29e7bec7680bd0db455bd0814e96046f4dd6e7f5798"
+    },
+    {
+      "path": "src/renderer/src/components/project/requirement-actions.ts",
+      "sha256": "800d80d26c8105774e3cbe59c1f133cc8b7d863e9c32291412a28fc8bc9d7714"
+    },
+    {
+      "path": "src/renderer/src/components/project/requirement-detail.ts",
+      "sha256": "cebcf2ebe85a35d478c9ce2ac58d7f5f786a8aeff19cea9de94183b23b0908a3"
+    },
+    {
+      "path": "src/renderer/src/components/project/requirement-from-doc.ts",
+      "sha256": "fc5d3c753851a97cc3ac0ac4d2b708b8166aa089ba0f3d3cb7999de767c11c86"
+    },
+    {
+      "path": "src/renderer/src/components/project/requirement-page-query.ts",
+      "sha256": "f36f454fc704958b903221a487472e149797834094c3a27531990fccf4a96f2f"
+    },
+    {
+      "path": "src/renderer/src/components/project/requirement-submission.ts",
+      "sha256": "75ddac5720e6c3276c5392eba83aae2d40d9af3944e2ff7b331fe4082864814c"
+    },
+    {
+      "path": "src/renderer/src/components/project/schedule-layout.ts",
+      "sha256": "48d5192b7e9f1b7ad7137ae55b49fb7030a40ddcbfd5933c9c99e17d9939fdce"
+    },
+    {
+      "path": "src/renderer/src/components/project/test-round-view.ts",
+      "sha256": "84c044096bc512ac76714e6ba6df0b753bff101f301c24423da6ff04f384f4f2"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-assignee.ts",
+      "sha256": "bacfe8b90c0731bd4a897822a68902f6d111129153aa90b4de20e03bab347f1d"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-batch.ts",
+      "sha256": "88ab3d2878e51ba564fe48aac11b2cdb9012ab8eb143ca5d62b461e7fbe3d847"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-collaboration-draft-version.ts",
+      "sha256": "e6f66841ac7ceedf10390f8dcba8dcbe73a4a20383fc21ede1f886133274b325"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-column-layout.ts",
+      "sha256": "d4065df22de697416281c0d53fc384cf1ab4b44ad019d51a16836826c8683caa"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-decompose.ts",
+      "sha256": "81c1b2cd6d10b0cd4f210721a188ba262450deec4523de47fa4d786c845dea8c"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-fields.ts",
+      "sha256": "f3d5d0c81f10d63214d74247296ab135a63aebd78c594609335aac0641b951ec"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-hierarchy.ts",
+      "sha256": "0d4ca6e57d1058a6b90233cea4f37c1299c7005aa47e88133df0080392b4f4a4"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-page-rows.ts",
+      "sha256": "f8522b04233474405270f0cb5de43880c8968443bdd1d901761c2e7d5fba0071"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-query.ts",
+      "sha256": "8028f1c044777c8e0fee646f1047e3a977927cc1701dec1047d55207bf0d975a"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-sort.ts",
+      "sha256": "6122499ce7a8e976ecc4bda75a0c3ef8836f00acc204ecb8893dd4621a4bf023"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-spec-assist.ts",
+      "sha256": "37de38a7a7b7cbe154f48078c648572075dc24c717fe1bdbb3c58ec8db0b65dc"
+    },
+    {
+      "path": "src/renderer/src/components/project/todo-status-flow.ts",
+      "sha256": "7e06d66c2ac5aa30ef60b38a2f99c4da705c82c66206c79397f66743c96bf6b0"
+    },
+    {
+      "path": "src/renderer/src/components/project/use-requirement-iteration-editor.ts",
+      "sha256": "f04513487cfa0b115408d1ba555fce307f6b06c8994dd9d8d42982cb7d213386"
+    },
+    {
+      "path": "src/renderer/src/components/project/use-todo-spec-assist-fill.ts",
+      "sha256": "8df7b676c70b7e879583873d814fc6bd5379691b83a035debffe35d16e00a751"
+    },
+    {
+      "path": "src/renderer/src/components/project/use-todo-spec-assist.ts",
+      "sha256": "c380f5db667f04694d5bc2a58aafd980bd3807747a983cb06c017c6d68f74557"
+    },
+    {
+      "path": "src/renderer/src/components/project/usePlanWindowRows.ts",
+      "sha256": "a43014f6de101c75c4a79490ade7af97ab6b25c28be5a16fb5ccc60e318f4c55"
+    },
+    {
+      "path": "src/renderer/src/components/project/useProjectAssetPreview.ts",
+      "sha256": "9073d243113fb7db174ea0960f4c3f6aeb6a6156bfa0fbebe39b0d3811eff532"
+    },
+    {
+      "path": "src/renderer/src/components/project/useProjectChatSearch.ts",
+      "sha256": "f103250bf80f46dac782b1a36340831dc9b9bbc7dd4f054726ceb387693b40f6"
+    },
+    {
+      "path": "src/renderer/src/components/project/useProjectRefSources.ts",
+      "sha256": "39bf6b65206fd6df369bf168ab69300cf7acfc0453114efe2b81614ad5ce4019"
+    },
+    {
+      "path": "src/renderer/src/components/project/useProjectTabPreferences.ts",
+      "sha256": "c1c039e28672669cf2a778ab319ffd06d08158d8f08f7e61b1e414c7f26ded9b"
+    },
+    {
+      "path": "src/renderer/src/components/project/useProjectWorkOverview.ts",
+      "sha256": "d571a07c80796020fe3f7438bed309e865a7129ed9a3f6621726d3d3b7e2f830"
+    },
+    {
+      "path": "src/renderer/src/components/project/useRequirementDetailChildren.ts",
+      "sha256": "5c37236d5e8274a6b7db225ad77737223612f1d49d091866cef01df8b1f9d868"
+    },
+    {
+      "path": "src/renderer/src/components/project/useRequirementDetailView.ts",
+      "sha256": "b11ea44ee47ee0a811b46208278d7389b78e2119a094a7aa88eccad1dbbc94f0"
+    },
+    {
+      "path": "src/renderer/src/components/project/useRequirementPagePane.ts",
+      "sha256": "c1f7155cae7b868576a7b5eb2ed944198d631c01b0ed642fc8ff29a703c835f0"
+    },
+    {
+      "path": "src/renderer/src/components/project/useScheduleDnd.ts",
+      "sha256": "f4d984d2d9ac1b7fac204c640da440360cab50616aa65058a15ce9f34ce9e614"
+    },
+    {
+      "path": "src/renderer/src/components/project/useTodoBoardDnd.ts",
+      "sha256": "69a624aa328152ceb98011c13dbf9a24919632a4fe965ce6530f374e6926f58b"
+    },
+    {
+      "path": "src/renderer/src/components/project/useTodoCollaboration.ts",
+      "sha256": "659140dc5749a24bb9a34c0ed97453fb1f74977645e57fe6fccd6e25c550083a"
+    },
+    {
+      "path": "src/renderer/src/components/project/useTodoParentSearch.ts",
+      "sha256": "36315980374b319442734eedc393be6b8a268c06faa171a5d06bf9861f77cc0a"
+    },
+    {
+      "path": "src/renderer/src/components/project/useTodoViewState.ts",
+      "sha256": "8c0b656dcf563cd071f482aa35f487d6361a40f5a04ac6058eb7b3cf53e346b3"
+    },
+    {
+      "path": "src/renderer/src/components/project/work-order.ts",
+      "sha256": "925c552fbb7b22e375e0a5a11788554862a2793cb924bb9c1b5aa99d6926ed58"
+    },
+    {
+      "path": "src/renderer/src/components/settings/ProjectNotificationSettings.vue",
+      "sha256": "342f5af909858e0888300399a279bbdce12f8d58294680b10daf942e56efebc0"
+    },
+    {
+      "path": "src/renderer/src/components/ui/AppIcon.vue",
+      "sha256": "9fd96cdee7942421359ca060024a562bbc5e1ac5ffe6d8554c8a56eba8baf8b9"
+    },
+    {
+      "path": "src/renderer/src/components/ui/ConfirmDialog.vue",
+      "sha256": "9e144c651f951996da749209d2aaa2b14ea311b958a0e5264fcb071a84afc8b0"
+    },
+    {
+      "path": "src/renderer/src/components/ui/ReferenceIdCopy.vue",
+      "sha256": "43f936941fc3d5182853cfd52a52f80d733bd0ba6a6bd94ec8a21d4dbe982a08"
+    },
+    {
+      "path": "src/renderer/src/components/ui/ToastStack.vue",
+      "sha256": "d64fdc2a12cae1c29cbd34fe0a549651c94a5e2a4ad074b798f691112e469796"
+    },
+    {
+      "path": "src/renderer/src/components/ui/overlay/OverlaySurface.vue",
+      "sha256": "224f2210143f1fab1a3602476d1f8209543168e31d4b23aeaf47b1a8f4140e21"
+    },
+    {
+      "path": "src/renderer/src/components/ui/overlay/overlay.css",
+      "sha256": "660f6818c82bd676cd92c511f1eb1343d6e11a68bfdcde427c323360a8f13777"
+    },
+    {
+      "path": "src/renderer/src/components/ui/overlay/overlayDismiss.ts",
+      "sha256": "015803a4fdae28906bed33af36111092e387261ab1d3f166d119746fd44564aa"
+    },
+    {
+      "path": "src/renderer/src/components/ui/overlay/overlayFocus.ts",
+      "sha256": "00249eb566351b435f80492c41e7ba54cd6ab194130413307d0c77a7550da9d3"
+    },
+    {
+      "path": "src/renderer/src/components/ui/overlay/overlayHostElement.ts",
+      "sha256": "7ebb7d40e692247315c35d902bed28f0ac4c3ce918776e8204c9f203e9d315cf"
+    },
+    {
+      "path": "src/renderer/src/components/ui/overlay/overlayPosition.ts",
+      "sha256": "34ace9bf02eb57fd87d1dd1321af631bb45dbdfb9ba7571cbb391faf80fad0db"
+    },
+    {
+      "path": "src/renderer/src/components/ui/overlay/overlayStack.ts",
+      "sha256": "892fed77e688fe67ec785ca1b4fafdd02bface33526247132051ac4b92ea506e"
+    },
+    {
+      "path": "src/renderer/src/components/ui/toastQueue.ts",
+      "sha256": "2ceed99eeacf5c45edbb84c04ff660c4fbb4664626791937ae1ae9c7ac3e1073"
+    },
+    {
+      "path": "src/renderer/src/components/workspace/WorkspaceBindingChip.vue",
+      "sha256": "0a4e0f9a3718cdf9b00cf0a37562fad3babaa91b4a4b110ee742cd2829a36d40"
+    },
+    {
+      "path": "src/renderer/src/components/workspace/project-linked-directories.ts",
+      "sha256": "4bede5239f5930385179638d9d460e7df56262790be2b64abf46c112497475f9"
+    },
+    {
+      "path": "src/renderer/src/composables/projectJoinLinkInbox.ts",
+      "sha256": "4be517173426bff96ba94e1d875877d4d6bfd2cc132b0571adfff3d63eb6b010"
+    },
+    {
+      "path": "src/renderer/src/features/session/markdown.ts",
+      "sha256": "5c3666cfb6e4d53958a9a887c9f77937801d1e14cb43e78b966a41fc5f6b0cdc"
+    },
+    {
+      "path": "src/renderer/src/router/use-return-to-conversation.ts",
+      "sha256": "0a07148f2fd3eb18b72537ca2b470b59a9663bdc4010f25d3887c5f9149d02a0"
+    },
+    {
+      "path": "src/renderer/src/sdk/clipboard.ts",
+      "sha256": "3421e69aa2a20b45a3aad296c66db2a96ec576092552978fd584a86712bd550e"
+    },
+    {
+      "path": "src/renderer/src/sdk/projectCollab.ts",
+      "sha256": "5955272805cad5580ebdac85ba17381eb96733501c967d459361f18fde429974"
+    },
+    {
+      "path": "src/renderer/src/sdk/projectDataSource.ts",
+      "sha256": "b9dabb4b927d3aedef41c7bdf9d216173997180847d0b818b22931a502c2f085"
+    },
+    {
+      "path": "src/renderer/src/sdk/projectDictionaries.ts",
+      "sha256": "3f512bf788ccecbfaf152bd33a1b20ba1530cd41195c9f5a287f73724fe7167d"
+    },
+    {
+      "path": "src/renderer/src/sdk/projectNotifications.ts",
+      "sha256": "4376ee22f412384afb1407c71137a6c64e13bd834041c9355940312f605e3d13"
+    },
+    {
+      "path": "src/renderer/src/sdk/projectSpecAssist.ts",
+      "sha256": "ddc50a9a1366adbc842bc15448fc076b99c3e478c05c96647da47a25662d829f"
+    },
+    {
+      "path": "src/renderer/src/sdk/projectSubmissionGate.ts",
+      "sha256": "216950acc23d4757f7479290da952879cb972c0fcdf89f1d3378fc19043d5a3e"
+    },
+    {
+      "path": "src/renderer/src/sdk/projectTodoCollaboration.ts",
+      "sha256": "9a3b3102c6a8960e7431c5fc738444e3a78f31376fe356dc912c2114d5d1a5dc"
+    },
+    {
+      "path": "src/renderer/src/sdk/projectWorkOverview.ts",
+      "sha256": "3d2c444e0f32c6f3bd81f6668b8ec0f1518223ee00e4f2214486c7493c1dc0ae"
+    },
+    {
+      "path": "src/renderer/src/sdk/projectWorkspace.ts",
+      "sha256": "9da2927bf271a9347db708a9490e9672c48059915688963cce06af81fd273cf6"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollab.ts",
+      "sha256": "538a32cfdc4b180795da941532f09b76315e4209a0b598ab365f26e52f497047"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabAssets.ts",
+      "sha256": "78c8664f86f002da43010a114420ea75edb9bfd63ccf031a5a0ee6738685f9d8"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabBoard.ts",
+      "sha256": "fc45102865bdcf0e0bd62c8589cbe12780412843b945dd64126ad7c4a43d6c13"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabCapabilities.ts",
+      "sha256": "c3b9f2b8ef55e4c5ac501961907323789c2c704a0915152abe4d1b4cff7e7516"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabChat.ts",
+      "sha256": "11489798bf6eddb31d32500fe2507a0a36de80d811d6771102a9978c05eb618c"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabErrors.ts",
+      "sha256": "059b2c31650f6e858c39080dabf22412214c54512ce658688f942770dcac9eb7"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabFeed.ts",
+      "sha256": "6bafc36660da7f284c2e307a5ca8f0ee6f3bbdc68fddeac6332570cf76a3d427"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabFiles.ts",
+      "sha256": "8fc9e995848597899bc519c5b020c48c8d1ef09803bbce77b9fb3c6ea9e1434d"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabPlanWindow.ts",
+      "sha256": "c7903e617f4b8396691a65cae38565fa759dcc6a62d835f016e2581f3eb6f42a"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabPlanning.ts",
+      "sha256": "7e3144ed38051ccd1f63c8f2c0fc0b4e37e2e553ad4b928b51a2032e61d29c3f"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabPlanningForms.ts",
+      "sha256": "b49bc215a4abec963dea21ad7b8565615a956aee4e081112a65cebdce9f936a5"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabPlanningLifecycle.ts",
+      "sha256": "0024dcb17d6684b64a7f4e7ff4eeb0c323342abe2932fd725aab61b89bccae39"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabReceipts.ts",
+      "sha256": "4cf83847a8e6952bb25524f735bee0006c3bb7cc502f688526640fad0bbf4941"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabRequirementPage.ts",
+      "sha256": "0665f530212cea0e9282d21b5537607f381a6972587beffdb94543b27f134536"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabRequirementSchedule.ts",
+      "sha256": "26d207dbd7921ec0c000f645370bb73e73e46c7730114ddfe15030952ccef537"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabSchedule.ts",
+      "sha256": "2c5c2361de61a65d79e6a3d7cc2e8c1ce1f1b3592423579b74cfda893ee27e29"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabState.ts",
+      "sha256": "a9c52cd49856c9056dce3c4dd6339dbca74cb3b01bc2a4c8c5f1a129c5821331"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabTestCases.ts",
+      "sha256": "4fbcbf450ff2c10db2b517653a4c77704d453d199535d76c60df37f9bd92e136"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabTestDefects.ts",
+      "sha256": "17680c53b2d25a5210709d9d11fd1073908353515fef68195efe59d6fadfe9b4"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabTesting.ts",
+      "sha256": "a5ddf5d7a33b92f36cd3dfb7d0fc9e0383151a2851946bdea8068070bd704f28"
+    },
+    {
+      "path": "src/renderer/src/stores/projectCollabWorkOrder.ts",
+      "sha256": "c6f5bcf6548669705b08ceb2613f3657d59b175ae70e2b3a57ba3a2a70196feb"
+    },
+    {
+      "path": "src/renderer/src/stores/projectDictionaries.ts",
+      "sha256": "7f54cb2842ae61034b77bacc0ad3a1b2e91a25ea9869ede8314c02e1ff144b97"
+    },
+    {
+      "path": "src/renderer/src/stores/projectPlanningDrafts.ts",
+      "sha256": "44b60140822e98350d10a5e1c64926d9f37fde54a3d07fd40dafc538c24bf62c"
+    },
+    {
+      "path": "src/renderer/src/stores/projectSubmissionGate.ts",
+      "sha256": "27ad6e439294800fd41c40f726b22a26d8c3ff1e85f0174c9b278a1622a1adb6"
+    },
+    {
+      "path": "src/renderer/src/stores/projectWorkspace.ts",
+      "sha256": "2ccac7f04046f5fe50bce87f1b3698acb92e06f4450eebae54660abc32cfce5c"
+    },
+    {
+      "path": "src/renderer/src/stores/toasts.ts",
+      "sha256": "13ab60c132cf1a6659807cdc23c8dce6086d447759667ce19dec8180711d54df"
+    },
+    {
+      "path": "src/renderer/src/styles/base.css",
+      "sha256": "75d540e16201f8e12aa0819b78ea0a33aad4cd2fcdbeaeac4e6b2f77e8df864d"
+    },
+    {
+      "path": "src/renderer/src/styles/components.css",
+      "sha256": "6feca4585603ddb9a328515a696d0f1200add7c642a3afafd8a8517ee5473edb"
+    },
+    {
+      "path": "src/renderer/src/styles/feed-markdown.css",
+      "sha256": "cf088c066b439a5147ec6237dc138d111fa267edf8a76fc151ca64d04da6faf4"
+    },
+    {
+      "path": "src/renderer/src/styles/resource-pages.css",
+      "sha256": "7d354a21bb1771d16093644c675b777bf28593dd4ac555c2e77e4572665f1cf7"
+    },
+    {
+      "path": "src/renderer/src/styles/tokens.css",
+      "sha256": "569985c27c5e89ef892ce5c31ce375094fa7a95f4f8aad4d8fb5828ea5afb40e"
+    },
+    {
+      "path": "src/renderer/src/views/ProjectDetailView.vue",
+      "sha256": "c9cf363c1d9a1fc4811db93575f147213e02326986f3a83fc8a8d835282bfd1d"
+    },
+    {
+      "path": "src/renderer/src/views/ProjectsView.vue",
+      "sha256": "caad00ba40c70527a808d3a975af110b7da43b131b835f613be7c7907b300864"
+    },
+    {
+      "path": "src/renderer/src/views/project-detail-view.css",
+      "sha256": "c3179fe960d8ee47f1f37b8591f4a3e4ced57234461d2469b5aa57b83163f1da"
+    }
+  ]
+}

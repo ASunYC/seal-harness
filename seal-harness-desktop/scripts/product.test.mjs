@@ -1,0 +1,180 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import test from 'node:test'
+import vm from 'node:vm'
+import configuration from './electron-builder.mjs'
+import { verifyDistributionArtifacts } from './verify-package.mjs'
+import { buildBrand, desktopRequire, product, productRoot, root } from './build.mjs'
+
+test('Seal Harness构建依赖由根工作区持有，不污染 Stable 或 Beta Desktop', () => {
+  const workspace = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
+  const stable = JSON.parse(readFileSync(join(root, 'dsh-plugin-desktop/package.json'), 'utf8'))
+  const beta = JSON.parse(readFileSync(join(root, 'dsh-plugin-desktop-beta/package.json'), 'utf8'))
+  assert.equal(workspace.devDependencies.morphicons, '1.7.0')
+  assert.equal(stable.devDependencies.morphicons, undefined)
+  assert.equal(beta.devDependencies.morphicons, undefined)
+})
+
+test('Seal Harness随品牌插件分发 Morphicons 许可证，不修改上游 Desktop 许可证清单', () => {
+  const notice = readFileSync(join(productRoot, 'THIRD_PARTY_NOTICES.md'), 'utf8')
+  const buildScript = readFileSync(join(productRoot, 'scripts/build.mjs'), 'utf8')
+  assert.match(notice, /morphicons 1\.7\.0/)
+  assert.match(notice, /Copyright \(c\) 2026 Guillermo/)
+  assert.match(buildScript, /'THIRD_PARTY_NOTICES\.md'/)
+})
+
+test('产品安装身份和品牌资源来源一致，分发配置不连接社区更新', () => {
+  assert.equal(configuration.appId, 'com.seal-harness.desktop')
+  assert.equal(configuration.productName, product.name)
+  assert.deepEqual(configuration.protocols, [{ name: product.name, schemes: ['seal-harness'] }])
+  assert.equal(configuration.nsis.shortcutName, product.name)
+  assert.equal(configuration.extraMetadata.desktopName, `${product.appId}.desktop`)
+  assert.equal(configuration.linux.executableName, 'seal-harness')
+  assert.equal(configuration.deb.packageName, 'seal-harness')
+  assert.equal(configuration.publish, null)
+  assert.equal(product.updatesEnabled, false)
+  const provenance = JSON.parse(readFileSync(join(productRoot, 'icon-provenance.json'), 'utf8'))
+  for (const [file, { sha256 }] of Object.entries(provenance.files)) {
+    assert.equal(createHash('sha256').update(readFileSync(join(productRoot, 'assets', file))).digest('hex'), sha256, file)
+  }
+})
+
+test('账号 Home 启动接缝由产品身份插件提供，不进入社区 Desktop 默认构建', () => {
+  assert.equal(product.identityHomeModule, '@seal-harness/identity/account-home')
+  assert.equal(product.setupWizardEnabled, false)
+  const manifest = JSON.parse(readFileSync(join(productRoot, 'plugins/identity/package.json'), 'utf8'))
+  assert.equal(manifest.exports['./account-home'], './lib/account-home.js')
+})
+
+test('产品关闭首次模型凭据弹窗但保留模型设置插件', () => {
+  const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))
+  const models = patch.find(row => row.id === 'ui-settings-models')
+  assert.deepEqual(models, { id: 'ui-settings-models', config: { credentialOnboarding: false } })
+})
+
+test('产品为所有账号提供Seal Harness助手身份并移除上游 Harness 身份', () => {
+  const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))
+  const prompt = patch.find(row => row.id === 'system-prompt')
+  assert.deepEqual(prompt, {
+    id: 'system-prompt',
+    config: {
+      includeHarnessIdentity: false,
+      includeRuntimeContext: true,
+      personaPrefix: '你是Seal Harness开发者平台中的 AI 助手。默认使用中文，准确、简洁地帮助用户完成开发、分析和知识工作。',
+      personaSuffix: '当前工作目录是 {{cwd}}。',
+    },
+  })
+})
+
+test('标准客户端模块注册三个品牌slot，并在卸载时恢复文档标题', async () => {
+  await buildBrand()
+  const { JSDOM } = desktopRequire('jsdom')
+  const dom = new JSDOM('<title>DeepSeek Harness</title><div><span><div data-slot="conversation.hero.brand.mark"><span id="mark"></span></div></span><span><span id="headline">探索未至之境</span><span>预览版</span></span></div>')
+  const document = dom.window.document
+  const registrations = new Map()
+  const disposers = []
+  const layoutEffects = []
+  const panelListeners = new Set()
+  const PluginIcon = () => null
+  const panelEntries = [{
+    component: PluginIcon,
+    options: { name: 'sidebar.panellist', id: 'plugins', order: 0, label: () => '插件' },
+    locale: 'plugin-manager',
+  }]
+  let client
+  vm.runInNewContext(readFileSync(join(productRoot, 'lib/client.js'), 'utf8'), {
+    document,
+    MutationObserver: dom.window.MutationObserver,
+    window: { __ModuleLoader__: { load({ id, factory }) {
+      assert.equal(id, 'seal-harness-desktop')
+      client = factory(id => id === 'react' ? {
+        ...desktopRequire('react'),
+        useRef: () => ({ current: document.getElementById('mark') }),
+        useLayoutEffect: effect => layoutEffects.push(effect),
+      } : desktopRequire(id))
+    } } },
+  })
+  client.apply({
+    effect(effect) { disposers.push(effect()) },
+    slots: {
+      inject(name, effect) {
+        assert.ok(['sidebar.brand.mark', 'sidebar.brand.name', 'conversation.hero.brand.mark', 'sidebar.panellist'].includes(name))
+        const result = effect()
+        if (result?.next) [...result]
+        else if (typeof result === 'function') disposers.push(result)
+      },
+      entries(name) { assert.equal(name, 'sidebar.panellist'); return panelEntries },
+      subscribe(name, listener) { assert.equal(name, 'sidebar.panellist'); panelListeners.add(listener); return () => panelListeners.delete(listener) },
+      register(options, component) {
+        if (options.name !== 'sidebar.panellist') { registrations.set(options.name, component); return }
+        const entry = { options, component, locale: options.locale }
+        panelEntries.push(entry)
+        for (const listener of panelListeners) listener()
+        return () => { panelEntries.splice(panelEntries.indexOf(entry), 1); for (const listener of panelListeners) listener() }
+      },
+    },
+  })
+  assert.equal(document.title, 'Seal Harness')
+  assert.equal(registrations.size, 3)
+  const pluginMenu = panelEntries.find(entry => entry.options.priority === -100)
+  assert.notEqual(pluginMenu.component, PluginIcon)
+  assert.equal(pluginMenu.component.name, 'PluginsMenuIcon')
+  assert.equal(pluginMenu.options.order, 40)
+  const mark = registrations.get('sidebar.brand.mark')({})
+  assert.equal(mark.type, 'img')
+  assert.equal(mark.props.alt, 'Seal Harness')
+  assert.ok(mark.props.src.startsWith('data:image/png;base64,'))
+  assert.equal(registrations.get('sidebar.brand.name')().props.children, 'Seal Harness')
+  assert.equal(registrations.get('conversation.hero.brand.mark')().props.children.props.size, 64)
+  for (const effect of layoutEffects) disposers.push(effect())
+  const headline = document.getElementById('headline')
+  assert.equal(headline.textContent, '今天，你为公司创造价值了吗？')
+  assert.equal(headline.nextElementSibling.textContent, '预览版')
+  headline.textContent = 'Into the Unknown'
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(headline.textContent, '今天，你为公司创造价值了吗？')
+  document.title = 'Migration session — DeepSeek Harness'
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(document.title, 'Migration session — Seal Harness')
+  document.title = 'Unrelated title'
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(document.title, 'Unrelated title')
+  document.title = 'Next session — DeepSeek Harness'
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(document.title, 'Next session — Seal Harness')
+  for (const dispose of disposers) dispose()
+  assert.equal(headline.textContent, 'Into the Unknown')
+  assert.equal(document.title, 'Next session — DeepSeek Harness')
+  dom.window.close()
+})
+
+
+test('Windows产物校验接受PE/品牌ZIP，并拒绝缺少品牌的ZIP', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'seal-harness-artifact-test-'))
+  try {
+    const executable = Buffer.alloc(68)
+    executable.write('MZ')
+    executable.writeUInt32LE(64, 0x3c)
+    executable.write('PE\0\0', 64)
+    const installer = join(directory, 'setup.exe')
+    const archive = join(directory, 'portable.zip')
+    writeFileSync(installer, executable)
+    const AdmZip = desktopRequire('adm-zip')
+    const zip = new AdmZip()
+    zip.addFile('seal-harness.exe', executable)
+    zip.addFile('resources/app/package.json', Buffer.from('{}'))
+    const brand = 'resources/app/node_modules/seal-harness-desktop/lib/client.js'
+    zip.addFile(brand, Buffer.from('test brand'))
+    zip.writeZip(archive)
+    const result = { artifactPaths: [installer, archive] }
+    await verifyDistributionArtifacts(result, 'win')
+    zip.deleteFile(brand)
+    zip.writeZip(archive)
+    await assert.rejects(verifyDistributionArtifacts(result, 'win'), /ZIP 缺少/)
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
+})

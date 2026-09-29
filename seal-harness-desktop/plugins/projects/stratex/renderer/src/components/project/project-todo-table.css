@@ -1,0 +1,367 @@
+.todo-tblshell {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+/* 宽内容在**自己的容器里**横滚，页面本体不横滚；纵滚也归这里，表头才吸得住 */
+.todo-tblwrap {
+  /* min-height:0 不能省：列方向 flex 项的 min-height 缺省是 auto，容器会被表格撑满，
+     纵滚就跑到外层页签上去了——吸顶表头也就跟着一起滚走。 */
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  border: var(--bw) solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--panel);
+}
+.todo-tbl {
+  width: 100%;
+  min-width: 760px; /* 原型 .rqt min-width=760px（旧 880；760 不在 --px-* 梯，保留字面量） */
+  /* separate：collapse 下吸顶表头的下边框会被浏览器留在原地，滚起来就断线 */
+  border-collapse: separate;
+  border-spacing: 0;
+  /* 原型 .rqt = 12px（密度岛，见 :285 注；旧 var(--fs-body) 在 compact 下=13px） */
+  font-size: var(--fs-200);
+}
+
+/* ── 表头：吸顶 + 字距拉开，与数据行拉开层级（不是同一种字） ── */
+.todo-tbl thead th {
+  position: sticky;
+  z-index: var(--z-sticky);
+  top: 0;
+  padding: 0;
+  border-bottom: var(--bw) solid var(--line-strong);
+  background: var(--sunken);
+  text-align: left;
+  white-space: nowrap;
+}
+.todo-tbl__sort,
+.todo-tbl__opsHead {
+  display: flex;
+  width: 100%;
+  height: var(--ctl-h);
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0 var(--sp-3);
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font: var(--fw-label) var(--fs-100) / 1 var(--font-sans);
+  letter-spacing: 0.06em;
+}
+.todo-tbl__sort {
+  cursor: pointer;
+  transition: color var(--dur-1) var(--ease-out);
+}
+/* 排序箭头走伪元素：不排序时留位不占眼，指到才淡出提示「这列点得动」 */
+.todo-tbl__sort::after {
+  content: '↕';
+  opacity: 0;
+  transition: opacity var(--dur-1) var(--ease-out);
+}
+.todo-tbl__sort:hover {
+  color: var(--ink);
+}
+.todo-tbl__sort:hover::after {
+  opacity: 0.5;
+}
+.todo-tbl__sort:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-flat);
+}
+.todo-tbl th[aria-sort='ascending'] .todo-tbl__sort,
+.todo-tbl th[aria-sort='descending'] .todo-tbl__sort {
+  color: var(--accent-text);
+}
+.todo-tbl th[aria-sort='ascending'] .todo-tbl__sort::after {
+  content: '↑';
+  opacity: 1;
+}
+.todo-tbl th[aria-sort='descending'] .todo-tbl__sort::after {
+  content: '↓';
+  opacity: 1;
+}
+/* 当前排序列整列压一层底：一眼知道「现在是按这列排的」 */
+.todo-tbl th[aria-sort='ascending'],
+.todo-tbl th[aria-sort='descending'] {
+  background: var(--accent-soft);
+}
+
+/* 勾选列与行号列：定宽、不参与排序，行号弱到只在需要点数时才看得见 */
+.todo-tbl__pickHead,
+.todo-tbl__numHead,
+.todo-tbl__pick,
+.todo-tbl__num {
+  width: 1%;
+  text-align: center;
+}
+.todo-tbl__pickHead,
+.todo-tbl__pick {
+  padding: 0 var(--sp-2);
+}
+.todo-tbl__pickHead input,
+.todo-tbl__pick input {
+  display: block;
+  margin: 0 auto;
+  cursor: pointer;
+}
+.todo-tbl__num {
+  color: var(--muted);
+  font-size: var(--fs-100);
+}
+.todo-tbl__numHead .todo-tbl__opsHead {
+  justify-content: center;
+  padding: 0 var(--sp-2);
+}
+
+/* ── 数据行 ── */
+.todo-tbl td {
+  /* 原型 .rqt td = padding 7px 10px、行高由内边距自然撑开（≈30px）；
+     旧 compact 的 --row-h(24) + --sp-1/--sp-3(2/6) 收得比原型更紧，与原型不符（见 :285）。 */
+  padding: var(--px-7) var(--px-10);
+  border-bottom: var(--bw) solid var(--line-weak);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.todo-tbl tbody:last-of-type tr:last-child td {
+  border-bottom: 0;
+}
+.todo-tbl tbody tr {
+  transition: background-color var(--dur-1) var(--ease-out);
+}
+/* hover/键盘进入：底色 + 左侧竖轨。竖轨是为了在长表里认得住「我在第几行」 */
+.todo-tbl tbody tr:hover,
+.todo-tbl tbody tr:focus-within {
+  background: var(--sunken);
+}
+.todo-tbl tbody tr:hover td:first-child,
+.todo-tbl tbody tr:focus-within td:first-child {
+  box-shadow: inset var(--bw-rule) 0 0 var(--accent);
+}
+/* 选中行常驻一层强调底：与 hover 区分得开（hover 是路过，选中是状态） */
+.todo-tbl tbody tr.is-picked {
+  background: var(--accent-soft);
+}
+/* 闭环的单降噪但不隐藏——扫全量时它们是背景，不是主角 */
+.todo-tbl tbody tr.is-closed {
+  color: var(--muted);
+}
+/* 展开出来的子任务：压深一档底 + 左侧一条细轨，与它的需求行连成一段 */
+.todo-tbl tbody tr.is-child {
+  background: var(--sunken);
+}
+.todo-tbl tbody tr.is-child td:first-child {
+  box-shadow: inset var(--bw-rule) 0 0 var(--line-strong);
+}
+/* 个人条目：整行一条强调左轨——徽标之外再给一层不必逐格去读的信号 */
+.todo-tbl tbody tr.is-personal td:last-child {
+  box-shadow: inset calc(-1 * var(--bw-rule)) 0 0 var(--accent-line);
+}
+/* 可点开的行：可编辑行（任务进编辑）与需求行（进单屏详情）给出可点手感；键盘焦点环
+   （Chromium 认 tr 上的 outline）只落在自身可聚焦的任务行上。打开只由空白承载区触发，
+   交互控件（复选框/状态药丸/展开箭头/工作单/标题按钮）各自吃掉点击。 */
+.todo-tbl tbody tr.is-editable,
+.todo-tbl tbody tr.is-openable {
+  cursor: pointer;
+}
+.todo-tbl tbody tr:focus-visible {
+  outline: var(--bw-strong) solid var(--focus-ring-color);
+  outline-offset: -2px;
+}
+
+/* 组头：整行一格，压深一层底，与数据行拉开 */
+.todo-tbl__groupRow td {
+  height: auto;
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: var(--bw) solid var(--line);
+  background: var(--sunken);
+}
+.todo-tbl__groupName {
+  color: var(--ink);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-label);
+}
+.todo-tbl__groupCnt {
+  margin-left: var(--sp-2);
+  color: var(--muted);
+  font-size: var(--fs-100);
+}
+
+/* 需求标识列（原型 .requirement-id18：宽 100–180px）：定宽独立成列，标题列宽度不再被它牵连。
+   取区间上限 180 且下限也钉在 180：原型的编号很短，这里是 36 位 UUID——窄宽下表格本就横滚，
+   列若退到 100px，UUID 会断成六行把整行撑高；180px 时两行排完。180 不在 --px-* 梯，保留字面量。 */
+.todo-tbl :is(th, td)[data-column='reference'] {
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
+  white-space: normal;
+}
+.todo-tbl__refCopy {
+  margin-left: calc(-1 * var(--sp-2));
+  color: var(--muted2);
+  font-size: var(--fs-100);
+}
+.todo-tbl__refCopy :deep(.ref-copy__value) {
+  font-family: var(--font-mono);
+}
+
+/* 标题是锚列：**hug 内容**，不再 width:100% 吸走全部横向余量。
+   ⚠️ 曾用 width:100% 让标题吞掉 slack——但宽屏 + 列少 + 数据少时，slack 全落在
+   标题文字与右侧列组之间，撕出近半屏空地（实机 x≈440→x≈1400）。改由末尾「操作」列
+   承接余量（见 .todo-tbl__opsCell），所有实列左收贴排；max-width 兜住超长标题（换行）。 */
+.todo-tbl__title {
+  min-width: 210px; /* 原型 .c-title min-width=210px（旧 220；210 不在 --px-* 梯，保留字面量） */
+  /* max-width 560：原型 .c-title 是 width:100% 无上限；此处刻意封顶防宽屏 slack 撕裂
+     （见下方锚列注释），是有据的程序分歧，保留（560 亦不在 --px-* 梯）。 */
+  max-width: 560px;
+  white-space: normal;
+}
+/* 「标签」这一列自己的标记排布。⚠️ 与 TodoTitleCell 里那一份同形但不能共用：
+   scoped 样式只作用于自己模板里的元素，跨组件共用得把它提成全局类——为两个
+   小标记开一条全局类，代价比这几行重复更大。 */
+.todo-tbl__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: var(--px-2); /* 标签换行微调，原型无对应（标签在原型是单列 chip 组），保留 2px */
+}
+/* 标签列（原型 .tagp）：实线药丸 chip，高度由内边距自然撑开（不写死）。
+   两列靠**形态**区分——标签＝药丸 chip，关联＝图标+数字——不再靠边框虚实。 */
+.todo-tbl__label {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--sp-1) var(--sp-3);
+  border: var(--bw) solid var(--line-strong);
+  border-radius: var(--r-pill);
+  color: var(--muted);
+  font-size: var(--fs-100);
+}
+/* 关联列（原型「关联」）：链接图标 + 数字、**无边框**，与标签的药丸 chip 靠形态区分。
+   ⛔ 别把边框加回来当区分轴——两列此前靠「虚线 vs 实线」区分，那个轴在缩放与深色下
+   基本读不出来，形态（药丸 chip vs 图标+数字）才读得出。 */
+.todo-tbl__links {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--muted);
+  font-size: var(--fs-100);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 状态药丸的样式已随组件收进 TodoRowActions（看板卡与表格状态列同一份），
+   这里不再有 .todo-tbl__state——状态在表里只出现在状态列那一处。 */
+
+.todo-tbl__who {
+  display: inline-flex;
+  max-width: 140px; /* 原型 .asg 无上限；此处封顶超长处理人名，程序增量，保留（140 不在 --px-* 梯） */
+  align-items: center;
+  gap: var(--sp-2);
+}
+.todo-tbl__whoName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.todo-tbl__unassigned {
+  color: var(--muted);
+  font-size: var(--fs-100);
+}
+/* 助理不是成员，所以不给头像：一个称谓就够，别让它长得像组里多了个人 */
+.todo-tbl__assistant {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--sp-2);
+  border: var(--bw) dashed var(--line-strong);
+  border-radius: var(--r-sm);
+  color: var(--muted2);
+  font-size: var(--fs-100);
+}
+
+/* 优先级：前置圆点 + 字。只给字的话，一列全是「高中低」根本扫不出轻重 */
+.todo-tbl__prio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--px-6); /* 原型 .pri-dot gap=6px（旧 5px） */
+  color: var(--muted2);
+  font-size: var(--fs-100);
+}
+.todo-tbl__prio::before {
+  content: '';
+  width: var(--px-7); /* 原型 .pri-dot i = 7px（旧 6px） */
+  height: var(--px-7);
+  border: var(--bw) solid currentcolor;
+  border-radius: 50%;
+}
+.todo-tbl__prio[data-priority='high'] {
+  color: var(--danger-text);
+}
+.todo-tbl__prio[data-priority='high']::before {
+  background: currentcolor;
+}
+.todo-tbl__prio[data-priority='medium'] {
+  color: var(--warn-text);
+}
+.todo-tbl__prio[data-priority='medium']::before {
+  background: currentcolor;
+}
+.todo-tbl__prio[data-priority='low'] {
+  color: var(--muted);
+}
+
+.todo-tbl__due,
+.todo-tbl__when {
+  color: var(--muted2);
+  font-size: var(--fs-100);
+}
+/* 临期与看板同一语义（isTodoDueSoon 是同一个判据）：警示色 + 左侧短竖线 */
+.todo-tbl__due.is-soon {
+  position: relative;
+  color: var(--warn-text);
+  font-weight: var(--fw-label);
+}
+/* 临期标记：原型用首列 td 的 inset 3px box-shadow 做整行左竖条（.rqt tr.due-soon td:first-child）；
+   本处改在「截止」列内做 12px 短竖标，是不同承载（治标同语义），无对应 height 可抄，保留 12px。 */
+.todo-tbl__due.is-soon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: var(--sp-1);
+  width: var(--bw-strong);
+  height: var(--px-12);
+  background: var(--warn);
+  transform: translateY(-50%);
+}
+
+/* 行操作：⛔ 不再平时降透明度——0.55 的透明度把「认领 / 拆解 / 删除 / 工作单」压成灰字，
+   看上去就是禁用态（负责人截图二、三）。原型 .requirement-row-actions13 的文字钮常态即满色。
+   ⛔ 操作列也不再 width:100% 吞掉全部横向余量：百分比列在自动表格布局里优先拿宽度，
+   其余列统统压到最小宽——需求标识列只剩 100px（UUID 断成六行）、标题列停在 210px，
+   宽窗下右侧整块空白都落在操作格里（截图二、三「各列挤在左边」）。余量改由各自动列按内容比例分摊。 */
+.sr-only {
+  position: absolute;
+  width: 1px; /* a11y 视觉隐藏惯用尺寸（D2.15 例外，非原型度量） */
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.todo-table-layout-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+.todo-subtree-state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  white-space: normal;
+}
+.todo-tbl td {
+  overflow-wrap: anywhere;
+}
+.todo-tbl__title {
+  white-space: normal;
+}

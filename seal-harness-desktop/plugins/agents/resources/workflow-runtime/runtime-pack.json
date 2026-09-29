@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "product": "stratex-langgraph",
+  "version": "0.1.14",
+  "sourceCommit": "b127a1abb54c46e46d5300d6f253c5938b4983c2",
+  "imageReference": "metaversedockerrepo.geovisearth.com/agentearth/stratex-langgraph:0.1.14",
+  "platform": "linux/amd64",
+  "image": "sha256:7d7652fb54bb7eabd72aef069b94b2e1394495a2bca6060cece4a1546af588eb",
+  "archive": "stratex-langgraph.tar",
+  "sha256": "e10ae26e5734acf2a00f9056be62cb69a8b27bc174040aaa16fb91251b8073a5"
+}

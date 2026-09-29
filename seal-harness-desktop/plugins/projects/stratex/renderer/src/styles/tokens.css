@@ -1,0 +1,321 @@
+/* ════════════════════════════════════════════════════════════════
+   ⚠️ 本文件由 scripts/gen-tokens.py 生成，禁止手改。
+   真相源：docs/星图工作台过渡期设计系统与UI实现规范-v1.md
+   要改 token 请改规范，然后重新生成。
+   源内容指纹：6b132b6b403b7a22
+   ════════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════════
+   星图工作台 · 过渡期设计系统 C「墨轨 Editor Grade」token
+   1) 非主题 token   2) 密度档   3) 深色   4) 浅色
+   规则：core 22 值禁改（D1.3）；禁孤儿变量（D2.1）；
+        专用 token 只有 approval / diff / ansi 三组（D2.2）
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─────────── 1) 非主题 token ─────────── */
+:host{
+  /* 字体 */
+  --font-sans:"Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI",
+              "Microsoft YaHei",system-ui,-apple-system,"Noto Sans SC",sans-serif;
+  --font-mono:"Cascadia Code","Cascadia Mono",Consolas,
+              "Sarasa Mono SC",ui-monospace,monospace;
+
+  /* 字号绝对阶梯 */
+  --fs-100:11px; --fs-200:12px; --fs-300:13px; --fs-400:14px;
+  --fs-500:16px; --fs-600:20px; --fs-700:26px;
+
+  /* 圆角（不随密度变）· 2026-08-29 由 4/5/6/8 改为原型的 6/8/12/16 */
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-pill:999px;
+
+  /* 边框宽度 */
+  --bw:1px; --bw-strong:2px; --bw-rule:3px;
+
+  /* 层级 */
+  --z-base:0; --z-sticky:10; --z-rail:20; --z-dropdown:100;
+  --z-approval:200; --z-scrim:300; --z-modal:310; --z-toast:400; --z-tooltip:500;
+  /* 补档（P0-2 实测暴露的阶梯缺口）：
+     --z-drawer 抽屉在遮罩之上、模态之下（现借 --z-scrim，overlay.css 已标临时态）；
+     --z-dropdown-modal「模态内的下拉」在模态之上、toast 之下（现只能借 --z-modal 靠 DOM 先后决胜）。
+     ⚠️ token 已就位；把 overlay 的 z-kind 消费方从借档切到本档需 P0-2 叠层语境 + 真机栈序走查，另行处置。 */
+  --z-drawer:305; --z-dropdown-modal:320;
+
+  /* 动效 · 兼容层（保留，既有 164 处消费点不强制迁移） */
+  --dur-1:90ms; --dur-2:150ms; --dur-3:220ms;
+  --ease-out:cubic-bezier(.2,.8,.3,1);
+  --ease-in-out:cubic-bezier(.4,0,.2,1);
+  --ease-emph:cubic-bezier(.16,1,.3,1);
+
+  /* spring 词汇表（linear() 弹簧采样，Electron Chromium 原生支持；新代码用这一组） */
+  --spring-smooth:linear(0,.094,.316,.556,.742,.865,.936,.973,.99,.997,1);
+  --spring-snappy:linear(0,.156,.462,.72,.877,.953,.985,.996,1);
+  --spring-bounce:linear(0,.18,.51,.803,1.008,1.078,1.07,1.032,1.002,.994,.998,1);
+  /* 场景时长（退场一律 = 入场逆路径 × 0.7 × smooth，永不回弹） */
+  --d-press:120ms; --d-pop:260ms; --d-pop-out:180ms;
+  --d-panel:380ms; --d-flow:320ms; --d-view:150ms;
+
+  /* 布局固定量（§4） */
+  --nav-w:236px; --rail-w:48px; --aside-w:360px;
+  --aside-w-min:320px; --aside-w-max:720px;
+  --topbar-h:36px; --statusbar-h:24px;
+  --content-max:820px; --tree-indent:14px;
+  /* 顶栏右侧动作区的安全避让：默认宽窗 / ≤1160px 紧凑窗；无中右栏的会话头消费 */
+  --topbar-actions-clearance:15.5rem; --topbar-actions-clearance-compact:12.5rem;
+
+  /* 焦点环（色在主题块里） */
+  --focus-ring:0 0 0 2px var(--panel),0 0 0 4px var(--focus-ring-color);
+  --focus-ring-flat:0 0 0 2px var(--focus-ring-color);
+
+  /* 默认密度：宽松（模块根覆写） */
+  --sp-1:3px; --sp-2:6px; --sp-3:10px; --sp-4:14px; --sp-5:20px; --sp-6:28px; --sp-7:40px;
+  --ctl-h-sm:26px; --ctl-h:32px; --ctl-h-lg:40px; --row-h:32px;
+  --lh-tight:1.6; --lh-body:1.75; --lh-mono:1.55;
+  --card-pad:16px; --card-gap:14px;
+  --fs-body:var(--fs-400); --fs-meta:var(--fs-200); --grid-min:280px;
+
+  /* 原型像素梯（密度无关 · 逐帧对齐用 · 见 §2.4a）——值即名：--px-N = N px。
+     仅用于「必须与高保真原型逐帧一致」的场合；密度自适应间距仍首选 --sp-*。
+     负向位移用 calc(-1 * var(--px-N))，不另设负 token。只收原型实测值，故非连续。 */
+  --px-1:1px; --px-2:2px; --px-3:3px; --px-4:4px; --px-5:5px; --px-6:6px;
+  --px-7:7px; --px-8:8px; --px-9:9px; --px-10:10px; --px-11:11px; --px-12:12px;
+  --px-13:13px; --px-14:14px; --px-15:15px; --px-16:16px; --px-17:17px; --px-18:18px;
+  --px-20:20px; --px-22:22px; --px-24:24px; --px-26:26px; --px-27:27px; --px-28:28px;
+  --px-30:30px; --px-32:32px; --px-34:34px; --px-38:38px; --px-40:40px; --px-44:44px;
+  --px-52:52px; --px-60:60px; --px-64:64px; --px-66:66px; --px-84:84px; --px-300:300px;
+
+  /* 行高梯（密度无关 · 逐帧对齐用 · 见 §2.4a）——名即值，小数点写作 p：--lh-1p6 = 1.6。
+     密度自适应行高仍首选 --lh-tight/body/mono；本梯是那三档的超集，供逐帧对齐落值。 */
+  --lh-1p12:1.12; --lh-1p2:1.2; --lh-1p25:1.25; --lh-1p3:1.3; --lh-1p35:1.35;
+  --lh-1p4:1.4; --lh-1p45:1.45; --lh-1p5:1.5; --lh-1p55:1.55; --lh-1p6:1.6;
+  --lh-1p65:1.65; --lh-1p7:1.7; --lh-1p75:1.75; --lh-1p8:1.8; --lh-1p85:1.85;
+
+  /* 字号对齐梯（密度无关 · 逐帧对齐用 · 见 §2.5a）——名即值，小数点写作 p：--fs-px-10p5 = font-size:10.5px
+     （与 --lh-NNN 同构，避免小数点进变量名）。只收原型实测到的 off-scale 固定字号；
+     §2.5 阶梯值（11/13/14/16/26）不在此（属「本该 var(--fs-*)」的债）；字号仍首选 var(--fs-*)。
+     登录 hero 的 clamp() 流式展示字号（22/24/29/34/36）不设 token，见 §2.5a 收/不收判据。 */
+  --fs-px-8:8px; --fs-px-9:9px; --fs-px-9p5:9.5px; --fs-px-10:10px; --fs-px-10p5:10.5px;
+  --fs-px-11p5:11.5px; --fs-px-12p5:12.5px; --fs-px-13p5:13.5px; --fs-px-15:15px; --fs-px-19:19px;
+
+  /* 字重对齐梯（密度无关 · 逐帧对齐用 · 见 §2.5b）——名即值：--fw-600 = font-weight:600。
+     原型深/浅两主题实测字重**完全一致**（翻 data-theme 背景变但字重分布逐字节相同），
+     故本梯**主题无关**、非浅色臆造。只收「项目详情」帧 off-语义档的实测值：语义档现取
+     {400,560,640}（2026-09-01 照原型重推，见 §2.5b / D2.17）——原型九档减去这三值 =
+     580 600 620 650 660 700 六值；400/560/640 属「本该 var(--fw-body/label/title)」的债不入梯。
+     字号纪律同理，字重仍首选语义 --fw-*。 */
+  --fw-580:580; --fw-600:600; --fw-620:620; --fw-650:650; --fw-660:660; --fw-700:700;
+}
+
+/* ─────────── 2) 密度档 ─────────── */
+:host([data-density="comfortable"]), [data-density="comfortable"]{
+  --sp-1:3px; --sp-2:6px; --sp-3:10px; --sp-4:14px; --sp-5:20px; --sp-6:28px; --sp-7:40px;
+  --ctl-h-sm:26px; --ctl-h:32px; --ctl-h-lg:40px; --row-h:32px;
+  --lh-tight:1.6; --lh-body:1.75; --lh-mono:1.55;
+  --card-pad:16px; --card-gap:14px;
+  --fs-body:var(--fs-400); --fs-meta:var(--fs-200); --grid-min:280px;
+}
+:host([data-density="compact"]), [data-density="compact"]{
+  --sp-1:2px; --sp-2:4px; --sp-3:6px; --sp-4:10px; --sp-5:14px; --sp-6:20px; --sp-7:28px;
+  --ctl-h-sm:22px; --ctl-h:26px; --ctl-h-lg:32px; --row-h:24px;
+  --lh-tight:1.45; --lh-body:1.6; --lh-mono:1.5;
+  --card-pad:10px; --card-gap:8px;
+  --fs-body:var(--fs-300); --fs-meta:var(--fs-100); --grid-min:240px;
+}
+/* 原型对齐密度档（逐帧对齐专用 · 非第三个语义档，见 D1.6 例外 + §2.4b）——取值全部来自
+   高保真原型「项目详情」帧计算样式实测：≈ comfortable 字号 + 1.6 行高 + compact～comfortable
+   之间的间距。近乎连续的间距，7 个 --sp 槽覆盖不全的值留给逐组件 --px-*（妥协见 §2.4b）。 */
+:host([data-density="proto"]), [data-density="proto"]{
+  --sp-1:3px; --sp-2:6px; --sp-3:7px; --sp-4:10px; --sp-5:14px; --sp-6:20px; --sp-7:28px;
+  --ctl-h-sm:26px; --ctl-h:28px; --ctl-h-lg:34px; --row-h:35px;
+  --lh-tight:1.6; --lh-body:1.6; --lh-mono:1.6;
+  --card-pad:13px; --card-gap:11px;
+  --fs-body:var(--fs-400); --fs-meta:var(--fs-200); --grid-min:252px;
+}
+
+/* ─────────── 3) 深色（主场） ─────────── */
+:host([data-theme="dark"]){
+  color-scheme:dark;
+
+  /* 背景三层 + 凹陷（色板 v3「曜夜」：石墨中性面，非墨轨冷蓝灰） */
+  --rail:#141416; --bg:#161618; --panel:#1d1d20; --raised:#242428; --sunken:#101012;
+  --scrim:rgba(5,5,8,.55);
+  --glass:rgba(20,20,22,.72); /* = 原型 --glass：菜单栏/会话头毛玻璃底（backdrop-filter 之上叠此半透明色） */
+
+  /* 前景三级
+     ⚠️ v3 按【角色】映射自原型，不按名字：原型 --mut(较亮次级)→ 本表 --muted2，
+        原型 --mut2(较暗装饰)→ 本表 --muted。名字相近是巧合，勿按字面「修正」对调，
+        否则 112 个消费点的明暗、以及「哪个能当正文」会一起翻（详见 §1.2 冻结表注）。
+        语义仍同 §2.1.2：--muted2=次级正文(高对比)、--muted=装饰/禁用(低对比,禁作正文)。 */
+  --ink:#ececea; --muted2:#a3a39d; --muted:#84847e;
+
+  /* 边框（--line/--line-strong = 原型 --ln/--ln2；--line-weak 原型未定义，派生） */
+  --line:#29292e; --line-strong:#38383e;
+  --line-weak:#202024; /* 派生：卡内分组线，弱于 --line */
+
+  /* 字重（主题无关：照高保真原型逐帧实测，深浅同值——原型两主题字重逐字节一致。
+     不再做「深色降一档抵消 halation」的主题差，理由与代价见 §2.5 D2.17 改写。） */
+  --fw-body:400; --fw-label:560; --fw-title:640;
+
+  /* 强调（v3 静蓝；--accent/-text/-soft = 原型 --ac/--ac-t/--ac-soft） */
+  --accent:#5aa2f7; --accent-text:#8ec1fa;
+  --accent-hover:#7bb8fa; /* 派生：--accent 提亮 */
+  --accent-soft:#16283e; --accent-line:#26466a; /* -line 派生：accent 描边 */
+
+  /* 主按钮反转对（= 原型 --btn-p-bg/--btn-p-fg，墨黑/反白）。
+     ⚠️ 约束（§2.12 V4a）：--accent **不作带文本的实心填充**——主按钮走本对，
+        accent 芯片/徽标/选中态走 --accent-soft + --accent-text。故 --on-accent 已退役。 */
+  --btn-p-bg:#ececea; --btn-p-fg:#161616;
+
+  /* 语义 · 危险（= 原型 --bad，与规范原冻结值一致；--danger-soft = 原型 --bad-soft） */
+  --danger:#d47b7b; --danger-text:#d47b7b; --danger-hover:#e39191;
+  --danger-soft:#2e1d1c; --danger-line:#5c3535; --on-danger:#161618;
+  /* 语义 · 成功（= 原型 --ok / --ok-soft） */
+  --ok:#82b487; --ok-text:#82b487; --ok-soft:#182419; --ok-line:#2e4630;
+  /* 语义 · 警示（= 原型 --warn / --warn-soft） */
+  --warn:#d8994a; --warn-text:#d8994a; --warn-soft:#2a2013; --warn-line:#4d3e24;
+
+  /* 专用① 审批（红/琥珀族随 --danger/--warn；辨识度优先于协调，契约>美观 D1.5） */
+  --approval-bg:#211a1a; /* 派生：暖化红底 */ --approval-line:#5c3535;
+  --approval-rule:#8a4a4a; --approval-accent:#d47b7b;
+  --approval-halo:0 0 0 3px rgba(212,123,123,.08);
+  --approval-caution-bg:#2a2013; /* = warn-soft */ --approval-caution-line:#4d3e24;
+  --approval-caution-rule:#8a6f3a; --approval-caution-accent:#d8994a;
+
+  /* 专用② diff（非色可辨契约 = +/- 字符 + gutter 竖条，在组件层 D2.11，不随换色丢失） */
+  --diff-add-fg:#82b487; --diff-add-bg:rgba(130,180,135,.10); --diff-add-rule:#2e4630;
+  --diff-del-fg:#d47b7b; --diff-del-bg:rgba(212,123,123,.10); --diff-del-rule:#5c3535;
+  --diff-mod-fg:#d8994a; --diff-mod-bg:rgba(216,153,74,.10);
+  --diff-ctx-fg:#a3a39d; --diff-gutter-fg:#84847e;
+  --diff-hunk-bg:#16283e; --diff-hunk-fg:#5aa2f7;
+
+  /* 专用③ 终端 ANSI（原型未定义；黑/白随中性、蓝随 accent，红绿黄品青保持"认得出是 ANSI"） */
+  --term-bg:#161618; --term-fg:#ececea;
+  --ansi-black:#161618;   --ansi-black-b:#44443e; /* 派生 */
+  --ansi-red:#d47b7b;     --ansi-red-b:#e39191;
+  --ansi-green:#82b487;   --ansi-green-b:#97c797;
+  --ansi-yellow:#d8994a;  --ansi-yellow-b:#e5bd7c;
+  --ansi-blue:#5aa2f7;    --ansi-blue-b:#8ec1fa;
+  --ansi-magenta:#b48ead; --ansi-magenta-b:#c9a6c4;
+  --ansi-cyan:#78b8c4;    --ansi-cyan-b:#92cdd8;
+  --ansi-white:#ececea;   --ansi-white-b:#f6f6f4; /* 派生 */
+
+  /* 其余（code-bg/term-bg 随 --bg，code-fg 随 --ink，选区/高亮随 accent/warn，滚动条派生） */
+  --code-bg:#161618; --code-line:#2a2a2e; --code-fg:#d9d9d5;
+  --sel-bg:rgba(90,162,247,.24); --hl-bg:rgba(216,153,74,.22);
+  --scroll-thumb:#34343a; --scroll-thumb-hover:#434349; /* 派生 */
+  --focus-ring-color:#5aa2f7;
+
+  /* 分层：深色靠明度台阶，阴影 1 档关闭（sh-2/3 取原型 --sh-pop/--sh-modal 海拔） */
+  --sh-1:none;
+  --sh-2:0 18px 44px rgba(4,4,7,.54),0 2px 8px rgba(4,4,7,.42);
+  --sh-3:0 32px 80px rgba(4,4,7,.62),0 4px 16px rgba(4,4,7,.46);
+}
+
+/* ─────────── 4) 浅色（一等，不是附属） ─────────── */
+:host([data-theme="light"]){
+  color-scheme:light;
+
+  /* 背景三层 + 凹陷（色板 v3「云白」：纯白画布 + 暖灰侧栏） */
+  --rail:#f7f7f4; --bg:#fafaf8; --panel:#ffffff;
+  --raised:#ffffff;          /* 白之上无更白 → 浮起交给 --sh-3 */
+  --sunken:#f1f1ee;
+  --scrim:rgba(30,30,26,.4);
+  --glass:rgba(255,255,255,.8); /* = 原型 --glass：菜单栏/会话头毛玻璃底（backdrop-filter 之上叠此半透明色） */
+
+  /* 前景三级（同 §2.1.2 角色；--muted2 = 原型 --mut，--muted = 原型 --mut2，勿按名对调） */
+  --ink:#1b1b19; --muted2:#63635e; --muted:#75756f;
+
+  /* 边框（--line/--line-strong = 原型 --ln/--ln2；--line-weak 派生） */
+  --line:#ebebe7; --line-strong:#ddddd8;
+  --line-weak:#f2f1ec; /* 派生：卡内分组线，弱于 --line */
+
+  /* 字重（与深色同值：原型深浅两主题实测逐字节一致，不再浅底加重——见 §2.5 D2.17 改写与「已知代价」） */
+  --fw-body:400; --fw-label:560; --fw-title:640;
+
+  /* 强调（v3 偏亮天蓝；--accent/-text/-soft = 原型 --ac/--ac-t/--ac-soft） */
+  --accent:#3e8df7; --accent-text:#1e6ad9;
+  --accent-hover:#2f7ce6; /* 派生：--accent 压深 */
+  --accent-soft:#e8f1fe; --accent-line:#bcd6fb; /* -line 派生 */
+  --btn-p-bg:#1b1b19; --btn-p-fg:#ffffff; /* 主按钮反转对，见深色块注与 §2.12 V4a；--on-accent 已退役 */
+
+  /* 语义 · 危险（= 原型 --bad / --bad-deep / --bad-soft） */
+  --danger:#c0392b; --danger-text:#c0392b; --danger-hover:#a53124;
+  --danger-soft:#f9ecea; --danger-line:#e8b4ae; --on-danger:#ffffff;
+  /* 语义 · 成功（= 原型 --ok / --ok-soft） */
+  --ok:#3f8a4f; --ok-text:#2f6b3c; --ok-soft:#eaf2ea; --ok-line:#c4e0cb;
+  /* 语义 · 警示（= 原型 --warn / --warn-soft） */
+  --warn:#a1651f; --warn-text:#8a5f14; --warn-soft:#f8f0de; --warn-line:#e7d3ae;
+
+  /* 专用① 审批（背景随 --danger-soft/--warn-soft，rule/accent 随 --danger/--warn） */
+  --approval-bg:#f9ecea; --approval-line:#e8b4ae;
+  --approval-rule:#c0392b; --approval-accent:#c0392b;
+  --approval-halo:0 0 0 3px rgba(192,57,43,.07);
+  --approval-caution-bg:#f8f0de; --approval-caution-line:#e7d3ae;
+  --approval-caution-rule:#a1651f; --approval-caution-accent:#8a5f14;
+
+  /* 专用② diff（非色可辨契约在组件层 D2.11；-ctx/-gutter 随 muted，-hunk 随 accent） */
+  --diff-add-fg:#2f6b3c; --diff-add-bg:rgba(63,138,79,.09); --diff-add-rule:#3f8a4f;
+  --diff-del-fg:#c0392b; --diff-del-bg:rgba(192,57,43,.07); --diff-del-rule:#c0392b;
+  --diff-mod-fg:#8a5f14; --diff-mod-bg:rgba(161,101,31,.08);
+  --diff-ctx-fg:#63635e; --diff-gutter-fg:#75756f;
+  --diff-hunk-bg:#e8f1fe; --diff-hunk-fg:#1e6ad9;
+
+  /* 专用③ 终端 ANSI（原型未定义；黑/白随中性、蓝黄随 accent/warn，红绿品青保持辨识度） */
+  --term-bg:#ffffff; --term-fg:#1b1b19;
+  --ansi-black:#1b1b19;   --ansi-black-b:#63635e;
+  --ansi-red:#c0392b;     --ansi-red-b:#d4503f;
+  --ansi-green:#3f8a4f;   --ansi-green-b:#4fa361;
+  --ansi-yellow:#a1651f;  --ansi-yellow-b:#c9933a;
+  --ansi-blue:#3e8df7;    --ansi-blue-b:#66a5f9; /* -b 派生 */
+  --ansi-magenta:#8b5a86; --ansi-magenta-b:#a26f9c;
+  --ansi-cyan:#2f7e8c;    --ansi-cyan-b:#3d97a6;
+  --ansi-white:#63635e;   --ansi-white-b:#75756f;   /* 非背景色，见 §2.1.7 注；随 muted 系 */
+
+  /* 其余（code-bg 随 --sunken，选区/高亮随 accent/warn，滚动条派生） */
+  --code-bg:#f1f1ee; --code-line:#e2e2dd; --code-fg:#35352f;
+  --sel-bg:rgba(62,141,247,.16); --hl-bg:rgba(161,101,31,.18);
+  --scroll-thumb:#d8d8d2; --scroll-thumb-hover:#c3c3bc; /* 派生 */
+  --focus-ring-color:#3e8df7;
+
+  /* 分层：浅色靠细线 + 轻投影（取原型 --sh-1/--sh-pop/--sh-modal 三档） */
+  --sh-1:0 1px 2px rgba(25,25,20,.05);
+  --sh-2:0 18px 44px rgba(25,25,20,.12),0 2px 8px rgba(25,25,20,.07);
+  --sh-3:0 32px 80px rgba(25,25,20,.16),0 4px 16px rgba(25,25,20,.09);
+}
+
+/* ─────────── 全局基底 ─────────── */
+:host{ height:100%; }
+:host{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--font-sans);
+  font-size:var(--fs-body); line-height:var(--lh-tight); font-weight:var(--fw-body);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;                    /* 桌面壳：滚动只发生在内部容器 */
+}
+::selection{ background:var(--sel-bg); }
+code,kbd,pre,samp{ font-family:var(--font-mono); }
+.tnum{ font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }
+
+/* 滚动条（Chromium）——尺寸照原型实测：轨 9px、拇指留 2px 透明边（可见 5px）。
+   ⚠️ ::-webkit-scrollbar-button 必须显式关掉：一旦自定义了 ::-webkit-scrollbar，
+   Chrome 就会把上下两个「步进箭头」渲染成未样式化的方块——默认状态下它们本来
+   不显示，自定义之后反而冒出来。不关的话侧栏滚动条两端各挂一个突兀方块（实机可见）。 */
+*::-webkit-scrollbar{ width:9px; height:9px; }
+*::-webkit-scrollbar-button{ display:none; width:0; height:0; }
+*::-webkit-scrollbar-corner{ background:transparent; }
+*::-webkit-scrollbar-thumb{
+  background:var(--scroll-thumb); border-radius:var(--r-pill);
+  border:2px solid transparent; background-clip:content-box;
+}
+*::-webkit-scrollbar-thumb:hover{ background:var(--scroll-thumb-hover); background-clip:content-box; }
+*::-webkit-scrollbar-track{ background:transparent; }
+
+/* 焦点 */
+:focus{ outline:none; }
+:focus-visible{ box-shadow:var(--focus-ring); border-radius:var(--r-sm); }
+
+@media (prefers-reduced-motion: reduce){
+  :host{ --dur-1:.01ms; --dur-2:.01ms; --dur-3:.01ms; }
+  *,*::before,*::after{
+    animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.01ms !important; scroll-behavior:auto !important;
+  }
+}

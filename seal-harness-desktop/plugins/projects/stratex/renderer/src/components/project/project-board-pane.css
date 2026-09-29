@@ -1,0 +1,311 @@
+.board-pane {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0 var(--sp-4);
+}
+/* 单屏需求详情开着（UX-02）：列表整块藏起来但**不卸载**——筛选、展开、勾选与各视图自己的
+   滚动容器都原样留着，返回即回到原处。弹层都 teleport 出去了，不受这条影响。 */
+.board-pane.has-detail > :not(.board-pane__detail) {
+  display: none;
+}
+/* 可见性提示（原型 priv-hint）：小字、静默，锁形图标提示"个人＝仅创建者可见" */
+.board-pane__priv {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0 var(--sp-1);
+  color: var(--muted2);
+  font-size: var(--fs-100);
+  line-height: 1.5;
+}
+.board-pane__privIcon {
+  width: 13px; /* 图标固有尺寸（原型 .priv-hint .ic 实测 13px，一致；D2.15 例外不 token 化） */
+  height: 13px;
+  flex: 0 0 auto;
+  color: var(--warn-text);
+}
+/* 任务页个人视图口径（原型 .inline-guide 的散文版）：静默小字，讲清筛选口径不抢注意力 */
+.board-pane__guide {
+  margin: 0;
+  padding: 0 var(--sp-1);
+  color: var(--muted2);
+  font-size: var(--fs-100);
+  line-height: 1.5;
+}
+/* 草案横幅：强调底但不占满视线——它讲的是「有东西等你决定」，不是故障 */
+.board-drafts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--bw) solid var(--accent-line);
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+}
+.board-drafts__text {
+  min-width: 0;
+  flex: 1;
+  color: var(--accent-text);
+  font-size: var(--fs-meta);
+}
+.board-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.board {
+  display: flex;
+  /* 原型 .board 无 min-width，靠 5 列各自 min-width:178 撑出 ≈890 自然宽 + 容器横滚。
+     此处保留一个整体下限（≈5×178）作滚动地板，与原型效果等价；880 不在 --px-* 梯，保留字面量。 */
+  min-width: 880px;
+  /* ⚠️ 不能用 flex-start：列会按内容收缩，于是「待验收 0」这类空列只有几十像素高。
+     后果不只是板面参差——整列本就是投放区（见模板注释），列一矮，
+     「把卡拖进还没有卡的那一列」这个最常见的操作就几乎点不中，是功能缺陷不是观感问题。 */
+  min-height: 100%;
+  align-items: stretch;
+  gap: var(--sp-3);
+}
+.board-col {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 178px; /* 原型 .bcol min-width=178px（旧 200；178 不在 --px-* 梯，保留字面量） */
+  padding: var(--sp-2);
+  border: var(--bw) solid var(--line-weak);
+  border-radius: var(--r-lg);
+  background: var(--sunken);
+  transition:
+    border-color var(--dur-1) var(--ease-out),
+    background-color var(--dur-1) var(--ease-out);
+}
+/* 投放目标：整列换底 + 强调边，拖到哪一列一眼可见（颜色之外还有 data-dropzone） */
+.board-col.is-dropzone {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+.board-col__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2) var(--sp-2);
+  color: var(--muted2);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-label);
+}
+.board-col__cnt {
+  color: var(--muted);
+  font-size: var(--fs-100);
+}
+.board-col__list {
+  display: flex;
+  /* 撑满列高，空列占位才能跟着长满——否则占位是个矮盒子，列的其余部分虽然
+     也接投放事件，视觉上却读不出「这里可以放」。 */
+  flex: 1;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.board-col__empty {
+  display: grid;
+  flex: 1;
+  min-height: 88px; /* 原型 .bempty min-height=88px（旧 72；88 不在 --px-* 梯，保留字面量） */
+  padding: var(--sp-4) var(--sp-2);
+  border: var(--bw) dashed var(--line);
+  border-radius: var(--r-md);
+  color: var(--muted);
+  font-size: var(--fs-100);
+  place-items: center;
+  text-align: center;
+}
+.todo-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: var(--bw) solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--panel);
+  box-shadow: var(--sh-1);
+  transition:
+    border-color var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-2) var(--ease-out);
+}
+.todo-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--sh-2);
+}
+/* 可编辑卡＝可点进编辑：键盘焦点环。编辑只由卡的空白承载区触发，
+   状态药丸/工作单等控件各自吃掉自己的点击（isInteractiveTarget 判命中区）。 */
+.todo-card:focus-visible {
+  outline: var(--bw-strong) solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+/* 能拖的卡片给出抓握指针；不能拖的（他人名下）保持默认，别许一个做不到的动作 */
+.todo-card[draggable='true'] {
+  cursor: grab;
+}
+.todo-card[draggable='true']:active {
+  cursor: grabbing;
+}
+/* 拖起来的那张留一个淡影占位，而不是整张消失——否则原列会当场塌一格 */
+.todo-card.is-dragging {
+  border-style: dashed;
+  opacity: 0.5;
+  box-shadow: none;
+}
+.todo-card--closed {
+  opacity: 0.75;
+}
+/* 标题是卡片的主：比次级 meta 行重一档，扫一列先抓标题 */
+.todo-card__title {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-title);
+  line-height: 1.5;
+}
+/* 需求卡标题＝「查看需求详情」按钮：外观仍是标题（不加底色描边），指到才上强调色。 */
+.todo-card__titleBtn {
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.todo-card__titleBtn:hover {
+  color: var(--accent-text);
+}
+.todo-card__titleBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-flat);
+}
+.todo-card__parent {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-100);
+  overflow-wrap: anywhere;
+}
+.todo-card__requirementId {
+  align-self: flex-start;
+  color: var(--muted);
+  font-size: var(--fs-100);
+}
+.todo-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--muted);
+  font-size: var(--fs-100);
+}
+/* 处理人整块甩到最右（原型 .as margin-left:auto）：优先级在左、人在右，中间留给弱色徽标 */
+.todo-card__who {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-left: auto;
+}
+.todo-card__unassigned {
+  color: var(--muted);
+}
+/* 助理不是成员，所以不给头像：一个称谓就够，别让它长得像组里多了个人 */
+.todo-card__assistant {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--sp-2);
+  border: var(--bw) dashed var(--line-strong);
+  border-radius: var(--r-sm);
+  color: var(--muted2);
+}
+.todo-card__prio {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--px-1) var(--px-7); /* 原型看板卡 .pri = padding 1px 7px、高度由内边距撑开（旧 height:18px + 0 6px） */
+  border: var(--bw) solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--muted2);
+}
+.todo-card__prio[data-priority='high'] {
+  border-color: var(--danger-line);
+  color: var(--danger-text);
+  background: var(--danger-soft);
+}
+.todo-card__prio[data-priority='medium'] {
+  border-color: var(--warn-line);
+  color: var(--warn-text);
+  background: var(--warn-soft);
+}
+/* 关联/进度徽标：原型看板卡未画（程序增量），对齐同卡 .pri 药丸度量以保持一致 */
+.todo-card__links,
+.todo-card__progress {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--px-1) var(--px-7);
+  border: var(--bw) solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--muted);
+}
+/* 与表格行那一枚同语义同配色：做满转绿，扫一列时不必逐个读分数 */
+.todo-card__progress {
+  border-color: var(--line-strong);
+  color: var(--muted2);
+  background: var(--sunken);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-label);
+}
+.todo-card__progress.is-complete {
+  border-color: var(--ok-line);
+  color: var(--ok-text);
+  background: var(--ok-soft);
+}
+.todo-card__due.is-soon {
+  color: var(--warn-text);
+}
+/* 卡上操作行平时降噪，卡 hover / 键盘进入时现身。
+   ⚠️ 操作件本体在 TodoRowActions（自带排布），这里只管「什么时候现身」。 */
+.todo-card__ops {
+  opacity: 0.55;
+  transition: opacity var(--dur-1) var(--ease-out);
+}
+.todo-card:hover .todo-card__ops,
+.todo-card__ops:focus-within {
+  opacity: 1;
+}
+/* 徽标自成一行（空时整行收掉）：它们答的是「谁建的、谁看得见」，
+   与下面那行「谁在做、多急、什么时候截止」不是一类信息，混排会两边都读不快 */
+.todo-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+.todo-card__badges:empty {
+  display: none;
+}
+/* 个人条目：整卡一条强调左轨，扫一列卡片时不必逐张去找徽标 */
+.todo-card--personal {
+  border-left-color: var(--accent-line);
+  box-shadow:
+    inset var(--bw-rule) 0 0 var(--accent),
+    var(--sh-1);
+}
+/*
+ * 降低动效偏好：拖拽的**功能**一分不减，只把补间去掉——投放高亮与拖起淡影
+ * 改为瞬时切换。这里关的是过渡，不是能力。
+ */
+@media (prefers-reduced-motion: reduce) {
+  .board-col,
+  .todo-card,
+  .todo-card__ops {
+    transition: none;
+  }
+}

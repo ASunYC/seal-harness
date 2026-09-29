@@ -1,0 +1,196 @@
+.todo-editor {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+/* 内容经 Teleport 渲染；只调整拥有专属编辑器正文的壳，不影响其它项目弹框。 */
+:global(.pj-modal:has(> .pj-modal__body > .todo-editor)) {
+  width: min(680px, 100%);
+  max-height: calc(100dvh - 2 * var(--sp-5));
+}
+:global(.pj-modal:has(> .pj-modal__body > .todo-editor) > .pj-modal__body) {
+  min-height: 0;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.todo-editor__section {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.todo-editor__section + .todo-editor__section {
+  padding-top: var(--sp-5);
+  border-top: var(--bw) solid var(--line);
+}
+.todo-editor__heading {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--fs-400);
+  font-weight: var(--fw-title);
+  line-height: var(--lh-body);
+}
+.todo-field__placement {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+.todo-field__link {
+  padding: 0;
+  border: 0;
+  color: var(--accent-text);
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-200);
+  cursor: pointer;
+}
+.todo-field__link:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-flat);
+}
+/* 认领入口在编辑框有未保存改动时置灰：看得见出路，但点不动（原因写在旁边那句里） */
+.todo-field__link:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.todo-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.todo-field__label {
+  color: var(--muted2);
+  font-size: var(--fs-400);
+  font-weight: var(--fw-label);
+}
+.todo-field__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--ctl-h-lg);
+  padding: 0 var(--sp-3);
+  border: var(--bw) solid var(--line);
+  border-radius: var(--r-md);
+  color: var(--ink);
+  background: var(--sunken);
+  font: inherit;
+  font-size: var(--fs-400);
+  transition:
+    border-color var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-1) var(--ease-out);
+}
+.todo-field__input::placeholder {
+  color: var(--muted);
+}
+.todo-field__input:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.todo-field__input:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.todo-field__hint {
+  color: var(--muted);
+  font-size: var(--fs-100);
+  line-height: var(--lh-body);
+}
+/* 「已勾的会作废」不是普通说明而是一次代价告知：升到警示色，别混在灰字里 */
+.todo-field__hint--warn {
+  color: var(--warn-text);
+}
+/* 只读值：与输入控件同高对齐，但不描边——一眼看得出「这一格改不了」 */
+.todo-field__static {
+  display: flex;
+  min-height: var(--ctl-h-lg);
+  align-items: center;
+  margin: 0;
+  color: var(--muted2);
+  font-size: var(--fs-400);
+  overflow-wrap: anywhere;
+}
+.todo-field__textarea {
+  height: auto;
+  padding: var(--sp-2) var(--sp-3);
+  resize: vertical;
+}
+.todo-refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.todo-ref {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: var(--bw) solid var(--line);
+  border-radius: var(--r-md);
+  color: var(--muted2);
+  background: var(--sunken);
+  font-size: var(--fs-100);
+}
+.todo-ref__k {
+  color: var(--muted);
+}
+.todo-ref__name {
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-weight: var(--fw-label);
+}
+.todo-ref__drop {
+  padding: 0 2px;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font-size: var(--fs-meta);
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--dur-1) var(--ease-out);
+}
+.todo-ref__drop:hover {
+  color: var(--danger-text);
+}
+.todo-session {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 0;
+  font-size: var(--fs-meta);
+}
+.todo-session--empty {
+  color: var(--muted);
+}
+.todo-session__id {
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font: var(--fw-body) var(--fs-100) / 1.5 var(--font-mono);
+}
+.todo-session__drop {
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font-size: var(--fs-100);
+  cursor: pointer;
+  transition: color var(--dur-1) var(--ease-out);
+}
+.todo-session__drop:hover {
+  color: var(--danger-text);
+}
+.todo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--sp-4);
+}
+@media (max-width: 560px) {
+  .todo-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

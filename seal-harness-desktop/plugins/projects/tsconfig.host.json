@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
+    "types": ["node"],
+    "typeRoots": [
+      "../../../dsh-plugin-desktop-beta/node_modules/@types",
+      "../../../node_modules/@types"
+    ],
+    "paths": {
+      "zod": ["../../../dsh-plugin-desktop-beta/node_modules/zod/index.d.ts"],
+      "unzipper": ["../../../node_modules/@types/unzipper/index.d.ts"],
+      "@deepseek-ai/*": ["../../../dsh-plugin-desktop-beta/node_modules/@deepseek-ai/*/lib/types/index.d.ts"]
+    }
+  },
+  "include": ["src/index.ts", "src/host/**/*.ts", "src/bridge.ts"]
+}

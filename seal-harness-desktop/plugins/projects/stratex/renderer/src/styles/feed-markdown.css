@@ -1,0 +1,103 @@
+/* 项目动态/讨论正文的受限 Markdown 排版（复用 features/session/markdown.ts 渲染器）。
+   动态卡与讨论气泡都是**紧凑容器**：标题层级收到接近正文的字号，靠字重区分层级，
+   别把卡撑变形。会话气泡的 `.md` 排版另在 MessageBubble.vue 里（那边容器更宽、可放大标题）。
+
+   全局类而非 scoped `:deep`：v-html 内容由两处组件共享，单点定义避免两份漂移；
+   `.feed-md` / `.feed-md-inline` 命名足够专属，不会外溢到别处。 */
+
+/* ── 块级：动态正文、系统事件、讨论气泡 ── */
+
+/* 首末元素收边：单段正文不带多余上下边距，卡片/气泡不虚高。 */
+.feed-md > :first-child {
+  margin-top: 0;
+}
+.feed-md > :last-child {
+  margin-bottom: 0;
+}
+.feed-md p,
+.feed-md ul,
+.feed-md ol,
+.feed-md table,
+.feed-md blockquote {
+  margin: var(--sp-2) 0;
+}
+.feed-md ul,
+.feed-md ol {
+  padding-left: 1.5em;
+}
+
+/* 标题：紧凑容器里全部收到接近正文，靠字重（+ h1/h2 略放大一档）区分层级，不撑破卡片。 */
+.feed-md h1,
+.feed-md h2,
+.feed-md h3,
+.feed-md h4,
+.feed-md h5,
+.feed-md h6 {
+  margin: var(--sp-3) 0 var(--sp-2);
+  font-weight: var(--fw-title);
+  line-height: 1.4;
+}
+.feed-md h1,
+.feed-md h2 {
+  font-size: var(--fs-500);
+}
+.feed-md h3,
+.feed-md h4,
+.feed-md h5,
+.feed-md h6 {
+  font-size: var(--fs-body);
+}
+
+/* 行内代码与围栏（会话页 .md 同款，颜色走 token）。 */
+.feed-md code,
+.feed-md-inline code {
+  padding: 0 4px;
+  background: var(--sunken);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+.feed-md .md-fence {
+  position: relative;
+  margin: var(--sp-2) 0;
+}
+.feed-md .md-fence pre {
+  margin: 0;
+  padding: var(--sp-3);
+  overflow-x: auto;
+  background: var(--sunken);
+  border: var(--bw) solid var(--line);
+  border-radius: var(--r-sm);
+}
+.feed-md .md-fence code {
+  padding: 0;
+  background: transparent;
+}
+
+/* 表格：宽内容在容器内自滚动，不撑破卡片。 */
+.feed-md table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+.feed-md th,
+.feed-md td {
+  padding: var(--sp-1) var(--sp-2);
+  border: var(--bw) solid var(--line);
+}
+
+.feed-md blockquote {
+  padding-left: var(--sp-3);
+  color: var(--muted2);
+  border-left: 2px solid var(--line-strong);
+}
+
+/* 中和后的链接：不可点，文字着强调色，URL 以行内代码呈现（可自行复制）。 */
+.feed-md .md-link,
+.feed-md-inline .md-link {
+  color: var(--accent-text);
+}
+.feed-md .md-link__href,
+.feed-md-inline .md-link__href {
+  word-break: break-all;
+}

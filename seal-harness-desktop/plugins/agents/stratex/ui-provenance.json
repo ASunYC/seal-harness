@@ -1,0 +1,67 @@
+{
+  "repository": "Stratex",
+  "commit": "070ba39e82a4d47dec812870b691eedcb7f7b28e",
+  "transformation": "Vue templates faithfully ported to React; CSS selectors scoped to .zz-agents; SVG artwork inlined unchanged. DSH native sessions and existing Host RPC retained.",
+  "files": [
+    {
+      "source": "src/renderer/src/components/ui/FeaturePageHeader.vue",
+      "sha256": "bf72475f64d8978dbb816905de30a2df757fab6addb5315d8993087b32140f00"
+    },
+    {
+      "source": "src/renderer/src/components/workflow/agent-instance-center.css",
+      "sha256": "3f7687e282b67161e3fe5768a7ec9ff4b0627711f53a71550a1f4c96c614b0e8"
+    },
+    {
+      "source": "src/renderer/src/components/workflow/local-agent-panel.css",
+      "sha256": "08e918d2f0fd7401d025f72b0919bb59c40ea04a440c9db0c5ae27d69580d445"
+    },
+    {
+      "source": "src/renderer/src/components/workflow/local-autonomous-panel.css",
+      "sha256": "011e405bab0b28e8f4ac35ee35f58eba843bb9e1cb294a9fc662c22020ddc019"
+    },
+    {
+      "source": "src/renderer/src/components/workflow/WorkflowResources.vue",
+      "sha256": "f960a17938ddc5aca89457d2ec8fd6ff008206e6a3d9285b93bf147715f2e1d4"
+    },
+    {
+      "source": "src/renderer/src/components/workflow/InstanceDeleteControl.vue",
+      "sha256": "4d450c23c7a610b07cf98f0e8a410d147c42b7c3b16aa9ff70f6408995c296cd"
+    },
+    {
+      "source": "src/renderer/src/components/workflow/RuntimeProgress.vue",
+      "sha256": "7797f173638e22f445c971a2377beab9499863f9718c072d08213e988c72d64f"
+    },
+    {
+      "source": "src/renderer/src/assets/agent-flow-entry.svg",
+      "sha256": "6b0ff542d6b11bb84531f8d1870ef84946fe76b5af6a6655fb59d11119dba922"
+    },
+    {
+      "source": "src/renderer/src/assets/agent-autonomous-entry.svg",
+      "sha256": "284189391c564ce7c4be50be4342d3c15dc959b39ea3dc1788efb48511a539d3"
+    },
+    {
+      "source": "src/renderer/src/views/AgentInstancesView.vue",
+      "sha256": "82624327eedfd3d1c4d680cc6826b8349dfed4b9012a8d2a21bf4fce28424029"
+    },
+    {
+      "source": "src/renderer/src/components/workflow/AgentInstanceCenter.vue",
+      "sha256": "ec488e25691c2bb16efaefbe62c0fe9be1119ec521afec845d7be756fd18178a"
+    },
+    {
+      "source": "src/renderer/src/components/workflow/LocalAutonomousPanel.vue",
+      "sha256": "30cb50bc9a145c69221707ac72299b711e2bb311ab1e5db7b15ee2f9cfcacf18"
+    },
+    {
+      "source": "src/renderer/src/components/workflow/LocalWorkflowPanel.vue",
+      "sha256": "e9e380fba6233f472c19ea3dc16a97b26ef62c7864a6471f4118c0a351bf5512"
+    },
+    {
+      "source": "src/renderer/src/components/workflow/WorkflowCreationModal.vue",
+      "sha256": "f0acd1a0c1e5707fd4e184e7dc9def5f08d5581321477415738dc6ba65f5fc5a"
+    },
+    {
+      "source": "src/renderer/src/components/workflow/AutonomousInstanceCard.vue",
+      "sha256": "60a9cef2c2dae55446764eed4b906bca4fa6e6b3a976e322c10e0180f0be9f46"
+    }
+  ]
+}

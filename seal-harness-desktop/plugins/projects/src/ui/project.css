@@ -1,0 +1,9 @@
+@import '../../stratex/renderer/src/styles/base.css';
+@import '../../stratex/renderer/src/styles/components.css';
+@import '../../stratex/renderer/src/styles/resource-pages.css';
+@import '../../stratex/renderer/src/styles/feed-markdown.css';
+@import '../../stratex/renderer/src/components/ui/overlay/overlay.css';
+
+:host { display: flex; flex: 1; min-width: 0; min-height: 0; height: 100%; isolation: isolate; contain: layout paint; }
+.projects-root { display: flex; flex: 1; width: 100%; min-width: 0; min-height: 0; }
+.projects-root > * { flex: 1; min-width: 0; }

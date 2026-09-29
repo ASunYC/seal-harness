@@ -1,0 +1,14 @@
+{
+  "name": "Seal Harness",
+  "appId": "com.seal-harness.desktop",
+  "executableName": "seal-harness",
+  "protocolScheme": "seal-harness",
+  "homeDirectoryName": ".seal-harness",
+  "identityHomeModule": "@seal-harness/identity/account-home",
+  "setupWizardEnabled": false,
+  "publisher": "Seal Harness",
+  "description": "Seal Harness 智能体桌面工作台",
+  "assetDirectory": "./product-assets/",
+  "updatesEnabled": false,
+  "bundle": "seal-harness-desktop"
+}

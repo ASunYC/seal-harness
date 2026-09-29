@@ -1,0 +1,175 @@
+{
+  "//": "ADR-0036 evidence link grammar vectors; shared by the collab service and the desktop main process.",
+  "accept": [
+    "https://example.com/report?id=7&page=2#acceptance",
+    "http://example.org/acceptance",
+    "HTTPS://EXAMPLE.COM/Upper",
+    "https://example.com",
+    "https://example.com:8443/path",
+    "https://[2001:db8::1]:8080/status",
+    "https://xn--fsqu00a.xn--0zwm56d/%E6%8A%A5%E5%91%8A",
+    "https://example.com/a%20b?q=%E4%B8%AD",
+    "https://example.com/people/@team?next=javascript://x",
+    "https://example.com:/empty-port",
+    "http://192.0.2.10:65535/max-port",
+    "https://[::ffff:192.0.2.128]/mapped"
+  ],
+  "reject": [
+    {
+      "why": "scheme",
+      "url": "javascript://example.com/%0Aalert(1)"
+    },
+    {
+      "why": "scheme",
+      "url": "javascript:alert(1)"
+    },
+    {
+      "why": "scheme",
+      "url": "ftp://example.com/report"
+    },
+    {
+      "why": "scheme",
+      "url": "file:///C:/temp/report.docx"
+    },
+    {
+      "why": "scheme",
+      "url": "example.com/report"
+    },
+    {
+      "why": "scheme",
+      "url": "//example.com/report"
+    },
+    {
+      "why": "scheme",
+      "url": "http:x://example.com/"
+    },
+    {
+      "why": "userinfo",
+      "url": "https://user:secret@example.com/"
+    },
+    {
+      "why": "userinfo",
+      "url": "https://user@example.com/"
+    },
+    {
+      "why": "userinfo",
+      "url": "https://@example.com/"
+    },
+    {
+      "why": "userinfo",
+      "url": "https://example.com@evil.example/"
+    },
+    {
+      "why": "backslash",
+      "url": "https://evil.example\\example.com/"
+    },
+    {
+      "why": "host",
+      "url": "https://"
+    },
+    {
+      "why": "host",
+      "url": "https:///report"
+    },
+    {
+      "why": "host",
+      "url": "https://:8443/report"
+    },
+    {
+      "why": "host",
+      "url": "https://[/report"
+    },
+    {
+      "why": "host",
+      "url": "https://[]/"
+    },
+    {
+      "why": "host",
+      "url": "https://[a]/"
+    },
+    {
+      "why": "host",
+      "url": "https://[::1]xyz/"
+    },
+    {
+      "why": "host",
+      "url": "https://2001:db8::1/path"
+    },
+    {
+      "why": "host",
+      "url": "https://exa<mple.com/"
+    },
+    {
+      "why": "host",
+      "url": "https://ex%61mple.com/"
+    },
+    {
+      "why": "port",
+      "url": "https://example.com:99999/report"
+    },
+    {
+      "why": "port",
+      "url": "https://example.com:65536/"
+    },
+    {
+      "why": "port",
+      "url": "https://example.com:1:2/"
+    },
+    {
+      "why": "port",
+      "url": "https://example.com:8o/"
+    },
+    {
+      "why": "port",
+      "url": "https://[::1]:xx/"
+    },
+    {
+      "why": "char",
+      "url": "https://exa mple.com/"
+    },
+    {
+      "why": "char",
+      "url": "https://example.com/a\tb"
+    },
+    {
+      "why": "char",
+      "url": "https://example.com/a\nb"
+    },
+    {
+      "why": "char",
+      "url": "https://example.com/\u0001"
+    },
+    {
+      "why": "char",
+      "url": "https://example.com/\u007f"
+    },
+    {
+      "why": "char",
+      "url": "https://example.com/\u0085"
+    },
+    {
+      "why": "char",
+      "url": "https://example.com/\u00a0"
+    },
+    {
+      "why": "char",
+      "url": "https://example.com/\u200b"
+    },
+    {
+      "why": "char",
+      "url": "https://example.com/\u202efdp.exe"
+    },
+    {
+      "why": "char",
+      "url": "https://example.com/\u2066"
+    },
+    {
+      "why": "char",
+      "url": "https://example.com/\u3000"
+    },
+    {
+      "why": "char",
+      "url": "https://example.com/\ufeff"
+    }
+  ]
+}

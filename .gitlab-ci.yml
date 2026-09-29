@@ -1,0 +1,63 @@
+stages: [check, package]
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+.linux:
+  image: node:22.23.2-bookworm
+  tags: [linux]
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends python3 make g++ git-lfs libgtk-3-0 libnss3 libasound2 libgbm1 fakeroot rpm libarchive-tools xvfb
+    - git lfs pull
+    - corepack yarn install --immutable
+    - node dsh-plugin-desktop/node_modules/electron/install.js
+
+check:
+  extends: .linux
+  stage: check
+  script:
+    - corepack yarn check:desktop-variants
+    - corepack yarn typecheck
+    - corepack yarn test
+    - corepack yarn seal-harness:build
+    - corepack yarn seal-harness:check
+    - corepack yarn workspace dsh-plugin-desktop verify:profile
+
+.package:
+  stage: package
+  when: manual
+  allow_failure: true
+  artifacts:
+    name: seal-harness-$CI_JOB_NAME-$CI_COMMIT_SHORT_SHA
+    paths:
+      - seal-harness-desktop/dist/**/*.exe
+      - seal-harness-desktop/dist/**/*.zip
+      - seal-harness-desktop/dist/**/*.dmg
+      - seal-harness-desktop/dist/**/*.AppImage
+      - seal-harness-desktop/dist/**/*.deb
+    expire_in: 14 days
+
+# 原生Shell Runner预装Node、Corepack、Git LFS及本平台构建工具。
+# 发行依赖必须已在开发阶段更新并提交；dist入口检查AA版本新鲜度。
+package:windows:
+  extends: .package
+  tags: [windows]
+  script:
+    - git lfs pull
+    - corepack yarn install --immutable
+    - node dsh-plugin-desktop/node_modules/electron/install.js
+    - corepack yarn seal-harness:dist:win
+
+package:macos:
+  extends: .package
+  tags: [macos]
+  script:
+    - git lfs pull
+    - corepack yarn install --immutable
+    - node dsh-plugin-desktop/node_modules/electron/install.js
+    - corepack yarn seal-harness:dist:mac
+
+package:linux:
+  extends: [.linux, .package]
+  script:
+    - xvfb-run -a corepack yarn seal-harness:dist:linux

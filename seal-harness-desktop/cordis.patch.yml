@@ -1,0 +1,47 @@
+# Cordis 配置组合，不是源码补丁。
+- id: agent
+  disabled: true
+- id: ui-brand-official
+  disabled: true
+- id: desktop-updates
+  disabled: true
+- id: ui-sidebar-browser
+  disabled: false
+- id: ui-settings-models
+  config:
+    credentialOnboarding: false
+- id: system-prompt
+  config:
+    includeHarnessIdentity: false
+    includeRuntimeContext: true
+    personaPrefix: >-
+      你是Seal Harness开发者平台中的 AI 助手。默认使用中文，准确、简洁地帮助用户完成开发、分析和知识工作。
+    personaSuffix: >-
+      当前工作目录是 {{cwd}}。
+- insert:
+    - id: seal-harness-agent-registry
+      name: '@seal-harness/agents/registry'
+    - id: seal-harness-brand
+      name: seal-harness-desktop
+    - id: seal-harness-identity
+      name: '@seal-harness/identity'
+    - id: seal-harness-user
+      name: '@seal-harness/user'
+    - id: seal-harness-store
+      name: '@seal-harness/store'
+    - id: seal-harness-connectors
+      name: '@seal-harness/connectors'
+    - id: seal-harness-skills
+      name: '@seal-harness/skills'
+    - id: seal-harness-experts
+      name: '@seal-harness/experts'
+    - id: seal-harness-knowledge
+      name: '@seal-harness/knowledge'
+    - id: seal-harness-agents
+      name: '@seal-harness/agents'
+    - id: seal-harness-session-context-selector
+      name: '@seal-harness/session-context-selector'
+    - id: seal-harness-projects
+      name: '@seal-harness/projects'
+    - id: seal-harness-project-agent
+      name: '@seal-harness/project-agent'

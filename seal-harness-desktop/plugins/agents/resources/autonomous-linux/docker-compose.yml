@@ -1,0 +1,216 @@
+services:
+  database:
+    image: ${DATABASE_IMAGE:?}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: runtime
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?}
+    volumes: [database-data:/var/lib/postgresql/data]
+    networks: [runtime]
+    healthcheck:
+      {
+        test: [CMD-SHELL, 'pg_isready -U postgres -d runtime'],
+        interval: 5s,
+        timeout: 4s,
+        retries: 30,
+      }
+  knowledge:
+    image: ${KNOWLEDGE_IMAGE:?}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: '18085'
+      DATA_DIR: /app/data
+      API_KEY: ${SERVICE_KEY:?}
+    volumes: [knowledge-data:/app/data]
+    networks: [runtime]
+    healthcheck:
+      {
+        test:
+          [
+            CMD,
+            node,
+            -e,
+            "fetch('http://127.0.0.1:18085/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+          ],
+        interval: 5s,
+        timeout: 4s,
+        retries: 30,
+      }
+  map:
+    image: ${MAP_IMAGE:?}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      CESIUM_WS_PORT: '19100'
+      MCP_HTTP_PORT: '9200'
+      MCP_TRANSPORT: http
+      CESIUM_TOOLSETS: all
+      CESIUM_LOCALE: zh-CN
+    ports: ['0.0.0.0:${MAP_PORT:?}:19100']
+    networks:
+      runtime:
+        aliases: [cesium-mcp]
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "Promise.all([fetch('http://127.0.0.1:19100/api/status'),fetch('http://127.0.0.1:19100/api/tools'),fetch('http://127.0.0.1:9200/mcp',{method:'OPTIONS'})]).then(async([status,tools,mcp])=>{const catalog=await tools.json();process.exit(status.ok&&tools.ok&&Array.isArray(catalog.tools)&&mcp.status===204?0:1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 4s
+      retries: 30
+  model-service:
+    image: ${MODEL_SERVICE_IMAGE:?}
+    restart: unless-stopped
+    command: [/opt/hermes/hermes, gateway, run]
+    environment:
+      HERMES_DASHBOARD: '1'
+      HERMES_DASHBOARD_INSECURE: 'true'
+      HERMES_HOME: /opt/data
+      API_SERVER_ENABLED: 'true'
+      API_SERVER_HOST: 0.0.0.0
+      API_SERVER_KEY: ${SERVICE_KEY:?}
+      GATEWAY_ALLOW_ALL_USERS: 'true'
+      MODEL_PROVIDER_NAME: custom
+      MODEL_NAME: ${MODEL_NAME:-}
+      MODEL_BASE_URL: ${MODEL_BASE_URL:-}
+      MODEL_API_KEY: ${MODEL_API_KEY:-}
+      MODEL_PROTOCOL: ${MODEL_PROTOCOL:-chat-completions}
+    ports: ['0.0.0.0:${DASHBOARD_PORT:?}:9119']
+    volumes:
+      - model-data:/opt/data
+      - managed-skills:/opt/agent-earth/managed-skills:ro
+    networks: [runtime]
+    healthcheck:
+      {
+        test:
+          [
+            CMD,
+            python3,
+            -c,
+            "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8642/health')",
+          ],
+        interval: 5s,
+        timeout: 4s,
+        retries: 30,
+      }
+  model-service-init:
+    image: ${MODEL_SERVICE_IMAGE:?}
+    entrypoint: [/bin/sh, /opt/model-service-init.sh]
+    environment:
+      MODEL_PROVIDER_NAME: custom
+      MODEL_NAME: ${MODEL_NAME:-}
+      MODEL_BASE_URL: ${MODEL_BASE_URL:-}
+      MODEL_API_KEY: ${MODEL_API_KEY:-}
+      MODEL_PROTOCOL: ${MODEL_PROTOCOL:-chat-completions}
+    volumes:
+      - model-data:/opt/data
+      - ./model-service-init.sh:/opt/model-service-init.sh:ro
+    networks: [runtime]
+    depends_on: { model-service: { condition: service_healthy } }
+    restart: 'no'
+  runtime-init:
+    image: ${RUNTIME_IMAGE:?}
+    command: [node, dist/runtime/independent-runtime-entrypoint.js, init-state]
+    environment: &runtime_env
+      NODE_ENV: production
+      INDEPENDENT_RUNTIME_MODE: gateway_only
+      INDEPENDENT_RUNTIME_INSTANCE_ID: ${INSTANCE_ID:?}
+      INDEPENDENT_RUNTIME_VERSION: remote-v5
+      INDEPENDENT_RUNTIME_STATE_DIR: /app/.data
+      INDEPENDENT_RUNTIME_MANAGE_UI_DIR: /app/manage-ui
+      INDEPENDENT_RUNTIME_BIND_HOST: 0.0.0.0
+      INDEPENDENT_RUNTIME_API_PORT: '3000'
+      INDEPENDENT_RUNTIME_WS_PORT: '3001'
+      INDEPENDENT_RUNTIME_HERMES_GATEWAY_URL: http://model-service:8642
+      INDEPENDENT_HERMES_GATEWAY_URL: http://model-service:8642
+      INDEPENDENT_RUNTIME_HERMES_CHAT_SECRET_REF: runtime-hermes-chat
+      INDEPENDENT_RUNTIME_EXECUTOR_SERVICE_ID: runtime-service
+      INDEPENDENT_RUNTIME_EXECUTOR_PROFILE_ID: main-agent
+      INDEPENDENT_RUNTIME_HERMES_MODEL_REF: ${MODEL_NAME:-}
+      INDEPENDENT_RUNTIME_SCRIPT_SKILL_PYTHON_COMPATIBLE: 'true'
+      INDEPENDENT_RUNTIME_SCRIPT_SKILL_UV_AVAILABLE: 'true'
+      INDEPENDENT_RUNTIME_SCRIPT_SKILL_OFFLINE_CACHE_READY: 'false'
+      INDEPENDENT_RUNTIME_AUTH_TOKENS_JSON: ${AUTH_REGISTRY:?}
+      INDEPENDENT_RUNTIME_MCP_SECRETS_JSON: ${MCP_SECRET_REGISTRY:?}
+      INDEPENDENT_RUNTIME_MANAGED_SECRET_STORE_KEY: ${MANAGED_SECRET_STORE_KEY:?}
+      INDEPENDENT_HERMES_GATEWAY_API_KEY: ${SERVICE_KEY:?}
+      INDEPENDENT_HERMES_DASHBOARD_URL: http://model-service:9119
+      INDEPENDENT_HERMES_DASHBOARD_PUBLIC_PORT: ${DASHBOARD_PORT:?}
+      RUNTIME_CHAT_DEMO_PUBLIC_PORT: ${CHAT_PORT:?}
+      INDEPENDENT_HERMES_PROFILE_GATEWAY_HOST: model-service
+      INDEPENDENT_HERMES_PROFILE_GATEWAY_PORT_BASE: '18650'
+      INDEPENDENT_HERMES_PROFILE_GATEWAY_STATE_FILE: /app/.data/profile-gateways.json
+      INDEPENDENT_PROFILE_GATEWAY_ENABLED: 'true'
+      INDEPENDENT_RUNTIME_ALLOWED_ORIGINS: http://${PUBLIC_HOST:?}:${CHAT_PORT:?}
+      INDEPENDENT_RUNTIME_SNAPSHOT_FILE: /app/.data/snapshots.json
+      INDEPENDENT_CESIUM_MCP_ENABLED: 'true'
+      INDEPENDENT_KNOWLEDGE_MCP_ENABLED: 'true'
+      INDEPENDENT_KNOWLEDGE_SERVICE_URL: http://knowledge:18085
+      INDEPENDENT_KNOWLEDGE_MCP_API_KEY: ${SERVICE_KEY:?}
+    volumes: [runtime-data:/app/.data]
+    networks: [runtime]
+    restart: 'no'
+    depends_on:
+      {
+        model-service: { condition: service_healthy },
+        model-service-init: { condition: service_completed_successfully },
+        knowledge: { condition: service_healthy },
+      }
+  runtime:
+    image: ${RUNTIME_IMAGE:?}
+    restart: unless-stopped
+    environment: *runtime_env
+    ports: ['0.0.0.0:${RUNTIME_PORT:?}:3000']
+    volumes:
+      - runtime-data:/app/.data
+      - managed-skills:/app/.data/managed-skills
+      - ./manage-ui:/app/manage-ui:ro
+    networks: [runtime]
+    depends_on:
+      {
+        runtime-init: { condition: service_completed_successfully },
+        map: { condition: service_healthy },
+      }
+    healthcheck:
+      {
+        test:
+          [
+            CMD,
+            node,
+            -e,
+            "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+          ],
+        interval: 5s,
+        timeout: 4s,
+        retries: 36,
+      }
+  runtime-chat-demo:
+    image: ${CHAT_IMAGE:?}
+    restart: unless-stopped
+    ports: ['0.0.0.0:${CHAT_PORT:?}:8080']
+    environment:
+      AGENT_EARTH_RUNTIME_API_PORT: ${RUNTIME_PORT:?}
+      AGENT_EARTH_RUNTIME_TOKEN: ${RUNTIME_TOKEN:?}
+      AGENT_EARTH_CESIUM_WS_PORT: ${MAP_PORT:?}
+      AGENT_EARTH_CHAT_STORAGE_KEY: ${CHAT_STORAGE_KEY:?}
+      AGENT_EARTH_MANAGED_INSTALLATION: 'true'
+    networks: [runtime]
+    depends_on: { runtime: { condition: service_healthy } }
+networks:
+  runtime:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${NETWORK_SUBNET:?NETWORK_SUBNET must be selected by the deployer}
+volumes:
+  database-data: {}
+  knowledge-data: {}
+  managed-skills: {}
+  model-data: {}
+  runtime-data: {}
