@@ -76,3 +76,39 @@
 ### Next Steps
 
 - 实际 Electron 视觉与原生安装在目标平台验收；推送需单独授权。
+
+
+## Session 3: Seal Harness 本地登录与 SQLite 产品数据
+<!-- trellis-session: v=2 fp=6fad09952353b061 -->
+
+**Date**: 2026-09-30
+**Task**: Seal Harness 本地登录与 SQLite 产品数据
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+完成本地账号登录、共享 SQLite 项目专家技能持久化，移除企微、知识库及产品智能体，并保留海豹品牌。
+
+### Main Changes
+
+- 首次管理员和本地密码登录；SQLite 表、迁移与按用户隔离；本地项目与原生对话。
+- 专家和技能包写入数据库，旧基础 Home 文件复制导入；清理旧插件与构建装配。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e4f33b6` | feat(seal-harness): move core product data to local SQLite |
+| `864c659` | chore(task): archive 09-30-local-sqlite-product |
+
+### Testing
+
+- [OK] seal-harness:build、seal-harness:check、check:layout、typecheck、git lfs fsck、git diff --check 通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 真实 Electron 窗口、安装包、签名升级及 macOS/Linux 在目标平台验收。
