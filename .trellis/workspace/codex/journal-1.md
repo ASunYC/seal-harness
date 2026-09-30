@@ -40,3 +40,39 @@
 ### Next Steps
 
 - 原生安装、图形启动、签名和升级在目标平台验证；推送需用户授权。
+
+
+## Session 2: 整合更新的来源工程差异
+<!-- trellis-session: v=2 fp=cf39870362ada962 -->
+
+**Date**: 2026-09-30
+**Task**: 整合更新的来源工程差异
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+按规范化差异整合更新的资源页、连接器、会话选择器与工作区补丁，并保留 Seal Harness 品牌和海豹图标。
+
+### Main Changes
+
+- 新增技能候选浮层、永久删除已归档会话、资源同步提示及 MCP Center 缓存。
+- 更新 Windows 开发快捷方式处理和 Beta 默认工作区目录。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e67dcc8` | feat: 整合更新功能并保持 Seal Harness 品牌 |
+
+### Testing
+
+- [OK] yarn install --immutable、seal-harness:build、seal-harness:check 通过。
+- [OK] check:layout、typecheck、git lfs fsck、git diff --check 通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 实际 Electron 视觉与原生安装在目标平台验收；推送需单独授权。
