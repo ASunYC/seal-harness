@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 5
+- **Total Sessions**: 6
 - **Last Active**: 2026-10-01
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~184 | Active |
+| `journal-1.md` | ~218 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 6 | 2026-10-01 | Codex 风格两级桌面导航 | `0ad2a89` | `codex/seal-harness-migration` |
 | 5 | 2026-10-01 | 远程控制弹窗品牌名称 | `b084d8e`, `8359dfa` | `codex/seal-harness-migration` |
 | 4 | 2026-10-01 | 移除 Seal Harness 项目插件 | `e645f9d`, `5b220b9` | `codex/seal-harness-migration` |
 | 3 | 2026-09-30 | Seal Harness 本地登录与 SQLite 产品数据 | `e4f33b6`, `864c659` | `codex/seal-harness-migration` |

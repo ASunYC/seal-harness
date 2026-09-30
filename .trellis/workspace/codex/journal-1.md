@@ -182,3 +182,37 @@
 ### Next Steps
 
 - 如需视觉验收，可在应用中打开远程控制确认弹窗核对；不必启用远程控制。
+
+
+## Session 6: Codex 风格两级桌面导航
+<!-- trellis-session: v=2 fp=e13e98602120ce62 -->
+
+**Date**: 2026-10-01
+**Task**: Codex 风格两级桌面导航
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+新增常驻一级窄栏与首页二级资源菜单；空间复用原生工作区，定时任务提供明确空态。
+
+### Main Changes
+
+- 专家、技能、连接器改由首页导航服务注册，修正会话输入框管理快捷入口；保留原生对话与数据。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0ad2a89` | feat(seal-harness): add two-level desktop navigation |
+
+### Testing
+
+- [OK] seal-harness:build、seal-harness:check、check:layout、定向 React/注册测试通过；Windows 兼容模式实测深浅色和 760px 窄视口。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 请用户按截图评估视觉和栏目；macOS/Linux 原生窗口及安装包仍需目标平台验收。
