@@ -163,11 +163,11 @@ test('标准客户端模块注册三个品牌slot，并在卸载时恢复文档�
   assert.equal(registrations.get('conversation.hero.brand.mark')().props.children.props.size, 64)
   for (const effect of layoutEffects) disposers.push(effect())
   const headline = document.getElementById('headline')
-  assert.equal(headline.textContent, '今天，你为公司创造价值了吗？')
+  assert.equal(headline.textContent, '今天，让未来从这里发生。')
   assert.equal(headline.nextElementSibling.textContent, '预览版')
   headline.textContent = 'Into the Unknown'
   await new Promise(resolve => setTimeout(resolve, 0))
-  assert.equal(headline.textContent, '今天，你为公司创造价值了吗？')
+  assert.equal(headline.textContent, '今天，让未来从这里发生。')
   document.title = 'Migration session — DeepSeek Harness'
   await new Promise(resolve => setTimeout(resolve, 0))
   assert.equal(document.title, 'Migration session — Seal Harness')

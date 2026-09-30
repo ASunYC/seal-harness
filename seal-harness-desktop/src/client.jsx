@@ -87,7 +87,7 @@ function HeroMark() {
     const headline = mark.current.closest('[data-slot="conversation.hero.brand.mark"]')
       ?.parentElement.nextElementSibling?.firstElementChild
     if (!headline) return
-    const replacement = '今天，你为公司创造价值了吗？'
+    const replacement = '今天，让未来从这里发生。'
     let original = headline.textContent
     const update = () => {
       if (headline.textContent === replacement) return
