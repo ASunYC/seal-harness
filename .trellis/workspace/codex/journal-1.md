@@ -147,3 +147,38 @@
 ### Next Steps
 
 - 无需迁移数据；如需彻底清理历史 projects 表，应另行制定数据迁移方案。
+
+
+## Session 5: 远程控制弹窗品牌名称
+<!-- trellis-session: v=2 fp=624fc3b21e4e25bc -->
+
+**Date**: 2026-10-01
+**Task**: 远程控制弹窗品牌名称
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+原生远程控制确认弹窗的中英文文案使用自定义产品名；上游默认文案保持原样。
+
+### Main Changes
+
+- Stable/Beta 同步以 DESKTOP_PRODUCT.name 组成远程控制提示，增加默认和定制构建回归。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b084d8e` | fix(desktop): brand remote control confirmation |
+| `8359dfa` | chore(task): archive 10-01-remote-control-offer-brand |
+
+### Testing
+
+- [OK] 两个变体各 11 项定向测试、两个类型检查、check:desktop-variants、check:layout、seal-harness:build 与 seal-harness:check 通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 如需视觉验收，可在应用中打开远程控制确认弹窗核对；不必启用远程控制。
