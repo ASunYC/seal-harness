@@ -39,7 +39,7 @@ if (command === 'build' || command === 'dev') {
 } else if (command === 'check') {
   linkProductDependencies()
   run(process.execPath, ['--test', join(productRoot, 'scripts/product.test.mjs')])
-  for (const folder of ['local-data', 'identity', 'user', ...capabilityPlugins, 'capability-shared', 'session-context-selector']) {
+  for (const folder of ['local-data', 'identity', 'user', 'navigation', ...capabilityPlugins, 'capability-shared', 'session-context-selector']) {
     const tests = join(productRoot, 'plugins', folder, 'tests')
     run(process.execPath, ['--test', ...readdirSync(tests).filter(file => file.endsWith('.test.mjs')).map(file => join(tests, file))])
   }

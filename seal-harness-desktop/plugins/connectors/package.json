@@ -17,12 +17,14 @@
         "@deepseek-ai/dsh-client-ui-layout",
         "@deepseek-ai/dsh-client-ui-sidebar",
         "@deepseek-ai/dsh-client-connection",
-        "@seal-harness/identity"
+        "@seal-harness/identity",
+        "@seal-harness/navigation"
       ],
       "platform": "web"
     }
   },
   "peerDependencies": {
+    "@seal-harness/navigation": "0.1.0",
     "@deepseek-ai/dsh-home-paths": "0.1.7-alpha.2",
     "@deepseek-ai/dsh-mcp-client": "0.1.7-alpha.2",
     "@deepseek-ai/dsh-credentials": "0.1.7-alpha.2",

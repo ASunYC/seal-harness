@@ -10,12 +10,12 @@ import {
   IconSkillOutlineRegular,
   IconTrashOutlineRegular,
 } from '@deepseek-ai/dsh-client-ui-primitives'
-import { createResourceActions } from './actions.js'
+import { createPanelSelector, createResourceActions } from './actions.js'
 import { styles } from './styles.js'
 import { capabilityApi } from '../../capability-shared/src/client.jsx'
 import { composerPopoverWidth, connectorPopoverPosition } from './position.js'
 
-export const inject = ['slots', 'layout', 'connection', 'remote', 'remote.skills', 'workspaces']
+export const inject = ['slots', 'layout', 'connection', 'remote', 'remote.skills', 'workspaces', 'sealHarnessNavigation']
 
 const controls = [
   { id: 'skill', label: '技能', ariaLabel: '选择技能', Icon: IconSkillOutlineRegular },
@@ -416,7 +416,7 @@ export function apply(ctx) {
     return () => element.remove()
   }, 'seal-harness-session-context-selector: styles')
 
-  const selectPanel = panel => ctx.layout.selectPanel(panel)
+  const selectPanel = createPanelSelector(ctx.layout, ctx.sealHarnessNavigation)
   const api = capabilityApi(ctx)
   const deleteDialog = createDeleteSessionDialog()
   function SessionContextSelectors({ inputActions, sessionId }) {

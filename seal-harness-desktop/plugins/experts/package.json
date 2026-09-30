@@ -23,12 +23,14 @@
         "@deepseek-ai/dsh-api-workspace-controller",
         "@deepseek-ai/dsh-api-session-controller",
         "@deepseek-ai/dsh-api-remotes",
-        "@seal-harness/identity"
+        "@seal-harness/identity",
+        "@seal-harness/navigation"
       ],
       "platform": "web"
     }
   },
   "peerDependencies": {
+    "@seal-harness/navigation": "0.1.0",
     "@deepseek-ai/dsh-agent-preset-registry": "0.1.7-alpha.2",
     "@deepseek-ai/dsh-home-paths": "0.1.7-alpha.2",
     "@deepseek-ai/dsh-scope": "0.1.7-alpha.2",

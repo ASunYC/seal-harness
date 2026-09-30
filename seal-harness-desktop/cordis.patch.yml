@@ -25,6 +25,8 @@
       name: '@seal-harness/identity'
     - id: seal-harness-user
       name: '@seal-harness/user'
+    - id: seal-harness-navigation
+      name: '@seal-harness/navigation'
     - id: seal-harness-store
       name: '@seal-harness/store'
     - id: seal-harness-connectors

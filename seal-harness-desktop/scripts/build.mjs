@@ -10,7 +10,7 @@ export const desktop = join(root, desktopPackage)
 export const desktopRequire = createRequire(join(desktop, 'package.json'))
 export const product = JSON.parse(readFileSync(join(productRoot, 'product.json'), 'utf8'))
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
-export const productPlugins = ['local-data', 'identity', 'user', ...capabilityPlugins, 'session-context-selector']
+export const productPlugins = ['local-data', 'identity', 'user', 'navigation', ...capabilityPlugins, 'session-context-selector']
 
 export function linkProductDependencies() {
   const link = join(productRoot, 'node_modules')

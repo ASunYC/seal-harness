@@ -17,6 +17,8 @@ Seal Harness 是基于 [DSH Desktop](https://github.com/anywhere-labs/dsh-deskto
 
 产品插件由 `seal-harness-desktop/scripts/build.mjs` 编译，再通过 `cordis.patch.yml` 与 Profile 装配进 Beta Desktop；原生应用身份由 `product.json` 提供。默认数据目录为 `~/.seal-harness`，显式 `DSH_HOME` 可覆盖。首次启动创建本地管理员账号，用户、专家和技能存于同一个 `seal-harness.sqlite` 数据库。项目、知识库和产品智能体插件已移除，普通对话与工作区继续使用 DSH 原生能力。社区 Desktop 更新保持关闭。
 
+桌面导航使用常驻一级窄栏：保留对话，新增首页、空间和定时任务。首页的二级菜单组合专家、技能、连接器；空间复用 DSH 工作区，定时任务目前提供明确空态。
+
 ## 开发
 
 要求 Node.js `^22.19.0` 或 `>=24.0.0`、Corepack 与 Yarn `4.18.0`。从仓库根目录运行：

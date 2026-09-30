@@ -1,7 +1,6 @@
 import React from 'react'
 import { styles } from './styles.js'
 import { resourceStyles } from './resource-styles.js'
-import { AnimatedSidebarIcon } from './sidebar-icons.jsx'
 
 export function capabilityApi(ctx) {
   return async (endpoint, payload = {}, signal) => {
@@ -11,14 +10,20 @@ export function capabilityApi(ctx) {
   }
 }
 
-export function registerPanel(ctx, { id, label, order, icon }, Panel) {
+export function leaveResource(ctx) {
+  const navigation = ctx.get?.('sealHarnessNavigation') ?? ctx.sealHarnessNavigation
+  if (!navigation) throw new Error('首页导航服务未加载。')
+  navigation.select(null)
+}
+
+export function registerPanel(ctx, { id, label, order, icon, description }, Panel) {
   ctx.effect(() => {
     const element = document.createElement('style')
     element.textContent = styles + resourceStyles
     document.head.append(element)
     return () => element.remove()
   }, `seal-harness-${id}: styles`)
-  function SidebarIcon(props) { return <AnimatedSidebarIcon name={icon} {...props} /> }
-  ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: `seal-harness-${id}` }, Panel))
-  ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({ name: 'sidebar.panellist', id: `seal-harness-${id}`, order, label: () => label }, SidebarIcon))
+  const navigation = ctx.get?.('sealHarnessNavigation') ?? ctx.sealHarnessNavigation
+  if (!navigation) throw new Error('首页导航服务未加载。')
+  ctx.effect(() => navigation.register({ id, label, order, description, icon: { agents: 'experts', store: 'skills' }[icon] ?? icon, Panel }), `seal-harness-${id}: home navigation`)
 }

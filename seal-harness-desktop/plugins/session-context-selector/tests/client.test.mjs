@@ -60,6 +60,7 @@ test('构建后的客户端注册会话资源入口并复用现有动作', async
   const disposers = []
   const registered = []
   const panels = []
+  const resources = []
   const rpcCalls = []
   let selectedIds = []
   plugin.apply({
@@ -72,6 +73,7 @@ test('构建后的客户端注册会话资源入口并复用现有动作', async
       register(meta, component) { registered.push({ meta, component }); return () => {} },
     },
     layout: { selectPanel(panel) { panels.push(panel) } },
+    sealHarnessNavigation: { select(id) { resources.push(id) } },
     remote: { skills: { async list(payload) {
       assert.equal(payload.sessionId, 'session-a')
       return { ok: true, value: { skills: [
@@ -150,7 +152,7 @@ test('构建后的客户端注册会话资源入口并复用现有动作', async
   assert.equal(connectorDialog.parentElement, document.body)
   assert.equal(dom.window.getComputedStyle(connectorDialog).position, 'fixed')
   assert.match(document.querySelector('[role="dialog"]').textContent, /CodeGraph MCP/)
-  assert.deepEqual(panels, ['seal-harness-skills'], '打开连接器选择器不得额外跳转管理页')
+  assert.deepEqual(panels, ['seal-harness-home'], '打开连接器选择器不得额外跳转管理页')
   await act(async () => document.querySelector('input[aria-label="在当前会话使用 CodeGraph MCP"]').click())
   assert.deepEqual(selectedIds, ['codegraph-mcp'])
   assert.match(document.querySelector('button[aria-label="选择连接器"]').textContent, /1/)
@@ -158,7 +160,8 @@ test('构建后的客户端注册会话资源入口并复用现有动作', async
   await act(async () => document.querySelector('button[aria-label="选择智能助手"]').click())
 
   assert.deepEqual(inserted, ['/codegraph-explore '])
-  assert.deepEqual(panels, ['seal-harness-skills', 'seal-harness-connectors', 'seal-harness-experts'])
+  assert.deepEqual(panels, ['seal-harness-home', 'seal-harness-home', 'seal-harness-home'])
+  assert.deepEqual(resources, ['skills', 'connectors', 'experts'])
   assert(rpcCalls.some(call => call.endpoint.endsWith('/sessionList') && call.payload.sessionId === 'session-a'))
   assert(rpcCalls.some(call => call.endpoint.endsWith('/sessionSet') && call.payload.selected === true))
 

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { createResourceActions } from '../src/actions.js'
+import { createPanelSelector, createResourceActions } from '../src/actions.js'
 
 test('能力选择器插入精确技能命令并保留当前选择位置', () => {
   const calls = []
@@ -29,6 +29,14 @@ test('专家进入现有管理面板，连接器由会话选择器独立处理',
   actions.expert()
   assert.equal(actions.connector, undefined)
   assert.deepEqual(panels, ['seal-harness-experts'])
+})
+
+test('会话资源快捷入口打开首页内对应的二级页面', () => {
+  const panels = [], resources = []
+  const select = createPanelSelector({ selectPanel: panel => panels.push(panel) }, { select: id => resources.push(id) })
+  for (const panel of ['seal-harness-skills', 'seal-harness-connectors', 'seal-harness-experts']) select(panel)
+  assert.deepEqual(resources, ['skills', 'connectors', 'experts'])
+  assert.deepEqual(panels, ['seal-harness-home', 'seal-harness-home', 'seal-harness-home'])
 })
 
 test('输入已锁定或草稿变化时透传插入失败', () => {
