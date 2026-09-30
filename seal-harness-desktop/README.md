@@ -2,7 +2,7 @@
 
 基于当前仓库的 DSH Desktop，应用 ID 为 `com.seal-harness.desktop`，默认数据目录为 `~/.seal-harness`。显式 `DSH_HOME` 仍可覆盖。旧数据不会被自动搬移或删除。
 
-首次启动会引导创建本地管理员账号；此后使用本地用户名和密码登录。登录状态仅保存在本次运行内，退出或重启后需要重新登录。用户、项目、专家和技能存储在基础 Home 的 `seal-harness.sqlite`，基础 Home 中原有的本地技能与专家文件会在首次登录时复制导入，原文件保留。旧远端账号专属 Home 不会自动归属新本地账号。远端项目清单无法自动读取，因此本地项目清单从空表开始，可逐个选择已有工作目录。知识库与产品智能体插件不再装配；普通对话使用 DSH 原生 Agent。图标仍为当前产品的小海豹。
+首次启动会引导创建本地管理员账号；此后使用本地用户名和密码登录。登录状态仅保存在本次运行内，退出或重启后需要重新登录。用户、专家和技能存储在基础 Home 的 `seal-harness.sqlite`，基础 Home 中原有的本地技能与专家文件会在首次登录时复制导入，原文件保留。旧远端账号专属 Home 不会自动归属新本地账号。项目、知识库与产品智能体插件不再装配；普通对话及工作区继续使用 DSH 原生能力。图标仍为当前产品的小海豹。
 
 ```sh
 git submodule update --init --recursive
@@ -34,7 +34,7 @@ corepack yarn seal-harness:dev
 - `src/` 和 `cordis.patch.yml` 是标准Cordis品牌插件及bundle。这里的YAML是Loader配置，不是源码补丁。
 - `assets/` 使用按 ip-as-logo 风格生成的小海豹图标，并通过 Git LFS 跟踪；`app-icon.png` 保留生成原图，各平台和托盘资源由它派生，来源及资源哈希见 `icon-provenance.json`。运行 `python scripts/export-product-icons.py` 可重新导出，需安装 Pillow。
 - `scripts/` 复用上游安装的构建工具和打包检查，没有第二套依赖或锁文件。
-- `plugins/local-data/` 负责同一个 SQLite 数据库、迁移和事务。`plugins/identity/` 负责本地账号认证；`plugins/projects/`、`plugins/experts/`、`plugins/skills/` 共用该库。
+- `plugins/local-data/` 负责同一个 SQLite 数据库、迁移和事务。`plugins/identity/` 负责本地账号认证；`plugins/experts/`、`plugins/skills/` 共用该库。既有项目表保留为历史数据，不再有产品项目插件读取它。
 
 构建仅在忽略目录中装配插件到 `dsh-plugin-desktop-beta/node_modules/seal-harness-desktop/`，资源到 `dsh-plugin-desktop-beta/lib/product-assets/`。安装包通过electron-builder的文件映射包含同一插件。上游源码、图标源文件及Harness子模块不会被构建脚本改写。
 

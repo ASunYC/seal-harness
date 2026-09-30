@@ -93,7 +93,7 @@ test('every product navigation icon renders in idle and emphasized states', asyn
     const host = dom.window.document.querySelector('main')
     const root = createRoot(host)
     try {
-      for (const name of ['projects', 'agents', 'store', 'plugins', 'connectors', 'library']) {
+      for (const name of ['agents', 'store', 'plugins', 'connectors', 'library']) {
         await act(async () => root.render(React.createElement('button', null,
           React.createElement(compiled.module.AnimatedSidebarIcon, { name, size: 18, active: false }))))
         assert.equal(host.querySelector('[data-sidebar-icon-name]')?.getAttribute('data-sidebar-icon-name'), name)

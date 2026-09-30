@@ -27,7 +27,7 @@ export function IdentityPanel({ auth }) {
         <img src={brandIcon} alt="Seal Harness 小海豹" width="88" height="88" />
         <div><span>SEAL HARNESS</span><h1>欢迎回到工作台</h1></div>
       </div>
-      <p className="seal-harness-local-login-lead">{register ? '首次使用，请创建本机管理员。' : '使用本机账号继续。项目、专家和技能保存在本机。'}</p>
+      <p className="seal-harness-local-login-lead">{register ? '首次使用，请创建本机管理员。' : '使用本机账号继续。专家和技能保存在本机。'}</p>
       <form onSubmit={submit}>
         <label>用户名<input name="username" autoComplete="username" minLength={3} maxLength={64} required disabled={busy} /></label>
         {register && <label>显示名称<input name="displayName" autoComplete="name" maxLength={128} disabled={busy} /></label>}

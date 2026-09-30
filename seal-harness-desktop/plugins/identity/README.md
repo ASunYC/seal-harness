@@ -6,4 +6,4 @@
 
 Host RPC 为 `status`、`register`、`login`、`logout`、`password/change`，Client 通过 `sealHarnessAuthClient` 订阅会话并显示 Seal Harness 登录页。对外部能力目录仍可通过 `sealHarnessServices` 显式配置服务地址，但这些地址不参与本地登录；本地账号令牌被明确拦截，不会发送至远端能力服务。
 
-原有本地能力文件会在对应模块首次登录时复制到 SQLite，原文件保留。远端项目和账号记录不会自动导入。
+原有本地能力文件会在对应模块首次登录时复制到 SQLite，原文件保留。旧远端账号记录不会自动导入。

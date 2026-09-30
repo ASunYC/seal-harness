@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -34,7 +34,8 @@ try {
   }
   assert.equal(rows.filter(row => row.id === 'agent').length, 1)
   assert.notEqual(rows.find(row => row.id === 'agent')?.disabled, true)
-  assert.equal(rows.some(row => ['seal-harness-agent-registry', 'seal-harness-agents', 'seal-harness-knowledge'].includes(row.id)), false)
+  assert.equal(rows.some(row => ['seal-harness-agent-registry', 'seal-harness-agents', 'seal-harness-knowledge', 'seal-harness-projects'].includes(row.id)), false)
+  assert.equal(existsSync(join(desktop, 'node_modules/@seal-harness/projects')), false)
   assert.equal(rows.find(row => row.id === 'ui-brand-official')?.disabled, true)
   assert.equal(rows.find(row => row.id === 'desktop-updates')?.disabled, true)
   assert.equal(rows.find(row => row.id === 'ui-sidebar-browser')?.disabled, false)

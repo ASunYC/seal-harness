@@ -29,3 +29,9 @@ Windows 上有一个连接器测试夹具使用 POSIX shell 可执行文件，�
 `seal-harness:build`、`seal-harness:check`、根 `check:layout`、根 `typecheck`、`git lfs fsck` 和 Git 差异空白检查均通过。产品检查包括本地账号、数据库迁移、项目按用户 CRUD、专家版本恢复、技能缓存重建、连接器与技能联动、资源页交互，以及实际 Cordis Profile 启动与两代 HMR。产品 Profile 报告 9 个业务插件，未装配知识库及产品智能体；原生 Agent 可用。额外验证了本地登录令牌不会发送至远端能力仓库。
 
 仅在 Windows 上完成无图形构建和测试。没有做真实 Electron 窗口视觉检查、模型回复、安装包、签名、升级或 macOS/Linux 验证。原产品账号专属 Home 和远端项目清单未自动导入，新本地账号先从空项目清单开始。旧基础 Home 的技能、专家文件导入由定向测试验证，原文件保留。
+
+## 2026-10-01 移除项目插件
+
+根据用户请求，删除产品项目插件的 Host、Client、样式、包声明及测试，并从 `productPlugins`、Cordis Profile 和安装包装配中移除。构建脚本清理旧装配目录 `@seal-harness/projects`，不删除用户工作目录、原生会话或 SQLite 历史项目记录。
+
+`seal-harness:build`、`seal-harness:check` 与根 `check:layout` 通过；Profile 验证报告 8 个业务插件。装配目录确认没有项目包。此前有关项目页的测试结果仅为历史记录，不代表当前版本仍提供项目菜单。

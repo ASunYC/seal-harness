@@ -7,7 +7,7 @@ import test from 'node:test'
 import vm from 'node:vm'
 import configuration from './electron-builder.mjs'
 import { verifyDistributionArtifacts } from './verify-package.mjs'
-import { buildBrand, desktopRequire, product, productRoot, root } from './build.mjs'
+import { buildBrand, desktopRequire, product, productPlugins, productRoot, root } from './build.mjs'
 import { archiveConflictingElectronLink } from '../src/windows-shell-link.js'
 
 test('Seal Harness构建依赖由根工作区持有，不污染 Stable 或 Beta Desktop', () => {
@@ -66,6 +66,12 @@ test('本地账号共用产品基础 Home 与 SQLite 数据库', () => {
   assert.equal(product.setupWizardEnabled, false)
   const manifest = JSON.parse(readFileSync(join(productRoot, 'plugins/local-data/package.json'), 'utf8'))
   assert.equal(manifest.name, '@seal-harness/local-data')
+})
+
+test('产品不再装配项目插件', () => {
+  assert.equal(productPlugins.includes('projects'), false)
+  const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))
+  assert.equal(patch.some(row => row.id === 'seal-harness-projects'), false)
 })
 
 test('产品关闭首次模型凭据弹窗但保留模型设置插件', () => {

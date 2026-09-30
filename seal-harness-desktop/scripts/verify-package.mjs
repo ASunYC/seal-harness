@@ -68,6 +68,7 @@ export default async function verifyPackage(result) {
       const item = JSON.parse(readFileSync(require.resolve(`@seal-harness/${folder}/package.json`), 'utf8'))
       if (item.dsh?.client) assert.ok(readFileSync(require.resolve(`@seal-harness/${folder}/client`), 'utf8').includes(`@seal-harness/${folder}`))
     }
+    assert.equal(existsSync(join(appRoot, 'node_modules/@seal-harness/projects')), false)
     assert.ok(readFileSync(require.resolve('@seal-harness/experts/expert-runtime'), 'utf8').length > 0)
     const { DESKTOP_PRODUCT } = await import(pathToFileURL(join(appRoot, 'lib/product-config.js')))
     assert.equal(DESKTOP_PRODUCT.appId, product.appId)

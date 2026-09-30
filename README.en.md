@@ -15,7 +15,7 @@ This repository imports the downstream source supplied by the user. It preserves
 | `deepseek-harness/` | Pinned read-only upstream submodule |
 | `vendor/dsh-runtime/` | Pinned upstream runtime packages |
 
-The product build compiles plugins and composes them with the Beta Desktop through `cordis.patch.yml` and the profile. `product.json` defines native application identity. The default data directory is `~/.seal-harness`; an explicit `DSH_HOME` overrides it. On first launch, create a local administrator account. Users, projects, experts, and skills share one `seal-harness.sqlite` database. The knowledge-base and product-specific agent plugins have been removed; ordinary conversations continue to use the native DSH Agent. Community Desktop updates remain disabled.
+The product build compiles plugins and composes them with the Beta Desktop through `cordis.patch.yml` and the profile. `product.json` defines native application identity. The default data directory is `~/.seal-harness`; an explicit `DSH_HOME` overrides it. On first launch, create a local administrator account. Users, experts, and skills share one `seal-harness.sqlite` database. The project, knowledge-base, and product-specific agent plugins have been removed; ordinary conversations and workspaces continue to use native DSH capabilities. Community Desktop updates remain disabled.
 
 ## Development
 

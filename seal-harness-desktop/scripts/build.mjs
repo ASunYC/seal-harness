@@ -10,7 +10,7 @@ export const desktop = join(root, desktopPackage)
 export const desktopRequire = createRequire(join(desktop, 'package.json'))
 export const product = JSON.parse(readFileSync(join(productRoot, 'product.json'), 'utf8'))
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
-export const productPlugins = ['local-data', 'identity', 'user', ...capabilityPlugins, 'session-context-selector', 'projects']
+export const productPlugins = ['local-data', 'identity', 'user', ...capabilityPlugins, 'session-context-selector']
 
 export function linkProductDependencies() {
   const link = join(productRoot, 'node_modules')
@@ -102,7 +102,7 @@ export function installProductPlugin(folder, target = desktop) {
 export function installBrand(target = desktop) {
   // 只清理构建装配区的旧聚合包，用户数据仍沿用原路径。
   rmSync(join(target, 'node_modules/@seal-harness/capabilities'), { recursive: true, force: true })
-  for (const folder of ['knowledge', 'agents', 'project-agent']) {
+  for (const folder of ['knowledge', 'agents', 'project-agent', 'projects']) {
     rmSync(join(target, 'node_modules/@seal-harness', folder), { recursive: true, force: true })
   }
   const destination = join(target, 'node_modules/seal-harness-desktop')

@@ -45,7 +45,7 @@ export function apply(ctx) {
   }
   function Detail() {
     const status = useAuth(auth), [error, setError] = useState(''), [busy, setBusy] = useState(false)
-    if (!status?.user) return <section className="seal-harness-user-detail"><h1>未登录</h1><p>登录本机账号后可使用项目、专家和技能。</p><button onClick={() => auth.openLogin()}>去登录</button></section>
+    if (!status?.user) return <section className="seal-harness-user-detail"><h1>未登录</h1><p>登录本机账号后可使用专家和技能。</p><button onClick={() => auth.openLogin()}>去登录</button></section>
     const user = status.user
     const logout = async () => {
       setBusy(true); setError('')
