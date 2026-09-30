@@ -1,83 +1,83 @@
 {
   "sourceProject": "Seal Harness",
-  "source": "ip-as-logo 风格的 AI 生成海豹原图；原始字节保存为 assets/app-icon.png",
+  "source": "ip-as-logo 风格的海豹原图经透明背景编辑；透明原图字节保存为 assets/app-icon.png",
   "files": {
     "app-icon-mac.png": {
       "source": "assets/app-icon.png",
-      "sha256": "8cab1c934896e76ebdb907ea585c1acb3430e022648919a8b4aa99b992b6607c"
+      "sha256": "d5855bf0de512a3380eaef9e946640bebd71cd82dc51cafb05791901fbe51b0b"
     },
     "app-icon.icns": {
       "source": "assets/app-icon.png",
-      "sha256": "cc8e1003350ecd84685885b3000691bc58c93d0fbd61e6e2e5a25fe299c39309"
+      "sha256": "821a0b87dfe24049408e4afcd9552da32674c6be20e9735787875bec241e5589"
     },
     "app-icon.ico": {
       "source": "assets/app-icon.png",
-      "sha256": "5ddcbe83b1794f8e32dad82fb01bfa64ab1d0e81600a15d59b9cf22bab2ec28c"
+      "sha256": "5896e954cfe5c14e1aa9e6b1cd6a188f3c4302427c1a875d636cd90b393895d4"
     },
     "app-icon.png": {
       "source": "assets/app-icon.png",
-      "sha256": "4dce3b1064eccb2207bee64fee4a1c477ad13e71ef7171fad0d09958f7cc4792"
+      "sha256": "3593374b24549f56a02ea224c25cc37731e05b26fcf509146a5e584a4e2abe28"
     },
     "icons/1024x1024.png": {
       "source": "assets/app-icon.png",
-      "sha256": "8cab1c934896e76ebdb907ea585c1acb3430e022648919a8b4aa99b992b6607c"
+      "sha256": "d5855bf0de512a3380eaef9e946640bebd71cd82dc51cafb05791901fbe51b0b"
     },
     "icons/128x128.png": {
       "source": "assets/app-icon.png",
-      "sha256": "fe61e977af1718ea123fb6432af0212a8c54c20cf0fb61fab040064b281f5298"
+      "sha256": "d7deac321de188477db57503502bb531c18ebda223b67d8e3755a1f3a9b3423e"
     },
     "icons/16x16.png": {
       "source": "assets/app-icon.png",
-      "sha256": "a995ccbbbb4da078ce6f725d522d4dbe3ea03d13667652f11e615119f0650f78"
+      "sha256": "2054877c721064dd9c4c01556fb8062a321ffa0d3fe238852241444ab6bbe849"
     },
     "icons/256x256.png": {
       "source": "assets/app-icon.png",
-      "sha256": "fa50415d58cce0acb60b751e10f8dbdf33462ed702084fbe4fcf7420c0984955"
+      "sha256": "c5fa7f9d7b97ae8471e3fe254cec85b103d8a694bbe6bbcb263dae2770aa6ce1"
     },
     "icons/32x32.png": {
       "source": "assets/app-icon.png",
-      "sha256": "f7f9b4529ba0db5fb75a0d2589c3fd40c5b74f69ad420cd98db08e12772478d5"
+      "sha256": "cf636d8b7799a064b1b474a3366ff32db7b6db28f415119ef89fc0530246e29b"
     },
     "icons/48x48.png": {
       "source": "assets/app-icon.png",
-      "sha256": "8c1783dcc4093d46559003186871a04419436ce38a75720b23e5ea1571530bdd"
+      "sha256": "333bb660adcf0c4d351c894b7f22dd52b5228fc9bceac3e82a52b8621240eb6f"
     },
     "icons/512x512.png": {
       "source": "assets/app-icon.png",
-      "sha256": "8c5239501798dba4d12c78e0e598273272517143b151d9109823d2f00936f6ca"
+      "sha256": "278c4ed4a661d3489465575993aacd4736fcf8834d55de2e6ebe2a4ff4540daf"
     },
     "icons/64x64.png": {
       "source": "assets/app-icon.png",
-      "sha256": "525fe889e77e146bf35e08917d34e2c9c0e9d4b7e884b1421cd28a7ad46ab1ec"
+      "sha256": "9a137bee1879c3ac7e3fbf7e14adc7d9790f7b3e8b219cba4a9c694dd03bbda9"
     },
     "tray-icon-blue.png": {
       "source": "assets/app-icon.png",
-      "sha256": "17629b09e75ba7ee8ecb26e23ef1e72bbf9ec3c71c8b682ae2020e1e936d3a6a"
+      "sha256": "2054877c721064dd9c4c01556fb8062a321ffa0d3fe238852241444ab6bbe849"
     },
     "tray-icon-blue@1.25x.png": {
       "source": "assets/app-icon.png",
-      "sha256": "b6b7a51f1ed5d57185240543342148a12310b2e190bfb175e7845a874040a591"
+      "sha256": "7dea957564bb7fb0204c21c586509977d1ba8f3fc4bbb25a159de40b4825024d"
     },
     "tray-icon-blue@1.5x.png": {
       "source": "assets/app-icon.png",
-      "sha256": "ea32924b84ad4c2683595255306e9c0fb6aabf5f2f070311ead32f3223bfb043"
+      "sha256": "c53ecd5c681102c6ae4f6b33deb9f13015548653f73f0b7eba934f0420dd6332"
     },
     "tray-icon-blue@2x.png": {
       "source": "assets/app-icon.png",
-      "sha256": "22365a971a76f9d54c66c9c8aba342ebfa06072c1ee2002ac8d88cd741839996"
+      "sha256": "cf636d8b7799a064b1b474a3366ff32db7b6db28f415119ef89fc0530246e29b"
     },
     "tray-icon.svg": {
       "source": "assets/app-icon.png",
-      "sha256": "a3b9d810cc6c75798a7ea4def93a7facbb8c7015eeb5d113c8ab4b8ea5cf354f"
+      "sha256": "310a3cfa2ef9d109f080bea4daf9e6f76ff9b10fb373c1c20d52589b1adb72a4"
     },
     "tray-iconTemplate.png": {
       "source": "assets/app-icon.png",
-      "sha256": "d8c505734f042a26888d3b0ffb20128c5b8c370e01c584a268434f4632e50c3c"
+      "sha256": "dc96b10c97d39a30a16334356e252e6105d9ad581883ec8fcad4aad4aacd3fae"
     },
     "tray-iconTemplate@2x.png": {
       "source": "assets/app-icon.png",
-      "sha256": "780b694790d68690a220342f73236b1bb053f5385b525368778f57dc997f28da"
+      "sha256": "1c41840bd3deee4ff5de12daabb03f7f2fd3224b789a2c220365200cfb692c91"
     }
   },
-  "derived": "Platform PNG, ICO, ICNS and tray resources are generated from app-icon.png with Pillow/Lanczos; the original PNG is unchanged."
+  "derived": "Platform PNG, ICO, ICNS and tray resources are generated from transparent app-icon.png with Pillow/Lanczos; the source PNG bytes remain unchanged during export."
 }

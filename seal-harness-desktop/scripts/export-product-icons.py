@@ -21,25 +21,14 @@ def save_png(image: Image.Image, path: Path, size: int) -> None:
     image.resize((size, size), Image.Resampling.LANCZOS).save(path, format="PNG")
 
 
-def foreground_mask(image: Image.Image) -> Image.Image:
-    """将青绿色背景留空，让托盘资源只显示海豹轮廓。"""
-    rgb = image.convert("RGB")
-    background = rgb.getpixel((rgb.width - 1, 0))
-    pixels = list(rgb.get_flattened_data())
-    alpha = Image.new("L", rgb.size)
-    alpha.putdata([
-        min(255, max(0, int((sum((channel - base) ** 2 for channel, base in zip(pixel, background)) ** 0.5 - 28) * 5)))
-        for pixel in pixels
-    ])
-    return alpha
-
-
 def main() -> None:
     original = Image.open(SOURCE).convert("RGBA")
     if original.width != original.height:
         raise ValueError("app-icon.png 必须是正方形")
+    if original.getpixel((0, 0))[3] != 0 or original.getpixel((original.width - 1, 0))[3] != 0:
+        raise ValueError("app-icon.png 的背景必须透明")
 
-    # 保留 app-icon.png 原始生成字节；派生文件可随时重建。
+    # 保留透明背景的原图字节；派生文件可随时重建。
     save_png(original, ASSETS / "app-icon-mac.png", 1024)
     icons = ASSETS / "icons"
     for size in SIZES:
@@ -47,9 +36,8 @@ def main() -> None:
     original.save(ASSETS / "app-icon.ico", format="ICO", sizes=[(size, size) for size in SIZES if size <= 256])
     original.save(ASSETS / "app-icon.icns", format="ICNS")
 
-    mask = foreground_mask(original)
-    tray = original.copy()
-    tray.putalpha(mask)
+    mask = original.getchannel("A")
+    tray = original
     for size, name in ((16, "tray-icon-blue.png"), (20, "tray-icon-blue@1.25x.png"),
                        (24, "tray-icon-blue@1.5x.png"), (32, "tray-icon-blue@2x.png")):
         save_png(tray, ASSETS / name, size)
@@ -71,9 +59,9 @@ def main() -> None:
     } for path in sorted(ASSETS.rglob("*")) if path.is_file()}
     record = {
         "sourceProject": "Seal Harness",
-        "source": "ip-as-logo 风格的 AI 生成海豹原图；原始字节保存为 assets/app-icon.png",
+        "source": "ip-as-logo 风格的海豹原图经透明背景编辑；透明原图字节保存为 assets/app-icon.png",
         "files": files,
-        "derived": "Platform PNG, ICO, ICNS and tray resources are generated from app-icon.png with Pillow/Lanczos; the original PNG is unchanged.",
+        "derived": "Platform PNG, ICO, ICNS and tray resources are generated from transparent app-icon.png with Pillow/Lanczos; the source PNG bytes remain unchanged during export.",
     }
     (ROOT / "icon-provenance.json").write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"导出 {len(files)} 个 Seal Harness 图标资源")
