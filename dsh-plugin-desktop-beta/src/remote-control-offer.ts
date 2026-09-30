@@ -2,19 +2,22 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import type { DesktopLocale } from './runtime.ts'
+import { DESKTOP_PRODUCT, DESKTOP_PRODUCT_IS_CUSTOM } from './product-config.ts'
+
+const productName = DESKTOP_PRODUCT_IS_CUSTOM ? DESKTOP_PRODUCT.name : 'DeepSeek Harness'
 
 export const remoteControlOfferCopy = {
   zh: {
     label: '远程控制', title: '启用远程控制？',
-    message: '从其他设备使用这台电脑上的 DeepSeek Harness。',
-    detail: '启用并重启后，请从“手机连接”完成连接配置。配置完成后，你可以通过其他联网设备远程使用这台电脑上的 DeepSeek Harness。远程使用时，这台电脑需要保持开机并联网。',
+    message: `从其他设备使用这台电脑上的 ${productName}。`,
+    detail: `启用并重启后，请从“手机连接”完成连接配置。配置完成后，你可以通过其他联网设备远程使用这台电脑上的 ${productName}。远程使用时，这台电脑需要保持开机并联网。`,
     confirm: '启用并重启', cancel: '暂不开启',
     failed: '未能启用远程控制', retry: '请稍后重试，或前往“桌面设置”开启手机连接。',
   },
   en: {
     label: 'Remote control', title: 'Enable remote control?',
-    message: 'Use DeepSeek Harness on this computer from another device.',
-    detail: 'After enabling and restarting, open Phone connection to finish setup. You can then use DeepSeek Harness on this computer from other internet-connected devices. This computer must remain on and connected to the internet.',
+    message: `Use ${productName} on this computer from another device.`,
+    detail: `After enabling and restarting, open Phone connection to finish setup. You can then use ${productName} on this computer from other internet-connected devices. This computer must remain on and connected to the internet.`,
     confirm: 'Enable and restart', cancel: 'Not now',
     failed: 'Could not enable remote control', retry: 'Try again later, or enable Phone connection in Desktop settings.',
   },

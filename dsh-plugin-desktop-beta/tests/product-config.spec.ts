@@ -49,10 +49,13 @@ it.each([undefined, true, false])('keeps setup wizard policy %s independent of t
 
 it('keeps the upstream identities and update policy without a distribution define', async () => {
   const { DESKTOP_PRODUCT } = await import('../src/product-config.ts')
+  const { remoteControlOfferCopy } = await import('../src/remote-control-offer.ts')
   const { DESKTOP_RELEASE_IDENTITIES } = await import('../src/product-identity.ts')
   expect(DESKTOP_PRODUCT.updatesEnabled).toBe(true)
   expect(DESKTOP_PRODUCT.bundle).toBeNull()
   expect(DESKTOP_PRODUCT.setupWizardEnabled).not.toBe(false)
+  expect(remoteControlOfferCopy.zh.message).toContain('DeepSeek Harness')
+  expect(remoteControlOfferCopy.en.detail).toContain('DeepSeek Harness')
   expect(DESKTOP_RELEASE_IDENTITIES.stable).toMatchObject({
     productName: 'DSH Desktop', appId: 'ai.deepseek.dsh.desktop', homeDirectoryName: '.dsh',
   })
@@ -69,6 +72,7 @@ it('preserves explicit product identity across runtime editions and rejects even
   const { DESKTOP_RELEASE_IDENTITIES } = await import('../src/product-identity.ts')
   const { desktopRecoveryCopy } = await import('../src/recovery-copy.ts')
   const { desktopSetupWizardCopy } = await import('../src/setup-wizard-copy.ts')
+  const { remoteControlOfferCopy } = await import('../src/remote-control-offer.ts')
   const { checkForDesktopUpdate, checkForStableUpdate } = await import('../src/update-checker.ts')
   expect(DESKTOP_RELEASE_IDENTITIES.stable).toMatchObject({
     productName: product.name, appId: product.appId, homeDirectoryName: product.homeDirectoryName,
@@ -78,6 +82,11 @@ it('preserves explicit product identity across runtime editions and rejects even
   })
   expect(desktopRecoveryCopy('zh').title).toContain(product.name)
   expect(desktopSetupWizardCopy('en').title).toContain(product.name)
+  for (const locale of ['zh', 'en'] as const) {
+    expect(remoteControlOfferCopy[locale].message).toContain(product.name)
+    expect(remoteControlOfferCopy[locale].detail).toContain(product.name)
+    expect(remoteControlOfferCopy[locale].detail).not.toContain('DeepSeek Harness')
+  }
   const request = vi.fn()
   await expect(checkForDesktopUpdate({ currentVersion: '2.0.14', channel: 'stable', request })).rejects.toThrow('updates are disabled')
   await expect(checkForStableUpdate({ currentVersion: '2.0.14-beta.1', request })).rejects.toThrow('updates are disabled')

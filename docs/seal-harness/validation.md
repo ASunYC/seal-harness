@@ -35,3 +35,7 @@ Windows 上有一个连接器测试夹具使用 POSIX shell 可执行文件，�
 根据用户请求，删除产品项目插件的 Host、Client、样式、包声明及测试，并从 `productPlugins`、Cordis Profile 和安装包装配中移除。构建脚本清理旧装配目录 `@seal-harness/projects`，不删除用户工作目录、原生会话或 SQLite 历史项目记录。
 
 `seal-harness:build`、`seal-harness:check` 与根 `check:layout` 通过；Profile 验证报告 8 个业务插件。装配目录确认没有项目包。此前有关项目页的测试结果仅为历史记录，不代表当前版本仍提供项目菜单。
+
+## 2026-10-01 远程控制弹窗品牌文案
+
+Stable/Beta 的原生远程控制确认文案已改为读取自定义产品名。两个变体各 11 项相关测试、各自类型检查、`check:desktop-variants`、`seal-harness:build` 和 `seal-harness:check` 通过。测试确认 Seal Harness 构建的中英文主文案与说明使用产品名，无自定义配置时仍显示原上游名称。尚未在真实远程控制弹窗中执行点击验收。
