@@ -37,6 +37,9 @@ test('local project page uses SQLite RPC and opens a native session in the selec
     auth, request, createConversation: async project => conversations.push(project.rootPath), onBack() {},
   })))
   await act(async () => { await Promise.resolve(); await Promise.resolve() })
+  assert(document.querySelector('.seal-harness-local-projects.resource-page-shell .resource-page-nav__back'))
+  assert.equal(document.querySelector('.resource-page-nav__path strong')?.textContent, '项目')
+  assert.equal(document.querySelector('.resource-page-hero h1')?.textContent, '项目')
   assert.match(document.body.textContent, /文档项目/)
   assert.equal(calls[0].action, 'list')
   await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === '开始对话').click())
