@@ -18,7 +18,7 @@ import { composerPopoverWidth, connectorPopoverPosition } from './position.js'
 export const inject = ['slots', 'layout', 'connection', 'remote', 'remote.skills', 'workspaces']
 
 const controls = [
-  { id: 'skill', label: '能力', ariaLabel: '选择能力', Icon: IconSkillOutlineRegular },
+  { id: 'skill', label: '技能', ariaLabel: '选择技能', Icon: IconSkillOutlineRegular },
   { id: 'connector', label: '连接器', ariaLabel: '选择连接器', Icon: IconCordisPluginOutlineRegular },
   { id: 'expert', label: '智能助手', ariaLabel: '选择智能助手', Icon: IconAgentPresetOutlineRegular },
 ]
@@ -118,14 +118,14 @@ function SkillSelector({ api, inputActions, remoteSkills, selectPanel, sessionId
       variant="toolbar"
       size="sm"
       className="seal-harness-session-context-selector-trigger"
-      aria-label="选择能力"
+      aria-label="选择技能"
       aria-haspopup="dialog"
       aria-expanded={open}
-      title="选择能力"
+      title="选择技能"
       icon={<IconSkillOutlineRegular size={15} />}
       onClick={() => setOpen(value => !value)}
     >
-      <span>能力</span>
+      <span>技能</span>
       <IconChevronDownOutlineRegular size={13} aria-hidden="true" />
     </Button>
     {open ? createPortal(<div ref={popoverRef} className="seal-harness-session-skill-popover" style={position ?? { visibility: 'hidden', left: 0, top: 0 }} role="dialog" aria-label="技能选择器">
