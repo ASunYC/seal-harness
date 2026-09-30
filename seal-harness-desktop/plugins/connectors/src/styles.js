@@ -15,6 +15,8 @@ export const styles = dialogStyles + `
 .zz-connectors .mcp-field :is(input, select, textarea):focus-visible { border-color: var(--accent); background: var(--panel); }
 .zz-connectors .mcp-field :is(input, select, textarea)[aria-invalid='true'] { border-color: var(--danger); box-shadow: 0 0 0 1px var(--danger); }
 .zz-connectors .mcp-field input::placeholder, .zz-connectors .mcp-field textarea::placeholder { color: var(--muted2); }
+.zz-connectors .mcp-field select:required:invalid { color: var(--muted2); font-style: italic; background: var(--sunken); }
+.zz-connectors .mcp-field select option { color: var(--ink); font-style: normal; }
 .zz-connectors .mcp-field small, .zz-connectors .mcp-muted { color: var(--muted2); font-size: var(--fs-meta); }
 .zz-connectors .mcp-alert { padding: var(--sp-3) var(--sp-4); border: var(--bw) solid var(--danger-line); border-radius: var(--r-md); background: var(--danger-soft); color: var(--danger-text); }
 .zz-connectors .mcp-stack { display: grid; gap: var(--sp-4); }
@@ -48,18 +50,48 @@ export const styles = dialogStyles + `
 .zz-connectors .mcp-installed-card__icon-action--danger:hover:not(:disabled) {background:var(--danger-soft)}
 .zz-connectors .mcp-installed-card__icon-action:focus-visible {outline:none;box-shadow:var(--focus-ring-flat)}
 .zz-connectors .mcp-installed-card__actions { display: flex; flex: none; align-items: center; gap: var(--sp-1); }
+.zz-connectors .mcp-catalog-icon { display: inline-grid; flex: none; overflow: hidden; place-items: center; border: var(--bw) solid var(--line-strong); border-radius: 9px; background: var(--sunken); color: var(--accent-text); }
+.zz-connectors .mcp-catalog-icon img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.zz-connectors .mcp-public-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3); }
+.zz-connectors .mcp-public-card { display: grid; min-width: 0; min-height: 190px; grid-template-rows: auto minmax(38px, auto) auto auto; gap: var(--sp-2); overflow: hidden; padding: var(--sp-4) var(--sp-4) 0; border: var(--bw) solid var(--line-strong); border-radius: var(--r-lg); background: var(--panel); }
+.zz-connectors .mcp-public-card__identity { display: flex; min-width: 0; align-items: center; gap: var(--sp-3); padding: 0; border: 0; color: var(--ink); background: transparent; text-align: left; cursor: pointer; }
+.zz-connectors .mcp-public-card__identity strong { overflow: hidden; font-size: var(--fs-500); text-overflow: ellipsis; white-space: nowrap; }
+.zz-connectors .mcp-public-card__fallback { display: inline-grid; width: 40px; height: 40px; flex: none; border: var(--bw) solid var(--accent-line); border-radius: 9px; color: var(--accent-text); background: var(--accent-soft); place-items: center; }
+.zz-connectors .mcp-public-card__summary { display: -webkit-box; overflow: hidden; margin: 0; color: var(--muted2); font-size: var(--fs-300); line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.zz-connectors .mcp-public-card__tags { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.zz-connectors .mcp-public-card__tags span { padding: 4px 8px; border: var(--bw) solid var(--line); border-radius: var(--r-sm); color: var(--muted2); background: var(--sunken); font-size: var(--fs-200); line-height: 1.2; }
+.zz-connectors .mcp-public-card > footer { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin: 0 calc(-1 * var(--sp-4)); padding: var(--sp-2) var(--sp-4); border-top: var(--bw) solid var(--line); color: var(--muted2); font-size: var(--fs-300); }
+.zz-connectors .mcp-public-card > footer .btn { height: 30px; padding-inline: var(--sp-3); }
+.zz-connectors .mcp-public-detail__identity { display: flex; align-items: center; gap: var(--sp-3); }
+.zz-connectors .mcp-public-detail__identity h3, .zz-connectors .mcp-public-detail__identity small { display: block; margin: 0; }
+.zz-connectors .mcp-public-detail__identity small { margin-bottom: var(--sp-1); color: var(--muted2); }
+.zz-connectors .zz-installed-drawer { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.zz-connectors .zz-installed-drawer__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-4); padding: var(--sp-5); }
+.zz-connectors .zz-installed-drawer__header h2, .zz-connectors .zz-installed-drawer__header p { margin: 0; }
+.zz-connectors .zz-installed-drawer__header p { margin-top: var(--sp-1); color: var(--muted2); }
+.zz-connectors .zz-installed-drawer__close { display: grid; width: 40px; min-width: 40px; height: 40px; padding: 0; place-items: center; }
+.zz-connectors .mcp-installed-drawer__body { min-height: 0; overflow-y: auto; padding: 0 var(--sp-5) var(--sp-5); }
+.zz-connectors .zz-installed-drawer__toolbar { display: flex; justify-content: flex-end; padding: var(--sp-3) 0 var(--sp-5); }
+.zz-connectors .zz-installed-drawer .mcp-installed__list { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-3); }
+.zz-connectors .zz-installed-drawer .mcp-installed-card { box-sizing: border-box; width: 100%; max-width: none; min-height: 154px; padding: var(--sp-4); }
+.zz-connectors .zz-installed-drawer .mcp-installed-card__context { flex-wrap: nowrap; overflow: hidden; white-space: nowrap; }
+.zz-connectors .zz-installed-drawer .mcp-installed-card__context span { overflow: hidden; text-overflow: ellipsis; }
+.zz-connectors .zz-installed-drawer__footer { padding: var(--sp-3) var(--sp-5); border-top: var(--bw) solid var(--line); color: var(--muted2); font-size: var(--fs-meta); }
 .zz-connectors .mcp-empty-state { display: grid; min-height: 190px; place-items: center; align-content: center; gap: var(--sp-2); padding: var(--sp-6); border: var(--bw) dashed var(--line-strong); border-radius: var(--r-lg); background: var(--sunken); text-align: center; }
-.zz-connectors .mcp-runtime { position: relative; z-index: var(--z-modal); display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto; width: min(600px, calc(100vw - 2 * var(--sp-6))); max-height: min(780px, calc(100vh - 2 * var(--sp-6))); overflow: hidden; border: var(--bw) solid var(--line-strong); border-radius: var(--r-xl); background: var(--raised); box-shadow: var(--sh-3); }
+.zz-connectors .mcp-runtime { position: relative; z-index: var(--z-modal); display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto; width: min(620px, calc(100vw - 2 * var(--sp-6))); max-height: min(780px, calc(100vh - 2 * var(--sp-6))); overflow: hidden; border: var(--bw) solid var(--line-strong); border-radius: var(--r-xl); background: var(--panel); box-shadow: var(--sh-3); }
 .zz-connectors .mcp-runtime__footer { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); padding: var(--sp-3) var(--sp-5); border-block: var(--bw) solid var(--line); }
 .zz-connectors .mcp-file-schema-unavailable {display:flex;align-items:flex-start;gap:var(--sp-2);color:var(--muted2)}
 .zz-connectors .mcp-file-schema-unavailable .app-icon {flex:none;margin-top:2px;color:var(--accent-text)}
 .zz-connectors .mcp-file-schema-unavailable strong {display:block;color:var(--ink)}
 .zz-connectors .mcp-file-schema-unavailable p {margin:var(--sp-1) 0 0}
-.zz-connectors .mcp-runtime__header {display:grid;grid-template-columns:52px minmax(0,1fr) auto auto;align-items:center;gap:var(--sp-3);padding:var(--sp-4) var(--sp-5)}
+.zz-connectors .mcp-runtime__header {display:grid;grid-template-columns:52px minmax(0,1fr) auto auto;align-items:center;gap:var(--sp-3);padding:var(--sp-5);border-bottom:var(--bw) solid var(--line)}
 .zz-connectors .mcp-runtime__header h2 {margin:0}
 .zz-connectors .mcp-runtime__icon {display:inline-grid;place-items:center;width:48px;height:48px;border:var(--bw-strong) solid var(--accent-line);border-radius:var(--r-md);background:var(--accent-soft);color:var(--accent-text);font-weight:var(--fw-title)}
 .zz-connectors .mcp-runtime__body { overflow: auto; padding: var(--sp-4) var(--sp-5); }
-.zz-connectors .mcp-runtime-summary, .zz-connectors .mcp-runtime-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); padding: var(--sp-4) 0; border-bottom: var(--bw) solid var(--line); }
+.zz-connectors .mcp-runtime-description { margin: 0; color: var(--muted2); line-height: var(--lh-body); }
+.zz-connectors .mcp-runtime-summary { margin-top: var(--sp-4); padding: var(--sp-4); border: var(--bw) solid var(--line); border-radius: var(--r-lg); background: var(--sunken); }
+.zz-connectors .mcp-runtime-summary, .zz-connectors .mcp-runtime-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); }
+.zz-connectors .mcp-runtime-row { padding: var(--sp-4) 0; border-bottom: var(--bw) solid var(--line); }
 .zz-connectors .mcp-runtime-summary h3, .zz-connectors .mcp-runtime-summary p, .zz-connectors .mcp-runtime-row h3, .zz-connectors .mcp-runtime-row p { margin: 0; }
 .zz-connectors .mcp-runtime-summary p, .zz-connectors .mcp-runtime-row p { margin-top: var(--sp-1); color: var(--muted2); line-height: var(--lh-body); }
 .zz-connectors .mcp-runtime-summary[data-tone='success'] h3 { color: var(--ok-text); }
@@ -75,6 +107,7 @@ export const styles = dialogStyles + `
 .zz-connectors .mcp-version-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-2) 0; }
 @media (max-width: 760px) {
 .zz-connectors .mcp-dialog { width: calc(100vw - 2 * var(--sp-2)); max-height: calc(100vh - 2 * var(--sp-2)); }
+.zz-connectors .mcp-public-grid { grid-template-columns: 1fr; }
 .zz-connectors .mcp-installed-card { width: 100%; flex-basis: 100%; }
 .zz-connectors .mcp-installed-card__footer, .zz-connectors .mcp-installed-card__actions { flex-wrap: wrap; }
 .zz-connectors .mcp-runtime { width: calc(100vw - 2 * var(--sp-2)); max-height: calc(100vh - 2 * var(--sp-2)); border-radius: var(--r-lg); }
@@ -96,20 +129,33 @@ export const styles = dialogStyles + `
 .zz-connectors .mcp-package-drop { position: relative; display: grid; min-height: 136px; place-items: center; align-content: center; gap: var(--sp-2); padding: var(--sp-5); border: 1px dashed var(--accent-line); border-radius: var(--r-lg); background: var(--accent-soft); color: var(--ink); text-align: center; cursor: pointer; transition: border-color 120ms ease, background-color 120ms ease; }
 .zz-connectors .mcp-package-drop:hover, .zz-connectors .mcp-package-drop:focus-within { border-color: var(--accent); background: color-mix(in srgb, var(--accent-soft) 72%, var(--panel)); }
 .zz-connectors .mcp-package-drop__icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: var(--r-md); background: var(--panel); color: var(--accent-text); box-shadow: var(--sh-1); }
+.zz-connectors .mcp-package-drop[data-status='ready'] { border-color: color-mix(in srgb, var(--ok) 65%, var(--line)); background: color-mix(in srgb, var(--ok) 8%, var(--panel)); }
+.zz-connectors .mcp-package-drop[data-status='ready'] .mcp-package-drop__icon { color: var(--ok-text); }
+.zz-connectors .mcp-package-drop[data-status='error'] { border-color: color-mix(in srgb, var(--danger) 65%, var(--line)); background: color-mix(in srgb, var(--danger) 7%, var(--panel)); }
 .zz-connectors .mcp-package-drop small { color: var(--muted2); }
+.zz-connectors .mcp-package-drop__filename { max-width: min(100%, 560px); overflow: hidden; color: var(--ink); text-overflow: ellipsis; white-space: nowrap; }
+.zz-connectors .mcp-package-progress { position: relative; width: min(100%, 460px); height: 6px; overflow: hidden; border-radius: 999px; background: var(--sunken); }
+.zz-connectors .mcp-package-progress > span { position: absolute; inset: 0 auto 0 -35%; width: 35%; border-radius: inherit; background: var(--accent); animation: mcp-package-progress 1.1s ease-in-out infinite; }
+.zz-connectors .mcp-package-drop__result { display: flex; align-items: center; justify-content: center; gap: var(--sp-2); flex-wrap: wrap; }
+.zz-connectors .mcp-package-drop__result strong { color: var(--ok-text); }
+.zz-connectors .mcp-package-drop__result--error { color: var(--danger); }
+.zz-connectors .mcp-package-drop > .btn { min-width: 172px; justify-content: center; margin-top: var(--sp-1); pointer-events: none; }
 .zz-connectors .mcp-package-drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-.zz-connectors .mcp-package-preview { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: var(--sp-3); padding: var(--sp-4); border: var(--bw) solid var(--accent-line); border-radius: var(--r-lg); background: var(--accent-soft); }
-.zz-connectors .mcp-package-preview__icon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: var(--r-md); background: var(--success-soft); color: var(--success); }
-.zz-connectors .mcp-package-preview p { margin: var(--sp-1) 0; color: var(--muted2); }
-.zz-connectors .mcp-package-preview small { display: block; color: var(--muted2); }
-.zz-connectors .mcp-package-preview code { display: block; margin-top: var(--sp-2); overflow: hidden; color: var(--ink); text-overflow: ellipsis; white-space: nowrap; }
-.zz-connectors .mcp-create-divider { display: flex; align-items: center; gap: var(--sp-3); color: var(--muted2); font-size: var(--fs-meta); }
-.zz-connectors .mcp-create-divider::before, .zz-connectors .mcp-create-divider::after { content: ''; height: var(--bw); flex: 1; background: var(--line); }
+@keyframes mcp-package-progress { 0% { left: -35%; } 100% { left: 135%; } }
 .zz-connectors .mcp-create-inline-check { display: flex; align-items: center; gap: var(--sp-2); }
 .zz-connectors .mcp-config-list { display: grid; gap: var(--sp-2); }
 .zz-connectors .mcp-config-list + .mcp-config-list { padding-top: var(--sp-3); border-top: var(--bw) solid var(--line); }
+.zz-connectors .mcp-create-subsection { padding-top: var(--sp-4); border-top: var(--bw) solid var(--line); }
+.zz-connectors .mcp-connection-check { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--sp-2) var(--sp-4); }
+.zz-connectors .mcp-connection-check > div { display: flex; align-items: center; gap: var(--sp-2); }
+.zz-connectors .mcp-connection-check > p { grid-column: 1 / -1; margin: 0; color: var(--muted2); font-size: var(--fs-meta); }
+.zz-connectors .mcp-check-state { color: var(--muted2); font-size: var(--fs-meta); }
+.zz-connectors .mcp-check-state::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: var(--sp-1); border-radius: 50%; background: currentColor; vertical-align: middle; }
+.zz-connectors .mcp-check-state[data-status="ready"] { color: var(--success); }
+.zz-connectors .mcp-check-state[data-status="error"] { color: var(--danger); }
 .zz-connectors .mcp-config-list__label { color: var(--ink); font-weight: var(--fw-label); }
 .zz-connectors .mcp-config-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 32px; gap: var(--sp-2); align-items: center; }
+.zz-connectors .mcp-config-row--single { grid-template-columns: minmax(0, 1fr) 32px; }
 .zz-connectors .mcp-create-dialog .mcp-config-row input { box-sizing: border-box; width: 100%; min-height: var(--ctl-h-lg); padding: var(--sp-2) var(--sp-3); border: var(--bw) solid var(--line-strong); border-radius: var(--r-sm); background: var(--sunken); color: var(--ink); font: inherit; transition: border-color 120ms ease, background-color 120ms ease, box-shadow 120ms ease; }
 .zz-connectors .mcp-create-dialog .mcp-config-row input:hover:not(:disabled) { border-color: var(--accent-line); background: var(--panel); }
 .zz-connectors .mcp-create-dialog .mcp-config-row input:focus-visible { border-color: var(--accent); background: var(--panel); outline: none; box-shadow: var(--focus-ring); }
@@ -117,7 +163,7 @@ export const styles = dialogStyles + `
 .zz-connectors .mcp-create-dialog .mcp-config-row__remove { display: grid; width: 32px; min-width: 32px; height: 32px; min-height: 32px; place-items: center; padding: 0; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--muted2); cursor: pointer; }
 .zz-connectors .mcp-create-dialog .mcp-config-row__remove:hover:not(:disabled) { background: var(--danger-soft); color: var(--danger); }
 .zz-connectors .mcp-config-row__remove svg { display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; }
-.zz-connectors .mcp-create-dialog .mcp-config-list__add { display:inline-flex;align-items:center;gap:var(--sp-2); min-height: 30px; padding: 0 var(--sp-3); border: 0; border-radius: var(--r-sm); background: var(--sunken); color: var(--muted2); font: inherit; cursor: pointer; }
+.zz-connectors .mcp-create-dialog .mcp-config-list__add { display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2); width:100%; min-height: 30px; padding: 0 var(--sp-3); border: 0; border-radius: var(--r-sm); background: var(--sunken); color: var(--muted2); font: inherit; cursor: pointer; }
 .zz-connectors .mcp-create-dialog .mcp-config-list__add:hover:not(:disabled) { background: var(--accent-soft); color: var(--accent-text); }
 .zz-connectors .mcp-create-dialog .mcp-config-list__add:active:not(:disabled), .zz-connectors .mcp-create-dialog .mcp-config-row__remove:active:not(:disabled), .zz-connectors .mcp-create-transport button:active:not(:disabled) { transform: translateY(1px); }
 .zz-connectors .mcp-create-dialog :is(button, input, select, textarea, summary):focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
@@ -154,17 +200,8 @@ export const styles = dialogStyles + `
 .zz-connectors .connector-directory-tabs button[aria-selected=true] { color: var(--ink); background: var(--raised); font-weight: 650; }
 .zz-connectors .connector-directory-tabs button:disabled { cursor: default; opacity: .5; }
 .zz-connectors .connector-directory-tabs + .zz-directory-section { margin-top: 16px; }
-.zz-connectors #zz-connector-public .mcp-installed__list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.zz-connectors #zz-connector-public .mcp-installed-card { box-sizing: border-box; width: auto; min-width: 0; min-height: 124px; max-width: none; gap: 8px; padding: 12px; border-radius: var(--r-lg); }
-.zz-connectors #zz-connector-public .mcp-installed-card__identity { grid-template-columns: 38px minmax(0, 1fr); gap: 10px; }
-.zz-connectors #zz-connector-public .mcp-installed-card__icon { width: 36px; height: 36px; }
-.zz-connectors #zz-connector-public .mcp-installed-card__context { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.zz-connectors #zz-connector-public .mcp-installed-card__footer { margin-top: auto; padding-top: 0; }
-.zz-connectors #zz-connector-public .mcp-installed-card__footer .btn { min-height: 32px; padding: 5px 11px; }
-@media (max-width: 1180px) { .zz-connectors #zz-connector-public .mcp-installed__list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .zz-connectors .capability-page__content { padding: var(--sp-4) var(--sp-3) var(--sp-6); }
 .zz-connectors .capability-featured-scenes__grid { grid-template-columns: 1fr; }
-.zz-connectors #zz-connector-public .mcp-installed__list { grid-template-columns: 1fr; }
 }
 .zz-connectors .capability-featured-scenes { display: grid; gap: var(--sp-3); margin: var(--sp-2) 0 var(--sp-6); }
 .zz-connectors .capability-featured-scenes__header { display: flex; align-items: flex-end; justify-content: space-between; }
@@ -198,7 +235,6 @@ export const styles = dialogStyles + `
 .zz-connectors .capability-featured-scene__count { position: static; z-index: 1; margin-left: auto; color: var(--muted2); font: var(--fs-100) / 1 var(--font-mono); }
 @media (max-width: 760px) { .zz-connectors .capability-featured-scenes__grid { grid-template-columns: 1fr; }
 }
-.zz-resource-page.zz-connectors {padding-top:calc(var(--sp-6) + var(--dsh-frame-top-clearance,0px))}
 .zz-connectors .header-actions {display:flex;align-items:center;gap:10px;margin-left:auto}
 .zz-connectors .zz-tools-dialog {width:min(960px,94vw)}
 .zz-connectors .zz-tools-layout {display:grid;grid-template-columns:260px minmax(0,1fr);min-height:360px;max-height:65vh;overflow:hidden}

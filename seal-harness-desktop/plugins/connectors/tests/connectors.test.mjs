@@ -2,13 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
 import { createHash } from 'node:crypto'
-import { mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
+import { chmod, copyFile, link, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Context } from '@deepseek-ai/cordis'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import LocalCredentials from '@deepseek-ai/dsh-credentials-local'
+import { credentialKey } from '@deepseek-ai/dsh-credentials'
 import { Session } from '@deepseek-ai/dsh-session'
 import { createScope, scopeTarget } from '@deepseek-ai/dsh-scope'
 import { createModule } from '../src/module.js'
@@ -63,6 +64,7 @@ test('session selection isolates connector schemas and execution between agents'
 
 async function httpFixture(t) {
   const headers = []
+  const environmentHeaders = []
   let toolCalls = 0
   const server = createServer(async (request, response) => {
     if (request.method !== 'POST') { response.writeHead(405).end(); return }
@@ -70,6 +72,7 @@ async function httpFixture(t) {
     for await (const chunk of request) chunks.push(chunk)
     const message = JSON.parse(Buffer.concat(chunks).toString())
     headers.push(request.headers.authorization)
+    environmentHeaders.push(request.headers['x-from-environment'])
     if (message.id === undefined) { response.writeHead(202).end(); return }
     let result
     if (message.method === 'initialize') result = { protocolVersion: message.params.protocolVersion, capabilities: { tools: {} }, serverInfo: { name: 'test', version: '1' } }
@@ -80,8 +83,30 @@ async function httpFixture(t) {
   })
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)) })
-  return { url: `http://127.0.0.1:${server.address().port}/mcp`, headers, toolCalls: () => toolCalls }
+  return { url: `http://127.0.0.1:${server.address().port}/mcp`, headers, environmentHeaders, toolCalls: () => toolCalls }
 }
+
+test('HTTP draft check resolves environment headers, discovers tools and does not persist the connector', async t => {
+  const fixture = await httpFixture(t)
+  const { handlers } = await host(t)
+  const variable = 'SEAL_HARNESS_CONNECTOR_HEADER_TEST'
+  process.env[variable] = 'resolved-at-check-time'
+  t.after(() => { delete process.env[variable] })
+
+  const checked = await handlers.checkConnection({
+    id: 'draft-http', name: 'Draft HTTP', transport: 'streamable-http', url: fixture.url,
+    headers: {}, headerValues: { 'X-Static': 'visible-only-to-host' },
+    headerEnvironment: { 'X-From-Environment': variable }, enabled: false,
+  })
+
+  assert.equal(checked.status, 'ready')
+  assert.equal(checked.toolCount, 1)
+  assert.deepEqual(checked.tools.map(tool => tool.name), ['ping'])
+  assert(fixture.environmentHeaders.includes('resolved-at-check-time'))
+  assert.equal((await handlers.list()).items.length, 0, 'draft checks must not save the connector')
+  assert.ok(!JSON.stringify(checked).includes('visible-only-to-host'))
+  assert.ok(!JSON.stringify(checked).includes('resolved-at-check-time'))
+})
 
 test('HTTP lifecycle uses DSH tools, keeps credentials Host-only, preserves them on edit and unregisters on disable', async t => {
   const fixture = await httpFixture(t)
@@ -161,6 +186,7 @@ test('local stdio package is previewed, verified and installed from a one-time t
   const { handlers, home } = await host(t)
   const runtime = Buffer.from('portable runtime')
   const server = Buffer.from('portable server')
+  const alternate = Buffer.from('alternate runtime')
   const payload = Buffer.alloc(65 * 1024 * 1024, 0x61)
   const descriptor = {
     schemaVersion: 'stratex.capability/v1',
@@ -170,10 +196,13 @@ test('local stdio package is previewed, verified and installed from a one-time t
     transport: 'stdio',
     executable: 'runtime.exe',
     args: ['server.mjs'],
+    environmentVariables: [{ name: 'PACKAGE_MODE', value: 'bundled' }],
+    environmentPassthrough: ['PATH'],
     environmentSlots: [{ name: 'ACCESS_TOKEN', required: true }],
     files: [
       { path: 'runtime.exe', sizeBytes: runtime.length, sha256: createHash('sha256').update(runtime).digest('hex') },
       { path: 'server.mjs', sizeBytes: server.length, sha256: createHash('sha256').update(server).digest('hex') },
+      { path: 'alternate.exe', sizeBytes: alternate.length, sha256: createHash('sha256').update(alternate).digest('hex') },
       { path: 'payload.bin', sizeBytes: payload.length, sha256: createHash('sha256').update(payload).digest('hex') },
     ],
   }
@@ -181,27 +210,35 @@ test('local stdio package is previewed, verified and installed from a one-time t
     { path: 'descriptor.json', bytes: Buffer.from(JSON.stringify(descriptor)), mode: 0o644 },
     { path: 'runtime.exe', bytes: runtime, mode: 0o755 },
     { path: 'server.mjs', bytes: server, mode: 0o644 },
+    { path: 'alternate.exe', bytes: alternate, mode: 0o755 },
     { path: 'payload.bin', bytes: payload, mode: 0o644 },
   ])
   const preview = await handlers.inspectPackage({ fileName: 'portable-mcp.zip', zipBase64: zip.toString('base64') })
   assert.equal(preview.name, 'Portable MCP')
   assert.equal(preview.version, '1.2.3')
-  assert.equal(preview.fileCount, 4)
+  assert.equal(preview.fileCount, 5)
   assert.ok(preview.byteSize > 64 * 1024 * 1024)
   assert.deepEqual(preview.requiredEnv, ['ACCESS_TOKEN'])
   assert.equal(preview.executable, 'runtime.exe')
+  assert.deepEqual(preview.environmentVariables, [{ name: 'PACKAGE_MODE', value: 'bundled' }])
+  assert.deepEqual(preview.environmentPassthrough, ['PATH'])
 
-  const installed = await handlers.importPackage({ token: preview.token, name: 'Portable MCP', summary: 'Local package', category: 'development', envValues: { ACCESS_TOKEN: 'private' }, enabled: false })
+  const installed = await handlers.importPackage({ token: preview.token, name: 'Portable MCP', summary: 'Local package', category: 'development', command: 'alternate.exe', args: ['server.mjs', '--stdio'], envValues: { ACCESS_TOKEN: 'private', PACKAGE_MODE: 'custom' }, environmentPassthrough: ['PATH'], enabled: false })
   const item = installed.items[0]
   assert.equal(item.transport, 'stdio')
   assert.equal(item.summary, 'Local package')
   assert.equal(item.category, 'development')
-  assert.match(item.command, /runtime\.exe$/)
-  assert.equal((await readFile(item.command)).toString(), runtime.toString())
+  assert.match(item.command, /alternate\.exe$/)
+  assert.deepEqual(item.args, ['server.mjs', '--stdio'])
+  assert.deepEqual(item.environmentPassthrough, ['PATH'])
+  assert.equal((await readFile(item.command)).toString(), alternate.toString())
   assert.equal(item.env.includes('ACCESS_TOKEN'), true)
+  assert.equal(item.env.includes('PACKAGE_MODE'), true)
   assert.equal(JSON.stringify(installed).includes('private'), false)
   assert.ok(item.command.startsWith(home))
-  await assert.rejects(handlers.importPackage({ token: preview.token, name: 'Again', category: 'office', enabled: false }), /预览已失效/)
+  const edited = await handlers.save({ id: item.id, revision: item.revision, name: 'Portable renamed', transport: 'stdio', command: item.command, args: item.args, cwd: item.cwd, enabled: false })
+  assert.deepEqual(edited.items[0].environmentPassthrough, ['PATH'], 'older edits preserve package passthrough variables')
+  await assert.rejects(handlers.importPackage({ token: preview.token, name: 'Again', category: 'office', command: 'runtime.exe', args: [], environmentPassthrough: [], enabled: false }), /预览已失效/)
 })
 
 test('local package preview rejects non-stdio packages and missing executables', async t => {
@@ -344,6 +381,10 @@ test('legacy SSE uses standard MCP tool definitions and disposes its stream', as
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   t.after(() => { server.closeAllConnections(); server.close() })
   const { handlers, ctx } = await host(t)
+  const checked = await handlers.checkConnection({ id: 'draft-sse', name: 'Draft SSE', transport: 'sse', url: `http://127.0.0.1:${server.address().port}/sse`, enabled: false })
+  assert.equal(checked.status, 'ready')
+  assert.deepEqual(checked.tools.map(tool => tool.name), ['hello'])
+  assert.equal((await handlers.list()).items.length, 0)
   const saved = await handlers.save({ id: 'legacy-sse', name: 'SSE', transport: 'sse', url: `http://127.0.0.1:${server.address().port}/sse`, enabled: true })
   assert.equal(saved.items[0].status, 'active')
   const result = await ctx.tools.execute({ name: 'mcp__zz-legacy-sse__hello', callId: 'sse', arguments: {}, signal: new AbortController().signal })
@@ -402,15 +443,24 @@ test('portable stdio package initializes a selected workspace once and retains e
   const { mkdir } = await import('node:fs/promises')
   await mkdir(workspace)
   await writeFile(join(workspace, 'AGENTS.md'), '# My workspace\n')
+  const nodeWrapper = process.platform === 'win32' ? 'node-wrapper.exe' : 'node-wrapper'
   const entry = await module.hostHandlers.ensurePackage({ sourceId: 'workspace-package', version: '1.0.0', descriptor: {
-    schemaVersion: 'stratex.capability/v1', transport: 'stdio', executable: 'node-wrapper', args: ['server.mjs'],
-    workspaceBootstrap: { executable: 'node-wrapper', entrypoint: 'init.mjs', args: [], completionMarker: 'initialized', timeoutMs: 5000, instructions: { blockId: 'example', content: 'Use the configured connector.' } },
+    schemaVersion: 'stratex.capability/v1', transport: 'stdio', executable: nodeWrapper, args: ['server.mjs'],
+    workspaceBootstrap: { executable: nodeWrapper, entrypoint: 'init.mjs', args: [], completionMarker: 'initialized', timeoutMs: 5000, instructions: { blockId: 'example', content: 'Use the configured connector.' } },
   }, files: [
-    { path: 'node-wrapper', bytes: Buffer.from(`#!/bin/sh\nexec '${process.execPath.replaceAll("'", "'\\''")}' "$@"\n`) },
+    { path: nodeWrapper, bytes: Buffer.from(`#!/bin/sh\nexec '${process.execPath.replaceAll("'", "'\\''")}' "$@"\n`) },
     { path: 'init.mjs', bytes: Buffer.from("import {writeFileSync} from 'node:fs';writeFileSync('initialized','ready');") },
     { path: 'server.mjs', bytes: Buffer.from(`import readline from 'node:readline';readline.createInterface({input:process.stdin}).on('line',line=>{const m=JSON.parse(line);if(m.id===undefined)return;const result=m.method==='initialize'?{protocolVersion:m.params.protocolVersion,capabilities:{tools:{}},serverInfo:{name:'package',version:'1'}}:{tools:[]};process.stdout.write(JSON.stringify({jsonrpc:'2.0',id:m.id,result})+'\\n')})`) },
   ] })
   assert.equal(entry.status, 'unconfigured')
+  await rm(entry.command)
+  try {
+    await link(process.execPath, entry.command)
+  } catch (error) {
+    if (error.code !== 'EXDEV') throw error
+    await copyFile(process.execPath, entry.command)
+    await chmod(entry.command, 0o755)
+  }
   const prepared = await handlers.prepareWorkspace({ id: entry.id, revision: entry.revision, path: workspace })
   assert.equal(prepared.items[0].workspacePath, await realpath(workspace))
   const content = await readFile(join(workspace, 'AGENTS.md'), 'utf8')
@@ -421,6 +471,120 @@ test('portable stdio package initializes a selected workspace once and retains e
   const { prepareWorkspace } = await import('../src/workspace.js')
   await prepareWorkspace({ id: entry.id, bootstrap: { directory: '/not-needed', executable: 'missing', entrypoint: 'missing', args: [], completionMarker: 'initialized', timeoutMs: 1000, instructions: { content: 'Updated instructions.' } } }, workspace)
   assert.equal((await readFile(join(workspace, 'AGENTS.md'), 'utf8')).match(/SEAL_HARNESS-CONNECTOR:.*:START/g).length, 1)
+})
+
+test('workspace bootstrap accepts an existing directory completion marker', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'seal-harness-workspace-marker-'))
+  t.after(() => rm(root, { recursive: true, force: true }))
+  await mkdir(join(root, '.codegraph'))
+  const { prepareWorkspace } = await import('../src/workspace.js')
+  const result = await prepareWorkspace({
+    id: 'codegraph-fixture',
+    bootstrap: {
+      directory: join(root, 'missing-runtime'),
+      executable: 'missing.exe',
+      entrypoint: 'missing.cjs',
+      args: [],
+      completionMarker: '.codegraph',
+      timeoutMs: 1000,
+      instructions: { content: 'Use CodeGraph before text search.' },
+    },
+  }, root)
+  assert.equal(result, await realpath(root))
+  assert.match(await readFile(join(root, 'AGENTS.md'), 'utf8'), /Use CodeGraph before text search/)
+})
+
+test('workspace bootstrap rejects a symbolic-link completion marker', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'seal-harness-workspace-marker-link-'))
+  const target = await mkdtemp(join(tmpdir(), 'seal-harness-workspace-marker-target-'))
+  t.after(() => Promise.all([
+    rm(root, { recursive: true, force: true }),
+    rm(target, { recursive: true, force: true }),
+  ]))
+  await symlink(target, join(root, '.codegraph'), 'junction')
+  const { prepareWorkspace } = await import('../src/workspace.js')
+  await assert.rejects(prepareWorkspace({
+    id: 'codegraph-fixture',
+    bootstrap: {
+      directory: join(root, 'missing-runtime'),
+      executable: 'missing.exe',
+      entrypoint: 'missing.cjs',
+      args: [],
+      completionMarker: '.codegraph',
+      timeoutMs: 1000,
+      instructions: { content: 'Use CodeGraph before text search.' },
+    },
+  }, root), /工作区初始化完成标记无效/)
+})
+
+test('startup recovers an unbound connector from one initialized native workspace', async t => {
+  const workspace = await mkdtemp(join(tmpdir(), 'seal-harness-workspace-recovery-'))
+  await mkdir(join(workspace, '.codegraph'))
+  const server = join(workspace, 'server.mjs')
+  await writeFile(server, `import readline from 'node:readline';readline.createInterface({input:process.stdin}).on('line',line=>{const m=JSON.parse(line);if(m.id===undefined)return;const result=m.method==='initialize'?{protocolVersion:m.params.protocolVersion,capabilities:{tools:{}},serverInfo:{name:'recovered',version:'1'}}:{tools:[]};process.stdout.write(JSON.stringify({jsonrpc:'2.0',id:m.id,result})+'\\n')})`)
+  const key = credentialKey('seal-harness-capabilities', 'connectors')
+  const { handlers } = await host(t, {}, async ctx => {
+    ctx.provide('workspaceRegistry', { list: () => [{ path: workspace, title: 'Recovered workspace' }] })
+    await ctx.get('credentials').modifyRecord(key, () => ({ kind: 'grant', payload: { version: 1, entries: [{
+      id: 'codegraph-fixture', name: 'CodeGraph fixture', transport: 'stdio', command: process.execPath,
+      args: [server], cwd: workspace, enabled: true, revision: 0,
+      bootstrap: { directory: workspace, executable: 'missing.exe', entrypoint: 'missing.cjs', args: [], completionMarker: '.codegraph', timeoutMs: 1000, instructions: { blockId: 'fixture', content: 'Use CodeGraph before text search.' } },
+    }] } }))
+  })
+  t.after(() => rm(workspace, { recursive: true, force: true }))
+  const first = await handlers.list()
+  assert.equal(first.items[0].workspacePath, await realpath(workspace))
+  assert.equal(first.items[0].status, 'active')
+  assert.match(await readFile(join(workspace, 'AGENTS.md'), 'utf8'), /Use CodeGraph before text search/)
+  assert.equal((await handlers.list()).items[0].workspacePath, await realpath(workspace), 'recovered binding is persisted')
+})
+
+test('startup leaves an unbound connector for explicit selection when multiple workspaces match', async t => {
+  const first = await mkdtemp(join(tmpdir(), 'seal-harness-workspace-ambiguous-a-'))
+  const second = await mkdtemp(join(tmpdir(), 'seal-harness-workspace-ambiguous-b-'))
+  await Promise.all([mkdir(join(first, '.codegraph')), mkdir(join(second, '.codegraph'))])
+  const key = credentialKey('seal-harness-capabilities', 'connectors')
+  const { handlers } = await host(t, {}, async ctx => {
+    ctx.provide('workspaceRegistry', { list: () => [{ path: first }, { path: second }] })
+    await ctx.get('credentials').modifyRecord(key, () => ({ kind: 'grant', payload: { version: 1, entries: [{
+      id: 'codegraph-fixture', name: 'CodeGraph fixture', transport: 'stdio', command: process.execPath,
+      enabled: true, revision: 0,
+      bootstrap: { directory: first, executable: 'missing.exe', entrypoint: 'missing.cjs', args: [], completionMarker: '.codegraph', timeoutMs: 1000, instructions: { blockId: 'fixture', content: 'Use CodeGraph before text search.' } },
+    }] } }))
+  })
+  t.after(() => Promise.all([rm(first, { recursive: true, force: true }), rm(second, { recursive: true, force: true })]))
+  const result = await handlers.list()
+  assert.equal(result.items[0].workspacePath, undefined)
+  assert.equal(result.items[0].status, 'unconfigured')
+})
+
+test('CodeGraph workspace runtime launches MCP with the bound project path and live watcher enabled', async () => {
+  const { resolveStdioRuntime } = await import('../src/runtime.js')
+  const artifact = join('C:\\packages', 'codegraph')
+  const workspace = 'C:\\workspaces\\project'
+  const command = join(artifact, 'server', 'codegraph', 'node.exe')
+  const runtime = resolveStdioRuntime({
+    command, args: ['wrapper/launch.cjs'], cwd: artifact, workspacePath: workspace,
+    bootstrap: { instructions: { blockId: 'codegraph' } },
+  }, { PATH: 'kept' })
+  assert.equal(runtime.command, command)
+  assert.deepEqual(runtime.args, [
+    '--liftoff-only', join(artifact, 'server', 'codegraph', 'lib', 'dist', 'bin', 'codegraph.js'),
+    'serve', '--mcp', '--path', workspace,
+  ])
+  assert.equal(runtime.cwd, artifact)
+  assert.equal(runtime.env.CODEGRAPH_NO_DAEMON, '1')
+  assert.equal(runtime.env.CODEGRAPH_NO_DOWNLOAD, '1')
+  assert.equal(runtime.env.PATH, 'kept')
+  assert.equal(runtime.args.includes('--no-watch'), false)
+})
+
+test('ordinary stdio runtime keeps its declared command, arguments and working directory', async () => {
+  const { resolveStdioRuntime } = await import('../src/runtime.js')
+  const entry = { command: 'C:\\tools\\server.exe', args: ['--stdio'], cwd: 'C:\\tools', workspacePath: 'C:\\workspace' }
+  assert.deepEqual(resolveStdioRuntime(entry, { TOKEN: 'secret' }), {
+    command: entry.command, args: entry.args, cwd: entry.cwd, env: { TOKEN: 'secret' },
+  })
 })
 
 test('simultaneous skill and connector dependency installs finish without crossing queue locks', { timeout: 3000 }, async t => {

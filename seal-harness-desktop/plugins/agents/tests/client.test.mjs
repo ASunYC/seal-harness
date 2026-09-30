@@ -70,6 +70,8 @@ test('client registers and releases panel, opens DSH session, submits native cre
   assert.equal(slots[1].slot.id, 'seal-harness-agents')
   await act(async () => root.render(React.createElement(slots[0].component)))
   assert.match(document.body.textContent, /本机助理/)
+  assert.match(document.querySelector('.resource-sync-state').textContent, /已同步/)
+  assert(document.querySelector('button[aria-label="刷新智能体状态"] [data-icon-name="refresh"]'))
   assert.equal(document.querySelectorAll('.overview-stat').length, 4)
   const icon = (selector, name, size) => {
     const svg = document.querySelector(`${selector} svg[data-icon-name="${name}"]`)
@@ -200,5 +202,6 @@ test('client registers and releases panel, opens DSH session, submits native cre
     await escape()
     assert.equal(document.querySelector('[role="dialog"]'), null)
   })
-  failed = true; await click('刷新实例状态'); assert.match(document.querySelector('[role="alert"]').textContent, /连接失败/)
+  failed = true; await click('刷新智能体状态'); assert.match(document.querySelector('[role="alert"]').textContent, /连接失败/)
+  assert.match(document.querySelector('.resource-sync-state').textContent, /未连接/)
 })

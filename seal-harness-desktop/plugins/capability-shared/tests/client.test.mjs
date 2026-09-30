@@ -66,7 +66,7 @@ test('built clients register independent panels, preserve resource installation 
       connection: { rpc: { call: async (channel, endpoint, payload) => {
         assert.equal(channel, '/api'); assert(endpoint.startsWith('seal-harness-capabilities/')); endpoint = endpoint.slice('seal-harness-capabilities/'.length); calls.push({ endpoint, payload })
         if (endpoint === 'skills/install' && installationUnavailable) throw new Error('技能插件已卸载，无法安装。')
-        const value = endpoint === 'store/list' ? [asset] : endpoint === 'store/detail' ? asset
+        const value = endpoint === 'store/list' ? [asset] : endpoint === 'store/center' ? [] : endpoint === 'store/detail' ? asset
           : endpoint === 'skills/list' ? { revision: 0, skills: [] }
             : endpoint === 'skills/sources' ? { sources: [] } : { items: [] }
         return { ok: true, value }
@@ -103,7 +103,7 @@ test('built clients register independent panels, preserve resource installation 
   }
   const click = async text => {
     const button = [...document.querySelectorAll('button')].find(button => button.textContent === text || button.getAttribute('aria-label') === text)
-    assert(button, `missing button ${text}`)
+    assert(button, `missing button ${text}; visible: ${[...document.querySelectorAll('button')].map(item => item.getAttribute('aria-label') || item.textContent).join(' | ')}`)
     await act(async () => button.click())
   }
   await act(async () => root.render(React.createElement(panels.find(item => item.owner === 'skills').component)))
@@ -126,10 +126,10 @@ test('built clients register independent panels, preserve resource installation 
   await click('查看 契约技能 详情')
   installationUnavailable = true
   await click('安装此版本')
-  assert.match(document.querySelector('[role=status]').textContent, /技能插件已卸载，无法安装/)
+  assert.match(document.querySelector('.state-banner[role=status]').textContent, /技能插件已卸载，无法安装/)
   assert.doesNotMatch(document.body.textContent, /已安装。/)
   await click('关闭能力详情')
-  await click('刷新')
+  await click('刷新技能目录')
   assert.match(document.body.textContent, /契约技能/, 'store browsing survives an unavailable installer')
   await click('查看 契约技能 详情')
   installationUnavailable = false
@@ -168,7 +168,7 @@ test('built clients register independent panels, preserve resource installation 
       authListeners.forEach(listener => listener())
     })
     assert.equal(calls.filter(call => call.endpoint === 'store/list').length, beforeLogin + 1, `${owner} automatically loads its catalog after login`)
-    await click(owner === 'connectors' ? '查看详情' : '查看与安装')
+    await click(owner === 'connectors' ? `查看 ${asset.name} 详情` : '查看与安装')
     assert(document.querySelector('dialog[open]'), `${owner} opens its public detail`)
     await act(async () => {
       status = { ...status, accountId: 'account-b', epoch: status.epoch + 1 }

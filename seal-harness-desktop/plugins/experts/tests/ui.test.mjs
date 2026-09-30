@@ -45,6 +45,8 @@ test('expert directory opens full-page editing, preserves unavailable bindings, 
   }
   await act(async () => root.render(React.createElement(module.exports.ExpertsPanel, { api, signedIn: true, workspaces: [{ workspaceId: 'workspace-a', title: '研发' }], startConversation: async (...args) => conversations.push(args) })))
   assert.equal(document.querySelector('form'), null)
+  assert.match(document.querySelector('.resource-sync-state').textContent, /未连接/)
+  assert(document.querySelector('button[aria-label="刷新专家目录"] [data-icon-name="refresh"]'))
   const directoryTabs = document.querySelector('[role=tablist][aria-label="专家目录范围"]')
   assert(directoryTabs)
   assert.deepEqual([...directoryTabs.querySelectorAll('[role=tab]')].map(tab => [tab.textContent, tab.getAttribute('aria-selected')]), [['公开', 'true'], ['个人', 'false'], ['被授权', 'false']])

@@ -202,7 +202,6 @@ to { opacity: 1; transform: none; }
 .zz-experts .expert-grid { grid-template-columns: 1fr; }
 .zz-experts .featured__rail { grid-template-columns: 1fr; }
 }
-.zz-resource-page.zz-experts {padding-top:calc(var(--sp-6) + var(--dsh-frame-top-clearance,0px))}
 .zz-experts .zz-expert-modal {width:min(560px,92vw)}
 .zz-experts .zz-expert-dialog-body {padding:20px;display:grid;gap:16px}
 .zz-experts .zz-expert-dialog-footer {display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}

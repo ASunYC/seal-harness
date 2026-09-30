@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { connectorPopoverPosition } from '../src/position.js'
+import { composerPopoverWidth, connectorPopoverPosition } from '../src/position.js'
 
 test('连接器选择器横向对齐输入框并贴在触发器上方', () => {
   assert.deepEqual(connectorPopoverPosition({
@@ -9,6 +9,17 @@ test('连接器选择器横向对齐输入框并贴在触发器上方', () => {
     popover: { width: 780, height: 200 },
     viewport: { width: 1564, height: 900 },
   }), { left: 348, top: 582 })
+})
+
+test('技能和连接器选择器共用输入框宽度，上限为 780px', () => {
+  assert.equal(composerPopoverWidth({
+    composer: { width: 1140 },
+    viewport: { width: 1564, height: 900 },
+  }), 780)
+  assert.equal(composerPopoverWidth({
+    composer: { width: 560 },
+    viewport: { width: 600, height: 900 },
+  }), 560)
 })
 
 test('连接器选择器始终留在视口安全边距内', () => {

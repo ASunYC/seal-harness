@@ -13,3 +13,8 @@ export function connectorPopoverPosition({ trigger, composer, popover, viewport 
     top: clamp(trigger.top - TRIGGER_GAP - popover.height, VIEWPORT_MARGIN, viewport.height - popover.height - VIEWPORT_MARGIN),
   }
 }
+
+/** Keep composer resource pickers at the shared desktop width while remaining responsive. */
+export function composerPopoverWidth({ composer, viewport }) {
+  return Math.min(780, composer.width || 780, viewport.width - VIEWPORT_MARGIN * 2)
+}

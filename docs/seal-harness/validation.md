@@ -17,3 +17,9 @@
 | Windows/macOS/Linux 原生安装、图形启动、签名与升级 | 未执行；本机仅完成 headless 构建与测试 |
 
 Windows 上有一个连接器测试夹具使用 POSIX shell 可执行文件，已按平台明确跳过；连接器其余测试通过。来源工程的 Geovis 和内网服务在 Seal Harness 中默认不连接，实际远端业务仍须在授权服务环境分别验证。未推送或发布。
+
+## 2026-09-30 更新目录整合
+
+从更新的来源目录整合资源页同步、连接器、会话技能选择、会话删除和默认工作区路径。`yarn install --immutable`、`seal-harness:build`、`seal-harness:check`、`check:layout` 与 `git lfs fsck` 已通过。产品检查包含 59 个根 Vitest 文件、1205 个用例，以及 project-agent 的 5 个用例；Profile 重复装配和启动检查也通过。一个连接器 POSIX shell 夹具仍按平台在 Windows 跳过。
+
+根 `typecheck` 已通过，`git diff --check` 和 `git lfs fsck` 也通过；固定 `deepseek-harness` 子模块未改动。真实 Electron 窗口视觉检查、原生安装、签名和升级未执行，不能归入上述通过结果。源工程的个人截图路径与旧产品图标没有迁入，当前所有产品图标仍来自 Seal Harness 小海豹原图。

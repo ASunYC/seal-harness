@@ -44,6 +44,8 @@ export function inspectLocalPackage(bytes, fileName = 'connector.zip') {
         version: typeof descriptor.version === 'string' && descriptor.version.trim() ? descriptor.version.trim() : '0.0.0-local',
         executable,
         args: Array.isArray(descriptor.args) ? descriptor.args : [],
+        environmentVariables: Array.isArray(descriptor.environmentVariables) ? descriptor.environmentVariables.map(item => ({ name: item.name, value: item.value })) : [],
+        environmentPassthrough: Array.isArray(descriptor.environmentPassthrough) ? descriptor.environmentPassthrough : [],
         requiredEnv: Array.isArray(descriptor.environmentSlots) ? descriptor.environmentSlots.filter(slot => slot?.required !== false && typeof slot?.name === 'string').map(slot => slot.name) : [],
         fileCount: files.length,
         byteSize: files.reduce((total, file) => total + file.bytes.length, 0),

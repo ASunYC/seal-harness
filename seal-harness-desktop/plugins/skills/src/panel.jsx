@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Icon } from '../../capability-shared/src/icons.jsx'
+import { SyncRefresh } from '../../capability-shared/src/sync-refresh.jsx'
 import { Dialog, SkillWorkbench } from './workbench.jsx'
 import { styles } from './styles.js'
 import { downloadZip, readZip } from '../../capability-shared/src/files.js'
@@ -90,7 +91,7 @@ function LocalSkillsPanel({ api, navigation, onBack, initialAction }) {
     <style>{storeStyles + styles}</style>
     <header className="resource-page-nav"><div className="resource-page-nav__path">{onBack && <button type="button" className="resource-page-nav__back" aria-label="返回会话，离开技能页" title="返回会话，离开技能页" onClick={onBack}><Icon name="back" size={17} /></button>}<strong>技能</strong><span className="resource-page-nav__badge">RESOURCE</span></div><div className="skills-actions">
       <button className="primary" disabled={busy} onClick={() => setWorkbench({ id: null })}>创建 Skill</button><button disabled={busy} onClick={() => openDialog({ kind: 'import' })}>导入 Skill 包</button>
-      {tab === 'discovered' ? <><button disabled={busy} onClick={() => openDialog({ kind: 'scope' })}>扫描范围</button><button disabled={busy} onClick={scan}>{busy ? '正在扫描…' : '重新扫描'}</button></> : <button disabled={busy} onClick={() => run(() => refresh())}>刷新</button>}
+      {tab === 'discovered' ? <><button disabled={busy} onClick={() => openDialog({ kind: 'scope' })}>扫描范围</button><button disabled={busy} onClick={scan}>{busy ? '正在扫描…' : '重新扫描'}</button></> : <SyncRefresh state={loading || busy ? 'loading' : error ? 'error' : snapshot.pendingReports > 0 ? 'warning' : 'ready'} label="刷新已安装技能" disabled={busy} onRefresh={() => run(() => refresh())} />}
     </div></header>
     <div className="skills-page-content"><section className="skills-hero"><h1>技能</h1><p>发现、管理并使用你的技能。</p></section>
       {navigation(busy)}

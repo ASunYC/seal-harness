@@ -6,6 +6,7 @@ import { AgentForm } from './form.jsx'
 import { WorkflowDetail } from './workflow-detail.jsx'
 import { RuntimeProgress } from './progress.jsx'
 import { Icon } from '../../capability-shared/src/icons.jsx'
+import { SyncRefresh } from '../../capability-shared/src/sync-refresh.jsx'
 import { AnimatedSidebarIcon } from '../../capability-shared/src/sidebar-icons.jsx'
 import { InstanceCard, IconButton, kinds, targets, isRunning, instanceKey } from './instance-card.jsx'
 import { flowArtwork, autonomousArtwork } from './artwork.js'
@@ -66,7 +67,7 @@ export function AgentsPanel({ api }) {
   return <main className="zz-agents zz-resource-page">
     {detail && <WorkflowDetail api={api} instance={detail} instances={instances.filter(item => item.kind === 'flow' && item.target === 'local')} busy={pending} error={error} onSelect={setSelected} onBack={() => setSelected(null)} onAction={act} onDelete={setDeleting} onRefresh={() => void run(refresh)} />}
     <div className="instance-center" aria-busy={pending} hidden={!!detail}>
-    <header className="feature-page-header"><div className="feature-page-header__copy"><h1>我的智能体</h1><p>统一管理流程型与自主型智能体，按类型查看实例并进入对应管理页面继续配置。</p></div><div className="center-actions"><IconButton label="设置" icon="settings" className="center-icon-button" onClick={() => setSettings(true)} /><IconButton label="刷新实例状态" icon="refresh" className="center-icon-button" disabled={pending} onClick={() => void run(refresh)} /><button className="primary" onClick={() => setCreating('type')}>新建智能体</button></div></header>
+    <header className="feature-page-header"><div className="feature-page-header__copy"><h1>我的智能体</h1><p>统一管理流程型与自主型智能体，按类型查看实例并进入对应管理页面继续配置。</p></div><div className="center-actions"><SyncRefresh state={pending || !catalog && !error ? 'loading' : error ? 'error' : notices.length ? 'warning' : 'ready'} label="刷新智能体状态" disabled={pending} onRefresh={() => void run(refresh)} /><IconButton label="设置" icon="settings" className="center-icon-button" onClick={() => setSettings(true)} /><button className="primary" onClick={() => setCreating('type')}>新建智能体</button></div></header>
     <section className="center-status-summary" aria-label="智能体运行状态"><h2>运行概览</h2><dl className="overview-stats">{summary.map(([style, icon, label, value]) => <div className="overview-stat" key={style}><span className={`overview-icon ${style}`}><Icon name={icon} size={24} /></span><div><dt>{label}</dt><dd>{count(value)}</dd></div></div>)}</dl></section>
     {error && <div className="center-alert" role="alert"><Icon name="info" size={16} /><span>{error}</span><button disabled={pending} onClick={() => void run(refresh)}>重试</button></div>}
     {notices.map(notice => <p className="center-sync-note" key={`${notice.kind}-${notice.target}`} role="status"><Icon name={notice.target === 'platform' ? 'cloud' : 'info'} size={14} />{kinds[notice.kind]} · {targets[notice.target]}：{notice.message}</p>)}

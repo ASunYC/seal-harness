@@ -53,7 +53,7 @@ const assetSchema = z.object({
   versions: z.array(versionSchema).optional(),
 })
 const centerSchema = z.object({
-  data: z.array(z.object({ connectorId: segment, name: z.string(), summary: z.string(), category: z.enum(['office', 'development']), tags: z.array(z.string()), version: z.string(), clientAuthMode: z.enum(['none', 'oauth']), authExperience: z.enum(['none', 'personal_token', 'provider_oauth', 'shared']).optional(), toolCount: z.number().int().nonnegative().optional() })).max(1000),
+  data: z.array(z.object({ connectorId: segment, name: z.string(), summary: z.string(), category: z.enum(['office', 'development']), tags: z.array(z.string()), version: z.string(), clientAuthMode: z.enum(['none', 'oauth']), authExperience: z.enum(['none', 'personal_token', 'provider_oauth', 'shared']).optional(), toolCount: z.number().int().nonnegative().optional(), iconRevision: z.string().min(1).max(512).optional() })).max(1000),
   meta: z.object({ schemaVersion: z.literal('mcp-center.catalog/v1'), asOf: z.string(), revision: z.string() }),
 })
 
@@ -67,7 +67,7 @@ function present(value, collection) {
   return { ...parsed.data, collection }
 }
 
-export function createStore(backend) {
+export function createStore(backend, { centerCache } = {}) {
   return {
     ...adapterHandlers(backend),
     status: () => backend.status(),
@@ -81,9 +81,31 @@ export function createStore(backend) {
       return { ...present(result.data, request.collection), etag: result.headers.get('etag') }
     },
     async center(_input, signal) {
-      const parsed = centerSchema.safeParse(await backend.listCenter(signal))
-      if (!parsed.success) throw new BackendError('invalidResponse')
-      return parsed.data.data
+      try {
+        const parsed = centerSchema.safeParse(await backend.listCenter(signal))
+        if (!parsed.success) throw new BackendError('invalidResponse')
+        await centerCache?.writeCatalog(parsed.data).catch(() => {})
+        return parsed.data.data
+      } catch (failure) {
+        if (!centerCache) throw failure
+        try {
+          const cached = centerSchema.safeParse(await centerCache.readCatalog())
+          if (cached.success) return cached.data.data
+        } catch { /* 无有效快照时继续报告真实网络错误。 */ }
+        throw failure
+      }
+    },
+    async centerIcon(input, signal) {
+      const request = z.object({ connectorId: segment, iconRevision: z.string().min(1).max(512).optional() }).strict().parse(input)
+      try {
+        const icon = await backend.readCenterIcon(request.connectorId, signal)
+        await centerCache?.writeIcon(request.connectorId, request.iconRevision, icon).catch(() => {})
+        return icon
+      } catch (failure) {
+        if (!centerCache) throw failure
+        try { return await centerCache.readIcon(request.connectorId, request.iconRevision) }
+        catch { throw failure }
+      }
     },
     async createAsset(input, signal) {
       const request = z.object({ collection, fields: assetFields }).strict().parse(input)

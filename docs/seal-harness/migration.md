@@ -19,3 +19,5 @@
 ## 验证
 
 以 [`validation.md`](validation.md) 记录本次实际检查。ZIP 里的旧验收日志不作为 Seal Harness 的验证证据。Windows/macOS/Linux 的打包、安装和升级必须分别在目标平台进行。
+
+2026-09-30 更新目录的功能差异及品牌保留范围见 [`source-update-2026-09-30.md`](source-update-2026-09-30.md)。

@@ -8,6 +8,7 @@ import vm from 'node:vm'
 import configuration from './electron-builder.mjs'
 import { verifyDistributionArtifacts } from './verify-package.mjs'
 import { buildBrand, desktopRequire, product, productRoot, root } from './build.mjs'
+import { archiveConflictingElectronLink } from '../src/windows-shell-link.js'
 
 test('Seal Harness构建依赖由根工作区持有，不污染 Stable 或 Beta Desktop', () => {
   const workspace = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
@@ -42,6 +43,24 @@ test('产品安装身份和品牌资源来源一致，分发配置不连接社�
   }
 })
 
+test('品牌 Host 只归档与Seal Harness身份冲突的开发 Electron Shell Link', async () => {
+  let captured
+  const result = await archiveConflictingElectronLink({
+    platform: 'win32',
+    appData: 'C:\\Users\\Example\\AppData\\Roaming',
+    executablePath: 'D:\\workspace\\electron\\electron.exe',
+    appId: product.appId,
+    productName: product.name,
+    runPowerShell: async request => { captured = request; return { archived: true } },
+  })
+  assert.deepEqual(result, { archived: true })
+  assert.equal(captured.environment.SEAL_HARNESS_STALE_SHORTCUT, 'C:\\Users\\Example\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Electron.lnk')
+  assert.equal(captured.environment.SEAL_HARNESS_EXPECTED_TARGET, 'D:\\workspace\\electron\\electron.exe')
+  assert.equal(captured.environment.SEAL_HARNESS_EXPECTED_APP_ID, product.appId)
+  assert.equal(await archiveConflictingElectronLink({ platform: 'win32', executablePath: 'D:\\workspace\\seal-harness.exe', runPowerShell: async () => { throw new Error('must not run') } }), undefined)
+  assert.equal(await archiveConflictingElectronLink({ platform: 'linux', executablePath: '/opt/electron', runPowerShell: async () => { throw new Error('must not run') } }), undefined)
+})
+
 test('账号 Home 启动接缝由产品身份插件提供，不进入社区 Desktop 默认构建', () => {
   assert.equal(product.identityHomeModule, '@seal-harness/identity/account-home')
   assert.equal(product.setupWizardEnabled, false)
@@ -63,7 +82,7 @@ test('产品为所有账号提供Seal Harness助手身份并移除上游 Harness
     config: {
       includeHarnessIdentity: false,
       includeRuntimeContext: true,
-      personaPrefix: '你是Seal Harness开发者平台中的 AI 助手。默认使用中文，准确、简洁地帮助用户完成开发、分析和知识工作。',
+      personaPrefix: '你是“Seal Harness”开发者平台中的 AI 助手。面向用户时只以“Seal Harness”或“Seal Harness 助手”自称，不以 DeepSeek、DeepSeek 官方助手、Harness、ChatGPT 或任何底层模型服务名称作为产品身份。底层模型和服务只负责实现，不改变产品身份。默认使用中文，准确、简洁地帮助用户完成开发、分析和知识工作。',
       personaSuffix: '当前工作目录是 {{cwd}}。',
     },
   })
@@ -72,7 +91,7 @@ test('产品为所有账号提供Seal Harness助手身份并移除上游 Harness
 test('标准客户端模块注册三个品牌slot，并在卸载时恢复文档标题', async () => {
   await buildBrand()
   const { JSDOM } = desktopRequire('jsdom')
-  const dom = new JSDOM('<title>DeepSeek Harness</title><div><span><div data-slot="conversation.hero.brand.mark"><span id="mark"></span></div></span><span><span id="headline">探索未至之境</span><span>预览版</span></span></div>')
+  const dom = new JSDOM('<title>DeepSeek Harness</title><section data-plugin-panel aria-busy="false"><header data-plugin-page-header="list"><div></div><div><button aria-label="刷新"><svg /></button><button>添加插件</button></div></header></section><div><span><div data-slot="conversation.hero.brand.mark"><span id="mark"></span></div></span><span><span id="headline">探索未至之境</span><span>预览版</span></span></div>')
   const document = dom.window.document
   const registrations = new Map()
   const disposers = []
@@ -123,6 +142,19 @@ test('标准客户端模块注册三个品牌slot，并在卸载时恢复文档�
   assert.notEqual(pluginMenu.component, PluginIcon)
   assert.equal(pluginMenu.component.name, 'PluginsMenuIcon')
   assert.equal(pluginMenu.options.order, 40)
+  const pluginPanel = document.querySelector('[data-plugin-panel]')
+  const pluginRefresh = pluginPanel.querySelector('button[aria-label="刷新"]')
+  assert(pluginRefresh.classList.contains('resource-sync-button'))
+  assert.match(pluginPanel.querySelector('[data-seal-harness-plugin-sync-state]').textContent, /已同步/)
+  pluginPanel.setAttribute('aria-busy', 'true')
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.match(pluginPanel.querySelector('[data-seal-harness-plugin-sync-state]').textContent, /同步中/)
+  pluginPanel.setAttribute('aria-busy', 'false')
+  const failure = document.createElement('p')
+  failure.setAttribute('role', 'alert')
+  pluginPanel.append(failure)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.match(pluginPanel.querySelector('[data-seal-harness-plugin-sync-state]').textContent, /未连接/)
   const mark = registrations.get('sidebar.brand.mark')({})
   assert.equal(mark.type, 'img')
   assert.equal(mark.props.alt, 'Seal Harness')
@@ -146,6 +178,8 @@ test('标准客户端模块注册三个品牌slot，并在卸载时恢复文档�
   await new Promise(resolve => setTimeout(resolve, 0))
   assert.equal(document.title, 'Next session — Seal Harness')
   for (const dispose of disposers) dispose()
+  assert.equal(pluginRefresh.classList.contains('resource-sync-button'), false)
+  assert.equal(pluginPanel.querySelector('[data-seal-harness-plugin-sync-state]'), null)
   assert.equal(headline.textContent, 'Into the Unknown')
   assert.equal(document.title, 'Next session — DeepSeek Harness')
   dom.window.close()

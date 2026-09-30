@@ -25,7 +25,9 @@ export const configSchema = z.strictObject({
   cwd: text.default(''),
   url: text.default(''),
   headers: secrets(headerName).default({}),
+  headerEnvironment: z.record(headerName, environmentName).refine(value => Object.keys(value).length <= 100).default({}),
   env: secrets(environmentName).default({}),
+  environmentPassthrough: z.array(environmentName).max(100).default([]),
   requiredHeaders: z.array(headerName).max(100).default([]),
   requiredEnv: z.array(environmentName).max(100).default([]),
   adapter: adapterSchema.optional(),
@@ -58,10 +60,10 @@ export async function validateTransport(config) {
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.hash || url.search) {
       throw new ConnectorError('MCP 地址仅支持 HTTP(S)，不得内嵌凭据、查询参数或片段；请使用请求头配置认证。')
     }
-    if (config.command || config.cwd || config.args.length || Object.keys(config.env).length) throw new ConnectorError('HTTP 连接器不能包含本地命令或环境变量。')
+    if (config.command || config.cwd || config.args.length || Object.keys(config.env).length || config.environmentPassthrough.length) throw new ConnectorError('HTTP 连接器不能包含本地命令或环境变量。')
     return
   }
-  if (config.url || Object.keys(config.headers).length || config.requiredHeaders.length) throw new ConnectorError('stdio 连接器不能包含 HTTP 地址或请求头。')
+  if (config.url || Object.keys(config.headers).length || Object.keys(config.headerEnvironment).length || config.requiredHeaders.length) throw new ConnectorError('stdio 连接器不能包含 HTTP 地址或请求头。')
   if (!isAbsolute(config.command)) throw new ConnectorError('本地命令必须使用可执行文件的绝对路径。')
   let executable
   try { executable = await lstat(config.command) } catch { throw new ConnectorError('找不到本地可执行文件。') }
@@ -97,8 +99,9 @@ export function fromDescriptor({ id, name, version, descriptor, accountId, direc
   return parse(configSchema, {
     id: `m-${createHash('sha256').update(`${accountId}/${id}`).digest('hex').slice(0, 24)}`, name, summary: summary ?? value.description ?? '', category: category ?? 'office',
     transport: value.transport === 'stdio' ? 'stdio' : value.transport === 'sse' ? 'sse' : 'streamable-http',
-    ...(value.transport === 'stdio' ? { command: join(directory, safeRelative(value.executable)), args: value.args ?? [], cwd: value.workingDirectory ? join(directory, safeRelative(value.workingDirectory)) : directory, env: Object.fromEntries([...(value.environmentVariables ?? []).map(item => [item.name, item.value]), ...(value.environmentPassthrough ?? []).filter(name => process.env[name] !== undefined).map(name => [name, process.env[name]])]), requiredEnv: (value.environmentSlots ?? []).filter(slot => slot.required).map(slot => slot.name) } : { url: value.endpointTemplate ?? (adapter ? 'http://localhost/' : undefined) }),
-    headers: Object.fromEntries([...value.staticHeaders.map(header => [header.headerName, header.value]), ...(value.environmentHeaders ?? []).filter(header => process.env[header.environmentName]).map(header => [header.headerName, process.env[header.environmentName]]), ...(value.bearerTokenEnvironmentVariable && process.env[value.bearerTokenEnvironmentVariable] ? [['Authorization', `Bearer ${process.env[value.bearerTokenEnvironmentVariable]}`]] : [])]),
+    ...(value.transport === 'stdio' ? { command: join(directory, safeRelative(value.executable)), args: value.args ?? [], cwd: value.workingDirectory ? join(directory, safeRelative(value.workingDirectory)) : directory, env: Object.fromEntries((value.environmentVariables ?? []).map(item => [item.name, item.value])), environmentPassthrough: value.environmentPassthrough ?? [], requiredEnv: (value.environmentSlots ?? []).filter(slot => slot.required).map(slot => slot.name) } : { url: value.endpointTemplate ?? (adapter ? 'http://localhost/' : undefined) }),
+    headers: Object.fromEntries([...value.staticHeaders.map(header => [header.headerName, header.value]), ...(value.bearerTokenEnvironmentVariable && process.env[value.bearerTokenEnvironmentVariable] ? [['Authorization', `Bearer ${process.env[value.bearerTokenEnvironmentVariable]}`]] : [])]),
+    headerEnvironment: Object.fromEntries((value.environmentHeaders ?? []).map(header => [header.headerName, header.environmentName])),
     requiredHeaders: [...value.headerSlots.filter(slot => slot.required).map(slot => slot.headerName), ...(value.authMode === 'token_exchange' ? ['Authorization'] : [])],
     ...(value.authMode === 'oauth_authorization_code_pkce' ? { oauth: { scopes: value.oauthPkce?.scopes ?? value.oauthDiscovery?.scopes ?? [], ...(value.oauthPkce ? { clientInformation: { client_id: value.oauthPkce.clientId }, discovery: { authorizationServerUrl: new URL(value.oauthPkce.authorizationEndpoint).origin, resourceMetadata: { resource: value.endpointTemplate }, authorizationServerMetadata: { issuer: new URL(value.oauthPkce.authorizationEndpoint).origin, authorization_endpoint: value.oauthPkce.authorizationEndpoint, token_endpoint: value.oauthPkce.tokenEndpoint, response_types_supported: ['code'], grant_types_supported: ['authorization_code', 'refresh_token'], code_challenge_methods_supported: ['S256'], token_endpoint_auth_methods_supported: ['none'] } } } : value.oauthDiscovery?.client?.clientId ? { clientInformation: { client_id: value.oauthDiscovery.client.clientId } } : {}) } } : {}),
     ...(value.workspaceBootstrap ? { bootstrap: { ...value.workspaceBootstrap, directory } } : {}),

@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import { createResourceActions } from '../src/actions.js'
 
-test('能力选择器复用技能输入触发器并保留当前选择位置', () => {
+test('能力选择器插入精确技能命令并保留当前选择位置', () => {
   const calls = []
   const actions = createResourceActions({
     inputActions: {
@@ -13,9 +13,9 @@ test('能力选择器复用技能输入触发器并保留当前选择位置', ()
     selectPanel: () => assert.fail('不应切换面板'),
   })
 
-  assert.equal(actions.skill(), true)
+  assert.equal(actions.skill('codegraph-explore'), true)
   assert.deepEqual(calls, [
-    { text: '/skill ', span: { start: 4, end: 4, revision: 2 } },
+    { text: '/codegraph-explore ', span: { start: 4, end: 4, revision: 2 } },
   ])
 })
 
@@ -40,5 +40,14 @@ test('输入已锁定或草稿变化时透传插入失败', () => {
     selectPanel: () => {},
   })
 
-  assert.equal(actions.skill(), false)
+  assert.equal(actions.skill('codegraph-explore'), false)
+})
+
+test('能力选择器拒绝无效技能名', () => {
+  const actions = createResourceActions({
+    inputActions: { captureInsertion: () => assert.fail('无效名称不应写输入框') },
+    selectPanel: () => {},
+  })
+
+  assert.equal(actions.skill('../bad'), false)
 })

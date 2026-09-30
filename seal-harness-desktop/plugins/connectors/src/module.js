@@ -1,4 +1,5 @@
-import { prepareWorkspace } from './workspace.js'
+import { hasCompletionMarker, prepareWorkspace } from './workspace.js'
+import { resolveStdioRuntime } from './runtime.js'
 import { join, relative, isAbsolute } from 'node:path'
 import { readFile, realpath } from 'node:fs/promises'
 import { safeRelative } from '../../skills/src/package.js'
@@ -121,6 +122,57 @@ export async function createModule(ctx, { home, backend }) {
     }
   }
 
+  function runtimeEnvironment(entry) {
+    return {
+      ...Object.fromEntries(entry.environmentPassthrough.filter(name => process.env[name] !== undefined).map(name => [name, process.env[name]])),
+      ...entry.env,
+    }
+  }
+
+  function runtimeHeaders(entry) {
+    const resolved = {}
+    const assign = (name, value) => {
+      const previous = Object.keys(resolved).find(key => key.toLowerCase() === name.toLowerCase())
+      if (previous) delete resolved[previous]
+      resolved[name] = value
+    }
+    for (const [name, environmentName] of Object.entries(entry.headerEnvironment)) {
+      if (process.env[environmentName] !== undefined) assign(name, process.env[environmentName])
+    }
+    for (const [name, value] of Object.entries(entry.headers)) assign(name, value)
+    return resolved
+  }
+
+  async function checkConnection(entry, signal) {
+    if (!tools) throw new ConnectorError('DSH 工具服务未加载。')
+    await validateTransport(entry)
+    assertActive(signal)
+    const serverName = `probe-${randomUUID().slice(0, 8)}`
+    const probePrefix = `mcp__${serverName}__`
+    const discovered = []
+    const registration = ctx.extend({ tools: {
+      register(definition) {
+        discovered.push(definition)
+        return () => {}
+      },
+    } })
+    const config = {
+      serverName, transport: entry.transport, url: entry.url, headers: runtimeHeaders(entry),
+      toolCallTimeoutMs: entry.toolCallTimeoutMs, failOnStartupError: true,
+    }
+    const fiber = registration.plugin(entry.transport === 'sse' ? sseClient : mcpClient, config)
+    try {
+      await fiber.await()
+      assertActive(signal)
+      const result = discovered.map(tool => ({ name: tool.name.startsWith(probePrefix) ? tool.name.slice(probePrefix.length) : tool.name, description: tool.description ?? '' }))
+      return { status: 'ready', toolCount: result.length, tools: result }
+    } catch (error) {
+      throw new ConnectorError('连接检查失败，请检查地址、认证和请求头后重试。', { cause: error })
+    } finally {
+      await fiber.dispose()
+    }
+  }
+
   async function start(entry, signal) {
     await stop(entry.id)
     outcomes.delete(entry.id)
@@ -141,11 +193,13 @@ export async function createModule(ctx, { home, backend }) {
       outcomes.set(entry.id, { status: 'unconfigured', issue: '请先完成浏览器授权。' })
       return
     }
-    if (!entry.oauth && entry.requiredHeaders.some(name => !Object.entries(entry.headers).some(([key, value]) => key.toLowerCase() === name.toLowerCase() && value))) {
+    const resolvedHeaders = runtimeHeaders(entry)
+    if (!entry.oauth && entry.requiredHeaders.some(name => !Object.entries(resolvedHeaders).some(([key, value]) => key.toLowerCase() === name.toLowerCase() && value))) {
       outcomes.set(entry.id, { status: 'unconfigured', issue: '请先配置所需认证请求头。' })
       return
     }
-    if (entry.requiredEnv.some(name => !entry.env[name]) || entry.credentialSlots.some(slot => slot.required && !entry.credentialValues[slot.name])) { outcomes.set(entry.id, { status: 'unconfigured', issue: '请先配置所需环境变量或凭据。' }); return }
+    const runtimeEnv = runtimeEnvironment(entry)
+    if (entry.requiredEnv.some(name => !runtimeEnv[name]) || entry.credentialSlots.some(slot => slot.required && !entry.credentialValues[slot.name])) { outcomes.set(entry.id, { status: 'unconfigured', issue: '请先配置所需环境变量或凭据。' }); return }
     try {
       await validateTransport(entry)
       assertActive(signal)
@@ -153,7 +207,7 @@ export async function createModule(ctx, { home, backend }) {
         const current = await currentSession()
         if (current?.accountId !== session?.accountId || current?.epoch !== session?.epoch) throw new ConnectorError('identityChanged')
       }
-      let headers = entry.headers
+      let headers = resolvedHeaders
       if (entry.oauth) {
         const authorized = await oauth.refresh(entry, signal)
         headers = { ...entry.headers, Authorization: `Bearer ${authorized.tokens.access_token}` }
@@ -165,7 +219,7 @@ export async function createModule(ctx, { home, backend }) {
       const config = {
         serverName: `zz-${entry.id}`, transport: entry.transport,
         ...(entry.transport === 'stdio'
-          ? { command: entry.command, args: entry.args, env: entry.env, cwd: entry.cwd }
+          ? resolveStdioRuntime(entry, runtimeEnv)
           : { url: entry.url, headers }),
         toolCallTimeoutMs: entry.toolCallTimeoutMs, failOnStartupError: true,
       }
@@ -202,7 +256,37 @@ export async function createModule(ctx, { home, backend }) {
     requireStorage()
     currentAccountId = accountId(await currentSession())
     sessionSelections = readSessionSelections(await credentials.readRecord(sessionSelectionKey))
-    await reconcile(readState(await credentials.readRecord(storageKey)).entries)
+    let state = readState(await credentials.readRecord(storageKey))
+    const recovered = await recoverWorkspaceBindings(state)
+    if (recovered !== state) {
+      const saved = await credentials.modifyRecord(storageKey, () => ({ kind: 'grant', payload: recovered }))
+      state = readState(saved)
+    }
+    await reconcile(state.entries)
+  }
+
+  async function recoverWorkspaceBindings(state) {
+    const paths = [...new Set((ctx.get('workspaceRegistry')?.list() ?? []).map(workspace => workspace.path).filter(Boolean))]
+    if (!paths.length) return state
+    let changed = false
+    const next = []
+    for (const entry of state.entries) {
+      if (!entry.bootstrap || entry.workspacePath) { next.push(entry); continue }
+      const matches = new Set()
+      for (const path of paths) {
+        try {
+          if (await hasCompletionMarker(entry, path)) matches.add(await realpath(path))
+        } catch {
+          // 无效或不可访问的候选不参与自动恢复；手动绑定仍会返回具体错误。
+        }
+      }
+      if (matches.size === 1) {
+        changed = true
+        const workspacePath = await prepareWorkspace(entry, matches.values().next().value)
+        next.push({ ...entry, workspacePath, revision: entry.revision + 1 })
+      } else next.push(entry)
+    }
+    return changed ? parse(stateSchema, { ...state, entries: next }) : state
   }
 
   async function reconcile(nextEntries, signal) {
@@ -392,26 +476,43 @@ export async function createModule(ctx, { home, backend }) {
           name: configSchema.shape.name,
           summary: configSchema.shape.summary.unwrap().optional(),
           category: configSchema.shape.category.unwrap(),
+          command: z.string().min(1).max(2_000),
+          args: configSchema.shape.args.unwrap(),
           envValues: configSchema.shape.env.unwrap().optional(),
+          environmentPassthrough: configSchema.shape.environmentPassthrough.unwrap(),
           enabled: z.boolean().default(false),
         }), input)
         if (!packagePreview || packagePreview.token !== payload.token || packagePreview.expires < Date.now()) throw new ConnectorError('连接器包预览已失效，请重新选择文件。')
+        const descriptor = { ...packagePreview.descriptor, executable: safeRelative(payload.command), args: payload.args, environmentVariables: [], environmentPassthrough: payload.environmentPassthrough }
         const { source: _source, ...local } = fromDescriptor({
           id: packagePreview.assetId,
           name: payload.name,
           summary: payload.summary ?? packagePreview.preview.summary,
           category: payload.category,
           version: packagePreview.preview.version,
-          descriptor: packagePreview.descriptor,
+          descriptor,
           accountId: 'local',
           directory: packagePreview.directory,
         })
         if (entries.some(entry => entry.id === local.id)) throw new ConnectorError('此连接器包已经安装。')
-        const config = parse(configSchema, { ...local, env: { ...local.env, ...payload.envValues }, enabled: payload.enabled })
-        await materializePackage(packagePreview.files, packagePreview.directory, packagePreview.descriptor)
+        const config = parse(configSchema, { ...local, env: payload.envValues ?? {}, environmentPassthrough: payload.environmentPassthrough, enabled: payload.enabled })
+        await materializePackage(packagePreview.files, packagePreview.directory, descriptor)
         const result = await mutate({ id: config.id }, () => config, signal)
         packagePreview = undefined
         return { ...result, importedId: config.id }
+      }),
+      checkConnection: (input, signal) => serial(async () => {
+        const payload = parse(configSchema.omit({ source: true, revision: true, oauth: true, adapter: true, tokenExchange: true, bootstrap: true, headerEnvironment: true }).extend({
+          authMode: z.enum(['none', 'api_key', 'oauth_authorization_code_pkce']).optional(),
+          summary: configSchema.shape.summary.unwrap().optional(), category: configSchema.shape.category.unwrap().optional(),
+          headers: configSchema.shape.headers.unwrap().optional(), env: configSchema.shape.env.unwrap().optional(),
+          headerValues: configSchema.shape.headers.unwrap().optional(),
+          headerEnvironment: configSchema.shape.headerEnvironment.unwrap().optional(),
+        }), input)
+        const { headerValues, headerEnvironment, authMode: _authMode, ...fields } = payload
+        if (fields.transport === 'stdio') throw new ConnectorError('本地 STDIO 连接器请在安装后检查。')
+        const entry = parse(configSchema, { ...fields, enabled: false, headers: { ...(fields.headers ?? {}), ...(headerValues ?? {}) }, headerEnvironment: headerEnvironment ?? {} })
+        return checkConnection(entry, signal)
       }),
       sessionList: (input, signal) => serial(async () => {
         assertActive(signal)
@@ -467,19 +568,21 @@ export async function createModule(ctx, { home, backend }) {
         return { ...snapshot, selectedIds: selectedIds(account, payload.sessionId).filter(id => visibleIds.has(id)) }
       }),
       save: (input, signal) => serial(async () => {
-        const payload = parse(configSchema.omit({ source: true, revision: true, oauth: true, adapter: true, tokenExchange: true, bootstrap: true }).extend({
+        const payload = parse(configSchema.omit({ source: true, revision: true, oauth: true, adapter: true, tokenExchange: true, bootstrap: true, headerEnvironment: true }).extend({
           authMode: z.enum(['none', 'api_key', 'oauth_authorization_code_pkce']).optional(),
           summary: configSchema.shape.summary.unwrap().optional(), category: configSchema.shape.category.unwrap().optional(),
           headers: configSchema.shape.headers.unwrap().optional(), env: configSchema.shape.env.unwrap().optional(),
           revision: z.number().int().nonnegative().optional(),
           headerValues: configSchema.shape.headers.unwrap().optional(),
+          headerEnvironment: configSchema.shape.headerEnvironment.unwrap().optional(),
           envValues: configSchema.shape.env.unwrap().optional(),
+          environmentPassthrough: configSchema.shape.environmentPassthrough.unwrap().optional(),
         }), input)
-        const { headerValues, envValues, authMode, ...fields } = payload
+        const { headerValues, headerEnvironment, envValues, environmentPassthrough, authMode, ...fields } = payload
         if (fields.transport === 'stdio' && authMode && authMode !== 'none') throw new ConnectorError('本地程序使用环境变量配置认证。')
         return mutate(payload, previous => parse(configSchema, {
           ...(!previous && authMode === 'oauth_authorization_code_pkce' ? { oauth: { scopes: [] } } : {}),
-          ...fields, summary: fields.summary ?? previous?.summary ?? '', category: fields.category ?? previous?.category ?? 'office', ...(previous?.bootstrap ? { bootstrap: previous.bootstrap, workspacePath: previous.workspacePath } : {}), ...(previous?.adapter ? { adapter: previous.adapter, credentialSlots: previous.credentialSlots } : {}), credentialValues: { ...previous?.credentialValues, ...fields.credentialValues }, ...(previous?.tokenExchange ? { tokenExchange: previous.tokenExchange } : {}), ...(previous?.oauth ? { oauth: previous.oauth } : {}), ...(previous?.source ? { source: previous.source, requiredHeaders: previous.requiredHeaders, requiredEnv: previous.requiredEnv } : {}),
+          ...fields, summary: fields.summary ?? previous?.summary ?? '', category: fields.category ?? previous?.category ?? 'office', headerEnvironment: headerEnvironment ?? previous?.headerEnvironment ?? {}, environmentPassthrough: environmentPassthrough ?? previous?.environmentPassthrough ?? [], ...(previous?.bootstrap ? { bootstrap: previous.bootstrap, workspacePath: previous.workspacePath } : {}), ...(previous?.adapter ? { adapter: previous.adapter, credentialSlots: previous.credentialSlots } : {}), credentialValues: { ...previous?.credentialValues, ...fields.credentialValues }, ...(previous?.tokenExchange ? { tokenExchange: previous.tokenExchange } : {}), ...(previous?.oauth ? { oauth: previous.oauth } : {}), ...(previous?.source ? { source: previous.source, requiredHeaders: previous.requiredHeaders, requiredEnv: previous.requiredEnv } : {}),
           headers: headerValues ? { ...(payload.headers ?? previous?.headers ?? {}), ...headerValues } : payload.headers ?? previous?.headers ?? {}, env: envValues ? { ...(payload.env ?? previous?.env ?? {}), ...envValues } : payload.env ?? previous?.env ?? {},
         }), signal)
       }),

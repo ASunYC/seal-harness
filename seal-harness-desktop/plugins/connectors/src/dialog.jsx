@@ -25,7 +25,7 @@ export const dialogStyles = `
 .zz-resource-page .zz-dialog-heading h2 {margin:0;font-size:var(--fs-600)}
 .zz-resource-page .zz-reset-fieldset {border:0;padding:0;margin:0;min-width:0}
 .zz-resource-page .zz-resource-dialog form {display:flex;flex-direction:column;min-height:0;overflow:auto}
-.zz-resource-page .zz-installed-drawer {width:min(640px,92vw);margin:calc(70px + var(--dsh-frame-top-clearance,0px)) 28px 24px auto;max-height:calc(100dvh - 120px)}
+.zz-resource-page .zz-installed-drawer {width:min(440px,92vw);height:calc(100dvh - 70px);margin:calc(54px + var(--dsh-frame-top-clearance,0px)) 76px 16px auto;max-height:calc(100dvh - 70px);overflow:hidden}
 .zz-resource-page .zz-directory-search {display:flex;align-items:center;gap:var(--sp-3);min-width:240px;width:min(360px,32vw);height:var(--ctl-h-lg);box-sizing:border-box;flex:1 1 300px;padding:0 var(--sp-3);border:var(--bw) solid var(--line-strong);border-radius:var(--r-md);background:var(--panel);color:var(--muted2)}
 .zz-resource-page .zz-directory-search > span {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .zz-resource-page .zz-search-clear {display:grid;width:32px;height:32px;min-width:32px;border-radius:var(--r-sm);flex:0 0 auto;place-items:center;padding:0;border:0;background:transparent;color:var(--muted2);cursor:pointer}

@@ -220,4 +220,21 @@ export class CapabilityBackend {
       throw new BackendError(signal?.aborted ? 'cancelled' : 'unreachable')
     }
   }
+
+  async readCenterIcon(connectorId, signal) {
+    const id = z.string().trim().min(1).max(256).refine(value => !['.', '..'].includes(value)).parse(connectorId)
+    const target = targetUrl(this.center, `api/v1/catalog/applications/${encodeURIComponent(id)}/icon`)
+    try {
+      const response = await this.fetchImpl(target, { headers: { accept: 'image/png,image/jpeg,image/webp' }, redirect: 'error', signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(this.timeoutMs)]) : AbortSignal.timeout(this.timeoutMs) })
+      if (!response.ok) { await response.body?.cancel(); throw new BackendError('unreachable', response.status) }
+      const mimeType = response.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase()
+      if (!['image/png', 'image/jpeg', 'image/webp'].includes(mimeType)) { await response.body?.cancel(); throw new BackendError('invalidResponse') }
+      const data = await readBytes(response, 1024 * 1024)
+      if (!data.length) throw new BackendError('invalidResponse')
+      return { mimeType, data: data.toString('base64') }
+    } catch (error) {
+      if (error instanceof BackendError) throw error
+      throw new BackendError(signal?.aborted ? 'cancelled' : 'unreachable')
+    }
+  }
 }

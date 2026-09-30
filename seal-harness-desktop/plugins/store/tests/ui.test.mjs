@@ -14,6 +14,8 @@ test('目录筛选、详情文件和版本安装使用真实组件及既有 RPC'
     if (endpoint === 'skills/install') return { skills: [] }
     throw new Error(endpoint)
   })
+  assert.match(document.querySelector('.resource-sync-state').textContent, /已同步/)
+  assert(document.querySelector('.resource-sync-button [data-icon-name="refresh"]'))
   assert.equal(document.querySelectorAll('.skill-platform-row').length, 1)
   await click('查看 文档技能 详情')
   assert(document.querySelector('dialog[open][aria-label="能力详情"]'))

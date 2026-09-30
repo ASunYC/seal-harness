@@ -5,6 +5,7 @@ import { ShareDialog } from './sharing.jsx'
 import { ServiceSelector } from './services.jsx'
 import { collectionCategory, Modal } from './ui.jsx'
 import { Icon } from '../../capability-shared/src/icons.jsx'
+import { SyncRefresh } from '../../capability-shared/src/sync-refresh.jsx'
 export { Modal } from './ui.jsx'
 
 const referenceText = (group) =>
@@ -393,18 +394,12 @@ export function KnowledgePanel({ api, sessions, attach, refreshSessions, back })
           <span className="resource-page-nav__badge">RESOURCE</span>
         </div>
         <div className="library-nav-actions">
-          <span className="library-sync-state">
-            <span className={listError ? 'is-offline' : ''} />
-            {loading ? '同步中' : listError ? '未连接' : '已同步'}
-          </span>
-          <button
-            className="library-refresh"
-            aria-label="刷新资料集"
-            disabled={loading || busy}
-            onClick={() => void refresh()}
-          >
-            <Icon name="refresh" />
-          </button>
+          <SyncRefresh
+            state={loading ? 'loading' : listError ? 'error' : 'ready'}
+            label="刷新资料集"
+            disabled={busy}
+            onRefresh={() => void refresh()}
+          />
           <button className="btn btn--primary" disabled={busy} onClick={() => setModal({ kind: 'editor' })}>
             新建资料集
           </button>

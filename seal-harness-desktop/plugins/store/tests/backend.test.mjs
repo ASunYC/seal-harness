@@ -95,13 +95,31 @@ test('下载不跟随重定向，超时覆盖响应体，拒绝超大响应', as
   await assert.rejects(large.backend.download('skills/a', { maxBytes: 4 }), { code: 'invalidResponse' })
 })
 
-test('MCP Center 独立路径与信封，绝不附带 Stratex token', async t => {
-  const { backend, requests } = await fixture(t, (_req, res) => res.end(JSON.stringify({ data: [{ connectorId: 'demo', name: 'Demo', summary: '', category: 'office', tags: [], version: '1', clientAuthMode: 'none' }], meta: { schemaVersion: 'mcp-center.catalog/v1', asOf: '2026-09-23T00:00:00Z', revision: 'r1' } })))
-  const result = await createStore(backend).center({})
+test('MCP Center 目录与 Logo 走独立路径，绝不附带 Stratex token', async t => {
+  const icon = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])
+  const { backend, requests } = await fixture(t, (req, res) => {
+    if (req.url.endsWith('/demo/icon')) { res.setHeader('content-type', 'image/png'); res.end(icon); return }
+    res.end(JSON.stringify({ data: [{ connectorId: 'demo', name: 'Demo', summary: '目录描述', category: 'office', tags: [], version: '1', clientAuthMode: 'none', toolCount: 5, iconRevision: 'icon-1' }], meta: { schemaVersion: 'mcp-center.catalog/v1', asOf: '2026-09-23T00:00:00Z', revision: 'r1' } }))
+  })
+  const store = createStore(backend)
+  const result = await store.center({})
   assert.equal(result[0].connectorId, 'demo')
+  assert.equal(result[0].iconRevision, 'icon-1')
+  const logo = await store.centerIcon({ connectorId: 'demo', iconRevision: 'icon-1' })
+  assert.deepEqual(Buffer.from(logo.data, 'base64'), icon)
+  assert.equal(logo.mimeType, 'image/png')
   assert.equal(requests[0].url, '/prefix/api/v1/catalog/applications')
+  assert.equal(requests[1].url, '/prefix/api/v1/catalog/applications/demo/icon')
   assert.equal(requests[0].headers.authorization, undefined)
+  assert.equal(requests[1].headers.authorization, undefined)
   assert.equal(requests[0].headers['x-mcp-catalog-features'], 'auth-experience-v1')
+})
+
+test('MCP Center Logo 拒绝非图片和超大响应', async t => {
+  const invalidType = await fixture(t, (_req, res) => { res.setHeader('content-type', 'text/html'); res.end('<svg>not allowed</svg>') })
+  await assert.rejects(invalidType.backend.readCenterIcon('demo'), { code: 'invalidResponse' })
+  const oversized = await fixture(t, (_req, res) => { res.setHeader('content-type', 'image/png'); res.setHeader('content-length', String(1024 * 1024 + 1)); res.end() })
+  await assert.rejects(oversized.backend.readCenterIcon('demo'), { code: 'invalidResponse' })
 })
 
 test('发布传递版本 If-Match；专家额外保留 expected-status，服务端冲突明确返回', async t => {

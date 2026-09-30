@@ -44,22 +44,28 @@
 
 资源页样式以 `.zz-resource-page` 和插件自身根类隔离；结构迁移需要逐视图来源矩阵和实际桌面验证，不能以编译或样式注入代替。新增 React 交互测试必须能由 `seal-harness:check` 直接执行，自行在临时目录编译，不能依赖未提交的测试产物。
 
+资源页统一使用 `capability-shared` 的同步刷新控件：状态文本与圆点由真实加载、错误和待同步状态驱动；刷新图标只有正在刷新时旋转。资源导航应贴住内容区顶部，滚动内容不能从其上方露出。已安装技能、商店、连接器、专家和智能体沿用这一视觉契约。旧插件管理页面只通过品牌插件观察公开页面节点补充同步提示，卸载时须恢复原 DOM。
+
 商店 `artifactFiles` 从资产详情的 `versions` 读取版本元数据，沿用版本导出、大小与 SHA256 校验和安全 ZIP 解包；不假设服务支持单独版本 GET。浏览器仅收到允许预览的文件，不收到 descriptor 或凭据文件。云端写入仍沿用现有 ZIP/PATCH/ETag 契约。
 
 连接器 `summary` / `category` 为兼容旧数据的可选元数据；新建的 `save.authMode` 复用既有 OAuth 或请求头配置。`testTool` 仅接受当前 id/revision 下启用的工具及对象参数，经过原生 ToolRuntime 执行、超时与取消，不绕过 guard、审批或工作区限制。
+连接器的 CodeGraph 兼容启动仅针对明确标识的旧包装包；Host 侧补齐已选工作区路径并关闭下载、daemon 与遥测，其他 STDIO 包保持 descriptor 命令和参数。MCP Center 目录与图标独立获取并缓存最后有效快照；图片先校验类型与大小，浏览器不得获得凭据或私有 descriptor。
 
 ## 会话上下文选择器
 
-- `@seal-harness/session-context-selector` 是 Client-only 产品插件，通过 `conversation.input.left` 提供“能力”“连接器”“智能助手”三枚并排的独立入口；由 `productPlugins` 构建、装配并写入产品 Profile，不在 DSH 上游复制输入框。禁止重新合并为“资源”总入口；历史会话引用继续使用既有 `@` 链路，不混入这组三项。
-- 能力入口只写入 `/skill `，随后由官方 input-trigger 和技能候选链路继续处理。写入必须使用 `inputActions.captureInsertion()` 与 `insertText()`，不得覆盖后来发生的草稿编辑。
+- `@seal-harness/session-context-selector` 同时提供 Host 删除 RPC 和 Client 输入区入口。Client 通过 `conversation.input.left` 显示“能力”“连接器”“智能助手”，通过公开会话菜单与 `shell.overlay` 提供已归档会话的删除确认；由 `productPlugins` 构建、装配并写入产品 Profile，不在 DSH 上游复制输入框。
+- 能力入口读取当前会话公开技能目录，在浮层中搜索并按平台/本地分组；选中后通过 `inputActions.captureInsertion()` 与 `insertText()` 写入精确 `/skill-name `。草稿变化或编辑器锁定时不能覆盖现有内容。
 - 已有会话的 Agent Preset 不可替换，专家入口进入专家管理并说明新会话生效。连接器入口在输入框原位打开已安装连接器选择器；`connectors/sessionList` 与 `connectors/sessionSet` 是唯一会话绑定契约，选择按账号和 session id 持久化，Host 同时通过 Agent scoped `tools.restrict()` 和执行 guard 隔离工具。连接器管理仅作为选择器底部次级入口，禁止用 Client chip 或本地数组伪造绑定。
+- 永久删除仅对已归档、无运行活动的会话开放。Host 验证 session ID、数据目录边界及非符号链接后，先隔离日志和投影缓存，再移除工作区引用与归档状态；中途失败需恢复可恢复的数据及顺序。删除操作要求明确的界面确认，不能把普通“移除”当成永久删除。
 - 回归入口：`node --test seal-harness-desktop/plugins/session-context-selector/tests/*.test.mjs seal-harness-desktop/plugins/connectors/tests/connectors.test.mjs`。测试覆盖触发文本、选择器 RPC、面板次级路由、构建后 slot 注册、卸载清理和跨会话工具隔离；`seal-harness:check` 必须包含相关目录。
 
 ## 产品契约
 
 - 左侧产品菜单顺序固定为“项目、专家、技能、插件、连接器、知识库、智能体”。Seal Harness自有入口在各自 `sidebar.panellist` 注册处设置 `order`；上游“插件”入口通过公开 list-slot priority shadow 复用原组件并只覆盖 `order`，不得复制插件管理页面或直接修改已安装上游包。
 - 产品身份由产品目录内的实际配置统一供运行时和打包读取。名称为Seal Harness，app ID 为 `com.seal-harness.desktop`，默认 Home 为 `~/.seal-harness`。尊重用户显式 `DSH_HOME`，不覆盖已有 DSH 数据或配置。
+- Beta 运行时的默认新工作区路径通过 `dsh-api-workspace-controller@0.1.7-alpha.2` 的版本限定 Yarn patch 写入 `seal-harness`；Stable 与上游子模块保持原样。更新该 patch 后必须检查锁文件、安装产物和布局验证。
 - 核对运行时名称、安装器名称、快捷方式、各平台图标、数据目录与更新渠道。未配置Seal Harness更新服务时，应通过产品插件组合禁用社区产品更新，并验证不会请求或安装 DSH Desktop 更新。
+- Windows 开发用 `electron.exe` 启动时，品牌 Host 可检查开始菜单的 `Electron.lnk`。仅当目标路径与本次可执行文件、AppUserModelID 与产品 ID 同时匹配时归档该冲突快捷方式；其它快捷方式不得移动。原生安装包仍须单独验证开始菜单与任务栏图标。
 - Seal Harness保留模型设置页供用户按需配置，通过产品 `cordis.patch.yml` 将 `ui-settings-models.config.credentialOnboarding` 固定为 `false`，启动工作台时不自动弹出官方模型 API Key 引导。
 - Seal Harness通过产品 `cordis.patch.yml` 统一覆盖 `system-prompt`：关闭上游 Harness 固定身份，以“Seal Harness开发者平台中的 AI 助手”为默认 Persona，并保留 runtime 上下文与工作目录；账号 Profile 不重复写入产品默认提示词。
 - 图标保留原始资产、来源和 SHA256。沿用有效的 Git LFS 跟踪；不把 LFS pointer 当作图片使用。许可证与上游 attribution 保留。

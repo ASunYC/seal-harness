@@ -62,37 +62,6 @@ export const sourceStyles = `
   gap: 10px;
   margin-left: auto;
 }
-.zz-knowledge .library-sync-state {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--muted2);
-  font-size: var(--fs-meta);
-}
-.zz-knowledge .library-sync-state > span {
-  width: 7px;
-  height: 7px;
-  background: var(--ok);
-  border-radius: 50%;
-}
-.zz-knowledge .library-sync-state > span.is-offline {
-  background: var(--warn-text);
-}
-.zz-knowledge .library-sync-state > span.is-warning {
-  background: var(--warn-text);
-}
-.zz-knowledge .library-refresh {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  color: var(--muted2);
-  background: transparent;
-  border: 0;
-  border-radius: 8px;
-  cursor: pointer;
-}
 .zz-knowledge .library-service-bar {
   display: flex;
   align-items: center;
@@ -153,9 +122,6 @@ export const sourceStyles = `
 .zz-knowledge .library-service-bar {
     align-items: stretch;
     flex-direction: column;
-  }
-.zz-knowledge .library-nav-actions .library-sync-state {
-    display: none;
   }
 }
 
