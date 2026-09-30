@@ -112,3 +112,38 @@
 ### Next Steps
 
 - 真实 Electron 窗口、安装包、签名升级及 macOS/Linux 在目标平台验收。
+
+
+## Session 4: 移除 Seal Harness 项目插件
+<!-- trellis-session: v=2 fp=3126724e9aaf90a4 -->
+
+**Date**: 2026-10-01
+**Task**: 移除 Seal Harness 项目插件
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+删除项目插件、侧栏入口、旧装配包及项目插件测试；保留用户目录和 SQLite 历史记录。
+
+### Main Changes
+
+- 清理 Cordis Profile、构建与打包清单，更新当前文案和工程契约。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e645f9d` | refactor(seal-harness): remove product projects plugin |
+| `5b220b9` | chore(task): archive 10-01-remove-project-plugin |
+
+### Testing
+
+- [OK] seal-harness:build、seal-harness:check、check:layout、git diff --check 通过；应用已重启。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 无需迁移数据；如需彻底清理历史 projects 表，应另行制定数据迁移方案。
