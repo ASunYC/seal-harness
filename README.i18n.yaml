@@ -1,5 +1,5 @@
 # Bilingual-pair consistency record: the git blob hash of each side as of the last
 # confirmed-consistent state. Both languages carry equal authority. Update both files
 # and re-record their hashes after editing either side.
-README.md: 165753326664f5dd4e5f589110f0e5916a9fa40c
-README.en.md: 8e14299f88b271a638166a702d46677a9aa3bd3d
+README.md: 64e3f68a03e275d4774ec1b3b6c18982b9709e19
+README.en.md: d62fed4e5fdca47dbd50cfca7d97f6d5439fb2b9

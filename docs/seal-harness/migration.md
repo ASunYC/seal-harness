@@ -1,5 +1,7 @@
 # Seal Harness 迁移记录
 
+> 以下早期记录保留迁入时的历史背景。当前本地登录、SQLite 和插件组合以 [本地产品数据](local-sqlite.md) 与 `.trellis/spec/general/desktop-build.md` 为准。
+
 2026-09-29 从用户提供的 `zhizuo-master.zip` 迁入当前空仓库。ZIP 包含 DSH Desktop 的下游源码，但没有 Git 元数据或子模块 gitlink。本次从 `upstream.json` 的 Beta 通道读取 `00102833dfaee1da9f48a3a8eae9d34005a75218` 作为 `deepseek-harness/` 固定提交，并通过 GitHub API 确认该提交存在。
 
 ## 保留的机制
@@ -21,3 +23,5 @@
 以 [`validation.md`](validation.md) 记录本次实际检查。ZIP 里的旧验收日志不作为 Seal Harness 的验证证据。Windows/macOS/Linux 的打包、安装和升级必须分别在目标平台进行。
 
 2026-09-30 更新目录的功能差异及品牌保留范围见 [`source-update-2026-09-30.md`](source-update-2026-09-30.md)。
+
+2026-09-30 后续本地化改造：移除企微/SSO/远端身份、知识库、产品智能体及旧远端项目协作插件；项目、专家、技能转到共享 SQLite。海豹图标与 DSH 原生对话机制保留。详见 [本地产品数据](local-sqlite.md)。

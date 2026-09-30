@@ -1,5 +1,7 @@
 # 能力插件迁移进度
 
+> 历史迁移记录：当前专家和技能已以 SQLite 为持久来源，知识库与产品智能体已移除。现行行为见 [本地产品数据](local-sqlite.md)。
+
 2026-09-26 对照 Stratex `c41b6bc098256495a168116bf2daed5f17df9193` 补齐产品入口。四个插件位于 `seal-harness-desktop/plugins/{store,skills,connectors,experts}`，通过产品 Cordis bundle 分别加载 Host 和 Client。没有修改 Stratex、固定子模块或继承的 Desktop 源码。
 
 ## 独立插件

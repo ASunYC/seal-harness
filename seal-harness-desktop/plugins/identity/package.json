@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Seal Harness基础身份与统一服务配置",
+  "description": "Seal Harness 本机账号与服务配置",
   "main": "lib/index.js",
-  "exports": { ".": "./lib/index.js", "./client": "./lib/client.js", "./account-home": "./lib/account-home.js", "./package.json": "./package.json" },
+  "exports": { ".": "./lib/index.js", "./client": "./lib/client.js", "./package.json": "./package.json" },
   "dsh": {
     "client": {
       "inject": ["@deepseek-ai/dsh-client-ui-renderer", "@deepseek-ai/dsh-client-ui-layout", "@deepseek-ai/dsh-client-ui-sidebar", "@deepseek-ai/dsh-client-connection"],
@@ -14,10 +14,7 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "*",
-    "@deepseek-ai/dsh-atomic-write": "0.1.7-alpha.2",
     "@deepseek-ai/dsh-client-connection": "0.1.7-alpha.2",
-    "@deepseek-ai/dsh-credentials": "0.1.7-alpha.2",
-    "@deepseek-ai/dsh-home-paths": "0.1.7-alpha.2",
     "react": "18.3.1",
     "zod": "4.4.3",
     "yaml": "2.9.0"

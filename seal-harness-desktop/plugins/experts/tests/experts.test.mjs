@@ -16,11 +16,21 @@ import { createModule } from '../src/module.js'
 import { decodeZip, draftFiles, encodeZip, portablePackage, readDirectory, validatePackage } from '../src/package.js'
 import { changeVisibility, downloadExpert, uploadExpert } from '../src/remote.js'
 import * as Runtime from '../src/runtime.js'
+import { openProductDatabase } from '../../local-data/src/index.js'
 
 const manifest = (overrides = {}) => ({ schemaVersion: 'stratex.expert/v1', name: 'writer', version: '0.1.0', entryAgent: 'writer', agents: ['agents/writer.md'], displayName: { zh: '写作专家', en: '' }, profession: { zh: '编辑', en: '' }, description: { zh: '帮助整理文稿', en: '' }, personaInstructions: '按证据写作，保留 {{literal}} 原文。', model: 'test-model', ...overrides })
 const packageOf = overrides => validatePackage(draftFiles(manifest(overrides)))
 async function temporary(t) { const home = await mkdtemp(join(tmpdir(), 'seal-harness-experts-')); t.after(() => rm(home, { recursive: true, force: true })); return home }
 const offline = { account: async () => { throw new Error('not signed in') } }
+async function databaseContext(t, base = {}) {
+  const dbHome = await mkdtemp(join(tmpdir(), 'seal-harness-experts-db-'))
+  const storage = openProductDatabase(dbHome), id = 'local-expert-user', now = new Date().toISOString()
+  storage.db.prepare('INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    .run(id, 'expert-user', 'Expert User', Buffer.alloc(16), Buffer.alloc(64), 'admin', 'active', now, now)
+  t.after(async () => { storage.close(); await rm(dbHome, { recursive: true, force: true }) })
+  const identity = { getSession: () => ({ accountId: id, subject: id, epoch: 1, accessToken: 'local-test-token' }), subscribe: () => () => {} }
+  return { get: name => name === 'sealHarnessDatabase' ? storage : name === 'sealHarnessIdentity' ? identity : base.get?.(name), sealHarnessDatabase: storage, sealHarnessIdentity: identity }
+}
 
 test('Stratex manifest and agent documents round-trip without changing content or credentials', () => {
   const pkg = packageOf({ toolPolicy: { mcpServers: { private: { command: 'local', env: { TOKEN: 'local-secret' } } } }, capabilities: [{ kind: 'skill', sourceId: 'local-asset' }] })
@@ -57,7 +67,7 @@ test('directory imports reject symlinks', async t => {
 })
 
 test('local lifecycle keeps immutable versions, rejects stale edits and exports portable ZIP', async t => {
-  const home = await temporary(t), module = await createModule({}, { home, backend: offline })
+  const home = await temporary(t), ctx = await databaseContext(t), module = await createModule(ctx, { home, backend: offline })
   t.after(() => module.dispose())
   const created = await module.handlers.import({ contentBase64: encodeZip(draftFiles(manifest())).toString('base64') })
   assert.equal(created.version, '0.1.0')
@@ -75,11 +85,25 @@ test('local lifecycle keeps immutable versions, rejects stale edits and exports 
 })
 
 test('expert search policy does not introduce an activation gate', async t => {
-  const home = await temporary(t), module = await createModule({}, { home, backend: offline })
+  const home = await temporary(t), ctx = await databaseContext(t), module = await createModule(ctx, { home, backend: offline })
   t.after(() => module.dispose())
   const result = await module.handlers.create({ manifest: manifest({ toolPolicy: { webSearch: 'live' } }) })
   await assert.rejects(module.handlers.activate({ name: result.name, expectedDigest: result.digest }), /Agent preset 或模型服务/)
   assert.equal((await module.handlers.list()).items[0].enabled, false)
+})
+
+test('expert versions persist in SQLite and reload without the materialized directory', async t => {
+  const home = await temporary(t), ctx = await databaseContext(t)
+  let module = await createModule(ctx, { home, backend: offline })
+  const created = await module.handlers.create({ manifest: manifest() })
+  const rows = ctx.sealHarnessDatabase.db.prepare('SELECT package_blob FROM experts WHERE user_id = ?').all('local-expert-user')
+  assert.equal(rows.length, 1)
+  assert.equal(validatePackage(decodeZip(rows[0].package_blob)).digest, created.digest)
+  await module.dispose()
+  await rm(join(home, 'seal-harness-capabilities', 'experts'), { recursive: true, force: true })
+  module = await createModule(ctx, { home, backend: offline })
+  t.after(() => module.dispose())
+  assert.equal((await module.handlers.detail({ name: 'writer' })).digest, created.digest)
 })
 
 test('real scoped runtime preserves literal persona and inherited native tools, then disposes', async t => {
@@ -108,7 +132,7 @@ test('official preset registry really loads experts and retains old session gene
   await ctx.plugin(SystemPrompt, { personaPrefix: '' })
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(AgentPresets, { default: 'standard' })
-  const host = { get: name => name === 'llm' ? { resolveModelInfo: async (_provider, model) => ({ id: model }) } : ctx.get(name) }
+  const host = await databaseContext(t, { get: name => name === 'llm' ? { resolveModelInfo: async (_provider, model) => ({ id: model }) } : ctx.get(name) })
   let module = await createModule(host, { home, backend: offline })
   t.after(() => module.dispose())
   const created = await module.handlers.create({ manifest: manifest() })
@@ -192,17 +216,17 @@ test('visibility refuses stale ETag without mutation', async () => {
   assert.equal(calls.length, 1)
 })
 
-test('scoped expert registers selected skills, reasoning and knowledge tools without leaking to siblings', async t => {
+test('scoped expert registers selected skills and reasoning without leaking to siblings', async t => {
   const { default: SkillRegistry } = await import('@deepseek-ai/dsh-skill')
   const ctx = new Context(); t.after(() => ctx.fiber.dispose())
   await ctx.plugin(SystemPrompt, { personaPrefix: '' }); await ctx.plugin(ToolRuntime); await ctx.plugin(SkillRegistry)
   for (const name of ['selected_tool', 'other_tool', 'knowledge_search', 'knowledge_list', 'knowledge_navigate', 'skill', 'read', 'glob', 'grep']) ctx.tools.register({ name, description: name, parameters: { type: 'object', properties: {} }, output: { schema: { type: 'string' }, render: () => [] }, execute: async () => 'ok' })
   const key = {}, scope = createScope(ctx, key)
-  await scope.ctx.plugin(Runtime, { persona: 'Expert', provider: 'test', model: 'model', reasoningEffort: 'high', personality: 'friendly', skills: [{ name: 'expert-skill', description: 'A skill', content: 'Read the referenced document.', invocation: { modelInvocable: true, userInvocable: true }, source: 'runtime' }], toolNames: ['selected_tool'], knowledgeGroupIds: ['group-1'] })
+  await scope.ctx.plugin(Runtime, { persona: 'Expert', provider: 'test', model: 'model', reasoningEffort: 'high', personality: 'friendly', skills: [{ name: 'expert-skill', description: 'A skill', content: 'Read the referenced document.', invocation: { modelInvocable: true, userInvocable: true }, source: 'runtime' }], toolNames: ['selected_tool'] })
   const assembly = await ctx.systemPrompt.assemble({ scope: key })
   const prompt = renderPrompt(assembly)
   assert.match(prompt, /Read the referenced document/)
-  assert.match(prompt, /group-1/)
+  assert.doesNotMatch(prompt, /知识组/)
   assert.match(prompt, /友善/)
   assert.equal((await ctx.skills.list()).length, 0)
   assert.equal((await ctx.skills.list({ scope: key }))[0].name, 'expert-skill')
@@ -211,14 +235,13 @@ test('scoped expert registers selected skills, reasoning and knowledge tools wit
   assert.equal(request.reasoningEffort, 'high')
 })
 
-test('expert keeps knowledge bindings per version and materializes complete embedded skills', async t => {
+test('expert keeps immutable versions and materializes complete embedded skills', async t => {
   const { materializeSkills } = await import('../src/capabilities.js')
-  const home = await temporary(t), module = await createModule({}, { home, backend: offline }); t.after(() => module.dispose())
-  const created = await module.handlers.create({ manifest: manifest(), knowledgeGroupIds: ['group-1'] })
-  assert.deepEqual((await module.handlers.detail({ name: 'writer' })).knowledgeGroupIds, ['group-1'])
-  await module.handlers.update({ name: 'writer', expectedDigest: created.digest, manifest: manifest({ version: '0.2.0' }), knowledgeGroupIds: ['group-2'] })
-  assert.deepEqual((await module.handlers.detail({ name: 'writer', version: '0.1.0' })).knowledgeGroupIds, ['group-1'])
-  assert.deepEqual((await module.handlers.detail({ name: 'writer' })).knowledgeGroupIds, ['group-2'])
+  const home = await temporary(t), ctx = await databaseContext(t), module = await createModule(ctx, { home, backend: offline }); t.after(() => module.dispose())
+  const created = await module.handlers.create({ manifest: manifest() })
+  await module.handlers.update({ name: 'writer', expectedDigest: created.digest, manifest: manifest({ version: '0.2.0' }) })
+  assert.equal((await module.handlers.detail({ name: 'writer', version: '0.1.0' })).manifest.version, '0.1.0')
+  assert.equal((await module.handlers.detail({ name: 'writer' })).manifest.version, '0.2.0')
   const files = draftFiles(manifest({ skills: ['skills/research'] }))
   files.set('skills/research/SKILL.md', Buffer.from('---\nname: research\ndescription: Research task\n---\nRead references/facts.md.'))
   files.set('skills/research/references/facts.md', Buffer.from('Facts'))

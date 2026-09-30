@@ -65,13 +65,10 @@ export default async function verifyPackage(result) {
     assert.ok(readFileSync(require.resolve('seal-harness-desktop/client'), 'utf8').includes('seal-harness-desktop'))
     for (const folder of productPlugins) {
       assert.ok(readFileSync(require.resolve(`@seal-harness/${folder}`), 'utf8').length > 0)
-      if (folder !== 'project-agent') assert.ok(readFileSync(require.resolve(`@seal-harness/${folder}/client`), 'utf8').includes(`@seal-harness/${folder}`))
+      const item = JSON.parse(readFileSync(require.resolve(`@seal-harness/${folder}/package.json`), 'utf8'))
+      if (item.dsh?.client) assert.ok(readFileSync(require.resolve(`@seal-harness/${folder}/client`), 'utf8').includes(`@seal-harness/${folder}`))
     }
     assert.ok(readFileSync(require.resolve('@seal-harness/experts/expert-runtime'), 'utf8').length > 0)
-    const documents = require.resolve('@seal-harness/projects/documents')
-    assert.ok(existsSync(join(documents, '../localDocumentParserWorker.js')))
-    const parserRequire = createRequire(documents)
-    for (const dependency of ['unzipper', 'pdfjs-dist/legacy/build/pdf.mjs', '@silurus/ooxml', 'ssf']) parserRequire.resolve(dependency)
     const { DESKTOP_PRODUCT } = await import(pathToFileURL(join(appRoot, 'lib/product-config.js')))
     assert.equal(DESKTOP_PRODUCT.appId, product.appId)
     assert.equal(DESKTOP_PRODUCT.homeDirectoryName, '.seal-harness')

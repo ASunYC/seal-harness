@@ -45,7 +45,7 @@ export function apply(ctx) {
   }
   function Detail() {
     const status = useAuth(auth), [error, setError] = useState(''), [busy, setBusy] = useState(false)
-    if (!status?.user) return <section className="seal-harness-user-detail"><h1>未登录</h1><p>本地功能可以正常使用，项目和商店等功能需要登录。</p><button onClick={() => auth.openLogin()}>去登录</button></section>
+    if (!status?.user) return <section className="seal-harness-user-detail"><h1>未登录</h1><p>登录本机账号后可使用项目、专家和技能。</p><button onClick={() => auth.openLogin()}>去登录</button></section>
     const user = status.user
     const logout = async () => {
       setBusy(true); setError('')
@@ -58,8 +58,8 @@ export function apply(ctx) {
       <dt>账号</dt><dd>{user.username}</dd>
       <dt>用户 ID</dt><dd>{user.id}</dd>
       <dt>角色</dt><dd>{user.role}</dd>
-      <dt>身份服务</dt><dd>{status.services?.entries?.find(entry => entry.key === 'identityBaseUrl')?.value || '未配置'}</dd>
-      <dt>登录保存</dt><dd>{status.persisted ? '已记住登录' : '仅本次运行'}</dd>
+      <dt>存储方式</dt><dd>本机 SQLite</dd>
+      <dt>登录状态</dt><dd>仅本次运行</dd>
     </dl>{error && <p role="alert">{error}</p>}<button disabled={busy} onClick={logout}>退出登录</button></section>
   }
   ctx.effect(() => {

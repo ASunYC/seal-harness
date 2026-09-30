@@ -26,17 +26,15 @@ try {
     assert.equal(rows.find(row => row.id === `seal-harness-${folder}`)?.name, `@seal-harness/${folder}`)
     assert.equal(rows.filter(row => row.id === `seal-harness-${folder}`).length, 1)
     assert.ok(readFileSync(desktopRequire.resolve(`@seal-harness/${folder}`), 'utf8').length > 0)
-    if (folder !== 'project-agent') {
-      assert.equal(JSON.parse(readFileSync(desktopRequire.resolve(`@seal-harness/${folder}/package.json`), 'utf8')).dsh.client.platform, 'web')
+    const manifest = JSON.parse(readFileSync(desktopRequire.resolve(`@seal-harness/${folder}/package.json`), 'utf8'))
+    if (manifest.dsh?.client) {
+      assert.equal(manifest.dsh.client.platform, 'web')
       assert.ok(readFileSync(desktopRequire.resolve(`@seal-harness/${folder}/client`), 'utf8').includes(`@seal-harness/${folder}`))
     }
   }
   assert.equal(rows.filter(row => row.id === 'agent').length, 1)
-  assert.equal(rows.find(row => row.id === 'agent')?.disabled, true)
-  assert.equal(rows.filter(row => row.id === 'seal-harness-agent-registry').length, 1)
-  assert.equal(rows.find(row => row.id === 'seal-harness-agent-registry')?.name, '@seal-harness/agents/registry')
-  assert.notEqual(rows.find(row => row.id === 'seal-harness-agent-registry')?.disabled, true)
-  assert.ok(readFileSync(desktopRequire.resolve('@seal-harness/agents/registry'), 'utf8').length > 0)
+  assert.notEqual(rows.find(row => row.id === 'agent')?.disabled, true)
+  assert.equal(rows.some(row => ['seal-harness-agent-registry', 'seal-harness-agents', 'seal-harness-knowledge'].includes(row.id)), false)
   assert.equal(rows.find(row => row.id === 'ui-brand-official')?.disabled, true)
   assert.equal(rows.find(row => row.id === 'desktop-updates')?.disabled, true)
   assert.equal(rows.find(row => row.id === 'ui-sidebar-browser')?.disabled, false)

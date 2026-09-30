@@ -18,15 +18,15 @@ function CapabilityGroup({ title, bindings, options, state, add, remove }) {
 
 // 来源 ExpertEditorView.vue：全页编辑、双栏表单、分组能力配备。
 export function ExpertEditor({ editor, busy, error, api, save, close }) {
-  const [manifest, setManifest] = useState(editor.manifest), [knowledgeIds, setKnowledgeIds] = useState(editor.knowledgeGroupIds ?? [])
-  const [pools, setPools] = useState({ models: { state: 'loading', items: [] }, capabilities: { state: 'loading', items: [] }, knowledge: { state: 'loading', items: [] } })
+  const [manifest, setManifest] = useState(editor.manifest)
+  const [pools, setPools] = useState({ models: { state: 'loading', items: [] }, capabilities: { state: 'loading', items: [] } })
   const [tagsText, setTagsText] = useState(editor.manifest.tags?.map(tag => tag.zh).join('，') ?? '')
   const [promptsText, setPromptsText] = useState(editor.manifest.quickPrompts?.map(prompt => prompt.zh).join('\n') ?? '')
   const [attempt, setAttempt] = useState(0), [dirty, setDirty] = useState(false), [discard, setDiscard] = useState(false)
   const change = (key, value) => { setDirty(true); setManifest(current => ({ ...current, [key]: value })) }
   useEffect(() => {
     const controller = new AbortController()
-    for (const action of ['models', 'capabilities', 'knowledge']) {
+    for (const action of ['models', 'capabilities']) {
       setPools(current => ({ ...current, [action]: { ...current[action], state: 'loading' } }))
       api(`experts/${action}`, {}, controller.signal).then(result => {
         if (controller.signal.aborted) return
@@ -42,7 +42,7 @@ export function ExpertEditor({ editor, busy, error, api, save, close }) {
     <header className="zz-expert-editor-header"><div className="zz-expert-editor-heading"><button type="button" className="resource-page-nav__back" aria-label="返回我的专家" title="返回我的专家" disabled={busy} onClick={requestClose}><Icon name="back" size={17} /></button><div><h1>{editor.source ? '修改专家' : '创建专家'}</h1><p>{editor.source ? '保存为新版本，已有版本保持不变。' : '创建可在本地修改和上传复用的专家。'}</p></div></div><button className="btn btn--primary" type="submit" form="zz-expert-form" disabled={busy}>{busy ? '正在保存…' : editor.source ? '保存新版本' : '保存到我的专家'}</button></header>
     {error && <p role="alert" className="editor-page__error">{error}</p>}
     {editor.source && <div className="version-line"><span className="version-line__label">当前版本：{editor.source.version} → {manifest.version}</span><details className="lineage-fold"><summary>版本与来源</summary><dl className="lineage-fold__summary"><div><dt>专家标识</dt><dd>{manifest.name}</dd></div><div><dt>入口 Agent</dt><dd>{manifest.entryAgent}</dd></div><div><dt>基础版本</dt><dd>{editor.source.version}</dd></div></dl></details></div>}
-    <form id="zz-expert-form" onSubmit={event => { event.preventDefault(); save(manifest, knowledgeIds) }}><fieldset className="zz-reset-fieldset" disabled={busy}>
+    <form id="zz-expert-form" onSubmit={event => { event.preventDefault(); save(manifest) }}><fieldset className="zz-reset-fieldset" disabled={busy}>
       <div className="expert-form"><section><h2>基本信息</h2>
         <label><span>名称</span><input required maxLength={200} value={manifest.displayName.zh} onChange={event => change('displayName', { ...manifest.displayName, zh: event.target.value })} placeholder="例如：高级研发顾问" /></label>
         <label><span>简介</span><textarea rows={3} required maxLength={200} value={manifest.description.zh} onChange={event => change('description', { ...manifest.description, zh: event.target.value })} placeholder="说明这个专家适合解决什么问题" /></label>
@@ -56,10 +56,9 @@ export function ExpertEditor({ editor, busy, error, api, save, close }) {
         <div className="zz-expert-field-row"><label><span>推理强度</span><select value={manifest.reasoningEffort ?? ''} onChange={event => change('reasoningEffort', event.target.value || undefined)}><option value="">模型默认</option><option value="minimal">极低</option><option value="low">低</option><option value="medium">中</option><option value="high">高</option></select></label><label><span>交流风格</span><select value={manifest.personality ?? 'none'} onChange={event => change('personality', event.target.value)}><option value="none">按人设指令</option><option value="friendly">友善耐心</option><option value="pragmatic">简洁务实</option></select></label></div>
         <details><summary>开场与快捷问题</summary><div className="zz-expert-stack"><label><span>开场任务</span><textarea rows={2} maxLength={200} value={manifest.initPrompt?.zh ?? ''} onChange={event => change('initPrompt', event.target.value ? bilingual(event.target.value) : undefined)} /></label><label><span>快捷问题，每行一个</span><textarea rows={3} value={promptsText} onChange={event => { setPromptsText(event.target.value); change('quickPrompts', event.target.value.split('\n').filter(Boolean).map(bilingual)) }} /></label></div></details>
       </section></div>
-      <section className="capability-provision"><div className="capability-provision__heading"><h2>能力配备</h2><p>为该专家补充可调用的技能、连接器与知识库。</p></div>
+      <section className="capability-provision"><div className="capability-provision__heading"><h2>能力配备</h2><p>为该专家补充可调用的技能与连接器。</p></div>
         {Object.values(pools).some(pool => pool.state === 'error') && <div role="alert" className="editor-page__error">{Object.values(pools).filter(pool => pool.state === 'error').map(pool => pool.error).join(' ')}<button type="button" className="btn btn--secondary" onClick={() => setAttempt(value => value + 1)}>重新读取候选目录</button></div>}
         {['skill', 'mcp'].map(kind => <CapabilityGroup key={kind} title={kind === 'skill' ? '技能' : '连接器'} state={pools.capabilities.state} options={pools.capabilities.items.filter(item => item.kind === kind).map(item => ({ ...item, id: item.sourceId }))} bindings={capabilities.filter(item => item.kind === kind).map(item => ({ id: item.sourceId }))} add={id => change('capabilities', [...capabilities, { kind, sourceId: id }])} remove={id => change('capabilities', capabilities.filter(item => item.kind !== kind || item.sourceId !== id))} />)}
-        <CapabilityGroup title="知识库" state={pools.knowledge.state} options={pools.knowledge.items} bindings={knowledgeIds.map(id => ({ id }))} add={id => { setDirty(true); setKnowledgeIds([...knowledgeIds, id]) }} remove={id => { setDirty(true); setKnowledgeIds(knowledgeIds.filter(value => value !== id)) }} />
       </section>
     </fieldset></form>
     {discard && <Dialog title="有未保存的修改" className="zz-expert-modal" close={() => setDiscard(false)}><div className="zz-expert-dialog-body"><p>退出后这些修改将丢失。</p></div><footer className="zz-expert-dialog-footer"><button className="btn btn--secondary" onClick={() => setDiscard(false)}>继续编辑</button><button className="btn btn--danger" onClick={close}>放弃修改</button></footer></Dialog>}

@@ -1,5 +1,7 @@
 # Seal Harness账号与项目插件
 
+> 历史迁移记录：远端项目协作与企微登录已从当前产品移除。现行行为见 [本地产品数据](local-sqlite.md)。
+
 项目业务来自 Stratex `c656400bc4baf80733a9ac5d8a1440539126c7e0`。Seal Harness通过标准 DSH Host/Client 插件接入，沿用远端身份、项目协作、商店和连接器接口。
 
 ## 使用

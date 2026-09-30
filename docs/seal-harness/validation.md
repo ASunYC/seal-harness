@@ -23,3 +23,9 @@ Windows 上有一个连接器测试夹具使用 POSIX shell 可执行文件，�
 从更新的来源目录整合资源页同步、连接器、会话技能选择、会话删除和默认工作区路径。`yarn install --immutable`、`seal-harness:build`、`seal-harness:check`、`check:layout` 与 `git lfs fsck` 已通过。产品检查包含 59 个根 Vitest 文件、1205 个用例，以及 project-agent 的 5 个用例；Profile 重复装配和启动检查也通过。一个连接器 POSIX shell 夹具仍按平台在 Windows 跳过。
 
 根 `typecheck` 已通过，`git diff --check` 和 `git lfs fsck` 也通过；固定 `deepseek-harness` 子模块未改动。真实 Electron 窗口视觉检查、原生安装、签名和升级未执行，不能归入上述通过结果。源工程的个人截图路径与旧产品图标没有迁入，当前所有产品图标仍来自 Seal Harness 小海豹原图。
+
+## 2026-09-30 本地登录与 SQLite 改造
+
+`seal-harness:build`、`seal-harness:check`、根 `check:layout`、根 `typecheck`、`git lfs fsck` 和 Git 差异空白检查均通过。产品检查包括本地账号、数据库迁移、项目按用户 CRUD、专家版本恢复、技能缓存重建、连接器与技能联动、资源页交互，以及实际 Cordis Profile 启动与两代 HMR。产品 Profile 报告 9 个业务插件，未装配知识库及产品智能体；原生 Agent 可用。额外验证了本地登录令牌不会发送至远端能力仓库。
+
+仅在 Windows 上完成无图形构建和测试。没有做真实 Electron 窗口视觉检查、模型回复、安装包、签名、升级或 macOS/Linux 验证。原产品账号专属 Home 和远端项目清单未自动导入，新本地账号先从空项目清单开始。旧基础 Home 的技能、专家文件导入由定向测试验证，原文件保留。

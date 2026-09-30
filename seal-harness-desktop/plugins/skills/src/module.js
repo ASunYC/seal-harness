@@ -5,7 +5,8 @@ import { homedir } from 'node:os'
 import { randomUUID, createHash } from 'node:crypto'
 import { FileSystemSkillProvider } from '@deepseek-ai/dsh-skill-filesystem'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
-import { createArchive, inside, inspectFiles, inspectPath, MAX_PACKAGE_BYTES, parseSkill, readArchive, readBoundedFile, readDirectory, safeRelative, SkillError } from './package.js'
+import { createArchive, inside, inspectFiles, inspectPath, MAX_PACKAGE_BYTES, parseSkill, readArchive, readDirectory, safeRelative, SkillError } from './package.js'
+import { createSkillPersistence } from './sqlite-store.js'
 
 const PROVIDER = 'seal-harness-skills'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
@@ -21,9 +22,12 @@ function publicCandidate({ files, content, ...item }) { return item }
 
 /** 产品管理副本通过公开 skills 服务注册；源目录始终只读。 */
 export async function createModule(ctx, { home, backend }) {
-  const root = resolve(home, 'capabilities', 'skills')
+  const storage = ctx.get?.('sealHarnessDatabase') ?? ctx.sealHarnessDatabase
+  if (!storage) throw new SkillError('本地数据库未加载')
+  const identity = ctx.get?.('sealHarnessIdentity') ?? ctx.sealHarnessIdentity
+  const root = resolve(home, 'seal-harness-cache', 'skills')
   const packages = join(root, 'packages')
-  const statePath = join(root, 'state.json')
+  const persistence = createSkillPersistence(storage, home, packages)
   await mkdir(packages, { recursive: true })
   const canonicalRoot = await realpath(root)
   async function assertStorage() {
@@ -32,16 +36,16 @@ export async function createModule(ctx, { home, backend }) {
     }
   }
   await assertStorage()
-  let state = { version: 1, revision: 0, installationUid: randomUUID(), skills: [], sources: [], reports: [], defaultCopies: {} }
-  try {
-    const stored = JSON.parse((await readBoundedFile(statePath, 16 * 1024 * 1024)).bytes.toString('utf8'))
+  const emptyState = () => ({ version: 1, revision: 0, installationUid: randomUUID(), skills: [], sources: [], reports: [], defaultCopies: {} })
+  let state = emptyState()
+  const validateState = stored => {
     if (stored.version !== 1 || !Number.isSafeInteger(stored.revision) || !Array.isArray(stored.skills) || !Array.isArray(stored.sources)
       || stored.skills.some(item => !UUID.test(item.id) || typeof item.enabled !== 'boolean' || typeof item.name !== 'string')
       || stored.sources.some(item => !UUID.test(item.id) || !isAbsolute(item.path))
       || (stored.installationUid !== undefined && !UUID.test(stored.installationUid))
       || (stored.reports !== undefined && !Array.isArray(stored.reports))) throw new SkillError('技能管理数据格式无效')
-    state = { ...state, ...stored }
-  } catch (error) { if (error.code !== 'ENOENT') throw error }
+    return { ...emptyState(), ...stored }
+  }
 
   let invalidate = () => {}
   let filesystem
@@ -68,6 +72,7 @@ export async function createModule(ctx, { home, backend }) {
     return {
       name: PROVIDER,
       async list(options) {
+        await syncAccount(await currentAccount())
         await assertStorage()
         const account = await currentAccount()
         const result = await filesystem.list(options)
@@ -80,6 +85,7 @@ export async function createModule(ctx, { home, backend }) {
         return { candidates, complete: !state.skills.some(item => item.origin?.kind === 'store') && (Array.isArray(result) || result.complete) }
       },
       async get(candidate, options) {
+        await syncAccount(await currentAccount())
         await assertStorage()
         const account = await currentAccount()
         const item = owner(candidate)
@@ -113,6 +119,7 @@ export async function createModule(ctx, { home, backend }) {
     return {
       name: 'seal-harness-source-skills',
       async list(options) {
+        await syncAccount(await currentAccount())
         const account = await currentAccount()
         const selected = Object.values(state.defaultCopies).filter(item => item.accountId === (account?.accountId ?? null) && (!item.projectRoot || options.cwd && inside(item.projectRoot, options.cwd)))
         const allProjects = (await sources()).sources.filter(item => item.standard && item.projectRoot && item.status === 'ready')
@@ -124,6 +131,7 @@ export async function createModule(ctx, { home, backend }) {
         return { candidates: candidates.map(candidate => ({ ...candidate, rank: selected.some(item => inside(item.path, candidate.path)) ? 290 : candidate.rank })), complete: false }
       },
       async get(candidate, options) {
+        await syncAccount(await currentAccount())
         const account = await currentAccount()
         const selected = Object.values(state.defaultCopies).some(item => item.accountId === (account?.accountId ?? null) && (!item.projectRoot || options.cwd && inside(item.projectRoot, options.cwd)) && inside(item.path, candidate.path))
         const project = (await sources()).sources.some(item => item.standard && item.projectRoot && options.cwd && inside(item.projectRoot, options.cwd) && inside(item.path, candidate.path))
@@ -133,14 +141,21 @@ export async function createModule(ctx, { home, backend }) {
     }
   })
 
+  let loadedAccountId
+  async function syncAccount(account) {
+    const accountId = account?.accountId ?? null
+    if (loadedAccountId === accountId) return
+    const loaded = accountId ? await persistence.load(accountId) : (await persistence.clear(), null)
+    state = loaded ? validateState(loaded) : emptyState()
+    loadedAccountId = accountId
+    invalidate(); invalidateSources()
+  }
+
   async function save(next) {
     await assertStorage()
+    if (!actionAccount) throw new SkillError('请先登录本机账号')
     const updated = { ...next, revision: state.revision + 1 }
-    const temporary = join(root, `state-${randomUUID()}.tmp`)
-    try {
-      await writeFile(temporary, `${JSON.stringify(updated, null, 2)}\n`, { flag: 'wx' })
-      await rename(temporary, statePath)
-    } finally { await rm(temporary, { force: true }) }
+    await persistence.save(actionAccount.accountId, updated)
     state = updated
     invalidate()
     invalidateSources()
@@ -344,6 +359,7 @@ export async function createModule(ctx, { home, backend }) {
     if (disposed) throw new SkillError('技能插件已卸载')
     signal?.throwIfAborted()
     actionAccount = await currentAccount()
+    await syncAccount(actionAccount)
     switch (payload.action) {
       case 'setDefaultCopy': {
         checkRevision(payload)
@@ -513,11 +529,16 @@ export async function createModule(ctx, { home, backend }) {
       queue = result.catch(() => {})
       return result
     }]))
+  await syncAccount(await currentAccount())
+  const unsubscribeIdentity = identity?.subscribe?.(() => {
+    queue = queue.then(async () => { await syncAccount(await currentAccount()) }).catch(error => ctx.logger?.warn?.(`技能数据切换失败：${error.message}`))
+  })
   return {
     handlers: Object.fromEntries(actions.map(name => [name, handlers[name]])),
     hostHandlers: { installResolved: handlers.installResolved, runtimeSkill: handlers.runtimeSkill, workflowResources: handlers.workflowResources, workflowExport: handlers.workflowExport },
     async dispose() {
       disposed = true
+      unsubscribeIdentity?.()
       await queue
       preview = undefined
       unregister()

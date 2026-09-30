@@ -9,6 +9,7 @@ import SkillRegistry from '@deepseek-ai/dsh-skill'
 import { createScope, scopeOf } from '@deepseek-ai/dsh-scope'
 import AdmZip from 'adm-zip'
 import { createModule } from '../src/module.js'
+import { openProductDatabase } from '../../local-data/src/index.js'
 import { createArchive, inspectFiles, parseSkill, readArchive, safeRelative } from '../src/package.js'
 
 const instruction = (name = 'sample-skill', policy = '') => `---\nname: ${name}\ndescription: Test skill instructions\n${policy}---\nRead references/guide.md before doing the task.\n`
@@ -19,14 +20,27 @@ async function setup(t, backend = {}) {
   const registry = ctx.plugin(SkillRegistry)
   await registry
   const home = join(root, 'home')
+  const storage = openProductDatabase(home)
+  const now = new Date().toISOString()
+  const account = backend.account ?? (async () => ({ accountId: 'local-skills-user', epoch: 1 }))
+  const effectiveBackend = { ...backend, async account() {
+    const current = await account()
+    if (!storage.db.prepare('SELECT 1 FROM users WHERE id = ?').get(current.accountId)) {
+      storage.db.prepare('INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        .run(current.accountId, current.accountId, current.accountId, Buffer.alloc(16), Buffer.alloc(64), 'user', 'active', now, now)
+    }
+    return current
+  }, assertAccount: backend.assertAccount ?? (async () => {}) }
+  ctx.provide('sealHarnessDatabase', storage)
+  ctx.provide('sealHarnessIdentity', { getSession: () => ({ accountId: 'local-skills-user' }), subscribe: () => () => {} })
   const source = join(root, 'source')
   await mkdir(join(source, 'references'), { recursive: true })
   await writeFile(join(source, 'SKILL.md'), instruction())
   await writeFile(join(source, 'references', 'guide.md'), 'Reference contents')
-  const module = await createModule(ctx, { home, backend })
+  const module = await createModule(ctx, { home, backend: effectiveBackend })
   const action = (action, payload = {}, signal) => module.handlers[action](payload, signal)
-  t.after(async () => { await module.dispose(); await registry.dispose(); await rm(root, { recursive: true, force: true }) })
-  return { root, home, source, ctx, module, action }
+  t.after(async () => { await module.dispose(); await registry.dispose(); storage.close(); await rm(root, { recursive: true, force: true }) })
+  return { root, home, source, ctx, module, action, backend: effectiveBackend, storage }
 }
 
 async function importLocal(action, source, enable = false) {
@@ -108,12 +122,12 @@ test('rejects links, duplicate names, stale writes, and changed imported content
   const preview = await action('inspect', { path: source })
   await assert.rejects(action('import', { token: preview.token }), /已存在/)
   await assert.rejects(action('setEnabled', { id: item.id, enabled: true, expectedRevision: 0 }), /已变化/)
-  await writeFile(join(home, 'capabilities', 'skills', 'packages', item.id, 'references', 'guide.md'), 'Changed')
+  await writeFile(join(home, 'seal-harness-cache', 'skills', 'packages', item.id, 'references', 'guide.md'), 'Changed')
   await assert.rejects(action('setEnabled', { id: item.id, enabled: true }), /内容已变化/)
 })
 
 test('serializes revision-sensitive mutations and persists toggles across module reload', async t => {
-  const { action, source, home, ctx, module } = await setup(t)
+  const { action, source, home, ctx, module, backend } = await setup(t)
   const imported = await importLocal(action, source)
   const id = imported.skills[0].id
   const results = await Promise.allSettled([
@@ -123,18 +137,35 @@ test('serializes revision-sensitive mutations and persists toggles across module
   assert.equal(results[0].status, 'fulfilled')
   assert.equal(results[1].status, 'rejected')
   await module.dispose()
-  const reloaded = await createModule(ctx, { home, backend: {} })
+  const reloaded = await createModule(ctx, { home, backend })
   try {
     assert.equal((await ctx.skills.get('sample-skill')).name, 'sample-skill')
     assert.equal((await reloaded.handlers.list()).skills[0].enabled, true)
   } finally { await reloaded.dispose() }
 })
 
+test('managed skill archive reloads from SQLite after generated files are removed', async t => {
+  const { action, source, home, ctx, module, backend, storage } = await setup(t)
+  const { skills: [item] } = await importLocal(action, source, true)
+  const row = storage.db.prepare('SELECT archive_blob FROM skills WHERE id = ?').get(item.id)
+  assert(row)
+  assert.equal(readArchive(Buffer.from(row.archive_blob)).find(file => file.path === 'SKILL.md').bytes.toString(), instruction())
+  await module.dispose()
+  await rm(join(home, 'seal-harness-cache'), { recursive: true, force: true })
+  const restarted = await createModule(ctx, { home, backend })
+  t.after(() => restarted.dispose())
+  assert.equal((await restarted.handlers.list()).skills[0].name, 'sample-skill')
+  assert.equal((await ctx.skills.get('sample-skill')).name, 'sample-skill')
+})
+
 test('public provider obeys Cordis scopes without leaking into global or sibling views', async t => {
-  const { source, root, ctx } = await setup(t)
+  const { source, root, ctx, storage } = await setup(t)
+  const now = new Date().toISOString()
+  storage.db.prepare('INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    .run('scoped-user', 'scoped-user', 'Scoped User', Buffer.alloc(16), Buffer.alloc(64), 'user', 'active', now, now)
   const scope = createScope(ctx, { preset: 'skills-test' })
   const scopedContext = scope.ctx
-  const module = await createModule(scopedContext, { home: join(root, 'scoped'), backend: {} })
+  const module = await createModule(scopedContext, { home: join(root, 'scoped'), backend: { account: async () => ({ accountId: 'scoped-user', epoch: 1 }), assertAccount: async () => {} } })
   const action = (action, data = {}) => module.handlers[action](data)
   try {
     await importLocal(action, source, true)
@@ -202,7 +233,7 @@ test('aborted import leaves no managed package and no registration', async t => 
   const controller = new AbortController()
   controller.abort()
   await assert.rejects(action('import', { token: preview.token, enable: true }, controller.signal), { name: 'AbortError' })
-  assert.deepEqual(await readdir(join(home, 'capabilities', 'skills', 'packages')), [])
+  assert.deepEqual(await readdir(join(home, 'seal-harness-cache', 'skills', 'packages')), [])
   assert.deepEqual(await ctx.skills.list(), [])
 })
 
@@ -238,12 +269,12 @@ test('remote skill catalog and bodies follow account identity, and pending recei
   assert.equal((await ctx.skills.get('account-skill')).name, 'account-skill')
   assert.equal((await action('list')).pendingReports, 1)
   account = { accountId: 'bob', epoch: 2 }
-  assert.deepEqual((await ctx.skills.list()).map(item => item.name), ['sample-skill'])
+  assert.deepEqual((await ctx.skills.list()).map(item => item.name), [])
   assert.equal(await ctx.skills.get('account-skill'), undefined)
   await assert.rejects(action('detail', { id }), /不存在/)
-  assert.equal((await action('list')).skills.length, 1)
+  assert.equal((await action('list')).skills.length, 0)
   account = null
-  assert.equal((await ctx.skills.get('sample-skill')).name, 'sample-skill')
+  assert.equal(await ctx.skills.get('sample-skill'), undefined)
   assert.equal(await ctx.skills.get('account-skill'), undefined)
   account = { accountId: 'alice', epoch: 3 }
   online = true
@@ -353,5 +384,5 @@ test('project Pi uses .pi/skills and flat Markdown retains native shared resourc
   assert.equal(skill.path, join(source, 'flat.md'))
   assert.equal(skill.resourceBase.path, source)
   assert.equal(await readFile(join(skill.resourceBase.path, 'references', 'guide.md'), 'utf8'), 'Shared reference')
-  await assert.rejects(readdir(join(home, 'capabilities', 'skills', 'snapshots')), { code: 'ENOENT' })
+  await assert.rejects(readdir(join(home, 'seal-harness-cache', 'skills', 'snapshots')), { code: 'ENOENT' })
 })

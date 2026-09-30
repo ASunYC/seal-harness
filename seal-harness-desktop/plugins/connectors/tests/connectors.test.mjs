@@ -26,7 +26,7 @@ async function host(t, backend = {}, prepare) {
   await ctx.plugin(LocalCredentials, { dshHome: home, watch: false }).await()
   await prepare?.(ctx)
   const module = await createModule(ctx, { home, backend })
-  t.after(async () => { await module.dispose(); await ctx.fiber.dispose(); await rm(home, { recursive: true, force: true }) })
+  t.after(async () => { await module.dispose(); await ctx.fiber.dispose(); ctx.sealHarnessDatabase?.close(); await rm(home, { recursive: true, force: true }) })
   return { ctx, home, module, handlers: module.handlers }
 }
 
@@ -590,6 +590,7 @@ test('ordinary stdio runtime keeps its declared command, arguments and working d
 test('simultaneous skill and connector dependency installs finish without crossing queue locks', { timeout: 3000 }, async t => {
   const { default: SkillRegistry } = await import('@deepseek-ai/dsh-skill')
   const { createModule: createSkills } = await import('../../skills/src/module.js')
+  const { openProductDatabase } = await import('../../local-data/src/index.js')
   const { createArchive } = await import('../../skills/src/package.js')
   const skillId = 'd975945d-f035-44c9-adff-a1a89e846ba8', connectorId = '3da9070b-ec02-4eb4-9dca-84de8f1e19cf'
   const bytes = createArchive([{ path: 'SKILL.md', bytes: Buffer.from('---\nname: concurrent-skill\ndescription: Concurrent dependency\n---\nUse this skill.'), mode: 0o644 }])
@@ -604,6 +605,11 @@ test('simultaneous skill and connector dependency installs finish without crossi
     request: async path => { if (path.endsWith('/result')) return { data: {} }; if (++arrivals === 2) resolveBarrier(); await barrier; return { data: { schemaVersion: 'stratex.registry-lock/v1', resolutionId: `resolution-${arrivals}`, capabilities: [skill, connector] } } },
   }
   const { ctx, home, module } = await host(t, backend)
+  const database = openProductDatabase(home)
+  const now = new Date().toISOString()
+  database.db.prepare('INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    .run(account.accountId, account.accountId, account.accountId, Buffer.alloc(16), Buffer.alloc(64), 'user', 'active', now, now)
+  ctx.provide('sealHarnessDatabase', database)
   ctx.provide('sealHarnessIdentity', { getSession: async () => account, subscribe: () => () => {} })
   await ctx.plugin(SkillRegistry).await()
   const skills = await createSkills(ctx, { home, backend })
@@ -613,6 +619,8 @@ test('simultaneous skill and connector dependency installs finish without crossi
   await Promise.all([skills.handlers.install({ id: skillId, version: '1.0.0' }), module.handlers.install({ id: connectorId })])
   assert.equal((await skills.handlers.list()).skills.length, 1)
   assert.equal((await module.handlers.list()).items.length, 1)
+  await skills.dispose()
+  database.close()
 })
 
 test('source metadata survives legacy edits and the tool workbench uses native policy and allowlists', async t => {

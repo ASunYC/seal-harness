@@ -1,8 +1,0 @@
-{
-  "schemaVersion": 1,
-  "deploymentVersion": "remote-v1",
-  "files": {
-    "deploy.sh": "0e4e8ad528e85400a025e24d0e62244c78461b00b1b50fbe2328c876dc2cf308",
-    "docker-compose.yml": "8d4f64ddee3e25e8ad2fdea8d053548ed49e8567f7d487b29e55bcee1e5f7c70"
-  }
-}

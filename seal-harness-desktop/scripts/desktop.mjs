@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { buildBrand, buildProductPlugins, capabilityPlugins, desktop, desktopPackage, desktopRequire, installBrand, linkProductDependencies, product, productRoot, root } from './build.mjs'
 
@@ -38,20 +38,11 @@ if (command === 'build' || command === 'dev') {
   start()
 } else if (command === 'check') {
   linkProductDependencies()
-  const projects = join(productRoot, 'plugins/projects')
-  const agent = join(productRoot, 'plugins/project-agent')
-  const vitest = join(dirname(desktopRequire.resolve('vitest/package.json')), 'vitest.mjs')
-  for (const config of [join(projects, 'tsconfig.host.json'), join(agent, 'tsconfig.json')]) {
-    run(process.execPath, [desktopRequire.resolve('typescript/bin/tsc'), '-p', config])
-  }
-  run(process.execPath, [desktopRequire.resolve('vue-tsc/bin/vue-tsc.js'), '-p', join(projects, 'tsconfig.client.json'), '--noEmit'])
-  run(process.execPath, ['--test', join(productRoot, 'scripts/product.test.mjs'), join(productRoot, 'scripts/project-documents.test.mjs')])
-  for (const folder of ['identity', 'user', ...capabilityPlugins, 'capability-shared', 'knowledge', 'agents', 'session-context-selector', 'projects']) {
-    const tests = join(productRoot, 'plugins', folder, folder === 'projects' ? 'tests/ui' : 'tests')
+  run(process.execPath, ['--test', join(productRoot, 'scripts/product.test.mjs')])
+  for (const folder of ['local-data', 'identity', 'user', ...capabilityPlugins, 'capability-shared', 'session-context-selector', 'projects']) {
+    const tests = join(productRoot, 'plugins', folder, 'tests')
     run(process.execPath, ['--test', ...readdirSync(tests).filter(file => file.endsWith('.test.mjs')).map(file => join(tests, file))])
   }
-  run(process.execPath, [vitest, 'run', '--config', join(projects, 'tests/host/vitest.config.mjs')])
-  run(process.execPath, [vitest, 'run', '--config', join(agent, 'vitest.config.ts')], agent)
   run(process.execPath, [join(productRoot, 'scripts/verify.mjs')])
   run(process.execPath, [join(productRoot, 'scripts/verify-profile.mjs')])
 } else if (['dir', 'mac', 'win', 'linux'].includes(command)) {

@@ -1,4 +1,4 @@
-import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -10,7 +10,7 @@ export const desktop = join(root, desktopPackage)
 export const desktopRequire = createRequire(join(desktop, 'package.json'))
 export const product = JSON.parse(readFileSync(join(productRoot, 'product.json'), 'utf8'))
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
-export const productPlugins = ['identity', 'user', ...capabilityPlugins, 'knowledge', 'agents', 'session-context-selector', 'projects', 'project-agent']
+export const productPlugins = ['local-data', 'identity', 'user', ...capabilityPlugins, 'session-context-selector', 'projects']
 
 export function linkProductDependencies() {
   const link = join(productRoot, 'node_modules')
@@ -41,46 +41,18 @@ export async function buildBrand() {
   })
 }
 
-export async function buildProjectsClient(cwd = join(productRoot, 'plugins/projects')) {
-  const { build } = await import(pathToFileURL(desktopRequire.resolve('vite')).href)
-  const { default: vue } = await import('@vitejs/plugin-vue')
-  await build({
-    configFile: false, root: cwd, plugins: [vue()],
-    resolve: { alias: { '@shared': join(cwd, 'stratex/shared'), '@renderer': join(cwd, 'stratex/renderer/src') } },
-    define: { 'process.env.NODE_ENV': JSON.stringify('production') },
-    build: {
-      outDir: join(cwd, 'lib'), emptyOutDir: false, minify: false, sourcemap: false,
-      lib: { entry: join(cwd, 'src/client.tsx'), formats: ['cjs'], fileName: () => 'client.js', cssFileName: 'client' },
-      rollupOptions: {
-        external: id => /^react(?:-dom)?(?:\/|$)/.test(id),
-        output: {
-          inlineDynamicImports: true,
-          banner: 'window.__ModuleLoader__.load({ id: "@seal-harness/projects", factory: (require) => { var module = { exports: {} }; var exports = module.exports;',
-          footer: 'return module.exports; } });',
-        },
-      },
-    },
-  })
-  const entry = join(cwd, 'lib/client.js')
-  const css = readFileSync(join(cwd, 'lib/client.css'), 'utf8')
-  writeFileSync(entry, readFileSync(entry, 'utf8').replaceAll('__SEAL_HARNESS_PROJECT_CSS__', () => JSON.stringify(css)))
-}
-
 export async function buildProductPlugins() {
   linkProductDependencies()
   const { build } = await import(pathToFileURL(desktopRequire.resolve('tsdown')).href)
   for (const folder of productPlugins) {
     const cwd = join(productRoot, 'plugins', folder)
     const manifest = JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8'))
+    rmSync(join(cwd, 'lib'), { recursive: true, force: true })
     const common = { config: false, cwd, outDir: join(cwd, 'lib'), clean: false, dts: false, sourcemap: true }
-    const entry = folder === 'projects' || folder === 'project-agent' ? 'src/index.ts' : 'src/index.js'
-    await build({ ...common, entry: { index: entry, ...(folder === 'experts' ? { runtime: 'src/runtime.js' } : {}), ...(folder === 'agents' ? { registry: 'src/registry.js' } : {}), ...(folder === 'identity' ? { 'account-home': 'src/account-home.js' } : {}) }, format: 'esm', platform: 'node', fixedExtension: false,
+    const entry = 'src/index.js'
+    await build({ ...common, entry: { index: entry, ...(folder === 'experts' ? { runtime: 'src/runtime.js' } : {}) }, format: 'esm', platform: 'node', fixedExtension: false,
       deps: { neverBundle: [/^@deepseek-ai\//, /^@seal-harness\//, 'zod', 'yaml', 'adm-zip', 'unzipper', 'pdfjs-dist', '@silurus/ooxml', 'ssf', 'ssh2'] } })
-    if (folder === 'agents') cpSync(join(cwd, 'resources'), join(cwd, 'lib/resources'), { recursive: true })
-    if (folder === 'projects') {
-      await buildProjectDocuments()
-      await buildProjectsClient(cwd)
-    } else if (manifest.dsh?.client) {
+    if (manifest.dsh?.client) {
       await build({ ...common, entry: { client: 'src/client.jsx' }, format: 'cjs', platform: 'browser', target: 'es2022', deps: { neverBundle: [/^react(?:-dom)?(?:\/|$)/] },
         define: {
           'process.env.NODE_ENV': JSON.stringify('production'),
@@ -94,15 +66,6 @@ export async function buildProductPlugins() {
       })
     }
   }
-}
-
-export async function buildProjectDocuments() {
-  const { build } = await import(pathToFileURL(desktopRequire.resolve('tsdown')).href)
-  const cwd = join(productRoot, 'plugins/projects')
-  await build({ config: false, cwd, outDir: join(cwd, 'lib'), clean: false, dts: true, sourcemap: true,
-    entry: { documents: 'stratex/main/services/localDocumentParser.ts' }, format: 'esm', platform: 'node', fixedExtension: false,
-    deps: { neverBundle: ['unzipper', 'pdfjs-dist', '@silurus/ooxml', 'ssf'] } })
-  cpSync(join(cwd, 'stratex/main/services/localDocumentParserWorker.js'), join(cwd, 'lib/localDocumentParserWorker.js'))
 }
 
 // 文档 worker 动态导入保留包目录及 WASM；只装配实际声明的运行依赖，不复制整份开发依赖。
@@ -130,6 +93,7 @@ export function installProductPlugin(folder, target = desktop) {
   const source = join(productRoot, 'plugins', folder)
   const manifest = JSON.parse(readFileSync(join(source, 'package.json'), 'utf8'))
   const destination = join(target, 'node_modules', manifest.name)
+  rmSync(destination, { recursive: true, force: true })
   mkdirSync(destination, { recursive: true })
   for (const file of ['package.json', 'lib']) cpSync(join(source, file), join(destination, file), { recursive: true })
   installRuntimeDependencies(manifest, destination)
@@ -138,6 +102,9 @@ export function installProductPlugin(folder, target = desktop) {
 export function installBrand(target = desktop) {
   // 只清理构建装配区的旧聚合包，用户数据仍沿用原路径。
   rmSync(join(target, 'node_modules/@seal-harness/capabilities'), { recursive: true, force: true })
+  for (const folder of ['knowledge', 'agents', 'project-agent']) {
+    rmSync(join(target, 'node_modules/@seal-harness', folder), { recursive: true, force: true })
+  }
   const destination = join(target, 'node_modules/seal-harness-desktop')
   mkdirSync(destination, { recursive: true })
   for (const file of ['package.json', 'cordis.patch.yml', 'THIRD_PARTY_NOTICES.md', 'lib']) {

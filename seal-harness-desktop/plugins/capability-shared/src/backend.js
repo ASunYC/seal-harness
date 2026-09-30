@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const sessionSchema = z.object({ accountId: z.string().min(1), epoch: z.union([z.string(), z.number()]), accessToken: z.string().min(1) })
+const sessionSchema = z.object({ accountId: z.string().min(1), epoch: z.union([z.string(), z.number()]), accessToken: z.string().min(1), local: z.boolean().optional() })
 const envelopeSchema = z.object({ success: z.literal(true), data: z.unknown(), meta: z.record(z.string(), z.unknown()).default({}) })
 const pageSchema = z.object({ total: z.number().int().nonnegative(), offset: z.number().int().nonnegative(), asOf: z.string().datetime({ offset: true }) })
 const itemSchema = z.object({ id: z.string().min(1), name: z.string().min(1) }).passthrough()
@@ -10,6 +10,7 @@ const messages = {
   notConfigured: '尚未配置能力仓库地址。请在Seal Harness服务配置中填写 storeBaseUrl。',
   identityUnavailable: '用户插件尚未接入；本地能力可继续使用。',
   authenticationRequired: '请先登录，再访问云端能力。',
+  remoteAuthenticationUnavailable: '当前是本地账号，无法使用远端能力服务。',
   identityChanged: '当前用户已变化，请刷新后重试。',
   accessDenied: '当前账号没有此操作的权限。',
   conflict: '内容已被其他人修改，请刷新后重试。',
@@ -120,6 +121,7 @@ export class CapabilityBackend {
     const target = targetUrl(this.registry, path)
     const identity = this.getIdentity()
     const initial = await this.session(identity)
+    if (initial.local) throw new BackendError('remoteAuthenticationUnavailable')
     let current = initial
     const cancellation = signal ? AbortSignal.any([signal, AbortSignal.timeout(this.timeoutMs)]) : AbortSignal.timeout(this.timeoutMs)
     try {

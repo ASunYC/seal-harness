@@ -15,7 +15,7 @@ Seal Harness 是基于 [DSH Desktop](https://github.com/anywhere-labs/dsh-deskto
 | `deepseek-harness/` | 固定提交的上游子模块，只读 |
 | `vendor/dsh-runtime/` | 固定版本的上游运行时包 |
 
-产品插件由 `seal-harness-desktop/scripts/build.mjs` 编译，再通过 `cordis.patch.yml` 与 Profile 装配进 Beta Desktop；原生应用身份由 `product.json` 提供。默认数据目录为 `~/.seal-harness`，显式 `DSH_HOME` 可覆盖。远端身份、商店和项目服务默认未配置，可按 [`services.example.yml`](seal-harness-desktop/plugins/identity/services.example.yml) 显式设置；未配置时可进入本地工作台。社区 Desktop 更新保持关闭。
+产品插件由 `seal-harness-desktop/scripts/build.mjs` 编译，再通过 `cordis.patch.yml` 与 Profile 装配进 Beta Desktop；原生应用身份由 `product.json` 提供。默认数据目录为 `~/.seal-harness`，显式 `DSH_HOME` 可覆盖。首次启动创建本地管理员账号，用户、项目、专家和技能存于同一个 `seal-harness.sqlite` 数据库。知识库和产品智能体插件已移除，普通对话继续使用 DSH 原生 Agent。社区 Desktop 更新保持关闭。
 
 ## 开发
 

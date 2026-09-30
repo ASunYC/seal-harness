@@ -10,12 +10,12 @@ import SkillRegistry from '@deepseek-ai/dsh-skill'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import LocalCredentials from '@deepseek-ai/dsh-credentials-local'
-import * as store from '../../store/src/index.js'
 import * as skills from '../../skills/src/index.js'
 import * as connectors from '../../connectors/src/index.js'
 import * as experts from '../../experts/src/index.js'
+import { openProductDatabase } from '../../local-data/src/index.js'
 
-const plugins = { store, skills, connectors, experts }
+const plugins = { skills, connectors, experts }
 
 test('independent Host plugins preserve data across unloading and reloading without affecting their siblings', async t => {
   for (const plugin of Object.values(plugins)) assert.deepEqual(plugin.Config.parse(undefined), {})
@@ -23,7 +23,12 @@ test('independent Host plugins preserve data across unloading and reloading with
   const previousHome = process.env.DSH_HOME
   process.env.DSH_HOME = home
   const ctx = new Context(), routes = new Map()
-  ctx.provide('sealHarnessIdentity', { getSession: () => null, subscribe: () => () => {} })
+  const database = openProductDatabase(home)
+  const now = new Date().toISOString()
+  database.db.prepare('INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    .run('fixture', 'fixture', 'Fixture', Buffer.alloc(16), Buffer.alloc(64), 'admin', 'active', now, now)
+  ctx.provide('sealHarnessDatabase', database)
+  ctx.provide('sealHarnessIdentity', { getSession: () => ({ accountId: 'fixture', accessToken: 'fixture', epoch: 1 }), subscribe: () => () => {} })
   ctx.provide('sealHarnessServices', { getConfig: () => ({ storeBaseUrl: 'http://127.0.0.1:1/', mcpCenterBaseUrl: '' }) })
   ctx.provide('agents', { get: () => null })
   let connection
@@ -38,7 +43,7 @@ test('independent Host plugins preserve data across unloading and reloading with
   })
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   t.after(async () => {
-    await ctx.fiber.dispose(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve))
+    await ctx.fiber.dispose(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); database.close()
     if (previousHome === undefined) delete process.env.DSH_HOME; else process.env.DSH_HOME = previousHome
     await rm(home, { recursive: true, force: true })
   })
@@ -71,7 +76,6 @@ test('independent Host plugins preserve data across unloading and reloading with
     }
   }
   assert.equal((await rpc('skills/list', {}, false)).status, 401)
-  assert.equal((await result('store/list', { collection: 'skills', scope: 'published' })).error.code, 'authenticationRequired')
   assert.equal((await result('connectors/save', { id: '../escape' })).ok, false)
 
   const source = join(home, 'source')
@@ -88,15 +92,13 @@ test('independent Host plugins preserve data across unloading and reloading with
     assert.equal((await rpc(`${name}/list`)).status, 404, `${name} route removed`)
     if (name === 'skills') assert.equal(await ctx.skills.get('persisted-skill'), undefined)
     for (const other of Object.keys(plugins).filter(other => other !== name)) {
-      const response = await result(`${other}/list`, other === 'store' ? { collection: 'skills', scope: 'published' } : {})
-      if (other === 'store') assert.equal(response.error.code, 'authenticationRequired')
-      else assert.deepEqual(response.value, snapshots.get(other), `${other} stays usable while ${name} is unloaded`)
+      const response = await result(`${other}/list`)
+      assert.deepEqual(response.value, snapshots.get(other), `${other} stays usable while ${name} is unloaded`)
     }
     const reloaded = ctx.plugin(definition)
     await reloaded.await()
     mounted.set(name, reloaded)
-    if (name !== 'store') assert.deepEqual(await value(`${name}/list`), snapshots.get(name), `${name} restores saved data`)
-    else assert.equal((await result('store/list', { collection: 'skills', scope: 'published' })).error.code, 'authenticationRequired')
+    assert.deepEqual(await value(`${name}/list`), snapshots.get(name), `${name} restores saved data`)
   }
   assert(await ctx.skills.get('persisted-skill'))
   assert((await readFile(join(home, '.credentials.yaml'), 'utf8')).includes('saved-secret'))

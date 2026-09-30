@@ -61,11 +61,11 @@ test('品牌 Host 只归档与Seal Harness身份冲突的开发 Electron Shell L
   assert.equal(await archiveConflictingElectronLink({ platform: 'linux', executablePath: '/opt/electron', runPowerShell: async () => { throw new Error('must not run') } }), undefined)
 })
 
-test('账号 Home 启动接缝由产品身份插件提供，不进入社区 Desktop 默认构建', () => {
-  assert.equal(product.identityHomeModule, '@seal-harness/identity/account-home')
+test('本地账号共用产品基础 Home 与 SQLite 数据库', () => {
+  assert.equal(product.identityHomeModule, undefined)
   assert.equal(product.setupWizardEnabled, false)
-  const manifest = JSON.parse(readFileSync(join(productRoot, 'plugins/identity/package.json'), 'utf8'))
-  assert.equal(manifest.exports['./account-home'], './lib/account-home.js')
+  const manifest = JSON.parse(readFileSync(join(productRoot, 'plugins/local-data/package.json'), 'utf8'))
+  assert.equal(manifest.name, '@seal-harness/local-data')
 })
 
 test('产品关闭首次模型凭据弹窗但保留模型设置插件', () => {

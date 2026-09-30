@@ -4,23 +4,11 @@ import { SyncRefresh } from '../../capability-shared/src/sync-refresh.jsx'
 import { Dialog, SkillWorkbench } from './workbench.jsx'
 import { styles } from './styles.js'
 import { downloadZip, readZip } from '../../capability-shared/src/files.js'
-import { StorePanel } from '../../store/src/panel.jsx'
-import { Tabs } from '../../store/src/catalog.jsx'
 import { styles as storeStyles } from '../../store/src/styles.js'
 
 // 来源：Stratex LocalSkillCatalog / SkillCatalogExperience，070ba39e82。
-export function SkillsPanel({ api, signedIn = true, openLogin, onBack }) {
-  const [scope, setScope] = useState('published')
-  const [source, setSource] = useState('platform')
-  const [initialAction, setInitialAction] = useState(null)
-  const openLocalAction = action => { setInitialAction(action); setScope('mine'); setSource('local') }
-  const navigation = busy => <>
-    <Tabs label="Skill 目录范围" items={{ published: '公开', mine: '个人' }} value={scope} disabled={busy} onChange={value => { setInitialAction(null); setScope(value) }} />
-    {scope === 'mine' && <Tabs label="个人 Skill 来源" items={{ platform: 'Seal Harness·开发者平台 Skill', local: '本地 Skill' }} value={source} disabled={busy} onChange={value => { setInitialAction(null); setSource(value) }} className="skill-catalog-secondary-tabs" />}
-  </>
-  return scope === 'mine' && source === 'local'
-    ? <LocalSkillsPanel api={api} navigation={navigation} onBack={onBack} initialAction={initialAction} />
-    : <StorePanel api={api} collection="skills" scope={scope} navigation={navigation} signedIn={signedIn} openLogin={openLogin} onBack={onBack} onCreateSkill={() => openLocalAction('create')} onImportSkill={() => openLocalAction('import')} />
+export function SkillsPanel({ api, onBack }) {
+  return <LocalSkillsPanel api={api} navigation={() => null} onBack={onBack} initialAction={null} />
 }
 
 function LocalSkillsPanel({ api, navigation, onBack, initialAction }) {

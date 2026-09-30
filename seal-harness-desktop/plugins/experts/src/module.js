@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { lstat, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
+import { lstat, mkdir, readFile, readdir, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { z } from 'zod'
 import { ExpertError, MANIFEST, decodeZip, draftFiles, encodeZip, manifestSchema, nameSchema, portablePackage, readDirectory, validatePackage, versionSchema } from './package.js'
@@ -12,7 +12,6 @@ const stateSchema = z.object({
   enabled: versionSchema.nullable().default(null), provider: z.string().optional(), creationKey: z.string(),
   versions: z.record(versionSchema, z.object({ digest: z.string().regex(/^[a-f0-9]{64}$/), createdAt: z.string() })),
   remote: z.record(z.string(), z.string()).default({}),
-  knowledge: z.record(versionSchema, z.array(z.string().min(1)).max(64)).default({}),
   origin: z.object({ accountId: z.string(), assetId: z.string(), releaseId: z.string(), dependencyCount: z.number().int().nonnegative() }).optional(),
 })
 
@@ -23,30 +22,38 @@ async function safeDirectory(path) {
   if (!(await lstat(path)).isDirectory()) throw new ExpertError('专家目录不能是符号链接或文件。')
 }
 
-async function atomicJson(path, value) {
-  const temporary = `${path}.${randomUUID()}.tmp`
-  try {
-    await writeFile(temporary, JSON.stringify(value, null, 2) + '\n', { flag: 'wx' })
-    await rename(temporary, path)
-  } finally { await rm(temporary, { force: true }) }
-}
-
 /** @param {object} ctx @param {{home:string, backend:object}} options */
 export async function createModule(ctx, { home, backend }) {
+  const storage = ctx.get?.('sealHarnessDatabase') ?? ctx.sealHarnessDatabase
+  if (!storage) throw new ExpertError('本地数据库未加载。')
+  const identity = ctx.get?.('sealHarnessIdentity') ?? ctx.sealHarnessIdentity
+  const owner = () => {
+    const accountId = identity?.getSession()?.accountId
+    if (!accountId) throw new ExpertError('请先登录本机账号。')
+    return accountId
+  }
   const root = join(home, 'seal-harness-capabilities', 'experts')
   await safeDirectory(join(home, 'seal-harness-capabilities'))
   await safeDirectory(root)
   let disposed = false, queue = Promise.resolve()
+  let migrationError = null
   const mounted = new Map()
   const activationErrors = new Map()
   const service = name => typeof ctx.get === 'function' ? ctx.get(name) : ctx[name]
   const directory = name => join(root, nameSchema.parse(name))
-  const statePath = name => join(directory(name), 'state.json')
   const presetId = name => `seal-harness-expert-${name}`
   const readState = async name => {
-    if (!(await lstat(directory(name))).isDirectory()) throw new ExpertError('专家存储目录无效。')
-    if (!(await lstat(statePath(name))).isFile()) throw new ExpertError('专家状态文件无效。')
-    return stateSchema.parse(JSON.parse(await readFile(statePath(name), 'utf8')))
+    const row = storage.db.prepare('SELECT state_json FROM expert_state WHERE user_id = ? AND name = ?').get(owner(), name)
+    if (!row) throw Object.assign(new Error('专家不存在。'), { code: 'ENOENT' })
+    return stateSchema.parse(JSON.parse(row.state_json))
+  }
+  const saveState = async (name, state) => {
+    const userId = owner()
+    storage.transaction(db => {
+      db.prepare('UPDATE expert_state SET state_json = ? WHERE user_id = ? AND name = ?').run(JSON.stringify(state), userId, name)
+      db.prepare('UPDATE experts SET enabled = CASE WHEN version = ? THEN 1 ELSE 0 END WHERE user_id = ? AND name = ?')
+        .run(state.enabled ?? '', userId, name)
+    })
   }
   const access = async state => {
     if (state.origin && (await backend.account()).accountId !== state.origin.accountId) throw new ExpertError('此专家属于其他账号，请切换到导入时的账号。')
@@ -56,10 +63,9 @@ export async function createModule(ctx, { home, backend }) {
     await access(state)
     const selected = version ?? state.enabled ?? Object.keys(state.versions).at(-1)
     if (!selected || !state.versions[selected]) throw new ExpertError('专家版本不存在。')
-    const file = join(directory(name), `${selected}.zip`)
-    const info = await lstat(file)
-    if (!info.isFile() || info.size > 128 * 1024 * 1024) throw new ExpertError('专家版本文件无效。')
-    const pkg = validatePackage(decodeZip(await readFile(file)))
+    const row = storage.db.prepare('SELECT package_blob FROM experts WHERE user_id = ? AND name = ? AND version = ?').get(owner(), name, selected)
+    if (!row || row.package_blob.length > 128 * 1024 * 1024) throw new ExpertError('专家版本文件无效。')
+    const pkg = validatePackage(decodeZip(row.package_blob))
     if (pkg.digest !== state.versions[selected].digest || pkg.manifest.name !== name || pkg.manifest.version !== selected) throw new ExpertError('专家版本内容已变化，请重新导入。')
     return { name, version: selected, state, pkg }
   }
@@ -68,14 +74,13 @@ export async function createModule(ctx, { home, backend }) {
     if (loaded.pkg.digest !== parsed.expectedDigest) throw new ExpertError('专家已修改，请刷新后重试。')
     return loaded
   }
-  const save = async (pkg, origin, knowledgeGroupIds = []) => {
-    knowledgeGroupIds = z.array(z.string().min(1).max(256)).max(64).parse(knowledgeGroupIds)
+  const save = async (pkg, origin) => {
     const { name, version } = pkg.manifest
     await safeDirectory(directory(name))
     let state
     try { state = await readState(name) } catch (error) {
       if (error.code !== 'ENOENT') throw error
-      state = { enabled: null, creationKey: randomUUID(), versions: {}, remote: {}, knowledge: {}, ...(origin ? { origin } : {}) }
+      state = { enabled: null, creationKey: randomUUID(), versions: {}, remote: {}, ...(origin ? { origin } : {}) }
     }
     await access(state)
     if (origin && state.origin?.assetId !== origin.assetId) throw new ExpertError('已有同名专家，请先为本地专家更名或移除。')
@@ -83,13 +88,14 @@ export async function createModule(ctx, { home, backend }) {
       if (state.versions[version].digest !== pkg.digest) throw new ExpertError('同一版本不能覆盖不同内容，请增加版本号。')
       return { name, version, digest: pkg.digest, existing: true }
     }
-    const file = join(directory(name), `${version}.zip`), bytes = encodeZip(pkg.files)
-    try { await writeFile(file, bytes, { flag: 'wx' }) } catch (error) {
-      if (error.code !== 'EEXIST') throw error
-      const existing = validatePackage(decodeZip(await readFile(file)))
-      if (existing.digest !== pkg.digest) throw new ExpertError('未登记的同版本文件已存在，请先处理存储冲突。')
-    }
-    await atomicJson(statePath(name), { ...state, knowledge: { ...state.knowledge, [version]: knowledgeGroupIds }, versions: { ...state.versions, [version]: { digest: pkg.digest, createdAt: new Date().toISOString() } } })
+    const bytes = encodeZip(pkg.files), userId = owner(), now = new Date().toISOString()
+    const next = { ...state, versions: { ...state.versions, [version]: { digest: pkg.digest, createdAt: now } } }
+    storage.transaction(db => {
+      db.prepare('INSERT INTO experts (id, user_id, name, version, manifest_json, package_blob, enabled, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        .run(randomUUID(), userId, name, version, JSON.stringify(pkg.manifest), bytes, 0, now, now)
+      db.prepare('INSERT INTO expert_state (user_id, name, state_json) VALUES (?, ?, ?) ON CONFLICT(user_id, name) DO UPDATE SET state_json = excluded.state_json')
+        .run(userId, name, JSON.stringify(next))
+    })
     return { name, version, digest: pkg.digest, problems: packageProblems(pkg) }
   }
   const unmount = async name => {
@@ -109,12 +115,10 @@ export async function createModule(ctx, { home, backend }) {
     const resolved = await resolveCapabilities(ctx, pkg.manifest.capabilities?.filter(reference => !pkg.portableDependencies.some(dependency => dependency.kind === reference.kind && dependency.sourceId === reference.sourceId)))
     resolved.skills.push(...await materializeSkills(pkg, join(directory(name), `${loaded.version}.skills`)))
     const mcpServers = await materializeConnectors(pkg, join(directory(name), `${loaded.version}.connectors`), ctx, state.origin?.accountId)
-    const knowledgeGroupIds = state.knowledge[loaded.version] ?? []
-    if (knowledgeGroupIds.length && !service('sealHarnessKnowledge')) throw new ExpertError('知识库插件未加载。')
     const definition = {
       id: presetId(name), name: pkg.manifest.displayName.zh,
       description: `${pkg.manifest.profession.zh} · ${pkg.manifest.description.zh}`,
-      plugins: [{ name: '@seal-harness/experts/expert-runtime', config: { persona: pkg.manifest.personaInstructions, model: pkg.manifest.model, provider: route, expertName: name, version: loaded.version, reasoningEffort: pkg.manifest.reasoningEffort, personality: pkg.manifest.personality, skills: resolved.skills, toolNames: resolved.toolNames, knowledgeGroupIds, mcpServers, toolPolicy: pkg.manifest.toolPolicy, ...(state.origin ? { accountId: state.origin.accountId } : {}) } }],
+      plugins: [{ name: '@seal-harness/experts/expert-runtime', config: { persona: pkg.manifest.personaInstructions, model: pkg.manifest.model, provider: route, expertName: name, version: loaded.version, reasoningEffort: pkg.manifest.reasoningEffort, personality: pkg.manifest.personality, skills: resolved.skills, toolNames: resolved.toolNames, mcpServers, toolPolicy: pkg.manifest.toolPolicy, ...(state.origin ? { accountId: state.origin.accountId } : {}) } }],
     }
     const previous = mounted.get(name)
     await unmount(name)
@@ -137,8 +141,7 @@ export async function createModule(ctx, { home, backend }) {
   }
   const list = async () => {
     const items = []
-    for (const entry of await readdir(root, { withFileTypes: true })) {
-      if (!entry.isDirectory() || !nameSchema.safeParse(entry.name).success) continue
+    for (const entry of storage.db.prepare('SELECT name FROM expert_state WHERE user_id = ? ORDER BY name').all(owner())) {
       try {
         const state = await readState(entry.name)
         try { await access(state) } catch { continue }
@@ -146,12 +149,11 @@ export async function createModule(ctx, { home, backend }) {
         items.push({ name: entry.name, version: loaded.version, displayName: loaded.pkg.manifest.displayName.zh, description: loaded.pkg.manifest.description.zh, category: loaded.pkg.manifest.categoryId ?? '', tags: loaded.pkg.manifest.tags?.map(tag => tag.zh) ?? [], digest: loaded.pkg.digest, enabled: mounted.has(entry.name), desiredVersion: state.enabled, problems: [...packageProblems(loaded.pkg), ...(activationErrors.has(entry.name) ? [activationErrors.get(entry.name)] : [])] })
       } catch (error) { items.push({ name: entry.name, error: error.message }) }
     }
-    return { items, runtime: !!service('agentPresets'), note: '专家使用独立 DSH Agent 模式，按绑定能力提供技能与连接器。' }
+    return { items, runtime: !!service('agentPresets'), note: migrationError ?? '专家使用独立 DSH Agent 模式，按绑定能力提供技能与连接器。' }
   }
   const actions = {
     list,
     capabilities: () => capabilityOptions(ctx),
-    knowledge: async (_input, signal) => service('sealHarnessKnowledge') ? service('sealHarnessKnowledge').invoke('list', { scope: 'installed' }, signal) : { items: [] },
     models: async () => {
       const llm = service('llm')
       if (!llm?.listProviders) return { items: [] }
@@ -162,10 +164,10 @@ export async function createModule(ctx, { home, backend }) {
     },
     detail: async input => {
       const loaded = await load(input)
-      return { knowledgeGroupIds: loaded.state.knowledge[loaded.version] ?? [], manifest: loaded.pkg.manifest, digest: loaded.pkg.digest, enabled: mounted.has(loaded.name), versions: Object.entries(loaded.state.versions).map(([version, meta]) => ({ version, ...meta, active: loaded.state.enabled === version })), problems: packageProblems(loaded.pkg), files: [...loaded.pkg.files.keys()], origin: loaded.state.origin ?? null }
+      return { manifest: loaded.pkg.manifest, digest: loaded.pkg.digest, enabled: mounted.has(loaded.name), versions: Object.entries(loaded.state.versions).map(([version, meta]) => ({ version, ...meta, active: loaded.state.enabled === version })), problems: packageProblems(loaded.pkg), files: [...loaded.pkg.files.keys()], origin: loaded.state.origin ?? null }
     },
     versions: async input => (await actions.detail(input)).versions,
-    create: async input => save(validatePackage(draftFiles(manifestSchema.parse(input.manifest))), undefined, input.knowledgeGroupIds),
+    create: async input => save(validatePackage(draftFiles(manifestSchema.parse(input.manifest)))),
     update: async input => {
       const loaded = await checked(input), manifest = manifestSchema.parse(input.manifest)
       if (manifest.name !== loaded.name || manifest.version === loaded.version) throw new ExpertError('编辑需要保留专家标识并增加版本号。')
@@ -175,7 +177,7 @@ export async function createModule(ctx, { home, backend }) {
       if (!entry) throw new ExpertError('请保持入口 agent 不变。')
       const frontmatter = files.get(entry.path).toString('utf8').match(/^(---\r?\n[\s\S]*?\r?\n---)/)[0]
       files.set(entry.path, Buffer.from(`${frontmatter}\n\n${manifest.personaInstructions}\n`))
-      return save(validatePackage(files), undefined, input.knowledgeGroupIds ?? loaded.state.knowledge[loaded.version])
+      return save(validatePackage(files))
     },
     import: async input => {
       const source = z.union([z.strictObject({ path: z.string().min(1).max(4096) }), z.strictObject({ contentBase64: z.string().max(180 * 1024 * 1024) })]).parse(input)
@@ -201,19 +203,23 @@ export async function createModule(ctx, { home, backend }) {
     activate: async input => {
       const loaded = await checked(input), provider = input.provider === undefined ? undefined : z.string().trim().min(1).max(256).parse(input.provider)
       const active = await mount(loaded, provider)
-      try { await atomicJson(statePath(loaded.name), { ...loaded.state, enabled: loaded.version, provider: active.provider }) } catch (error) { await unmount(loaded.name); throw error }
+      try { await saveState(loaded.name, { ...loaded.state, enabled: loaded.version, provider: active.provider }) } catch (error) { await unmount(loaded.name); throw error }
       return active
     },
     deactivate: async input => {
       const loaded = await checked(input)
       await unmount(loaded.name)
-      await atomicJson(statePath(loaded.name), { ...loaded.state, enabled: null })
+      await saveState(loaded.name, { ...loaded.state, enabled: null })
       return { name: loaded.name, enabled: false }
     },
     remove: async input => {
       const loaded = await checked(input)
       await unmount(loaded.name)
-      await rm(directory(loaded.name), { recursive: true })
+      storage.transaction(db => {
+        db.prepare('DELETE FROM experts WHERE user_id = ? AND name = ?').run(owner(), loaded.name)
+        db.prepare('DELETE FROM expert_state WHERE user_id = ? AND name = ?').run(owner(), loaded.name)
+      })
+      await rm(directory(loaded.name), { recursive: true, force: true })
       return { name: loaded.name, removed: true }
     },
     install: async (input, signal) => {
@@ -226,7 +232,7 @@ export async function createModule(ctx, { home, backend }) {
       const accountKey = createHash('sha256').update(account.accountId).digest('hex')
       return uploadExpert(backend, loaded.pkg, { assetId: loaded.state.remote[accountKey], creationKey: `seal-harness:${accountKey}:${loaded.state.creationKey}`, saveAsset: async (captured, assetId) => {
         await backend.assertAccount(captured)
-        await atomicJson(statePath(loaded.name), { ...loaded.state, remote: { ...loaded.state.remote, [accountKey]: assetId } })
+        await saveState(loaded.name, { ...loaded.state, remote: { ...loaded.state.remote, [accountKey]: assetId } })
       } }, signal)
     },
     cloud: async (input, signal) => {
@@ -254,9 +260,45 @@ export async function createModule(ctx, { home, backend }) {
     queue = next.catch(() => {})
     return next
   }
-  const reconcile = async () => {
+  const importLegacy = async () => {
+    const userId = owner(), marker = `experts-v1:${userId}`
+    if (storage.db.prepare('SELECT 1 FROM import_journal WHERE source = ?').get(marker)) return
+    const entries = []
     for (const entry of await readdir(root, { withFileTypes: true })) {
       if (!entry.isDirectory() || !nameSchema.safeParse(entry.name).success) continue
+      const path = join(root, entry.name, 'state.json')
+      let state
+      try { state = stateSchema.parse(JSON.parse(await readFile(path, 'utf8'))) }
+      catch (error) { if (error.code === 'ENOENT') continue; throw error }
+      const versions = []
+      for (const [version, metadata] of Object.entries(state.versions)) {
+        const bytes = await readFile(join(root, entry.name, `${version}.zip`))
+        const pkg = validatePackage(decodeZip(bytes))
+        if (pkg.digest !== metadata.digest || pkg.manifest.name !== entry.name || pkg.manifest.version !== version) throw new ExpertError('旧专家数据校验失败，已保留原文件。')
+        versions.push({ version, bytes, manifest: pkg.manifest, createdAt: metadata.createdAt })
+      }
+      entries.push({ name: entry.name, state: { ...state, origin: undefined, remote: {} }, versions })
+    }
+    storage.transaction(db => {
+      for (const entry of entries) {
+        if (db.prepare('SELECT 1 FROM expert_state WHERE user_id = ? AND name = ?').get(userId, entry.name)) continue
+        db.prepare('INSERT INTO expert_state (user_id, name, state_json) VALUES (?, ?, ?)').run(userId, entry.name, JSON.stringify(entry.state))
+        for (const version of entry.versions) {
+          db.prepare('INSERT INTO experts (id, user_id, name, version, manifest_json, package_blob, enabled, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+            .run(randomUUID(), userId, entry.name, version.version, JSON.stringify(version.manifest), version.bytes, Number(entry.state.enabled === version.version), version.createdAt, version.createdAt)
+        }
+      }
+      db.prepare('INSERT INTO import_journal (source, imported_at) VALUES (?, ?)').run(marker, new Date().toISOString())
+    })
+  }
+  const reconcile = async () => {
+    if (!identity?.getSession()) {
+      await Promise.all([...mounted.keys()].map(unmount))
+      return
+    }
+    try { await importLegacy(); migrationError = null }
+    catch (error) { migrationError = `旧专家数据未导入：${error.message}`; ctx.logger?.warn?.(migrationError) }
+    for (const entry of storage.db.prepare('SELECT name FROM expert_state WHERE user_id = ? ORDER BY name').all(owner())) {
       try {
         const state = await readState(entry.name)
         if (state.enabled) await mount(await load({ name: entry.name, version: state.enabled }), state.provider, false)
