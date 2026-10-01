@@ -2,6 +2,7 @@ export const styles = `
 /* The public shell.overlay owns the product rail; Desktop keeps its own sidebar and main slots. */
 #root :has(> [data-shell-overlay]) { box-sizing: border-box; padding-left: 56px; }
 #root :has(> [data-shell-overlay]) > [data-side="sidebar"] { transform: translateX(56px); }
+#root [data-slot="sidebar"] button[aria-label="插件"], #root [data-slot="sidebar"] button[aria-label="Plugins"] { display: none !important; }
 .seal-nav-rail { position: absolute; z-index: 2; inset: 0 auto 0 0; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 56px; padding: 48px 7px 14px; box-sizing: border-box; border-right: 1px solid var(--dsw-alias-border-l1,#34363b); background: var(--dsw-alias-bg-layer-1,#1c1d20); color: var(--dsw-alias-label-secondary,#a6a8ae); pointer-events: auto; -webkit-app-region: no-drag; }
 .seal-nav-rail button { display: grid; width: 42px; height: 42px; padding: 0; place-items: center; border: 0; border-radius: 12px; background: transparent; color: inherit; cursor: pointer; }
 .seal-nav-rail button:hover { background: var(--dsw-alias-interactive-bg-hover,#34363b); color: var(--dsw-alias-label-primary,#fff); }
@@ -18,9 +19,9 @@ export const styles = `
 .seal-nav-content { display: flex; width: 100%; height: 100%; min-width: 0; min-height: 0; flex-direction: column; overflow: hidden; }
 .seal-nav-content > :last-child { min-height: 0; flex: 1; }
 .seal-nav-content .resource-page-nav__back { display: none; }
-.seal-nav-compact-tabs { display: none; align-items: center; gap: 4px; min-height: 52px; padding: 8px 16px; overflow-x: auto; border-bottom: 1px solid var(--dsw-alias-border-l1,#34363b); background: var(--dsw-alias-bg-layer-1,#1c1d20); }
-.seal-nav-compact-tabs button { flex: none; padding: 7px 11px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary,#b2b4ba); font: inherit; cursor: pointer; }
-.seal-nav-compact-tabs button[aria-current="page"], .seal-nav-compact-tabs button:hover { background: var(--dsw-alias-interactive-bg-hover,#34363b); color: var(--dsw-alias-label-primary,#fff); }
+.seal-nav-compact-tabs, .seal-nav-plugin-tabs { display: none; box-sizing: border-box; align-items: center; gap: 4px; height: 52px; min-height: 52px; padding: 8px 16px; overflow-x: auto; border-bottom: 1px solid var(--dsw-alias-border-l1,#34363b); background: var(--dsw-alias-bg-layer-1,#1c1d20); }
+.seal-nav-compact-tabs button, .seal-nav-plugin-tabs button { flex: none; padding: 7px 11px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary,#b2b4ba); font: inherit; cursor: pointer; }
+.seal-nav-compact-tabs button[aria-current="page"], .seal-nav-compact-tabs button:hover, .seal-nav-plugin-tabs button[aria-current="page"], .seal-nav-plugin-tabs button:hover { background: var(--dsw-alias-interactive-bg-hover,#34363b); color: var(--dsw-alias-label-primary,#fff); }
 .seal-nav-page { width: 100%; height: 100%; overflow: auto; box-sizing: border-box; padding: clamp(32px,5vw,72px); background: var(--dsw-alias-bg-base,#151618); color: var(--dsw-alias-label-primary,#fff); font: 14px/1.6 "Segoe UI Variable Text","Segoe UI","Microsoft YaHei UI",sans-serif; }
 .seal-nav-page__eyebrow { margin: 0 0 10px; color: var(--dsw-alias-label-tertiary,#92949a); font-size: 11px; font-weight: 700; letter-spacing: .15em; }
 .seal-nav-page h1 { margin: 0; font-size: clamp(28px,3vw,42px); line-height: 1.25; letter-spacing: -.03em; }
@@ -42,4 +43,9 @@ export const styles = `
 @media (max-width: 800px) { .seal-nav-rail { width: 48px; padding-inline: 3px; } #root :has(> [data-shell-overlay]) { padding-left: 48px; } #root :has(> [data-shell-overlay]) > [data-side="sidebar"] { transform: translateX(48px); } .seal-nav-page { padding: 24px; } .seal-nav-page__heading { align-items: flex-start; flex-direction: column; } }
 #root [data-sidebar-collapsed] .seal-nav-secondary { display: none; }
 #root [data-sidebar-collapsed] .seal-nav-compact-tabs { display: flex; }
+#root [data-sidebar-collapsed] .seal-nav-plugin-tabs { position: absolute; z-index: 3; top: 0; right: 0; left: 112px; display: flex; pointer-events: auto; }
+#root [data-sidebar-collapsed]:has(.seal-nav-plugin-tabs) [data-plugin-panel] { padding-top: 52px; }
+@media (max-width: 800px) { #root [data-sidebar-collapsed] .seal-nav-plugin-tabs { left: 104px; } }
+#root [data-desktop-mode="advanced"][data-desktop-platform="win32"][data-sidebar-collapsed] .seal-nav-plugin-tabs { top: 32px; }
+#root [data-desktop-mode="advanced"][data-desktop-platform="darwin"][data-sidebar-collapsed] .seal-nav-plugin-tabs { top: 32px; }
 `

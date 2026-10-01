@@ -57,7 +57,8 @@ test('top rail and home subnavigation switch without replacing native conversati
     delete globalThis.IS_REACT_ACT_ENVIRONMENT
   })
   await act(async () => root.render(React.createElement(rail, { usePanelInfo })))
-  assert.equal(document.querySelector('button[aria-label="对话"]')?.getAttribute('aria-current'), 'page')
+  assert.equal(document.querySelector('button[aria-label="对话"]'), null)
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail button')].map(button => button.getAttribute('aria-label')), ['首页', '空间', '定时任务'])
   const homeButton = document.querySelector('button[aria-label="首页"]')
   homeButton.focus()
   assert.equal(document.activeElement, homeButton)
@@ -67,6 +68,7 @@ test('top rail and home subnavigation switch without replacing native conversati
   const homeMenu = entries.find(entry => entry.options.name === 'sidebar.workspaces')?.component
   assert(homeMenu)
   const navigation = provided.get('sealHarnessNavigation')
+  assert.deepEqual(Array.from(navigation.getSnapshot().entries, entry => entry.id), ['plugins'])
   let release
   await act(async () => { release = navigation.register({ id: 'experts', label: '专家', order: 20, icon: 'experts', Panel: () => React.createElement('span', null, '专家内容') }) })
   await act(async () => root.render(React.createElement(React.Fragment, null,
@@ -75,12 +77,20 @@ test('top rail and home subnavigation switch without replacing native conversati
     React.createElement('article', null, React.createElement(home)),
   )))
   assert.match(document.body.textContent, /概览.*专家/)
+  assert.match(document.querySelector('aside').textContent, /插件/)
   await click('专家')
   assert.match(document.querySelector('article').textContent, /专家内容/)
   await act(async () => release())
   assert.equal(navigation.getSnapshot().selectedId, null)
-  await click('对话')
-  assert.equal(activePanelId, null)
+  await click('插件')
+  assert.equal(activePanelId, 'plugins')
+  assert.equal(navigation.getSnapshot().selectedId, 'plugins')
+  assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), 'page')
+  assert.equal(document.querySelector('.seal-nav-plugin-tabs button[aria-current="page"]')?.textContent, '插件')
+  await click('概览')
+  assert.equal(activePanelId, 'seal-harness-home')
+  assert.equal(navigation.getSnapshot().selectedId, null)
+  await click('空间')
   assert.equal(entries.some(entry => entry.options.name === 'sidebar.workspaces'), false)
   await act(async () => root.render(React.createElement(React.Fragment, null, React.createElement(rail, { usePanelInfo }), React.createElement(spaces))))
   await click('研发空间')

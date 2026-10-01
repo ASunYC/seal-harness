@@ -1,5 +1,4 @@
 import { createElement, useLayoutEffect, useRef } from 'react'
-import { AnimatedSidebarIcon } from '../plugins/capability-shared/src/sidebar-icons.jsx'
 
 const productName = __SEAL_HARNESS_NAME__
 const brandIcon = __SEAL_HARNESS_ICON__
@@ -12,31 +11,6 @@ function BrandMark({ size = 28 }) {
 
 function BrandName() {
   return createElement('span', { style: { fontWeight: 600 } }, productName)
-}
-
-function overridePluginsMenuOrder(ctx) {
-  let mounted = false
-  let remove
-  const mount = () => {
-    if (mounted) return
-    const source = ctx.slots.entries('sidebar.panellist')
-      .find(entry => entry.options.id === 'plugins' && (entry.options.priority ?? 0) >= 0)
-    if (!source) return
-    mounted = true
-    try {
-      remove = ctx.slots.register({
-        name: 'sidebar.panellist', id: 'plugins', order: 40, priority: -100,
-        label: source.options.label,
-        ...(source.locale ? { locale: source.locale } : {}),
-      }, function PluginsMenuIcon(props) { return createElement(AnimatedSidebarIcon, { name: 'plugins', ...props }) })
-    } catch (error) {
-      mounted = false
-      throw error
-    }
-  }
-  const unsubscribe = ctx.slots.subscribe('sidebar.panellist', mount)
-  mount()
-  return () => { unsubscribe(); remove?.() }
 }
 
 function enhancePluginManagerSync() {
@@ -138,6 +112,4 @@ export function apply(ctx) {
     }))
   ctx.slots.inject('conversation.hero.brand.mark', () =>
     ctx.slots.register({ name: 'conversation.hero.brand.mark' }, HeroMark))
-  ctx.slots.inject('sidebar.panellist', () =>
-    overridePluginsMenuOrder(ctx))
 }
