@@ -216,3 +216,37 @@
 ### Next Steps
 
 - 请用户按截图评估视觉和栏目；macOS/Linux 原生窗口及安装包仍需目标平台验收。
+
+
+## Session 7: 首页二级插件管理导航修正
+<!-- trellis-session: v=2 fp=9eccbb2974eda243 -->
+
+**Date**: 2026-10-02
+**Task**: 首页二级插件管理导航修正
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+按用户纠正导航：一级窄栏去掉对话按钮，插件管理与专家技能连接器并入首页二级菜单。
+
+### Main Changes
+
+- 复用原生插件管理主面板，隐藏旧侧栏行，并保留新会话入口。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e61cc78` | fix(seal-harness): move plugins into home navigation |
+
+### Testing
+
+- [OK] seal-harness:build、seal-harness:check、check:layout 与定向测试通过；Windows 宽/窄窗口实测插件切换。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- macOS/Linux 窗口及安装包仍需在目标平台验收。
