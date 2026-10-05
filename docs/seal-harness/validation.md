@@ -60,6 +60,10 @@ Stable/Beta 的原生远程控制确认文案已改为读取自定义产品名�
 
 用户指出顶部已有“新会话”按钮。首页二级菜单移除“会话”行，保留专家、技能、连接器、插件等功能入口；一级首页仍可返回当前聊天，顶部按钮仍用于新建聊天。上节包含“会话”菜单的验证仅记录当时版本。
 
+## 2026-10-06 恢复首页工作区与会话
+
+用户纠正工作区与会话应和专家等入口同在首页。导航不再覆盖首页的原生 `sidebar.workspaces`，资源改由公开 `sidebar.panellist` 放在工作区树上方；空间主面板不再复制工作区列表或提供“添加空间”。导航插件取消未使用的工作区服务依赖，使“问问决策”随首页资源注册。Windows 兼容模式以隔离数据目录实测：首页同时显示资源入口、原生工作区和会话行；专家、问问决策、插件页面仍保留工作区树，空间显示空态，返回首页恢复完整侧栏。导航测试、`seal-harness:build`、`seal-harness:check`、`check:layout` 通过。原生工作区与会话的数据未迁移或删除。
+
 ## 2026-10-06 Ask Jev 双模型 DSH 插件
 
 `packages/dsh-plugin-ask-jev/` 独立构建并打出 `dsh-plugin-ask-jev-0.1.0.tgz`。使用隔离 `DSH_HOME`，官方 `dsh plugin add` 将 tarball 安装到 Web Profile，Profile 配置出现 `ask-jev` bundle；Host 可从安装后的包直接导入，DSH Web 服务成功启动。在真实浏览器中打开侧栏“问问决策”，切换阿里模型后看到地域、WorkspaceId 与独立密钥配置。Seal Harness 产品构建、完整检查、根 `typecheck`、`check:layout`、`yarn install --immutable` 通过。七项插件定向测试覆盖两个官方端点、请求/响应、Host RPC、账号隔离、持久化、Client 选择与结果展示。

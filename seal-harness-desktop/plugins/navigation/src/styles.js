@@ -3,6 +3,7 @@ export const styles = `
 #root :has(> [data-shell-overlay]) { box-sizing: border-box; padding-left: 56px; }
 #root :has(> [data-shell-overlay]) > [data-side="sidebar"] { transform: translateX(56px); }
 #root [data-slot="sidebar"] button[aria-label="插件"], #root [data-slot="sidebar"] button[aria-label="Plugins"] { display: none !important; }
+#root:has(.seal-nav-rail[data-home-active="true"]) [data-slot="sidebar"] button[aria-label="插件"], #root:has(.seal-nav-rail[data-home-active="true"]) [data-slot="sidebar"] button[aria-label="Plugins"] { display: flex !important; }
 .seal-nav-rail { position: absolute; z-index: 2; inset: 0 auto 0 0; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 56px; padding: 48px 7px 14px; box-sizing: border-box; border-right: 1px solid var(--dsw-alias-border-l1,#34363b); background: var(--dsw-alias-bg-layer-1,#1c1d20); color: var(--dsw-alias-label-secondary,#a6a8ae); pointer-events: auto; -webkit-app-region: no-drag; }
 .seal-nav-rail button { display: grid; width: 42px; height: 42px; padding: 0; place-items: center; border: 0; border-radius: 12px; background: transparent; color: inherit; cursor: pointer; }
 .seal-nav-rail button:hover { background: var(--dsw-alias-interactive-bg-hover,#34363b); color: var(--dsw-alias-label-primary,#fff); }

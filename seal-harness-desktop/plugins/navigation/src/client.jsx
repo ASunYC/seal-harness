@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useSyncExternalStore } from 'react'
+import React, { useEffect, useSyncExternalStore } from 'react'
 import { createNavigationState } from './model.js'
 import { styles } from './styles.js'
 
-export const inject = ['slots', 'layout', 'workspaces', 'uiWorkspace']
+export const inject = ['slots', 'layout']
 
 const HOME = 'seal-harness-home'
 const SPACES = 'seal-harness-spaces'
@@ -34,30 +34,39 @@ export function apply(ctx) {
     return () => element.remove()
   }, 'seal-harness: navigation styles')
 
-  function HomeMenu() {
-    const { entries, selectedId } = useSyncExternalStore(resources.subscribe, resources.getSnapshot)
-    const open = id => { resources.select(id); ctx.layout.selectPanel(id === 'plugins' ? 'plugins' : HOME) }
-    return <nav className="seal-nav-secondary" aria-label="首页二级菜单">
-      {entries.map(entry => <button key={entry.id} type="button" aria-current={selectedId === entry.id ? 'page' : undefined} onClick={() => open(entry.id)}><NavGlyph name={entry.icon} size={18} />{entry.label}</button>)}
-    </nav>
-  }
+  function EmptyMenu() { return null }
 
   function TasksMenu() {
     return <nav className="seal-nav-secondary" aria-label="定时任务二级菜单"><header><span>SEAL HARNESS</span><h2>定时任务</h2></header><p className="seal-nav-secondary__empty">定时任务尚未开放。</p></nav>
   }
 
-  function ResourceTabs({ className }) {
-    const { entries, selectedId } = useSyncExternalStore(resources.subscribe, resources.getSnapshot)
-    const open = id => { resources.select(id); ctx.layout.selectPanel(id === 'plugins' ? 'plugins' : HOME) }
-    return <nav className={className} aria-label="首页资源导航">{entries.map(entry => <button key={entry.id} type="button" aria-current={selectedId === entry.id ? 'page' : undefined} onClick={() => open(entry.id)}>{entry.label}</button>)}</nav>
-  }
-
   function Rail({ usePanelInfo }) {
     const activePanelId = usePanelInfo(info => info.activePanelId)
-    useEffect(() => { if (activePanelId === null) resources.select(null) }, [activePanelId])
+    const { entries } = useSyncExternalStore(resources.subscribe, resources.getSnapshot)
+    const homeActive = activePanelId === null || activePanelId === HOME || activePanelId === 'plugins' || entries.some(entry => entry.id === activePanelId)
+    const resourceIds = entries.map(entry => entry.id).join('|')
     useEffect(() => {
-      if (activePanelId !== null && activePanelId !== HOME && activePanelId !== 'plugins' && activePanelId !== SCHEDULES) return
-      const Component = activePanelId === SCHEDULES ? TasksMenu : HomeMenu
+      if (activePanelId === null) resources.select(null)
+      else if (entries.some(entry => entry.id === activePanelId)) resources.select(activePanelId)
+    }, [activePanelId, entries])
+    useEffect(() => {
+      if (!homeActive) return
+      const dispose = entries.map(entry => {
+        const releases = [ctx.slots.inject('sidebar.panellist', () => ctx.slots.register(
+          { name: 'sidebar.panellist', id: entry.id, order: entry.order, label: entry.label, priority: -100 },
+          ({ size }) => <NavGlyph name={entry.icon} size={size} />,
+        ))]
+        if (entry.id !== 'plugins') releases.push(ctx.slots.inject('main', () => ctx.slots.register(
+          { name: 'main', key: entry.id },
+          () => <div className="seal-nav-content"><entry.Panel /></div>,
+        )))
+        return () => releases.forEach(release => release?.())
+      })
+      return () => dispose.forEach(release => release())
+    }, [homeActive, resourceIds])
+    useEffect(() => {
+      if (activePanelId !== SPACES && activePanelId !== SCHEDULES) return
+      const Component = activePanelId === SCHEDULES ? TasksMenu : EmptyMenu
       return ctx.slots.inject('sidebar.workspaces', () => ctx.slots.register({ name: 'sidebar.workspaces', priority: -100 }, Component))
     }, [activePanelId])
     const items = [
@@ -65,9 +74,9 @@ export function apply(ctx) {
       { id: SPACES, label: '空间', icon: 'spaces' },
       { id: SCHEDULES, label: '定时任务', icon: 'schedules' },
     ]
-    return <><nav className="seal-nav-rail" aria-label="一级导航">
-      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={activePanelId === item.id || item.id === HOME && (activePanelId === null || activePanelId === 'plugins') ? 'page' : undefined} onClick={() => { if (item.id === HOME) resources.select(null); ctx.layout.selectPanel(item.id === HOME ? null : item.id) }}><NavGlyph name={item.icon} /></button>)}
-    </nav>{activePanelId === 'plugins' && <ResourceTabs className="seal-nav-plugin-tabs" />}</>
+    return <nav className="seal-nav-rail" aria-label="一级导航" data-home-active={homeActive}>
+      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : activePanelId === item.id ? 'page' : undefined} onClick={() => { if (item.id === HOME) resources.select(null); ctx.layout.selectPanel(item.id === HOME ? null : item.id) }}><NavGlyph name={item.icon} /></button>)}
+    </nav>
   }
 
   function HomePanel() {
@@ -75,32 +84,12 @@ export function apply(ctx) {
     const selected = entries.find(entry => entry.id === selectedId)
     useEffect(() => { if (!selected) ctx.layout.selectPanel(null) }, [selected])
     return <div className="seal-nav-content" data-seal-nav-panel="home">
-      <ResourceTabs className="seal-nav-compact-tabs" />
       {selected && <selected.Panel />}
     </div>
   }
 
   function SpacesPanel() {
-    const snapshot = useSyncExternalStore(listener => ctx.workspaces.list.subscribe(listener), () => ctx.workspaces.list.getSnapshot())
-    const [busy, setBusy] = useState(false), [error, setError] = useState('')
-    const open = async workspaceId => {
-      setBusy(true); setError('')
-      try { await ctx.uiWorkspace.openWorkspace(workspaceId); ctx.layout.selectPanel(null) }
-      catch (cause) { setError(cause.message) }
-      finally { setBusy(false) }
-    }
-    const create = async () => {
-      setBusy(true); setError('')
-      try {
-        const path = await ctx.uiWorkspace.pickDirectory()
-        if (!path) return
-        const workspace = await ctx.workspaces.create({ path })
-        await ctx.uiWorkspace.openWorkspace(workspace.workspaceId)
-        ctx.layout.selectPanel(null)
-      } catch (cause) { setError(cause.message) }
-      finally { setBusy(false) }
-    }
-    return <main className="seal-nav-page" data-seal-nav-panel="spaces"><p className="seal-nav-page__eyebrow">SEAL HARNESS / SPACES</p><div className="seal-nav-page__heading"><div><h1>空间</h1><p>沿用现有工作区和会话，不迁移目录或聊天记录。</p></div><button type="button" disabled={busy} onClick={create}>添加空间</button></div>{error && <p role="alert" className="seal-nav-page__error">{error}</p>}<div className="seal-nav-spaces-grid">{snapshot.items.map(item => <button key={item.workspaceId} type="button" disabled={busy} onClick={() => open(item.workspaceId)}><NavGlyph name="spaces" size={22} /><strong>{item.title || item.path}</strong><small>{item.path}</small><span>打开空间 →</span></button>)}{snapshot.items.length === 0 && <p className="seal-nav-page__empty">还没有空间。选择一个已有目录即可添加。</p>}</div></main>
+    return <main className="seal-nav-page" data-seal-nav-panel="spaces"><h1>空间</h1><p>空间功能尚未开放。工作区和会话请在首页管理。</p></main>
   }
 
   function SchedulesPanel() {

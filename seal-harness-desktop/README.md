@@ -36,7 +36,7 @@ corepack yarn seal-harness:dev
 - `scripts/` 复用上游安装的构建工具和打包检查，没有第二套依赖或锁文件。
 - `plugins/local-data/` 负责同一个 SQLite 数据库、迁移和事务。`plugins/identity/` 负责本地账号认证；`plugins/experts/`、`plugins/skills/` 共用该库。既有项目表保留为历史数据，不再有产品项目插件读取它。
 - 根 `packages/dsh-plugin-ask-jev/` 是可独立安装的 DSH 决策插件，产品构建装配同一包；支持 TypeSafe Jev 和阿里百炼 `decision-model-preview`，不依赖 Seal Harness 本地身份服务。
-- `plugins/navigation/` 通过公开 Desktop slot 组合“首页、空间、定时任务”一级窄栏与专家、技能、连接器、插件等首页二级功能菜单，不提供概览页或重复的会话菜单。顶部“新会话”按钮进入原生对话。专家、技能、连接器仍独立管理数据和生命周期；插件管理复用 DSH 原生主面板。空间复用 DSH 工作区，定时任务暂不执行后台调度。
+- `plugins/navigation/` 通过公开 Desktop slot 组合“首页、空间、定时任务”一级窄栏；首页并列专家、技能、连接器、插件等功能入口与 DSH 原生工作区、会话列表，不提供概览页或重复的会话菜单。顶部“新会话”按钮进入原生对话。专家、技能、连接器仍独立管理数据和生命周期；插件管理复用 DSH 原生主面板。空间和定时任务暂为空态。
 
 构建仅在忽略目录中装配插件到 `dsh-plugin-desktop-beta/node_modules/seal-harness-desktop/`，资源到 `dsh-plugin-desktop-beta/lib/product-assets/`。安装包通过electron-builder的文件映射包含同一插件。上游源码、图标源文件及Harness子模块不会被构建脚本改写。
 
