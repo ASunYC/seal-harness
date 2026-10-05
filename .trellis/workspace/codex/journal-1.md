@@ -329,3 +329,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 11: 问问决策提升为一级导航
+<!-- trellis-session: v=2 fp=2aa494b5be48b721 -->
+
+**Date**: 2026-10-06
+**Task**: 问问决策提升为一级导航
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+产品导航将问问决策从首页资源行移至首页之后的一级 rail，打开原插件的独立决策页面。Windows 隔离窗口验证一级选中、独立页面和返回首页；产品构建、导航测试、产品检查与布局检查通过。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d666b38` | feat(seal-harness): move decision to top-level navigation |
+
+### Status
+
+[OK] **Completed**
