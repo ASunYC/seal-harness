@@ -11,7 +11,6 @@ const SCHEDULES = 'seal-harness-schedules'
 function NavGlyph({ name, size = 20 }) {
   const paths = {
     home: <><path d="m3 10 9-7 9 7v10H3V10Z" /><path d="M9 20v-7h6v7" /></>,
-    conversation: <><path d="M4 4h16v13H8l-4 3V4Z" /><path d="M8 9h8M8 13h5" /></>,
     spaces: <><path d="M3 7V5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /></>,
     schedules: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
     experts: <><rect x="4" y="7" width="16" height="13" rx="2" /><path d="M9 7V4h6v3M9 12h.01M15 12h.01M9 16h6" /></>,
@@ -37,10 +36,9 @@ export function apply(ctx) {
 
   function HomeMenu() {
     const { entries, selectedId } = useSyncExternalStore(resources.subscribe, resources.getSnapshot)
-    const open = id => { resources.select(id); ctx.layout.selectPanel(id === null ? null : id === 'plugins' ? 'plugins' : HOME) }
+    const open = id => { resources.select(id); ctx.layout.selectPanel(id === 'plugins' ? 'plugins' : HOME) }
     return <nav className="seal-nav-secondary" aria-label="首页二级菜单">
       <header><span>SEAL HARNESS</span><h2>首页</h2></header>
-      <button type="button" aria-current={selectedId === null ? 'page' : undefined} onClick={() => open(null)}><NavGlyph name="conversation" size={18} />会话</button>
       {entries.map(entry => <button key={entry.id} type="button" aria-current={selectedId === entry.id ? 'page' : undefined} onClick={() => open(entry.id)}><NavGlyph name={entry.icon} size={18} />{entry.label}</button>)}
     </nav>
   }
@@ -51,8 +49,8 @@ export function apply(ctx) {
 
   function ResourceTabs({ className }) {
     const { entries, selectedId } = useSyncExternalStore(resources.subscribe, resources.getSnapshot)
-    const open = id => { resources.select(id); ctx.layout.selectPanel(id === null ? null : id === 'plugins' ? 'plugins' : HOME) }
-    return <nav className={className} aria-label="首页资源导航"><button type="button" aria-current={selectedId === null ? 'page' : undefined} onClick={() => open(null)}>会话</button>{entries.map(entry => <button key={entry.id} type="button" aria-current={selectedId === entry.id ? 'page' : undefined} onClick={() => open(entry.id)}>{entry.label}</button>)}</nav>
+    const open = id => { resources.select(id); ctx.layout.selectPanel(id === 'plugins' ? 'plugins' : HOME) }
+    return <nav className={className} aria-label="首页资源导航">{entries.map(entry => <button key={entry.id} type="button" aria-current={selectedId === entry.id ? 'page' : undefined} onClick={() => open(entry.id)}>{entry.label}</button>)}</nav>
   }
 
   function Rail({ usePanelInfo }) {

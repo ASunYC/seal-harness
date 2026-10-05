@@ -9,6 +9,7 @@ Seal Harness 是基于 [DSH Desktop](https://github.com/anywhere-labs/dsh-deskto
 | 路径 | 职责 |
 | --- | --- |
 | `seal-harness-desktop/` | 产品身份、海豹图标、插件组合、构建和打包入口 |
+| `packages/dsh-plugin-ask-jev/` | 可单独安装到 DSH 的 Jev / 阿里百炼双模型决策插件；Seal Harness 复用同一包 |
 | `dsh-plugin-desktop-beta/` | 产品当前复用的桌面 Host、Client 与 Electron 壳 |
 | `dsh-plugin-desktop/` | 上游 Stable 桌面变体 |
 | `dsh-desktop-next/` | 上游 Next 实验桌面变体 |
@@ -17,7 +18,7 @@ Seal Harness 是基于 [DSH Desktop](https://github.com/anywhere-labs/dsh-deskto
 
 产品插件由 `seal-harness-desktop/scripts/build.mjs` 编译，再通过 `cordis.patch.yml` 与 Profile 装配进 Beta Desktop；原生应用身份由 `product.json` 提供。默认数据目录为 `~/.seal-harness`，显式 `DSH_HOME` 可覆盖。首次启动创建本地管理员账号，用户、专家和技能存于同一个 `seal-harness.sqlite` 数据库。项目、知识库和产品智能体插件已移除，普通对话与工作区继续使用 DSH 原生能力。社区 Desktop 更新保持关闭。
 
-桌面导航使用常驻一级窄栏：首页、空间和定时任务。首页二级菜单直接列出会话、专家、技能、连接器和插件；会话与原生新会话入口都打开原有对话。空间复用 DSH 工作区，定时任务目前提供明确空态。
+桌面导航使用常驻一级窄栏：首页、空间和定时任务。首页二级菜单只列出专家、技能、连接器和插件等功能入口；顶部“新会话”按钮打开原有对话。空间复用 DSH 工作区，定时任务目前提供明确空态。
 
 ## 开发
 

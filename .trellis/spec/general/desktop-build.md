@@ -14,7 +14,9 @@ Node 要求 `^22.19.0 || >=24.0.0`，根 Yarn 固定 `4.18.0`。使用 `corepack
 
 构建顺序由 `seal-harness-desktop/scripts/build.mjs` 的 `productPlugins` 和 `cordis.patch.yml` 对齐。`local-data` 在 `identity` 之前加载，之后装配账号界面、能力插件和会话选择。项目、知识库和产品智能体插件不装配；保留 DSH 原生工作区、会话与 Agent 供普通对话和专家使用。删除插件时还需从已装配目录清理旧包，防止旧构建残留进入安装包。
 
-`@seal-harness/navigation` 在专家/技能/连接器 Client 之前加载，提供 `sealHarnessNavigation` 注册服务。一级窄栏只显示首页、空间、定时任务；首页二级菜单直接列出会话、专家、技能、连接器、插件，不提供概览页。会话与原生新会话都进入 DSH 对话。会话/首页资源/定时任务的二级侧栏覆盖 `sidebar.workspaces`；切到空间时释放覆盖并恢复 DSH 原生工作区列表。资源插件在自身 Client 生命周期内注册/注销二级页面，不再单独占用 `sidebar.panellist`。插件管理复用 DSH 原生 `plugins` 主面板，首页二级菜单负责导航；旧侧栏行仅由产品 CSS 隐藏，不停用其服务。打开插件主面板时首页一级入口仍显示选中，切换回其他资源时恢复首页主面板。产品样式在 Desktop frame 左侧预留窄栏宽度并补偿侧栏拖拽线；兼容/扩展/高级模式、窄窗口和三平台标题栏是回归重点。
+`packages/dsh-plugin-ask-jev/` 是可单独打包并通过 `dsh plugin add` 安装的 DSH bundle。它使用公开的 Connection RPC、credentials 和 Client slots，Host 固定 TypeSafe/阿里百炼端点，Client 在普通 DSH 中注册侧栏面板，在 Seal Harness 中借可选 `sealHarnessNavigation` 注册首页资源入口。产品构建先生成该包，再复制到 Beta 装配目录；安装包必须包含同一包的 Host、Client、patch、许可证。不要让此可复用包依赖 Seal Harness 身份或导航服务。
+
+`@seal-harness/navigation` 在专家/技能/连接器 Client 之前加载，提供 `sealHarnessNavigation` 注册服务。一级窄栏只显示首页、空间、定时任务；首页二级菜单列出专家、技能、连接器、插件等功能入口，不提供概览页或重复的会话菜单。顶部“新会话”按钮进入 DSH 对话，点击一级首页可返回当前对话。首页/定时任务的二级侧栏覆盖 `sidebar.workspaces`；切到空间时释放覆盖并恢复 DSH 原生工作区列表。资源插件在自身 Client 生命周期内注册/注销二级页面，不再单独占用 `sidebar.panellist`。插件管理复用 DSH 原生 `plugins` 主面板，首页二级菜单负责导航；旧侧栏行仅由产品 CSS 隐藏，不停用其服务。打开插件主面板时首页一级入口仍显示选中，切换回其他资源时恢复首页主面板。产品样式在 Desktop frame 左侧预留窄栏宽度并补偿侧栏拖拽线；兼容/扩展/高级模式、窄窗口和三平台标题栏是回归重点。
 
 `local-data` 在基础 Home 管理唯一的 `seal-harness.sqlite`。`users`、`experts`、`skills` 及状态、迁移记录表共用该库；历史 `projects` 表保留以避免删除已有用户数据。数据库版本用 `PRAGMA user_version` 顺序迁移，启用外键与 WAL。Host 插件通过 `sealHarnessDatabase` 共享连接和事务。数据库是用户、专家版本和技能包的持久来源；物化到文件系统的技能/专家目录是可重建缓存。自动迁移旧本地文件只复制、不删除原文件。
 

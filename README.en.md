@@ -9,6 +9,7 @@ This repository imports the downstream source supplied by the user. It preserves
 | Path | Responsibility |
 | --- | --- |
 | `seal-harness-desktop/` | Product identity, icons, plugins, build and packaging |
+| `packages/dsh-plugin-ask-jev/` | Standalone DSH decision plugin for Jev and Alibaba Model Studio, also bundled with Seal Harness |
 | `dsh-plugin-desktop-beta/` | Reused Desktop Host, Client, and Electron shell |
 | `dsh-plugin-desktop/` | Upstream Stable Desktop variant |
 | `dsh-desktop-next/` | Upstream experimental Next variant |
@@ -17,7 +18,7 @@ This repository imports the downstream source supplied by the user. It preserves
 
 The product build compiles plugins and composes them with the Beta Desktop through `cordis.patch.yml` and the profile. `product.json` defines native application identity. The default data directory is `~/.seal-harness`; an explicit `DSH_HOME` overrides it. On first launch, create a local administrator account. Users, experts, and skills share one `seal-harness.sqlite` database. The project, knowledge-base, and product-specific agent plugins have been removed; ordinary conversations and workspaces continue to use native DSH capabilities. Community Desktop updates remain disabled.
 
-The desktop has a persistent top-level navigation rail for Home, Spaces, and Scheduled Tasks. Home directly lists Conversations, Experts, Skills, Connectors, and Plugins in its second-level menu, without an overview page. Conversations and the native New Session action open the existing chat. Spaces reuse native DSH workspaces; Scheduled Tasks currently shows an explicit empty state.
+The desktop has a persistent top-level navigation rail for Home, Spaces, and Scheduled Tasks. Home lists feature entries such as Experts, Skills, Connectors, and Plugins in its second-level menu, without an overview page. The native New Session button opens the existing chat. Spaces reuse native DSH workspaces; Scheduled Tasks currently shows an explicit empty state.
 
 ## Development
 
