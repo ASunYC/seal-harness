@@ -307,3 +307,25 @@
 ### Next Steps
 
 - 真实 API Key/WorkspaceId 尚未提供；Windows 解包文件齐全但上游 dsh-fs-local BigInt smoke 失败，分发门禁需单独处理。
+
+
+## Session 10: 首页恢复原生工作区与会话
+<!-- trellis-session: v=2 fp=30b6d5d6b930c943 -->
+
+**Date**: 2026-10-06
+**Task**: 首页恢复原生工作区与会话
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+首页用 sidebar.panellist 放资源入口，保留原生 workspace/session 浏览器；空间改空态。隔离 Windows 窗口实测专家、问问决策、插件与原生工作区同屏，工作区菜单可打开；产品构建、检查和布局检查通过。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c14a34b` | fix(seal-harness): keep native workspaces on home |
+
+### Status
+
+[OK] **Completed**
