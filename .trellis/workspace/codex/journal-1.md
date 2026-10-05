@@ -272,3 +272,38 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 9: Ask Jev 双决策模型 DSH 插件
+<!-- trellis-session: v=2 fp=527d09ad25482597 -->
+
+**Date**: 2026-10-06
+**Task**: Ask Jev 双决策模型 DSH 插件
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+完成独立 DSH bundle，并在 Seal Harness 中复用；支持 TypeSafe Jev 与阿里 decision-model-preview 的结构化决策。
+
+### Main Changes
+
+- Host-only credentials、双提供方固定端点、是非/选择/评分三模式、DSH 与 Seal 导航入口和独立安装包。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `40e6436` | feat(dsh): add portable Jev and Alibaba decision plugin |
+| `c879637` | chore(task): archive 10-05-ask-jev-dual-decision-plugin |
+
+### Testing
+
+- [OK] 七项插件测试、隔离 DSH Web 安装与真实页面、产品构建/检查、根 typecheck/layout、immutable install 通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 真实 API Key/WorkspaceId 尚未提供；Windows 解包文件齐全但上游 dsh-fs-local BigInt smoke 失败，分发门禁需单独处理。

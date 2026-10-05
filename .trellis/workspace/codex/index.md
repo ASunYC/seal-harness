@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 8
+- **Total Sessions**: 9
 - **Last Active**: 2026-10-06
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~274 | Active |
+| `journal-1.md` | ~309 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 9 | 2026-10-06 | Ask Jev 双决策模型 DSH 插件 | `40e6436`, `c879637` | `codex/seal-harness-migration` |
 | 8 | 2026-10-06 | 首页二级菜单改为会话与资源 | `5c45823` | `codex/seal-harness-migration` |
 | 7 | 2026-10-02 | 首页二级插件管理导航修正 | `e61cc78` | `codex/seal-harness-migration` |
 | 6 | 2026-10-01 | Codex 风格两级桌面导航 | `0ad2a89` | `codex/seal-harness-migration` |
