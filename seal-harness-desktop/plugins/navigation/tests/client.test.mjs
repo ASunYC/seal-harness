@@ -78,6 +78,7 @@ test('top rail and home subnavigation switch without replacing native conversati
   )))
   assert.match(document.querySelector('aside').textContent, /专家.*插件/)
   assert.equal(document.querySelector('aside').textContent.includes('会话'), false)
+  assert.equal(document.querySelector('aside .seal-nav-secondary header'), null)
   assert.doesNotMatch(document.body.textContent, /概览|从这里，连接你的智能工作流/)
   assert.match(document.querySelector('aside').textContent, /插件/)
   await click('专家')

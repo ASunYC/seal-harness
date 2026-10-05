@@ -38,7 +38,6 @@ export function apply(ctx) {
     const { entries, selectedId } = useSyncExternalStore(resources.subscribe, resources.getSnapshot)
     const open = id => { resources.select(id); ctx.layout.selectPanel(id === 'plugins' ? 'plugins' : HOME) }
     return <nav className="seal-nav-secondary" aria-label="首页二级菜单">
-      <header><span>SEAL HARNESS</span><h2>首页</h2></header>
       {entries.map(entry => <button key={entry.id} type="button" aria-current={selectedId === entry.id ? 'page' : undefined} onClick={() => open(entry.id)}><NavGlyph name={entry.icon} size={18} />{entry.label}</button>)}
     </nav>
   }
