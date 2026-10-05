@@ -250,3 +250,25 @@
 ### Next Steps
 
 - macOS/Linux 窗口及安装包仍需在目标平台验收。
+
+
+## Session 8: 首页二级菜单改为会话与资源
+<!-- trellis-session: v=2 fp=19f49a4f4497d68c -->
+
+**Date**: 2026-10-06
+**Task**: 首页二级菜单改为会话与资源
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+移除首页概览和卡片；首页二级菜单直接显示会话、专家、技能、连接器、插件。会话与资源返回进入原生聊天，Windows 实际窗口验证通过；导航定向测试 11 项通过，产品完整检查受到同期独立插件测试失败影响。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5c45823` | fix(seal-harness): show conversations in home menu |
+
+### Status
+
+[OK] **Completed**
