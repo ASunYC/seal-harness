@@ -22,6 +22,9 @@ try {
   const first = prepareDesktopProfile('1', home)
   const rows = composeEntries([first.patches])
   assert.equal(rows.find(row => row.id === 'seal-harness-brand')?.name, 'seal-harness-desktop')
+  assert.equal(rows.find(row => row.id === 'ask-jev')?.name, 'dsh-plugin-ask-jev')
+  assert.ok(readFileSync(desktopRequire.resolve('dsh-plugin-ask-jev'), 'utf8').length > 0)
+  assert.ok(readFileSync(desktopRequire.resolve('dsh-plugin-ask-jev/client'), 'utf8').includes('dsh-plugin-ask-jev'))
   for (const folder of productPlugins) {
     assert.equal(rows.find(row => row.id === `seal-harness-${folder}`)?.name, `@seal-harness/${folder}`)
     assert.equal(rows.filter(row => row.id === `seal-harness-${folder}`).length, 1)

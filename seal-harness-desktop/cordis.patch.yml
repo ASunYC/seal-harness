@@ -27,6 +27,8 @@
       name: '@seal-harness/user'
     - id: seal-harness-navigation
       name: '@seal-harness/navigation'
+    - id: ask-jev
+      name: dsh-plugin-ask-jev
     - id: seal-harness-store
       name: '@seal-harness/store'
     - id: seal-harness-connectors

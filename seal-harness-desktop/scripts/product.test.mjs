@@ -68,6 +68,15 @@ test('本地账号共用产品基础 Home 与 SQLite 数据库', () => {
   assert.equal(manifest.name, '@seal-harness/local-data')
 })
 
+test('独立 Ask Jev bundle 同时具备 Host 与 Client 入口', () => {
+  const manifest = JSON.parse(readFileSync(join(root, 'packages/dsh-plugin-ask-jev/package.json'), 'utf8'))
+  assert.equal(manifest.name, 'dsh-plugin-ask-jev')
+  assert.equal(manifest.dsh.client.platform, 'web')
+  assert.equal(manifest.dsh.bundle.patch, './cordis.patch.yml')
+  const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))
+  assert.equal(patch.find(row => row.insert)?.insert.some(row => row.id === 'ask-jev' && row.name === manifest.name), true)
+})
+
 test('产品不再装配项目插件', () => {
   assert.equal(productPlugins.includes('projects'), false)
   const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))

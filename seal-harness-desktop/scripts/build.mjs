@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 
 export const productRoot = resolve(import.meta.dirname, '..')
 export const root = resolve(productRoot, '..')
+export const decisionPlugin = join(root, 'packages/dsh-plugin-ask-jev')
 export const desktopPackage = 'dsh-plugin-desktop-beta'
 export const desktop = join(root, desktopPackage)
 export const desktopRequire = createRequire(join(desktop, 'package.json'))
@@ -112,4 +113,9 @@ export function installBrand(target = desktop) {
   }
   cpSync(join(productRoot, 'assets'), join(target, 'lib/product-assets'), { recursive: true })
   for (const folder of productPlugins) installProductPlugin(folder, target)
+  const decisionDestination = join(target, 'node_modules/dsh-plugin-ask-jev')
+  rmSync(decisionDestination, { recursive: true, force: true })
+  mkdirSync(decisionDestination, { recursive: true })
+  for (const file of ['package.json', 'cordis.patch.yml', 'README.md', 'LICENSE', 'lib'])
+    cpSync(join(decisionPlugin, file), join(decisionDestination, file), { recursive: true })
 }

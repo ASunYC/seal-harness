@@ -63,6 +63,8 @@ export default async function verifyPackage(result) {
     const manifest = JSON.parse(readFileSync(require.resolve('seal-harness-desktop/package.json'), 'utf8'))
     assert.equal(manifest.dsh.client.platform, 'web')
     assert.ok(readFileSync(require.resolve('seal-harness-desktop/client'), 'utf8').includes('seal-harness-desktop'))
+    assert.ok(readFileSync(require.resolve('dsh-plugin-ask-jev'), 'utf8').length > 0)
+    assert.ok(readFileSync(require.resolve('dsh-plugin-ask-jev/client'), 'utf8').includes('dsh-plugin-ask-jev'))
     for (const folder of productPlugins) {
       assert.ok(readFileSync(require.resolve(`@seal-harness/${folder}`), 'utf8').length > 0)
       const item = JSON.parse(readFileSync(require.resolve(`@seal-harness/${folder}/package.json`), 'utf8'))

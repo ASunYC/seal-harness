@@ -14,6 +14,7 @@ function run(executable, args, cwd = root, env = environment) {
 }
 
 async function build() {
+  run(process.execPath, [join(root, 'packages/dsh-plugin-ask-jev/scripts/build.mjs')])
   await buildBrand()
   await buildProductPlugins()
   run('corepack', ['yarn', 'workspace', 'dsh-community-market', 'build'])
@@ -38,6 +39,8 @@ if (command === 'build' || command === 'dev') {
   start()
 } else if (command === 'check') {
   linkProductDependencies()
+  const decisionTests = join(root, 'packages/dsh-plugin-ask-jev/tests')
+  run(process.execPath, ['--test', ...readdirSync(decisionTests).filter(file => file.endsWith('.test.mjs')).map(file => join(decisionTests, file))])
   run(process.execPath, ['--test', join(productRoot, 'scripts/product.test.mjs')])
   for (const folder of ['local-data', 'identity', 'user', 'navigation', ...capabilityPlugins, 'capability-shared', 'session-context-selector']) {
     const tests = join(productRoot, 'plugins', folder, 'tests')

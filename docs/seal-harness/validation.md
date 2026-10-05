@@ -59,3 +59,9 @@ Stable/Beta 的原生远程控制确认文案已改为读取自定义产品名�
 ## 2026-10-06 移除重复会话菜单
 
 用户指出顶部已有“新会话”按钮。首页二级菜单移除“会话”行，保留专家、技能、连接器、插件等功能入口；一级首页仍可返回当前聊天，顶部按钮仍用于新建聊天。上节包含“会话”菜单的验证仅记录当时版本。
+
+## 2026-10-06 Ask Jev 双模型 DSH 插件
+
+`packages/dsh-plugin-ask-jev/` 独立构建并打出 `dsh-plugin-ask-jev-0.1.0.tgz`。使用隔离 `DSH_HOME`，官方 `dsh plugin add` 将 tarball 安装到 Web Profile，Profile 配置出现 `ask-jev` bundle；Host 可从安装后的包直接导入，DSH Web 服务成功启动。在真实浏览器中打开侧栏“问问决策”，切换阿里模型后看到地域、WorkspaceId 与独立密钥配置。Seal Harness 产品构建、完整检查、根 `typecheck`、`check:layout`、`yarn install --immutable` 通过。七项插件定向测试覆盖两个官方端点、请求/响应、Host RPC、账号隔离、持久化、Client 选择与结果展示。
+
+Windows 解包目录中确认插件的 Host、Client、bundle、许可证和 README 齐全，Host 文件与构建源哈希一致。完整 `seal-harness:package` 的后置上游运行时 smoke 在 `@deepseek-ai/dsh-fs-local` 的 BigInt 计算处失败；这项分发检查不能报告通过。测试环境没有 TypeSafe Jev Key、百炼 Key 或 WorkspaceId，两个真实远端模型尚未联调；协议测试使用受控夹具，不宣称云端成功。
