@@ -14,6 +14,7 @@ export function leaveResource(ctx) {
   const navigation = ctx.get?.('sealHarnessNavigation') ?? ctx.sealHarnessNavigation
   if (!navigation) throw new Error('首页导航服务未加载。')
   navigation.select(null)
+  ctx.layout.selectPanel(null)
 }
 
 export function registerPanel(ctx, { id, label, order, icon, description }, Panel) {
