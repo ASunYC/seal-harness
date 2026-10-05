@@ -71,9 +71,14 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   assert.equal(registrations('sidebar.panellist')[0].options.priority, -100)
   let release
   await act(async () => { release = navigation.register({ id: 'experts', label: '专家', order: 20, icon: 'experts', Panel: () => React.createElement('span', null, '专家内容') }) })
+  let releaseDecision
+  await act(async () => { releaseDecision = navigation.register({ id: 'ask-jev', label: '问问决策', order: 45, icon: 'plugins', Panel: () => React.createElement('span', null, '独立决策页面') }) })
   assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id).sort(), ['experts', 'plugins'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail button')].map(button => button.getAttribute('aria-label')), ['首页', '问问决策', '空间', '定时任务'])
   const expertMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'experts')?.component
+  const decisionMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'ask-jev')?.component
   assert(expertMain)
+  assert(decisionMain)
   await act(async () => root.render(React.createElement(React.Fragment, null,
     React.createElement(rail, { usePanelInfo }),
     React.createElement('aside', null, React.createElement(registrations('sidebar.workspaces')[0].component)),
@@ -81,6 +86,18 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   )))
   assert.match(document.querySelector('aside').textContent, /原生工作区与会话/)
   assert.match(document.querySelector('article').textContent, /专家内容/)
+  await click('问问决策')
+  assert.equal(activePanelId, 'ask-jev')
+  assert.equal(document.querySelector('button[aria-label="问问决策"]')?.getAttribute('aria-current'), 'page')
+  assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), null)
+  assert.equal(registrations('sidebar.panellist').length, 0)
+  assert.equal(registrations('sidebar.workspaces').length, 2)
+  assert(registrations('main').some(entry => entry.options.key === 'ask-jev'))
+  await act(async () => root.render(React.createElement(React.Fragment, null, React.createElement(rail, { usePanelInfo }), React.createElement(decisionMain))))
+  assert.match(document.body.textContent, /独立决策页面/)
+  await click('首页')
+  assert.equal(registrations('sidebar.workspaces').length, 1)
+  assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id).sort(), ['experts', 'plugins'])
   await act(async () => ctx.layout.selectPanel('experts'))
   assert.equal(registrations('sidebar.workspaces').length, 1)
   assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), 'page')
@@ -105,4 +122,5 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   await act(async () => root.render(React.createElement(React.Fragment, null, React.createElement(rail, { usePanelInfo }), React.createElement(schedules))))
   assert.match(document.body.textContent, /当前没有定时任务/)
   await act(async () => release())
+  await act(async () => releaseDecision())
 })

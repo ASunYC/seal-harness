@@ -2,6 +2,8 @@
 
 `packages/dsh-plugin-ask-jev/` 是独立 DSH bundle，Seal Harness 产品组合装配同一份 Host/Client。普通 DSH 可以从源码构建、`npm pack` 成 `.tgz`，再在活动 Profile 中用 `dsh plugin add <tgz>` 安装。安装后重启 DSH；详情见包内 [README](../../packages/dsh-plugin-ask-jev/README.md)。
 
+Seal Harness 将“问问决策”放在首页之后的一级导航，打开独立决策页；普通 DSH 安装版仍使用自身侧栏入口。
+
 | 提供方 | 模型 | 请求地址 |
 | --- | --- | --- |
 | TypeSafe Jev | `jev-latest` | `https://api.typesafe.ai/v1/systemone` |

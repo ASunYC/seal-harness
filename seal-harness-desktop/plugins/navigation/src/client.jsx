@@ -5,12 +5,14 @@ import { styles } from './styles.js'
 export const inject = ['slots', 'layout']
 
 const HOME = 'seal-harness-home'
+const DECISION = 'ask-jev'
 const SPACES = 'seal-harness-spaces'
 const SCHEDULES = 'seal-harness-schedules'
 
 function NavGlyph({ name, size = 20 }) {
   const paths = {
     home: <><path d="m3 10 9-7 9 7v10H3V10Z" /><path d="M9 20v-7h6v7" /></>,
+    decision: <><path d="M12 3v5M5 12h14M5 12l7 9 7-9M5 12l7-4 7 4" /><circle cx="12" cy="3" r="1" /></>,
     spaces: <><path d="M3 7V5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /></>,
     schedules: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
     experts: <><rect x="4" y="7" width="16" height="13" rx="2" /><path d="M9 7V4h6v3M9 12h.01M15 12h.01M9 16h6" /></>,
@@ -43,39 +45,43 @@ export function apply(ctx) {
   function Rail({ usePanelInfo }) {
     const activePanelId = usePanelInfo(info => info.activePanelId)
     const { entries } = useSyncExternalStore(resources.subscribe, resources.getSnapshot)
-    const homeActive = activePanelId === null || activePanelId === HOME || activePanelId === 'plugins' || entries.some(entry => entry.id === activePanelId)
+    const homeEntries = entries.filter(entry => entry.id !== DECISION)
+    const decision = entries.find(entry => entry.id === DECISION)
+    const homeActive = activePanelId === null || activePanelId === HOME || activePanelId === 'plugins' || homeEntries.some(entry => entry.id === activePanelId)
     const resourceIds = entries.map(entry => entry.id).join('|')
     useEffect(() => {
       if (activePanelId === null) resources.select(null)
       else if (entries.some(entry => entry.id === activePanelId)) resources.select(activePanelId)
     }, [activePanelId, entries])
+    useEffect(() => { if (activePanelId === DECISION && !decision) ctx.layout.selectPanel(null) }, [activePanelId, decision])
+    useEffect(() => {
+      const releases = entries.filter(entry => entry.id !== 'plugins').map(entry => ctx.slots.inject('main', () => ctx.slots.register(
+        { name: 'main', key: entry.id },
+        () => <div className="seal-nav-content"><entry.Panel /></div>,
+      )))
+      return () => releases.forEach(release => release?.())
+    }, [resourceIds])
     useEffect(() => {
       if (!homeActive) return
-      const dispose = entries.map(entry => {
-        const releases = [ctx.slots.inject('sidebar.panellist', () => ctx.slots.register(
+      const releases = homeEntries.map(entry => ctx.slots.inject('sidebar.panellist', () => ctx.slots.register(
           { name: 'sidebar.panellist', id: entry.id, order: entry.order, label: entry.label, priority: -100 },
           ({ size }) => <NavGlyph name={entry.icon} size={size} />,
-        ))]
-        if (entry.id !== 'plugins') releases.push(ctx.slots.inject('main', () => ctx.slots.register(
-          { name: 'main', key: entry.id },
-          () => <div className="seal-nav-content"><entry.Panel /></div>,
-        )))
-        return () => releases.forEach(release => release?.())
-      })
-      return () => dispose.forEach(release => release())
+      )))
+      return () => releases.forEach(release => release?.())
     }, [homeActive, resourceIds])
     useEffect(() => {
-      if (activePanelId !== SPACES && activePanelId !== SCHEDULES) return
+      if (activePanelId !== DECISION && activePanelId !== SPACES && activePanelId !== SCHEDULES) return
       const Component = activePanelId === SCHEDULES ? TasksMenu : EmptyMenu
       return ctx.slots.inject('sidebar.workspaces', () => ctx.slots.register({ name: 'sidebar.workspaces', priority: -100 }, Component))
     }, [activePanelId])
     const items = [
       { id: HOME, label: '首页', icon: 'home' },
+      ...(decision ? [{ id: DECISION, label: '问问决策', icon: 'decision' }] : []),
       { id: SPACES, label: '空间', icon: 'spaces' },
       { id: SCHEDULES, label: '定时任务', icon: 'schedules' },
     ]
     return <nav className="seal-nav-rail" aria-label="一级导航" data-home-active={homeActive}>
-      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : activePanelId === item.id ? 'page' : undefined} onClick={() => { if (item.id === HOME) resources.select(null); ctx.layout.selectPanel(item.id === HOME ? null : item.id) }}><NavGlyph name={item.icon} /></button>)}
+      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : activePanelId === item.id ? 'page' : undefined} onClick={() => { if (item.id === HOME) resources.select(null); else if (item.id === DECISION) resources.select(DECISION); ctx.layout.selectPanel(item.id === HOME ? null : item.id) }}><NavGlyph name={item.icon} /></button>)}
     </nav>
   }
 

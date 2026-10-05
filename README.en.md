@@ -18,7 +18,7 @@ This repository imports the downstream source supplied by the user. It preserves
 
 The product build compiles plugins and composes them with the Beta Desktop through `cordis.patch.yml` and the profile. `product.json` defines native application identity. The default data directory is `~/.seal-harness`; an explicit `DSH_HOME` overrides it. On first launch, create a local administrator account. Users, experts, and skills share one `seal-harness.sqlite` database. The project, knowledge-base, and product-specific agent plugins have been removed; ordinary conversations and workspaces continue to use native DSH capabilities. Community Desktop updates remain disabled.
 
-The desktop has a persistent top-level navigation rail for Home, Spaces, and Scheduled Tasks. Home keeps the native workspace and session list alongside feature entries such as Experts, Skills, Connectors, and Plugins. The native New Session button opens the existing chat. Spaces and Scheduled Tasks currently show explicit empty states.
+The desktop has a persistent top-level navigation rail for Home, Ask Jev, Spaces, and Scheduled Tasks. Ask Jev opens its own decision page. Home keeps the native workspace and session list alongside feature entries such as Experts, Skills, Connectors, and Plugins. The native New Session button opens the existing chat. Spaces and Scheduled Tasks currently show explicit empty states.
 
 ## Development
 
