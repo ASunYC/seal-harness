@@ -351,3 +351,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 12: 设置与账号移至一级导航底部
+<!-- trellis-session: v=2 fp=1e989ddc456fb868 -->
+
+**Date**: 2026-10-06
+**Task**: 设置与账号移至一级导航底部
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+一级栏底部增加设置和账号图标，转发至原有设置弹窗与本地用户按钮，宽侧栏原按钮隐藏但保留挂载。Windows 隔离窗口实测宽/窄布局、设置完整弹窗和用户页；产品构建、导航测试、产品检查与布局检查通过。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `aba198d` | fix(seal-harness): move settings and account to primary rail |
+
+### Status
+
+[OK] **Completed**

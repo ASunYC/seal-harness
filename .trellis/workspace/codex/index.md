@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 11
+- **Total Sessions**: 12
 - **Last Active**: 2026-10-06
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~353 | Active |
+| `journal-1.md` | ~375 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 12 | 2026-10-06 | 设置与账号移至一级导航底部 | `aba198d` | `codex/seal-harness-migration` |
 | 11 | 2026-10-06 | 问问决策提升为一级导航 | `d666b38` | `codex/seal-harness-migration` |
 | 10 | 2026-10-06 | 首页恢复原生工作区与会话 | `c14a34b` | `codex/seal-harness-migration` |
 | 9 | 2026-10-06 | Ask Jev 双决策模型 DSH 插件 | `40e6436`, `c879637` | `codex/seal-harness-migration` |
