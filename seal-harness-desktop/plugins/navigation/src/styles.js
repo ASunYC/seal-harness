@@ -8,6 +8,8 @@ export const styles = `
 .seal-nav-rail button { display: grid; width: 42px; height: 42px; padding: 0; place-items: center; border: 0; border-radius: 12px; background: transparent; color: inherit; cursor: pointer; }
 .seal-nav-rail button:hover { background: var(--dsw-alias-interactive-bg-hover,#34363b); color: var(--dsw-alias-label-primary,#fff); }
 .seal-nav-rail button[aria-current="page"] { background: var(--dsw-alias-interactive-bg-hover,#34363b); color: var(--dsw-alias-label-primary,#fff); }
+.seal-nav-rail__footer { display: flex; width: 100%; flex-direction: column; align-items: center; gap: 8px; margin-top: auto; }
+#root [data-slot="settings.launcher"], #root .seal-harness-user-footer-seat { display: none !important; }
 .seal-nav-rail button:focus-visible, .seal-nav-secondary button:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary,#6d9cf5); outline-offset: 2px; }
 .seal-nav-secondary { display: flex; height: 100%; min-height: 0; flex-direction: column; gap: 3px; overflow-y: auto; padding: 18px 12px; box-sizing: border-box; color: var(--dsw-alias-label-primary,#fff); }
 .seal-nav-secondary header { margin: 0 8px 20px; }

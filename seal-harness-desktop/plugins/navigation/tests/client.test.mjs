@@ -10,7 +10,7 @@ import { createRoot } from 'react-dom/client'
 const require = createRequire(import.meta.url)
 
 test('home resources share the sidebar with native workspaces and sessions', async t => {
-  const dom = new JSDOM('<!doctype html><html><head></head><body><main></main></body></html>')
+  const dom = new JSDOM('<!doctype html><html><head></head><body><main></main><div data-slot="sidebar.settings"><button aria-haspopup="dialog">原生设置</button></div><button class="seal-harness-user-footer">原生账号</button></body></html>')
   const previous = { window: globalThis.window, document: globalThis.document }
   globalThis.window = dom.window; globalThis.document = dom.window.document
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -18,6 +18,9 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   const entries = [{ options: { name: 'sidebar.workspaces', priority: 0 }, component: () => React.createElement('span', null, '原生工作区与会话') }]
   const effects = [], listeners = new Set(), provided = new Map()
   let activePanelId = null
+  let settingsClicks = 0, accountClicks = 0
+  document.querySelector('[data-slot="sidebar.settings"] button').addEventListener('click', () => settingsClicks++)
+  document.querySelector('.seal-harness-user-footer').addEventListener('click', () => accountClicks++)
   const ctx = {
     provide(name, value) { provided.set(name, value) },
     effect(callback) { effects.push(callback()) },
@@ -57,7 +60,15 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   })
   await act(async () => root.render(React.createElement(rail, { usePanelInfo })))
   assert.equal(document.querySelector('button[aria-label="对话"]'), null)
-  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail button')].map(button => button.getAttribute('aria-label')), ['首页', '空间', '定时任务'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '空间', '定时任务'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail__footer button')].map(button => button.getAttribute('aria-label')), ['设置', '账户'])
+  await act(async () => document.querySelector('.seal-nav-rail__footer button[aria-label="设置"]').click())
+  await act(async () => document.querySelector('.seal-nav-rail__footer button[aria-label="账户"]').click())
+  assert.equal(settingsClicks, 1)
+  assert.equal(accountClicks, 1)
+  await act(async () => ctx.layout.selectPanel('seal-harness-user'))
+  assert.equal(document.querySelector('.seal-nav-rail__footer button[aria-label="账户"]')?.getAttribute('aria-current'), 'page')
+  assert.equal(entries.filter(entry => entry.options.name === 'sidebar.workspaces').length, 2)
   const homeButton = document.querySelector('button[aria-label="首页"]')
   homeButton.focus()
   assert.equal(document.activeElement, homeButton)
@@ -74,7 +85,7 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   let releaseDecision
   await act(async () => { releaseDecision = navigation.register({ id: 'ask-jev', label: '问问决策', order: 45, icon: 'plugins', Panel: () => React.createElement('span', null, '独立决策页面') }) })
   assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id).sort(), ['experts', 'plugins'])
-  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail button')].map(button => button.getAttribute('aria-label')), ['首页', '问问决策', '空间', '定时任务'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '问问决策', '空间', '定时任务'])
   const expertMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'experts')?.component
   const decisionMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'ask-jev')?.component
   assert(expertMain)

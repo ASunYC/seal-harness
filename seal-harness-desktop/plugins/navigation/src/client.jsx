@@ -19,6 +19,8 @@ function NavGlyph({ name, size = 20 }) {
     skills: <><path d="m12 2 9 5v10l-9 5-9-5V7l9-5Z" /><path d="m3 7 9 5 9-5M12 12v10" /></>,
     connectors: <><path d="M8 3v5m8-5v5M6 8h12v5a6 6 0 0 1-12 0V8Zm6 11v3" /></>,
     plugins: <><path d="M9 3h6v4a2 2 0 1 0 2 2h4v6h-4a2 2 0 1 0-2 2v4H9v-4a2 2 0 1 0-2-2H3V9h4a2 2 0 1 0 2-2V3Z" /></>,
+    settings: <><circle cx="12" cy="12" r="3" /><path d="M10 2h4l.6 2.3 1.7 1 2.3-.7 2 3.4-1.7 1.7v2l1.7 1.7-2 3.4-2.3-.7-1.7 1L14 20h-4l-.6-2.3-1.7-1-2.3.7-2-3.4 1.7-1.7v-2L3.4 8.6l2-3.4 2.3.7 1.7-1L10 2Z" /></>,
+    account: <><circle cx="12" cy="7" r="4" /><path d="M4 22v-3a8 8 0 0 1 16 0v3" /></>,
   }
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>
 }
@@ -70,7 +72,7 @@ export function apply(ctx) {
       return () => releases.forEach(release => release?.())
     }, [homeActive, resourceIds])
     useEffect(() => {
-      if (activePanelId !== DECISION && activePanelId !== SPACES && activePanelId !== SCHEDULES) return
+      if (activePanelId !== DECISION && activePanelId !== SPACES && activePanelId !== SCHEDULES && activePanelId !== 'seal-harness-user') return
       const Component = activePanelId === SCHEDULES ? TasksMenu : EmptyMenu
       return ctx.slots.inject('sidebar.workspaces', () => ctx.slots.register({ name: 'sidebar.workspaces', priority: -100 }, Component))
     }, [activePanelId])
@@ -80,8 +82,17 @@ export function apply(ctx) {
       { id: SPACES, label: '空间', icon: 'spaces' },
       { id: SCHEDULES, label: '定时任务', icon: 'schedules' },
     ]
+    const activateExisting = (selector, label) => {
+      const button = document.querySelector(selector)
+      if (!button) throw new Error(`${label}入口未加载。`)
+      button.click()
+    }
     return <nav className="seal-nav-rail" aria-label="一级导航" data-home-active={homeActive}>
       {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : activePanelId === item.id ? 'page' : undefined} onClick={() => { if (item.id === HOME) resources.select(null); else if (item.id === DECISION) resources.select(DECISION); ctx.layout.selectPanel(item.id === HOME ? null : item.id) }}><NavGlyph name={item.icon} /></button>)}
+      <div className="seal-nav-rail__footer">
+        <button type="button" title="设置" aria-label="设置" onClick={() => activateExisting('[data-slot="sidebar.settings"] button[aria-haspopup="dialog"]', '设置')}><NavGlyph name="settings" /></button>
+        <button type="button" title="账户" aria-label="账户" aria-current={activePanelId === 'seal-harness-user' ? 'page' : undefined} onClick={() => activateExisting('.seal-harness-user-footer', '账户')}><NavGlyph name="account" /></button>
+      </div>
     </nav>
   }
 

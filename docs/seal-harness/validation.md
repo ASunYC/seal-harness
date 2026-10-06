@@ -68,6 +68,10 @@ Stable/Beta 的原生远程控制确认文案已改为读取自定义产品名�
 
 按用户要求，问问决策从首页资源行移至一级窄栏，顺序为首页、问问决策、空间、定时任务。产品导航仍复用同一个插件页面；普通 DSH 安装版的侧栏行为不变。Windows 兼容模式隔离 Home 实测：首页不再列出问问决策，一级入口选中时打开独立决策页，返回首页后专家、技能、连接器、插件与原生工作区、会话列表仍在。产品构建、导航测试、`seal-harness:check` 和 `check:layout` 通过。
 
+## 2026-10-06 设置与账号进入一级栏
+
+一级窄栏底部新增设置和账号图标，宽侧栏原设置 launcher 与账号 seat 隐藏但保持挂载。点击一级图标仍触发原设置弹窗和产品本地用户页；设置区域的连接/更新状态组件不被整体隐藏。Windows 兼容模式隔离 Home 实测：宽窗口和 760px 窄窗口位置正确，设置弹窗完整显示并可关闭，账号页可打开且一级图标选中。`seal-harness:build`、导航测试、`seal-harness:check`、`check:layout` 通过。
+
 ## 2026-10-06 Ask Jev 双模型 DSH 插件
 
 `packages/dsh-plugin-ask-jev/` 独立构建并打出 `dsh-plugin-ask-jev-0.1.0.tgz`。使用隔离 `DSH_HOME`，官方 `dsh plugin add` 将 tarball 安装到 Web Profile，Profile 配置出现 `ask-jev` bundle；Host 可从安装后的包直接导入，DSH Web 服务成功启动。在真实浏览器中打开侧栏“问问决策”，切换阿里模型后看到地域、WorkspaceId 与独立密钥配置。Seal Harness 产品构建、完整检查、根 `typecheck`、`check:layout`、`yarn install --immutable` 通过。七项插件定向测试覆盖两个官方端点、请求/响应、Host RPC、账号隔离、持久化、Client 选择与结果展示。
