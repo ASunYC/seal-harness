@@ -40,7 +40,7 @@ export async function createModule(ctx, { home, backend }) {
   let state = emptyState()
   const validateState = stored => {
     if (stored.version !== 1 || !Number.isSafeInteger(stored.revision) || !Array.isArray(stored.skills) || !Array.isArray(stored.sources)
-      || stored.skills.some(item => !UUID.test(item.id) || typeof item.enabled !== 'boolean' || typeof item.name !== 'string')
+      || stored.skills.some(item => !UUID.test(item.id) || typeof item.enabled !== 'boolean' || typeof item.name !== 'string' || (item.installed !== undefined && typeof item.installed !== 'boolean'))
       || stored.sources.some(item => !UUID.test(item.id) || !isAbsolute(item.path))
       || (stored.installationUid !== undefined && !UUID.test(stored.installationUid))
       || (stored.reports !== undefined && !Array.isArray(stored.reports))) throw new SkillError('技能管理数据格式无效')
@@ -68,7 +68,7 @@ export async function createModule(ctx, { home, backend }) {
     filesystem = new FileSystemSkillProvider(ctx, control, {
       providerName: PROVIDER, includeDefaultRoots: false, customSkillDirs: [join(canonicalRoot, 'packages')], watch: false,
     })
-    const owner = candidate => state.skills.find(item => item.enabled && inside(join(canonicalRoot, 'packages', item.id), candidate.path ?? ''))
+    const owner = candidate => state.skills.find(item => item.installed !== false && item.enabled && inside(join(canonicalRoot, 'packages', item.id), candidate.path ?? ''))
     return {
       name: PROVIDER,
       async list(options) {
@@ -270,7 +270,7 @@ export async function createModule(ctx, { home, backend }) {
           await writeFile(path, file.bytes, { flag: 'wx', mode: file.mode, signal })
         }
         const { key, ...summary } = publicCandidate(candidate)
-        created.push({ id, ...summary, enabled: payload.enable === true, importedAt: new Date().toISOString(), origin: origins[candidate.name] ?? origin })
+        created.push({ id, ...summary, installed: payload.draft !== true, enabled: payload.draft !== true && payload.enable === true, importedAt: new Date().toISOString(), origin: origins[candidate.name] ?? origin })
       }
       await assertStorage()
       signal?.throwIfAborted()
@@ -423,13 +423,13 @@ export async function createModule(ctx, { home, backend }) {
       }
       case 'runtimeSkill': {
         const item = state.skills.find(item => (item.id === payload.id || item.origin?.assetId === payload.id) && visibleTo(item, actionAccount))
-        if (!item) throw new SkillError('绑定技能不存在，请重新选择')
+        if (!item || item.installed === false) throw new SkillError('绑定技能未安装，请先安装')
         const files = await managedFiles(item.id, signal)
         const candidate = inspectFiles(files).find(item => item.key === '.')
         if (!candidate || candidate.error || candidate.contentHash !== item.contentHash) throw new SkillError('绑定技能已变化，请重新导入')
         return { name: candidate.name, description: candidate.description, content: candidate.content, invocation: candidate.invocation, source: 'runtime', path: join(packages, item.id, 'SKILL.md'), resourceBase: { kind: 'directory', path: join(packages, item.id) } }
       }
-      case 'workflowResources': return { resources: state.skills.filter(item => visibleTo(item, actionAccount)).map(item => ({ kind: 'skill', sourceId: item.id, version: `0.1.0+${item.contentHash.slice(0, 12)}`, name: item.name, ...(item.fileCount > 100 ? { unavailableReason: '资源文件超过 100 个。' } : {}) })) }
+      case 'workflowResources': return { resources: state.skills.filter(item => item.installed !== false && visibleTo(item, actionAccount)).map(item => ({ kind: 'skill', sourceId: item.id, version: `0.1.0+${item.contentHash.slice(0, 12)}`, name: item.name, ...(item.fileCount > 100 ? { unavailableReason: '资源文件超过 100 个。' } : {}) })) }
       case 'workflowExport': {
         const item = find(payload.sourceId)
         if (payload.kind !== 'skill' || payload.version !== `0.1.0+${item.contentHash.slice(0, 12)}`) throw new SkillError('技能已更新，请重新选择')
@@ -445,7 +445,18 @@ export async function createModule(ctx, { home, backend }) {
       }
       case 'create': {
         if (typeof payload.content !== 'string' || Buffer.byteLength(payload.content) > 16 * 1024 * 1024) throw new SkillError('技能文件内容无效或超过 16 MiB')
+        if (payload.draft !== undefined && typeof payload.draft !== 'boolean') throw new SkillError('技能创建状态无效')
         return importCandidates(inspectFiles([{ path: 'SKILL.md', bytes: Buffer.from(payload.content), mode: 0o644 }]), payload, signal, { kind: 'local' })
+      }
+      case 'installPersonal': {
+        checkRevision(payload)
+        const item = find(payload.id)
+        if (item.installed !== false) return list()
+        const files = await managedFiles(item.id, signal)
+        const actual = inspectFiles(files).find(candidate => candidate.key === '.')
+        if (!actual || actual.error || actual.name !== item.name || actual.contentHash !== item.contentHash) throw new SkillError('技能内容已变化，请重新创建后安装')
+        await save({ ...state, skills: state.skills.map(skill => skill.id === item.id ? { ...skill, installed: true, enabled: true } : skill) })
+        return list()
       }
       case 'saveFile': {
         checkRevision(payload)
@@ -490,6 +501,7 @@ export async function createModule(ctx, { home, backend }) {
         checkRevision(payload)
         if (typeof payload.enabled !== 'boolean') throw new SkillError('启用状态必须为布尔值')
         const item = find(payload.id)
+        if (payload.enabled && item.installed === false) throw new SkillError('请先安装技能')
         if (payload.enabled) {
           const files = await managedFiles(item.id, signal)
           const actual = inspectFiles(files).find(candidate => candidate.key === '.')
@@ -518,7 +530,7 @@ export async function createModule(ctx, { home, backend }) {
 
   // ponytail: 单个管理队列避免并发覆盖；大量技能远端安装成为瓶颈时再拆为每包队列。
   let queue = Promise.resolve()
-  const actions = ['list', 'sources', 'setDefaultCopy', 'approveSource', 'revokeSource', 'discover', 'inspect', 'import', 'detail', 'create', 'saveFile', 'setEnabled', 'remove', 'install', 'export', 'retryReports']
+  const actions = ['list', 'sources', 'setDefaultCopy', 'approveSource', 'revokeSource', 'discover', 'inspect', 'import', 'detail', 'create', 'installPersonal', 'saveFile', 'setEnabled', 'remove', 'install', 'export', 'retryReports']
   const handlers = Object.fromEntries([...actions, 'workflowResources', 'workflowExport', 'runtimeSkill', 'installResolved'].map(name => [name, (payload = {}, signal) => {
       const result = queue.then(async () => {
         if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new SkillError('技能请求格式无效')

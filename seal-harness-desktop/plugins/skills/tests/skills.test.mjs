@@ -70,6 +70,23 @@ test('copies complete skill package, honors invocation policy, updates real DSH 
   await assert.rejects(action('list'), /卸载/)
 })
 
+test('model-created personal skill stays uninstalled until explicit installation', async t => {
+  const { action, ctx, module } = await setup(t)
+  const created = await action('create', { content: instruction('draft-skill'), draft: true })
+  const [item] = created.skills
+  assert.equal(item.installed, false)
+  assert.equal(item.enabled, false)
+  assert.equal((await action('list')).skills.find(skill => skill.id === item.id).installed, false)
+  assert.deepEqual((await module.hostHandlers.workflowResources()).resources, [])
+  await assert.rejects(action('setEnabled', { id: item.id, enabled: true }), /先安装/)
+  await assert.rejects(module.hostHandlers.runtimeSkill({ id: item.id }), /未安装/)
+  await action('installPersonal', { id: item.id })
+  const installed = (await action('list')).skills.find(skill => skill.id === item.id)
+  assert.equal(installed.installed, true)
+  assert.equal(installed.enabled, true)
+  assert.equal((await ctx.skills.get('draft-skill')).provider, 'seal-harness-skills')
+})
+
 test('import and export preserve executable script attributes', { skip: process.platform === 'win32' }, async t => {
   const { action, source } = await setup(t)
   const script = join(source, 'run.sh')
