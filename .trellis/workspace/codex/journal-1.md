@@ -395,3 +395,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 14: 技能页系统个人与模型创建
+<!-- trellis-session: v=2 fp=71e82198c96c9f49 -->
+
+**Date**: 2026-10-07
+**Task**: 技能页系统个人与模型创建
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+技能页保留独立已安装区块，新增系统/个人页签；模型通过原生会话模板与 create_skill 工具生成未安装个人技能，显式安装后进入运行时；通过产品检查、构建、布局和 Windows Electron 视觉核对。真实模型调用待用户配置凭据后测试。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `09e2f16` | feat(seal): create personal skills through conversation |
+
+### Status
+
+[OK] **Completed**
