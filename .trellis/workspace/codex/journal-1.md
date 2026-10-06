@@ -373,3 +373,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 13: 专家页系统个人与会话模型创建
+<!-- trellis-session: v=2 fp=e45b610707c695c8 -->
+
+**Date**: 2026-10-07
+**Task**: 专家页系统个人与会话模型创建
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+专家页移除同步、我的专家、已安装、本地/公开目录与手工编辑页；系统/个人页签。创建专家进入原生会话并写可编辑模板，Host create_expert 工具复用 SQLite 保存。定向测试、产品构建/检查、布局检查及隔离 Windows 窗口通过；真实模型生成质量未在隔离账号测试。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f30efe1` | feat(seal-harness): create personal experts through conversation |
+
+### Status
+
+[OK] **Completed**
