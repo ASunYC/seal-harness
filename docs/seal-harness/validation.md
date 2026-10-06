@@ -72,6 +72,10 @@ Stable/Beta 的原生远程控制确认文案已改为读取自定义产品名�
 
 一级窄栏底部新增设置和账号图标，宽侧栏原设置 launcher 与账号 seat 隐藏但保持挂载。点击一级图标仍触发原设置弹窗和产品本地用户页；设置区域的连接/更新状态组件不被整体隐藏。Windows 兼容模式隔离 Home 实测：宽窗口和 760px 窄窗口位置正确，设置弹窗完整显示并可关闭，账号页可打开且一级图标选中。`seal-harness:build`、导航测试、`seal-harness:check`、`check:layout` 通过。
 
+## 2026-10-07 专家页和模型创建流程
+
+专家页移除同步状态/刷新、我的专家抽屉、已安装轨道、公开/授权目录和手工创建/编辑整页，只显示系统/个人页签；系统暂为空态，个人读取当前账号 SQLite 专家。导入按钮改为“导入专家”。Windows 隔离 Home 实测页签、空态及点击创建后跳转原生会话：可编辑模板停在输入框，不自动发送。Host 注册 `list_available_expert_capabilities` / `create_expert` 模型工具，后者校验当前账号、默认模型和能力引用后复用现有专家 `create` RPC 保存。定向测试覆盖工具成功与失败、SQLite 专家生命周期、草稿和页签；`seal-harness:build`、`seal-harness:check`、`check:layout` 通过。真实模型调用及生成质量未在无模型凭据的隔离账号中实测。
+
 ## 2026-10-06 Ask Jev 双模型 DSH 插件
 
 `packages/dsh-plugin-ask-jev/` 独立构建并打出 `dsh-plugin-ask-jev-0.1.0.tgz`。使用隔离 `DSH_HOME`，官方 `dsh plugin add` 将 tarball 安装到 Web Profile，Profile 配置出现 `ask-jev` bundle；Host 可从安装后的包直接导入，DSH Web 服务成功启动。在真实浏览器中打开侧栏“问问决策”，切换阿里模型后看到地域、WorkspaceId 与独立密钥配置。Seal Harness 产品构建、完整检查、根 `typecheck`、`check:layout`、`yarn install --immutable` 通过。七项插件定向测试覆盖两个官方端点、请求/响应、Host RPC、账号隔离、持久化、Client 选择与结果展示。

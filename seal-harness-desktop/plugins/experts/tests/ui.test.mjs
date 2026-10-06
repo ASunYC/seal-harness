@@ -6,11 +6,12 @@ import { tmpdir } from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { join, resolve } from 'node:path'
 import { runInNewContext } from 'node:vm'
+
 const require = createRequire(resolve(process.env.SEAL_HARNESS_TOOLS_ROOT || fileURLToPath(new URL('../../../../', import.meta.url)), 'dsh-plugin-desktop-beta/package.json'))
 const React = require('react'), { act } = React
 const { createRoot } = require('react-dom/client'), { JSDOM } = require('jsdom')
 
-test('expert directory opens full-page editing, preserves unavailable bindings, and routes versioned prompts to native conversation', async t => {
+test('expert page has only system and personal tabs and creation enters a conversation', async t => {
   const outDir = await mkdtemp(join(tmpdir(), 'seal-harness-experts-ui-'))
   t.after(() => rm(outDir, { recursive: true, force: true }))
   const { build } = await import(pathToFileURL(require.resolve('tsdown')).href)
@@ -23,63 +24,48 @@ test('expert directory opens full-page editing, preserves unavailable bindings, 
   dom.window.HTMLDialogElement.prototype.close = function () { this.open = false }
   const exports = {}, module = { exports }
   runInNewContext(await readFile(join(outDir, 'panel.cjs'), 'utf8'), { exports, module, require, AbortController, document, console })
-  const calls = [], conversations = []
-  const manifest = { schemaVersion: 'stratex.expert/v1', name: 'analyst', version: '1.0.0', entryAgent: 'analyst', agents: ['agents/analyst.md'], displayName: { zh: '分析专家' }, profession: { zh: '分析师' }, description: { zh: '分析资料' }, personaInstructions: '认真分析', model: 'test-model', capabilities: [{ kind: 'skill', sourceId: 'missing-skill' }], tags: [{ zh: '研究' }], quickPrompts: [{ zh: '分析本周资料' }] }
+  const calls = [], conversations = [], creations = []
+  const manifest = { name: 'analyst', version: '1.0.0', displayName: { zh: '分析专家' }, profession: { zh: '分析师' }, description: { zh: '分析资料' }, personaInstructions: '认真分析', quickPrompts: [{ zh: '分析本周资料' }], model: 'model' }
   const detail = { manifest, digest: 'a'.repeat(64), enabled: false, versions: [{ version: '1.0.0', active: false }], problems: [], files: ['expert.json'] }
   const api = async (endpoint, payload) => {
     calls.push({ endpoint, payload })
     if (endpoint === 'experts/list') return { items: [{ name: 'analyst', displayName: '分析专家', description: '分析资料', version: '1.0.0', tags: ['研究'], problems: [], enabled: false }] }
     if (endpoint === 'experts/detail') return detail
-    if (endpoint === 'experts/models') return { items: [] }
-    if (endpoint === 'experts/capabilities') throw new Error('候选服务离线')
-    if (endpoint === 'experts/update') throw new Error('版本保存失败')
     if (endpoint === 'experts/activate') return { presetId: 'seal-harness-expert-analyst' }
     throw new Error(`unexpected ${endpoint}`)
   }
   const root = createRoot(document.querySelector('main'))
   t.after(async () => { await act(async () => root.unmount()); dom.window.close(); delete globalThis.window; delete globalThis.document; delete globalThis.IS_REACT_ACT_ENVIRONMENT })
-  const click = async text => {
-    const button = [...document.querySelectorAll('button')].find(button => button.textContent.trim() === text || button.getAttribute('aria-label') === text)
-    assert(button, `missing ${text}`); await act(async () => button.click())
+  const click = async label => {
+    const button = [...document.querySelectorAll('button')].find(item => item.textContent.trim() === label || item.getAttribute('aria-label') === label)
+    assert(button, `missing ${label}`)
+    await act(async () => button.click())
   }
-  await act(async () => root.render(React.createElement(module.exports.ExpertsPanel, { api, signedIn: true, workspaces: [{ workspaceId: 'workspace-a', title: '研发' }], startConversation: async (...args) => conversations.push(args) })))
-  assert.equal(document.querySelector('form'), null)
-  assert.match(document.querySelector('.resource-sync-state').textContent, /已同步/)
-  assert(document.querySelector('button[aria-label="刷新专家目录"] [data-icon-name="refresh"]'))
-  assert(document.querySelector('[aria-label="个人专家"]'))
-  assert.equal(document.querySelector('[aria-label="公开专家"]'), null)
-  assert.equal(document.querySelector('.zz-directory-search [data-icon-name="search"]').getAttribute('width'), '16')
-  assert.equal(document.querySelector('.experts-featured-scenes'), null)
-  assert.doesNotMatch(document.body.textContent, /精选场景|从工作方式出发/)
-  assert(document.querySelector('.experts-installed__rail [data-icon-name="agents"]'))
-
-  assert(document.querySelector('[aria-label="管理专家 分析专家"] [data-icon-name="more"]'))
-  await act(async () => document.querySelector('[aria-label="管理专家 分析专家"]').click())
-  assert.equal(calls.some(call => call.endpoint.startsWith('store/')), false)
-  await click('修改专家')
-  assert(document.querySelector('[aria-label="专家编辑器"]'))
-  assert.equal(document.querySelector('.resource-page-hero'), null, 'editor replaces the directory')
-  assert.match(document.body.textContent, /missing-skill/)
-  assert.doesNotMatch(document.body.textContent, /本机未找到该技能/, 'failed pool is not a stale binding')
-  await act(async () => document.querySelector('#zz-expert-form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })))
-  const update = calls.find(call => call.endpoint === 'experts/update').payload
-  assert.equal(update.expectedDigest, 'a'.repeat(64))
-  assert.equal(update.manifest.version, '1.0.1')
-  assert.equal(update.manifest.capabilities[0].sourceId, 'missing-skill')
-  assert.equal('knowledgeGroupIds' in update, false)
-  assert.match(document.body.textContent, /版本保存失败/)
-  await click('返回我的专家')
+  await act(async () => root.render(React.createElement(module.exports.ExpertsPanel, {
+    api, workspaces: [{ workspaceId: 'workspace-a', title: '研发' }],
+    startConversation: async (...args) => conversations.push(args), startExpertCreation: async () => creations.push('opened'),
+  })))
+  assert.deepEqual([...document.querySelectorAll('.experts-directory-tabs [role=tab]')].map(tab => tab.textContent), ['系统', '个人'])
+  assert.equal(document.querySelector('[aria-label="个人专家"] .personal-expert-card__identity h3')?.textContent, '分析专家')
+  assert.equal(document.querySelector('.resource-sync-refresh, .my-experts-trigger, .experts-installed, .editor-page'), null)
+  assert.doesNotMatch(document.body.textContent, /已安装|本地专家|导入专家包|我的专家/)
+  await click('系统')
+  assert.match(document.querySelector('[aria-label="系统专家"]').textContent, /暂无系统专家/)
+  await click('个人')
+  await click('创建专家')
+  assert.deepEqual(creations, ['opened'])
+  assert.equal(document.querySelector('.editor-page'), null)
+  await click('导入专家')
+  assert.equal(document.querySelector('.zz-expert-modal h2')?.textContent, '导入专家')
+  await click('关闭导入专家')
   await click('查看专家')
   assert(document.querySelector('.expert-detail__panel'))
   await click('分析本周资料')
   assert.deepEqual(conversations, [['seal-harness-expert-analyst', '分析本周资料', 'workspace-a']])
   await click('管理专家')
+  assert.equal([...document.querySelectorAll('.expert-manage-modal button')].some(button => button.textContent.trim() === '修改配置'), false)
   await click('版本历史')
   assert(document.querySelector('.expert-versions'))
-  assert.match(document.querySelector('.expert-versions').textContent, /1.0.0/)
-  await act(async () => root.render(React.createElement(module.exports.ExpertsPanel, { signedIn: true, api: async (endpoint, payload) => endpoint === 'experts/list' ? { items: [] } : api(endpoint, payload), workspaces: [], startConversation: async () => {} })))
-  const personal = document.querySelector('[aria-label="个人专家"]')
-  assert(personal.querySelector('.directory-state--slim'))
-  assert.equal(personal.querySelector('.directory-state--empty, .directory-state__symbol'), null)
-
+  assert.doesNotMatch(document.querySelector('.expert-versions').textContent, /编辑为新版本/)
+  assert(calls.some(call => call.endpoint === 'experts/list'))
 })
