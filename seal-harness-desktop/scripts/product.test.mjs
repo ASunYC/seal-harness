@@ -135,7 +135,7 @@ test('标准客户端模块注册品牌及模型设置扩展 slot，并在卸载
     effect(effect) { disposers.push(effect()) },
     slots: {
       inject(name, effect) {
-        assert.ok(['sidebar.brand.mark', 'sidebar.brand.name', 'conversation.hero.brand.mark', 'sidebar.panellist', 'settings.models.footer'].includes(name))
+        assert.ok(['sidebar.brand.mark', 'sidebar.brand.name', 'conversation.hero.brand.mark', 'sidebar.panellist', 'settings.models.footer', 'settings.onboarding'].includes(name))
         const result = effect()
         if (result?.next) [...result]
         else if (typeof result === 'function') disposers.push(result)
@@ -143,6 +143,10 @@ test('标准客户端模块注册品牌及模型设置扩展 slot，并在卸载
       entries(name) { assert.equal(name, 'sidebar.panellist'); return panelEntries },
       subscribe(name, listener) { assert.equal(name, 'sidebar.panellist'); panelListeners.add(listener); return () => panelListeners.delete(listener) },
       register(options, component) {
+        if (options.name === 'settings.onboarding') {
+          assert.equal(options.id, 'welcome-notice')
+          assert.ok(options.priority < 0)
+        }
         if (options.name !== 'sidebar.panellist') { registrations.set(options.name, component); return }
         const entry = { options, component, locale: options.locale }
         panelEntries.push(entry)
@@ -152,7 +156,7 @@ test('标准客户端模块注册品牌及模型设置扩展 slot，并在卸载
     },
   })
   assert.equal(document.title, 'Seal Harness')
-  assert.equal(registrations.size, 4)
+  assert.equal(registrations.size, 5)
   assert.equal(typeof registrations.get('settings.models.footer'), 'function')
   const modelMenuFix = document.querySelector('style[data-seal-model-menu]')
   assert.match(modelMenuFix?.textContent ?? '', /\.scrollable > section\[role="group"\].*linear-gradient/s)
@@ -176,7 +180,13 @@ test('标准客户端模块注册品牌及模型设置扩展 slot，并在卸载
   assert.ok(mark.props.src.startsWith('data:image/png;base64,'))
   assert.equal(registrations.get('sidebar.brand.name')().props.children, 'Seal Harness')
   assert.equal(registrations.get('conversation.hero.brand.mark')().props.children.props.size, 64)
-  for (const effect of layoutEffects) disposers.push(effect())
+  let completedNotice = 0
+  assert.equal(registrations.get('settings.onboarding')({ complete: () => { completedNotice++ } }), null)
+  for (const effect of layoutEffects) {
+    const dispose = effect()
+    if (typeof dispose === 'function') disposers.push(dispose)
+  }
+  assert.equal(completedNotice, 1)
   const headline = document.getElementById('headline')
   assert.equal(headline.textContent, '今天，让未来从这里发生。')
   assert.equal(headline.nextElementSibling.textContent, '预览版')
