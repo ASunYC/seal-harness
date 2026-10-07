@@ -1,5 +1,6 @@
 import { createElement, useLayoutEffect, useRef } from 'react'
 import { registerModelReasoningSettings } from './model-reasoning.jsx'
+import { modelMenuStyle } from './model-menu-style.js'
 
 const productName = __SEAL_HARNESS_NAME__
 const brandIcon = __SEAL_HARNESS_ICON__
@@ -82,6 +83,13 @@ function HeroMark() {
 
 export function apply(ctx) {
   registerModelReasoningSettings(ctx)
+  ctx.effect(() => {
+    const element = document.createElement('style')
+    element.dataset.sealModelMenu = ''
+    element.textContent = modelMenuStyle
+    document.head.append(element)
+    return () => element.remove()
+  }, 'seal-harness: model menu group contrast')
   ctx.effect(enhancePluginManagerSync, 'seal-harness: plugin manager sync status')
   ctx.effect(() => {
     const title = document.querySelector('title')
