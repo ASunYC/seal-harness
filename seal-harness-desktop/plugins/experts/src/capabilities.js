@@ -7,7 +7,7 @@ export async function capabilityOptions(ctx) {
     if (!service) continue
     const result = await service.call('list')
     for (const item of result.skills ?? result.items) {
-      if (kind === 'skill' && item.installed === false) continue
+      if (item.installed === false) continue
       items.push({ kind, sourceId: item.id, name: item.name, enabled: item.enabled, ...(kind === 'mcp' ? { status: item.status } : {}) })
     }
   }

@@ -86,6 +86,38 @@ async function httpFixture(t) {
   return { url: `http://127.0.0.1:${server.address().port}/mcp`, headers, environmentHeaders, toolCalls: () => toolCalls }
 }
 
+test('personal connector stays uninstalled and account-scoped until explicit installation', async t => {
+  const fixture = await httpFixture(t)
+  let session = { accountId: 'owner-a', epoch: 1 }
+  const agents = new Map()
+  const { handlers, module, ctx } = await host(t, {}, hostCtx => {
+    hostCtx.provide('sealHarnessIdentity', { getSession: () => session, subscribe: () => () => {} })
+    hostCtx.provide('agents', { get: id => agents.get(String(id)) })
+  })
+  const conversation = Session.create('draft-session')
+  conversation.append('turn/start', { turn: 1 })
+  const agent = { id: conversation.id, session: conversation }
+  agent.ctx = createScope(ctx, agent).ctx
+  agents.set(String(agent.id), agent)
+  const created = await handlers.createDraft({ id: 'local-draft-one', name: 'Draft MCP', summary: 'Find resources', category: 'office', transport: 'streamable-http', url: fixture.url })
+  const draft = created.items.find(item => item.id === 'local-draft-one')
+  assert.equal(draft.installed, false)
+  assert.equal(draft.status, 'uninstalled')
+  assert.deepEqual((await module.hostHandlers.workflowResources()).resources, [])
+  assert.deepEqual((await handlers.sessionList({ sessionId: String(agent.id) })).items, [])
+  assert.equal(ctx.tools.schemas().some(tool => tool.name === 'mcp__zz-local-draft-one__ping'), false)
+  await assert.rejects(handlers.setEnabled({ id: draft.id, revision: draft.revision, enabled: true }), /先安装/)
+  session = { accountId: 'owner-b', epoch: 2 }
+  assert.deepEqual((await handlers.list()).items, [])
+  session = { accountId: 'owner-a', epoch: 3 }
+  const own = (await handlers.list()).items[0]
+  const installed = await handlers.installPersonal({ id: own.id, revision: own.revision })
+  assert.equal(installed.items[0].installed, true)
+  assert.equal(installed.items[0].enabled, false)
+  await handlers.setEnabled({ id: own.id, revision: installed.items[0].revision, enabled: true })
+  assert.equal((await handlers.list()).items[0].status, 'active')
+})
+
 test('HTTP draft check resolves environment headers, discovers tools and does not persist the connector', async t => {
   const fixture = await httpFixture(t)
   const { handlers } = await host(t)

@@ -31,6 +31,14 @@ export const styles = dialogStyles + `
 .zz-connectors .mcp-installed__quick button[aria-pressed='true'] { border-bottom-color: var(--accent); color: var(--accent-text); }
 .zz-connectors .mcp-installed__quick button:hover:not(:disabled) { background: transparent; color: var(--ink); }
 .zz-connectors .mcp-installed__list { display: flex; align-items: flex-start; flex-wrap: wrap; gap: var(--sp-3); }
+.zz-connectors .connector-installed-section { margin-top: 30px; }
+.zz-connectors .connector-installed-section h2 { margin: 0 0 16px; font-size: 20px; }
+.zz-connectors .connector-installed-section h2 small { margin-left: 6px; color: var(--muted2); font: 12px var(--font-mono, monospace); }
+.zz-connectors .connector-library { margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--line); }
+.zz-connectors .connector-library .connector-directory-tabs { margin: 0 0 20px; }
+.zz-connectors .connector-library .zz-directory-search { display: flex; margin: 0 0 18px; }
+.zz-connectors .connector-library .mcp-installed__list { margin-top: 18px; }
+.zz-connectors .mcp-draft-card .mcp-installed-card__identity { cursor: default; }
 .zz-connectors .mcp-installed-card { position: relative; display: grid; width: min(400px, 100%); max-width: 100%; flex: 0 1 400px; grid-template-columns: minmax(0, 1fr); gap: var(--sp-3); padding: var(--sp-4); border: var(--bw) solid var(--line); border-radius: var(--r-xl); background: var(--panel); transition: border-color var(--dur-2) ease, background-color var(--dur-2) ease; }
 .zz-connectors .mcp-installed-card:focus-within { border-color: var(--accent-line); }
 .zz-connectors .mcp-installed-card__identity { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: var(--sp-3); align-items: center; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
@@ -78,6 +86,7 @@ export const styles = dialogStyles + `
 .zz-connectors .zz-installed-drawer .mcp-installed-card__context span { overflow: hidden; text-overflow: ellipsis; }
 .zz-connectors .zz-installed-drawer__footer { padding: var(--sp-3) var(--sp-5); border-top: var(--bw) solid var(--line); color: var(--muted2); font-size: var(--fs-meta); }
 .zz-connectors .mcp-empty-state { display: grid; min-height: 190px; place-items: center; align-content: center; gap: var(--sp-2); padding: var(--sp-6); border: var(--bw) dashed var(--line-strong); border-radius: var(--r-lg); background: var(--sunken); text-align: center; }
+.zz-connectors :is(.connector-installed-section, .connector-library) .mcp-empty-state { min-height: 110px; border: 0; background: transparent; }
 .zz-connectors .mcp-runtime { position: relative; z-index: var(--z-modal); display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto; width: min(620px, calc(100vw - 2 * var(--sp-6))); max-height: min(780px, calc(100vh - 2 * var(--sp-6))); overflow: hidden; border: var(--bw) solid var(--line-strong); border-radius: var(--r-xl); background: var(--panel); box-shadow: var(--sh-3); }
 .zz-connectors .mcp-runtime__footer { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); padding: var(--sp-3) var(--sp-5); border-block: var(--bw) solid var(--line); }
 .zz-connectors .mcp-file-schema-unavailable {display:flex;align-items:flex-start;gap:var(--sp-2);color:var(--muted2)}

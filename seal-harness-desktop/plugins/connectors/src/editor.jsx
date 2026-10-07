@@ -62,8 +62,8 @@ function PackageDrop({ state, disabled, inspect }) {
 }
 
 // Stratex McpCreateWizard / McpCreateConnectionStep 的 React 移植，保留本地 Host 契约。
-export function ConnectorEditor({ item, busy, error, inspectPackage, savePackage, checkConnection, save, close }) {
-  const [draft, setDraft] = useState(() => connectorDraft(item))
+export function ConnectorEditor({ item, importOnly = false, busy, error, inspectPackage, savePackage, checkConnection, save, close }) {
+  const [draft, setDraft] = useState(() => importOnly ? { ...connectorDraft(), transport: 'stdio' } : connectorDraft(item))
   const [argumentsList, setArgumentsList] = useState(() => connectorDraft(item).args)
   const [headers, setHeaders] = useState(() => item ? [...new Set([...(item.headers ?? []), ...(item.requiredHeaders ?? [])])].map(name => ({ name, value: '' })) : [{ name: '', value: '' }])
   const [environmentHeaders, setEnvironmentHeaders] = useState(() => item ? Object.entries(item.headerEnvironment ?? {}).map(([name, value]) => ({ name, value })) : [{ name: '', value: '' }])
@@ -103,7 +103,7 @@ export function ConnectorEditor({ item, busy, error, inspectPackage, savePackage
     }
   }
   return <>
-    <Dialog closeIconName="mcp-close" closeIconStrokeWidth={1.6} title={item ? `编辑 ${item.name}` : '添加 MCP 连接器'} className="mcp-dialog mcp-create-dialog" busy={busy} close={requestClose}>
+    <Dialog closeIconName="mcp-close" closeIconStrokeWidth={1.6} title={item ? `编辑 ${item.name}` : importOnly ? '导入连接器' : '添加 MCP 连接器'} className="mcp-dialog mcp-create-dialog" busy={busy} close={requestClose}>
       <form onSubmit={event => {
         event.preventDefault()
         const enabled = event.nativeEvent.submitter?.value === 'enable'
@@ -117,9 +117,9 @@ export function ConnectorEditor({ item, busy, error, inspectPackage, savePackage
             <label className="mcp-field"><span>分类</span><select value={draft.category} onChange={event => field('category', event.target.value)}><option value="office">办公类</option><option value="development">开发类</option></select></label></div><label className="mcp-field"><span>描述</span><textarea rows={2} maxLength={300} value={draft.summary} placeholder="告诉模型和使用者这个连接器能做什么" onChange={event => field('summary', event.target.value)} /></label></section>}
           <section className="mcp-create-section">
           {draft.transport === 'stdio' && !item && <PackageDrop state={packageState} disabled={busy} inspect={inspectFile} />}
-          <fieldset className="mcp-create-transport"><legend>类型</legend><div role="radiogroup" aria-label="MCP 传输类型">
+          {!importOnly && <fieldset className="mcp-create-transport"><legend>类型</legend><div role="radiogroup" aria-label="MCP 传输类型">
             {Object.entries({ 'streamable-http': '流式 HTTP', sse: 'SSE', stdio: 'STDIO' }).map(([id, label]) => <button type="button" key={id} role="radio" aria-checked={draft.transport === id} disabled={!!item} onClick={() => { field('transport', id); if (id !== 'stdio') { packageGeneration.current += 1; setPackagePreview(null); setPackageError(''); setPackageState({ status: 'idle' }) } }}>{label}</button>)}
-          </div></fieldset>
+          </div></fieldset>}
           {draft.transport !== 'stdio' ? <>
             <label className="mcp-field"><span>URL</span><input required type="url" value={draft.url} placeholder="https://mcp.example.com/mcp" onChange={event => field('url', event.target.value)} /></label>
             <fieldset className="mcp-create-transport"><legend>认证方式</legend><div role="radiogroup" aria-label="认证方式">{[['none', '无需认证'], ['api_key', '请求头认证'], ['oauth_authorization_code_pkce', '浏览器 OAuth']].map(([value, label]) => <button type="button" role="radio" aria-checked={authMode === value} disabled={!!item} key={value} onClick={() => { setAuthMode(value); changed() }}>{label}</button>)}</div></fieldset>

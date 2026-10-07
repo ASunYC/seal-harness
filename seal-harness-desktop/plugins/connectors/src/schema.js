@@ -39,6 +39,8 @@ export const configSchema = z.strictObject({
   toolCallTimeoutMs: z.number().int().min(1_000).max(300_000).default(60_000),
   enabledTools: z.array(z.string().regex(/^[A-Za-z0-9_.-]{1,160}$/u)).max(500).nullable().default(null),
   enabled: z.boolean().default(false),
+  installed: z.boolean().default(true),
+  ownerAccountId: text.min(1).optional(),
   revision: z.number().int().nonnegative().default(0),
   oauth: z.object({ scopes: z.array(z.string()).default([]), tokens: z.record(z.string(), z.unknown()).optional(), clientInformation: z.record(z.string(), z.unknown()).optional(), discovery: z.record(z.string(), z.unknown()).optional(), expiresAt: z.number().optional(), redirectUrl: z.string().optional() }).optional(),
   source: z.strictObject({ id: z.string().uuid(), version: text.min(1).max(64), accountId: text.min(1), centerId: text.optional() }).optional(),

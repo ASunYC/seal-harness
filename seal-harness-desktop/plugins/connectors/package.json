@@ -17,6 +17,10 @@
         "@deepseek-ai/dsh-client-ui-layout",
         "@deepseek-ai/dsh-client-ui-sidebar",
         "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-ui-workspace",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-api-workspace-controller",
+        "@deepseek-ai/dsh-api-session-controller",
         "@seal-harness/identity",
         "@seal-harness/navigation"
       ],
@@ -31,6 +35,7 @@
     "react": "18.3.1",
     "zod": "4.4.3",
     "@deepseek-ai/dsh-client-connection": "0.1.7-alpha.2",
-    "@modelcontextprotocol/client": "2.0.0"
+    "@modelcontextprotocol/client": "2.0.0",
+    "@deepseek-ai/dsh-tools": "0.1.7-alpha.2"
   }
 }

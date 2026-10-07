@@ -61,7 +61,9 @@ export async function createModule(ctx, { home, backend }) {
   const identity = () => ctx.get('sealHarnessIdentity')
   const currentSession = async () => await identity()?.getSession() ?? null
   const accountId = session => session?.accountId ?? 'local'
-  const visible = (entry, session) => !entry.source || entry.source.accountId === session?.accountId
+  const visible = (entry, session) => entry.ownerAccountId
+    ? entry.ownerAccountId === session?.accountId
+    : !entry.source || entry.source.accountId === session?.accountId
   const requireStorage = () => {
     if (!credentials) throw new ConnectorError('DSH 凭据服务未加载，无法安全保存或读取连接器。')
   }
@@ -176,7 +178,7 @@ export async function createModule(ctx, { home, backend }) {
   async function start(entry, signal) {
     await stop(entry.id)
     outcomes.delete(entry.id)
-    if (!entry.enabled) return
+    if (entry.installed === false || !entry.enabled) return
     const session = await currentSession()
     if (!visible(entry, session)) return
     if (entry.source && typeof identity()?.subscribe !== 'function') {
@@ -301,7 +303,7 @@ export async function createModule(ctx, { home, backend }) {
   }
 
   function view(entry) {
-    const { headers, env, credentialValues, adapter, bootstrap, source, oauth: authorization, ...publicConfig } = entry
+    const { headers, env, credentialValues, adapter, bootstrap, source, oauth: authorization, ownerAccountId, ...publicConfig } = entry
     const schemas = [...toolNames].filter(name => name.startsWith(prefix(entry.id))).map(name => tools.get(name)).filter(Boolean)
     return {
       ...publicConfig,
@@ -313,7 +315,7 @@ export async function createModule(ctx, { home, backend }) {
       headers: Object.keys(headers).sort(), env: Object.keys(env).sort(),
       configuredHeaders: Object.entries(headers).filter(([, value]) => !!value).map(([name]) => name),
       tools: schemas.map(tool => ({ name: tool.name.slice(prefix(entry.id).length), description: tool.description, inputSchema: structuredClone(tool.parameters) })),
-      status: !entry.enabled ? 'disabled' : outcomes.get(entry.id)?.status ?? 'inactive',
+      status: entry.installed === false ? 'uninstalled' : !entry.enabled ? 'disabled' : outcomes.get(entry.id)?.status ?? 'inactive',
       ...outcomes.get(entry.id),
     }
   }
@@ -334,9 +336,10 @@ export async function createModule(ctx, { home, backend }) {
       if (previous && !visible(previous, session)) throw new ConnectorError('当前账号无法修改该连接器。')
       if (previous ? payload.revision !== previous.revision : payload.revision !== undefined) throw new ConnectorError('连接器已被修改或移除，请刷新后重试。')
       const next = await transform(previous)
+      if (next?.installed === false && next.enabled) throw new ConnectorError('请先安装连接器。')
       if (next) await validateTransport(next)
       assertActive(signal)
-      if (next?.source && !visible(next, await currentSession())) throw new ConnectorError('当前账号已变化，请刷新后重试。')
+      if ((next?.source || next?.ownerAccountId) && !visible(next, await currentSession())) throw new ConnectorError('当前账号已变化，请刷新后重试。')
       return { kind: 'grant', payload: parse(stateSchema, { version: 1, entries: [...state.entries.filter(entry => entry.id !== payload.id), ...(next ? [{ ...next, revision: (previous?.revision ?? -1) + 1 }] : [])] }) }
     })
     await reconcile(readState(saved).entries, signal)
@@ -442,19 +445,40 @@ export async function createModule(ctx, { home, backend }) {
       workflowResources: (_input, signal) => serial(async () => {
         assertActive(signal)
         const session = await currentSession()
-        return { resources: entries.filter(entry => visible(entry, session)).map(workflowResource) }
+        return { resources: entries.filter(entry => entry.installed !== false && visible(entry, session)).map(workflowResource) }
       }),
       workflowExport: (input, signal) => serial(async () => {
         assertActive(signal)
         const selection = z.object({ kind: z.literal('mcp'), sourceId: z.string().uuid(), version: z.string() }).parse(input)
         const session = await currentSession()
-        const entry = entries.find(entry => visible(entry, session) && workflowResource(entry).sourceId === selection.sourceId && workflowResource(entry).version === selection.version)
+        const entry = entries.find(entry => entry.installed !== false && visible(entry, session) && workflowResource(entry).sourceId === selection.sourceId && workflowResource(entry).version === selection.version)
         if (!entry) throw new ConnectorError('连接器已更新，请重新选择。')
         return workflowExport(entry)
       }),
     },
     handlers: {
       list: () => serial(async () => { assertActive(); if (credentials) await load(); return list() }),
+      createDraft: (input, signal) => serial(async () => {
+        assertActive(signal)
+        const session = await currentSession()
+        if (!session?.accountId) throw new ConnectorError('请先登录本机账号，再创建连接器。')
+        const payload = parse(z.strictObject({
+          id: idSchema, name: configSchema.shape.name, summary: configSchema.shape.summary.unwrap(),
+          category: configSchema.shape.category.unwrap(), transport: configSchema.shape.transport,
+          url: configSchema.shape.url.unwrap().optional(), command: configSchema.shape.command.unwrap().optional(),
+          args: configSchema.shape.args.unwrap().optional(), cwd: configSchema.shape.cwd.unwrap().optional(),
+        }), input)
+        const config = parse(configSchema, { ...payload, installed: false, enabled: false, ownerAccountId: session.accountId })
+        if (entries.some(entry => visible(entry, session) && (entry.id === config.id || entry.name === config.name))) throw new ConnectorError('已有同名或同标识的连接器。')
+        return mutate({ id: config.id }, () => config, signal)
+      }),
+      installPersonal: (input, signal) => serial(async () => {
+        const payload = parse(mutationSchema, input)
+        const session = await currentSession()
+        const entry = entries.find(candidate => candidate.id === payload.id && visible(candidate, session))
+        if (!entry || entry.source || entry.installed !== false) throw new ConnectorError('个人连接器不存在或已经安装。')
+        return mutate(payload, previous => ({ ...previous, installed: true, enabled: false }), signal)
+      }),
       inspectPackage: (input, signal) => serial(async () => {
         assertActive(signal)
         const payload = parse(z.strictObject({
@@ -502,7 +526,7 @@ export async function createModule(ctx, { home, backend }) {
         return { ...result, importedId: config.id }
       }),
       checkConnection: (input, signal) => serial(async () => {
-        const payload = parse(configSchema.omit({ source: true, revision: true, oauth: true, adapter: true, tokenExchange: true, bootstrap: true, headerEnvironment: true }).extend({
+        const payload = parse(configSchema.omit({ source: true, revision: true, oauth: true, adapter: true, tokenExchange: true, bootstrap: true, headerEnvironment: true, installed: true, ownerAccountId: true }).extend({
           authMode: z.enum(['none', 'api_key', 'oauth_authorization_code_pkce']).optional(),
           summary: configSchema.shape.summary.unwrap().optional(), category: configSchema.shape.category.unwrap().optional(),
           headers: configSchema.shape.headers.unwrap().optional(), env: configSchema.shape.env.unwrap().optional(),
@@ -524,8 +548,9 @@ export async function createModule(ctx, { home, backend }) {
         knownSessions.set(sessionId, account)
         applySessionRestriction(account, sessionId)
         const snapshot = await list()
-        const visibleIds = new Set(snapshot.items.map(item => item.id))
-        return { ...snapshot, selectedIds: selectedIds(account, sessionId).filter(id => visibleIds.has(id)) }
+        const visibleItems = snapshot.items.filter(item => item.installed !== false)
+        const visibleIds = new Set(visibleItems.map(item => item.id))
+        return { ...snapshot, items: visibleItems, selectedIds: selectedIds(account, sessionId).filter(id => visibleIds.has(id)) }
       }),
       sessionSet: (input, signal) => serial(async () => {
         assertActive(signal)
@@ -541,7 +566,7 @@ export async function createModule(ctx, { home, backend }) {
         const account = accountId(session)
         currentAccountId = account
         const entry = entries.find(candidate => candidate.id === payload.id && candidate.revision === payload.revision && visible(candidate, session))
-        if (!entry) throw new ConnectorError('连接器已更新，请刷新选择器后重试。')
+        if (!entry || entry.installed === false) throw new ConnectorError('连接器未安装，请先安装。')
         if (payload.selected && !entry.enabled) {
           await mutate(payload, previous => ({ ...previous, enabled: true }), signal)
         }
@@ -564,11 +589,12 @@ export async function createModule(ctx, { home, backend }) {
         knownSessions.set(payload.sessionId, account)
         applySessionRestriction(account, payload.sessionId)
         const snapshot = await list()
-        const visibleIds = new Set(snapshot.items.map(item => item.id))
-        return { ...snapshot, selectedIds: selectedIds(account, payload.sessionId).filter(id => visibleIds.has(id)) }
+        const visibleItems = snapshot.items.filter(item => item.installed !== false)
+        const visibleIds = new Set(visibleItems.map(item => item.id))
+        return { ...snapshot, items: visibleItems, selectedIds: selectedIds(account, payload.sessionId).filter(id => visibleIds.has(id)) }
       }),
       save: (input, signal) => serial(async () => {
-        const payload = parse(configSchema.omit({ source: true, revision: true, oauth: true, adapter: true, tokenExchange: true, bootstrap: true, headerEnvironment: true }).extend({
+        const payload = parse(configSchema.omit({ source: true, revision: true, oauth: true, adapter: true, tokenExchange: true, bootstrap: true, headerEnvironment: true, installed: true, ownerAccountId: true }).extend({
           authMode: z.enum(['none', 'api_key', 'oauth_authorization_code_pkce']).optional(),
           summary: configSchema.shape.summary.unwrap().optional(), category: configSchema.shape.category.unwrap().optional(),
           headers: configSchema.shape.headers.unwrap().optional(), env: configSchema.shape.env.unwrap().optional(),
@@ -582,7 +608,7 @@ export async function createModule(ctx, { home, backend }) {
         if (fields.transport === 'stdio' && authMode && authMode !== 'none') throw new ConnectorError('本地程序使用环境变量配置认证。')
         return mutate(payload, previous => parse(configSchema, {
           ...(!previous && authMode === 'oauth_authorization_code_pkce' ? { oauth: { scopes: [] } } : {}),
-          ...fields, summary: fields.summary ?? previous?.summary ?? '', category: fields.category ?? previous?.category ?? 'office', headerEnvironment: headerEnvironment ?? previous?.headerEnvironment ?? {}, environmentPassthrough: environmentPassthrough ?? previous?.environmentPassthrough ?? [], ...(previous?.bootstrap ? { bootstrap: previous.bootstrap, workspacePath: previous.workspacePath } : {}), ...(previous?.adapter ? { adapter: previous.adapter, credentialSlots: previous.credentialSlots } : {}), credentialValues: { ...previous?.credentialValues, ...fields.credentialValues }, ...(previous?.tokenExchange ? { tokenExchange: previous.tokenExchange } : {}), ...(previous?.oauth ? { oauth: previous.oauth } : {}), ...(previous?.source ? { source: previous.source, requiredHeaders: previous.requiredHeaders, requiredEnv: previous.requiredEnv } : {}),
+          ...fields, summary: fields.summary ?? previous?.summary ?? '', category: fields.category ?? previous?.category ?? 'office', headerEnvironment: headerEnvironment ?? previous?.headerEnvironment ?? {}, environmentPassthrough: environmentPassthrough ?? previous?.environmentPassthrough ?? [], ...(previous?.bootstrap ? { bootstrap: previous.bootstrap, workspacePath: previous.workspacePath } : {}), ...(previous?.adapter ? { adapter: previous.adapter, credentialSlots: previous.credentialSlots } : {}), credentialValues: { ...previous?.credentialValues, ...fields.credentialValues }, ...(previous?.tokenExchange ? { tokenExchange: previous.tokenExchange } : {}), ...(previous?.oauth ? { oauth: previous.oauth } : {}), ...(previous?.source ? { source: previous.source, requiredHeaders: previous.requiredHeaders, requiredEnv: previous.requiredEnv } : {}), ...(previous ? { installed: previous.installed, ...(previous.ownerAccountId ? { ownerAccountId: previous.ownerAccountId } : {}) } : {}),
           headers: headerValues ? { ...(payload.headers ?? previous?.headers ?? {}), ...headerValues } : payload.headers ?? previous?.headers ?? {}, env: envValues ? { ...(payload.env ?? previous?.env ?? {}), ...envValues } : payload.env ?? previous?.env ?? {},
         }), signal)
       }),
@@ -591,6 +617,7 @@ export async function createModule(ctx, { home, backend }) {
         const session = await currentSession()
         const entry = entries.find(item => item.id === payload.id && item.revision === payload.revision && visible(item, session))
         if (!entry) throw new ConnectorError('连接器已更新，请刷新。')
+        if (entry.installed === false) throw new ConnectorError('请先安装连接器。')
         const workspacePath = await prepareWorkspace(entry, payload.path, signal)
         return mutate(payload, previous => ({ ...previous, workspacePath, enabled: true }), signal)
       }),
@@ -598,7 +625,7 @@ export async function createModule(ctx, { home, backend }) {
         const payload = parse(mutationSchema.extend({ subjectToken: z.string().min(1).max(16384) }), input)
         const session = await currentSession()
         const entry = entries.find(item => item.id === payload.id && item.revision === payload.revision && visible(item, session))
-        if (!entry?.tokenExchange) throw new ConnectorError('连接器不支持令牌交换。')
+        if (!entry?.tokenExchange || entry.installed === false) throw new ConnectorError('请先安装支持令牌交换的连接器。')
         const { tokenEndpoint, audience, scope } = entry.tokenExchange
         const response = await fetch(tokenEndpoint, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange', subject_token: payload.subjectToken, subject_token_type: 'urn:ietf:params:oauth:token-type:access_token', requested_token_type: 'urn:ietf:params:oauth:token-type:access_token', audience, ...(scope ? { scope } : {}) }), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30000)]) : AbortSignal.timeout(30000) })
         if (!response.ok) throw new ConnectorError('令牌交换失败，请检查凭据。')
@@ -608,11 +635,14 @@ export async function createModule(ctx, { home, backend }) {
       remove: (input, signal) => serial(() => { oauth.cancel(input.id); return mutate(parse(mutationSchema, input), () => null, signal) }),
       setEnabled: (input, signal) => serial(async () => {
         const payload = parse(mutationSchema.extend({ enabled: z.boolean() }), input)
-        return mutate(payload, previous => ({ ...previous, enabled: payload.enabled }), signal)
+        return mutate(payload, previous => {
+          if (payload.enabled && previous.installed === false) throw new ConnectorError('请先安装连接器。')
+          return { ...previous, enabled: payload.enabled }
+        }, signal)
       }),
       reconnect: (input, signal) => serial(async () => {
         const { id } = parse(z.strictObject({ id: idSchema }), input)
-        const entry = entries.find(candidate => candidate.id === id && candidate.enabled)
+        const entry = entries.find(candidate => candidate.id === id && candidate.installed !== false && candidate.enabled)
         if (!entry || !visible(entry, await currentSession())) throw new ConnectorError('请先启用该连接器。')
         await start(entry, signal)
         return list()
@@ -637,7 +667,7 @@ export async function createModule(ctx, { home, backend }) {
         const { id, revision } = parse(mutationSchema, input)
         const session = await currentSession()
         const entry = entries.find(item => item.id === id && item.revision === revision && visible(item, session))
-        if (!entry?.oauth) throw new ConnectorError('请选择支持 OAuth 的连接器。')
+        if (!entry?.oauth || entry.installed === false) throw new ConnectorError('请先安装支持 OAuth 的连接器。')
         const result = await oauth.begin(entry, state => serial(async () => {
           const current = await currentSession()
           if (entry.source && (current?.accountId !== session?.accountId || current?.epoch !== session?.epoch)) throw new ConnectorError('当前账号已变化，请重新授权。')
