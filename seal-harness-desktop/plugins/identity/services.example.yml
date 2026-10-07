@@ -1,0 +1,11 @@
+# 复制到 ~/.seal-harness/services.yml，或设置 SEAL_HARNESS_SERVICES_CONFIG 指向本文件。
+# 服务地址默认留空；仅填入你有权使用的服务根地址，不附带 api/v1、凭据或 query。
+identityBaseUrl: ''
+collaborationBaseUrl: ''
+storeBaseUrl: ''
+mcpCenterBaseUrl: ''
+knowledgeBaseUrl: ''
+knowledgeTargetType: standalone
+terminalBaseUrl: ''
+# 空值使用产品内置的流程运行包；部署到外部环境前请核对其镜像来源。
+workflowRuntimePackDirectory: ''

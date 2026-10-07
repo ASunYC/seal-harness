@@ -1,0 +1,26 @@
+diff --git a/lib/index.js b/lib/index.js
+index 04de7f4..3c3a208 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -621,7 +621,7 @@ async function defaultWorkspaceDirectory(directoryName, documentsDirectory, sign
+ 	}
+ 	directory = validateDocumentsDirectory(directory, platform);
+ 	signal.throwIfAborted();
+-	return paths.join(directory, "deepseek-harness", directoryName);
++	return paths.join(directory, "seal-harness", directoryName);
+ }
+ //#endregion
+ //#region lib/types/index.js
+diff --git a/lib/types/default-directory.js b/lib/types/default-directory.js
+index f174618..92e2591 100644
+--- a/lib/types/default-directory.js
++++ b/lib/types/default-directory.js
+@@ -60,6 +60,6 @@ export async function defaultWorkspaceDirectory(directoryName, documentsDirector
+     }
+     directory = validateDocumentsDirectory(directory, platform);
+     signal.throwIfAborted();
+-    return paths.join(directory, 'deepseek-harness', directoryName);
++    return paths.join(directory, 'seal-harness', directoryName);
+ }
+ //# sourceMappingURL=default-directory.js.map
+\ No newline at end of file

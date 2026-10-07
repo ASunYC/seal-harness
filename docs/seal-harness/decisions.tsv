@@ -1,0 +1,9 @@
+ts	phase	decision	why	evidence	result
+2026-09-22T23:25:36Z	frame	保留规范与品牌需求，弃用源码副本打补丁	新仓库直接继承上游，旧目录和补丁流程不适用	seal-harness_old/AGENTS.md; seal-harness_old/desktop/patches/001-seal-harness-brand.patch	旧业务插件目录仅有README
+2026-09-22T23:25:36Z	design	插件承担Web品牌，必要构建接缝承担启动身份和原生文案	插件启动晚于Electron身份和数据目录选择，用户允许必要上游修改	dsh-plugin-desktop-beta/src/product-identity.ts; dsh-plugin-desktop-beta/src/profile.ts	实施中
+2026-09-22T23:33:14Z	rules	迁移有效Trellis和开发规则，不迁移已完成任务及会话	旧wrapper目录失效，保留通用原则并说明直接下游边界	2e719cbd03; .trellis/tasks/09-23-seal-harness-downstream-migration	上下文和task validate通过；原模板3处空白告警保留
+2026-09-22T23:33:14Z	product	统一产品目录和包名为seal-harness-desktop	用户要求明确公司归属	seal-harness-desktop/package.json; seal-harness-desktop/product.json	品牌组件2项测试及实际Profile组合通过
+2026-09-22T23:33:14Z	package	复用旧dir架构适配的必要逻辑，保留完整上游fuses及runtime检查	实际electron-builder dir结果丢失架构，首次打包在最终校验失败	seal-harness-desktop/scripts/verify-package.mjs	已添加适配，正在重跑真实包
+2026-09-22T23:46:41Z	audit	补正初始旧仓库路径与测试证据	初始行使用的相对旧目录不在当前根内，补充可定位来源和可复现检查	/Volumes/workspace/code/seal-harness_old/AGENTS.md; /Volumes/workspace/code/seal-harness_old/desktop/patches/001-seal-harness-brand.patch; seal-harness-desktop/scripts/product.test.mjs; docs/seal-harness/validation.md	替代初始行的路径引用；当前3项产品测试通过
+2026-09-22T23:46:41Z	verify	保留最终成品校验并修复标题覆盖	独立审查指出跨平台包检查缺口，GUI发现上游硬编码标题重写	a12d1581e7; e3de342f03; seal-harness-desktop/scripts/verify-package.mjs; docs/seal-harness/validation.md	macOS ARM64真实包通过；Win/Linux和universal发行包仍待平台实测
+2026-09-22T23:47:10Z	finish	结束验证并交付本地分阶段提交	用户要求适可而止；现有产品、两包测试与实际GUI证据已覆盖本次迁移	docs/seal-harness/validation.md; .trellis/tasks/09-23-seal-harness-downstream-migration/implement.md	已完成；不继续扩展验证，不推送或发布

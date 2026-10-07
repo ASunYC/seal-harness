@@ -1,0 +1,22 @@
+{
+  "name": "@seal-harness/identity",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Seal Harness 本机账号与服务配置",
+  "main": "lib/index.js",
+  "exports": { ".": "./lib/index.js", "./client": "./lib/client.js", "./package.json": "./package.json" },
+  "dsh": {
+    "client": {
+      "inject": ["@deepseek-ai/dsh-client-ui-renderer", "@deepseek-ai/dsh-client-ui-layout", "@deepseek-ai/dsh-client-ui-sidebar", "@deepseek-ai/dsh-client-connection"],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-client-connection": "0.1.7-alpha.2",
+    "react": "18.3.1",
+    "zod": "4.4.3",
+    "yaml": "2.9.0"
+  }
+}

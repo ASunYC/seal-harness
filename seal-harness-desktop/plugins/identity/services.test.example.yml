@@ -1,0 +1,10 @@
+# 测试环境模板。使用时通过 SEAL_HARNESS_SERVICES_CONFIG 指向独立配置文件。
+# 按测试环境实际地址逐项填写；空值不会回退到旧产品服务。
+identityBaseUrl: ''
+collaborationBaseUrl: ''
+storeBaseUrl: ''
+mcpCenterBaseUrl: ''
+knowledgeBaseUrl: ''
+knowledgeTargetType: standalone
+terminalBaseUrl: ''
+workflowRuntimePackDirectory: ''

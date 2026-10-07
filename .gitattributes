@@ -1,0 +1,13 @@
+* text=auto eol=lf
+patches/*.patch text eol=lf whitespace=-space-before-tab,-blank-at-eol
+.yarn/patches/*.patch text eol=lf whitespace=-space-before-tab,-blank-at-eol
+seal-harness-desktop/assets/** filter=lfs diff=lfs merge=lfs -text
+
+# Trellis: append-only developer journals should merge cleanly across
+# parallel sessions/worktrees — each session only appends a new block, so
+# there is nothing to actually conflict on.
+#
+# Do NOT add a rule for workspace/*/index.md here — it is fully regenerated
+# every session, so a real conflict there is expected and safe to resolve by
+# picking either side (task state lives in task.json, not index.md).
+.trellis/workspace/*/journal-*.md merge=union

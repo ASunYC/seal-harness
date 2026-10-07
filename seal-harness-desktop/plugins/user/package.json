@@ -1,0 +1,29 @@
+{
+  "name": "@seal-harness/user",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Seal Harness登录后的用户入口与详情",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@seal-harness/identity"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@seal-harness/identity": "0.1.0",
+    "react": "18.3.1"
+  }
+}
