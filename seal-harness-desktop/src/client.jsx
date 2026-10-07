@@ -15,6 +15,11 @@ function BrandName() {
   return createElement('span', { style: { fontWeight: 600 } }, productName)
 }
 
+function SkipTestingNotice({ complete }) {
+  useLayoutEffect(() => { complete() }, [complete])
+  return null
+}
+
 function enhancePluginManagerSync() {
   const update = () => {
     const panel = document.querySelector('[data-plugin-panel]')
@@ -83,6 +88,12 @@ function HeroMark() {
 
 export function apply(ctx) {
   registerModelReasoningSettings(ctx)
+  ctx.slots.inject('settings.onboarding', () => ctx.slots.register({
+    name: 'settings.onboarding',
+    id: 'welcome-notice',
+    priority: -1,
+    order: -100,
+  }, SkipTestingNotice))
   ctx.effect(() => {
     const element = document.createElement('style')
     element.dataset.sealModelMenu = ''
