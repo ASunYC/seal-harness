@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 14
+- **Total Sessions**: 15
 - **Last Active**: 2026-10-07
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~419 | Active |
+| `journal-1.md` | ~441 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 15 | 2026-10-07 | 连接器页已安装与模型创建 | `b3cd789` | `codex/seal-harness-migration` |
 | 14 | 2026-10-07 | 技能页系统个人与模型创建 | `09e2f16` | `codex/seal-harness-migration` |
 | 13 | 2026-10-07 | 专家页系统个人与会话模型创建 | `f30efe1` | `codex/seal-harness-migration` |
 | 12 | 2026-10-06 | 设置与账号移至一级导航底部 | `aba198d` | `codex/seal-harness-migration` |

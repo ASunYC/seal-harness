@@ -417,3 +417,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 15: 连接器页已安装与模型创建
+<!-- trellis-session: v=2 fp=c32c7cd94454e4d5 -->
+
+**Date**: 2026-10-07
+**Task**: 连接器页已安装与模型创建
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+连接器页改为独立已安装区块与系统/个人页签；模型工具 create_connector 保存当前账号未安装个人配置，显式安装后通过原管理流程配置凭据和启用。保留商店 Host 安装与本地 ZIP 包导入。通过产品检查、构建、布局、Profile 与 Windows Electron 页面核对；真实模型回复待配置模型后验证。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b3cd789` | feat(seal): stage personal connectors before installation |
+
+### Status
+
+[OK] **Completed**
