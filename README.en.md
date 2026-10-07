@@ -4,6 +4,13 @@ Seal Harness is a desktop agent workspace built on the architecture of [DSH Desk
 
 This repository imports the downstream source supplied by the user. It preserves attribution and licenses for DSH Desktop, DeepSeek Harness, and other third-party components. Seal Harness is an independent product and does not use the DSH Desktop release or update channel.
 
+## Project origins and acknowledgements
+
+- **Original project: [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).** Seal Harness uses its agent runtime, Web UI, and plugin system. The [`deepseek-harness/`](deepseek-harness/) directory is a pinned upstream submodule.
+- **Reference project and desktop codebase: [DSH Desktop](https://github.com/anywhere-labs/dsh-desktop).** Seal Harness inherits its desktop repository structure and draws on its Electron shell and Cordis plugin, bundle, and profile composition.
+
+We thank both upstream projects and their contributors. Seal Harness is an independent downstream product; this attribution does not imply authorization, partnership, or endorsement by either upstream project. Third-party licenses and notices are linked under “License and attribution” below.
+
 ## Structure
 
 | Path | Responsibility |

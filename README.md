@@ -4,6 +4,13 @@ Seal Harness 是基于 [DSH Desktop](https://github.com/anywhere-labs/dsh-deskto
 
 本仓库迁入了用户提供的下游工程源码，保留 DSH Desktop、DeepSeek Harness 和其他第三方组件的许可证与来源说明。Seal Harness 是独立产品，不使用 DSH Desktop 的发布或更新渠道。
 
+## 项目来源与致谢
+
+- **原项目：[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)**。Seal Harness 使用其 Agent 运行时、Web UI 与插件体系；仓库中的 [`deepseek-harness/`](deepseek-harness/) 是固定提交的上游子模块。
+- **借鉴项目及桌面工程来源：[DSH Desktop](https://github.com/anywhere-labs/dsh-desktop)**。Seal Harness 继承其桌面工程结构，并借鉴 Electron 外壳、Cordis 插件、bundle 与 profile 的组合机制。
+
+感谢两个上游项目及其贡献者。Seal Harness 是独立的下游产品；上述来源说明不表示上游项目对本产品提供授权、合作或背书。第三方许可与声明见下方“许可证与来源”。
+
 ## 工程结构
 
 | 路径 | 职责 |
