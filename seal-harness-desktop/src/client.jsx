@@ -1,9 +1,10 @@
 import { createElement, useLayoutEffect, useRef } from 'react'
+import { registerModelReasoningSettings } from './model-reasoning.jsx'
 
 const productName = __SEAL_HARNESS_NAME__
 const brandIcon = __SEAL_HARNESS_ICON__
 
-export const inject = ['slots']
+export const inject = ['slots', 'remote', 'remote.settings']
 
 function BrandMark({ size = 28 }) {
   return createElement('img', { src: brandIcon, alt: productName, width: size, height: size })
@@ -80,6 +81,7 @@ function HeroMark() {
 }
 
 export function apply(ctx) {
+  registerModelReasoningSettings(ctx)
   ctx.effect(enhancePluginManagerSync, 'seal-harness: plugin manager sync status')
   ctx.effect(() => {
     const title = document.querySelector('title')

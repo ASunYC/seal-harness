@@ -103,7 +103,7 @@ test('产品为所有账号提供Seal Harness助手身份并移除上游 Harness
   })
 })
 
-test('标准客户端模块注册三个品牌slot，并在卸载时恢复文档标题', async () => {
+test('标准客户端模块注册品牌及模型设置扩展 slot，并在卸载时恢复文档标题', async () => {
   await buildBrand()
   const { JSDOM } = desktopRequire('jsdom')
   const dom = new JSDOM('<title>DeepSeek Harness</title><section data-plugin-panel aria-busy="false"><header data-plugin-page-header="list"><div></div><div><button aria-label="刷新"><svg /></button><button>添加插件</button></div></header></section><div><span><div data-slot="conversation.hero.brand.mark"><span id="mark"></span></div></span><span><span id="headline">探索未至之境</span><span>预览版</span></span></div>')
@@ -135,7 +135,7 @@ test('标准客户端模块注册三个品牌slot，并在卸载时恢复文档�
     effect(effect) { disposers.push(effect()) },
     slots: {
       inject(name, effect) {
-        assert.ok(['sidebar.brand.mark', 'sidebar.brand.name', 'conversation.hero.brand.mark', 'sidebar.panellist'].includes(name))
+        assert.ok(['sidebar.brand.mark', 'sidebar.brand.name', 'conversation.hero.brand.mark', 'sidebar.panellist', 'settings.models.footer'].includes(name))
         const result = effect()
         if (result?.next) [...result]
         else if (typeof result === 'function') disposers.push(result)
@@ -152,7 +152,8 @@ test('标准客户端模块注册三个品牌slot，并在卸载时恢复文档�
     },
   })
   assert.equal(document.title, 'Seal Harness')
-  assert.equal(registrations.size, 3)
+  assert.equal(registrations.size, 4)
+  assert.equal(typeof registrations.get('settings.models.footer'), 'function')
   assert.equal(panelEntries.filter(entry => entry.options.id === 'plugins').length, 1)
   const pluginPanel = document.querySelector('[data-plugin-panel]')
   const pluginRefresh = pluginPanel.querySelector('button[aria-label="刷新"]')
