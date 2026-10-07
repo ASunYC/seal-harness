@@ -2,7 +2,7 @@ import React, { useEffect, useSyncExternalStore } from 'react'
 import { createNavigationState } from './model.js'
 import { styles } from './styles.js'
 
-export const inject = ['slots', 'layout']
+export const inject = ['slots', 'layout', 'sessions']
 
 const HOME = 'seal-harness-home'
 const DECISION = 'ask-jev'
@@ -46,16 +46,22 @@ export function apply(ctx) {
 
   function Rail({ usePanelInfo }) {
     const activePanelId = usePanelInfo(info => info.activePanelId)
-    const { entries } = useSyncExternalStore(resources.subscribe, resources.getSnapshot)
+    const { entries, decisionSessionId, decisionActive } = useSyncExternalStore(resources.subscribe, resources.getSnapshot)
+    const sessions = useSyncExternalStore(ctx.sessions.list.subscribe, ctx.sessions.list.getSnapshot)
+    const mainSessionId = Object.values(sessions.byId).find(session => (session.retainedBy?.mainView ?? 0) > 0)?.id
+    const inDecisionConversation = activePanelId === null && decisionActive && mainSessionId === decisionSessionId
     const homeEntries = entries.filter(entry => entry.id !== DECISION)
     const decision = entries.find(entry => entry.id === DECISION)
-    const homeActive = activePanelId === null || activePanelId === HOME || activePanelId === 'plugins' || homeEntries.some(entry => entry.id === activePanelId)
+    const homeActive = (activePanelId === null && !inDecisionConversation) || activePanelId === HOME || activePanelId === 'plugins' || homeEntries.some(entry => entry.id === activePanelId)
     const resourceIds = entries.map(entry => entry.id).join('|')
     useEffect(() => {
       if (activePanelId === null) resources.select(null)
       else if (entries.some(entry => entry.id === activePanelId)) resources.select(activePanelId)
     }, [activePanelId, entries])
     useEffect(() => { if (activePanelId === DECISION && !decision) ctx.layout.selectPanel(null) }, [activePanelId, decision])
+    useEffect(() => {
+      if (activePanelId === null && decisionActive && mainSessionId && mainSessionId !== decisionSessionId) resources.leaveDecision()
+    }, [activePanelId, decisionActive, decisionSessionId, mainSessionId])
     useEffect(() => {
       const releases = entries.filter(entry => entry.id !== 'plugins').map(entry => ctx.slots.inject('main', () => ctx.slots.register(
         { name: 'main', key: entry.id },
@@ -72,10 +78,10 @@ export function apply(ctx) {
       return () => releases.forEach(release => release?.())
     }, [homeActive, resourceIds])
     useEffect(() => {
-      if (activePanelId !== DECISION && activePanelId !== SPACES && activePanelId !== SCHEDULES && activePanelId !== 'seal-harness-user') return
+      if (activePanelId !== DECISION && !inDecisionConversation && activePanelId !== SPACES && activePanelId !== SCHEDULES && activePanelId !== 'seal-harness-user') return
       const Component = activePanelId === SCHEDULES ? TasksMenu : EmptyMenu
       return ctx.slots.inject('sidebar.workspaces', () => ctx.slots.register({ name: 'sidebar.workspaces', priority: -100 }, Component))
-    }, [activePanelId])
+    }, [activePanelId, inDecisionConversation])
     const items = [
       { id: HOME, label: '首页', icon: 'home' },
       ...(decision ? [{ id: DECISION, label: '问问决策', icon: 'decision' }] : []),
@@ -88,7 +94,7 @@ export function apply(ctx) {
       button.click()
     }
     return <nav className="seal-nav-rail" aria-label="一级导航" data-home-active={homeActive}>
-      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : activePanelId === item.id ? 'page' : undefined} onClick={() => { if (item.id === HOME) resources.select(null); else if (item.id === DECISION) resources.select(DECISION); ctx.layout.selectPanel(item.id === HOME ? null : item.id) }}><NavGlyph name={item.icon} /></button>)}
+      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : activePanelId === item.id || (item.id === DECISION && inDecisionConversation) ? 'page' : undefined} onClick={() => { if (item.id !== DECISION) resources.leaveDecision(); if (item.id === HOME) resources.select(null); else if (item.id === DECISION) resources.select(DECISION); ctx.layout.selectPanel(item.id === HOME ? null : item.id) }}><NavGlyph name={item.icon} /></button>)}
       <div className="seal-nav-rail__footer">
         <button type="button" title="设置" aria-label="设置" onClick={() => activateExisting('[data-slot="sidebar.settings"] button[aria-haspopup="dialog"]', '设置')}><NavGlyph name="settings" /></button>
         <button type="button" title="账户" aria-label="账户" aria-current={activePanelId === 'seal-harness-user' ? 'page' : undefined} onClick={() => activateExisting('.seal-harness-user-footer', '账户')}><NavGlyph name="account" /></button>

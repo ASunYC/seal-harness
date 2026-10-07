@@ -26,4 +26,5 @@ export const styles = `
 .ask-jev-result-metric ul{display:grid;gap:8px;max-width:520px;padding:0;list-style:none}.ask-jev-result-metric li{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid var(--aj-line)}
 .ask-jev-attribution{margin:0;color:var(--aj-muted);font-size:11px}.ask-jev-attribution a{color:var(--aj-accent)}
 @media(max-width:650px){.ask-jev-content{padding:22px 16px 38px}.ask-jev-card,.ask-jev-result{padding:18px}.ask-jev-settings-form{grid-template-columns:1fr}}
+.ask-jev-settings-page{height:auto;min-height:0;overflow:visible;padding:4px 0 28px;background:transparent}.ask-jev-settings-page h2{margin:0 0 6px;font-size:22px}.ask-jev-settings-page>.ask-jev-hint{margin-bottom:18px}.ask-jev-settings-page .ask-jev-card{padding:20px}.ask-jev-settings-page .ask-jev-section-title h3{margin:0;font-size:17px}
 `

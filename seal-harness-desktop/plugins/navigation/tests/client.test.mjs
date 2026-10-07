@@ -18,6 +18,8 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   const entries = [{ options: { name: 'sidebar.workspaces', priority: 0 }, component: () => React.createElement('span', null, '原生工作区与会话') }]
   const effects = [], listeners = new Set(), provided = new Map()
   let activePanelId = null
+  let sessionSnapshot = { byId: {} }
+  const sessionListeners = new Set()
   let settingsClicks = 0, accountClicks = 0
   document.querySelector('[data-slot="sidebar.settings"] button').addEventListener('click', () => settingsClicks++)
   document.querySelector('.seal-harness-user-footer').addEventListener('click', () => accountClicks++)
@@ -33,6 +35,7 @@ test('home resources share the sidebar with native workspaces and sessions', asy
       },
     },
     layout: { selectPanel(id) { activePanelId = id; for (const listener of listeners) listener() } },
+    sessions: { list: { subscribe(listener) { sessionListeners.add(listener); return () => sessionListeners.delete(listener) }, getSnapshot: () => sessionSnapshot } },
   }
   const loaded = {}
   runInNewContext(await readFile(new URL('../lib/client.js', import.meta.url), 'utf8'), {
@@ -106,7 +109,23 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   assert(registrations('main').some(entry => entry.options.key === 'ask-jev'))
   await act(async () => root.render(React.createElement(React.Fragment, null, React.createElement(rail, { usePanelInfo }), React.createElement(decisionMain))))
   assert.match(document.body.textContent, /独立决策页面/)
+  await act(async () => {
+    navigation.markDecisionSession('decision-1')
+    sessionSnapshot = { byId: { 'decision-1': { id: 'decision-1', retainedBy: { mainView: 1 } } } }
+    for (const listener of sessionListeners) listener()
+    ctx.layout.selectPanel(null)
+  })
+  assert.equal(document.querySelector('button[aria-label="问问决策"]')?.getAttribute('aria-current'), 'page')
+  assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), null)
+  assert.equal(registrations('sidebar.workspaces').length, 2)
+  await act(async () => {
+    sessionSnapshot = { byId: { other: { id: 'other', retainedBy: { mainView: 1 } } } }
+    for (const listener of sessionListeners) listener()
+  })
+  assert.equal(navigation.getSnapshot().decisionActive, false, 'switching to another conversation leaves Decision mode')
+  assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), 'page')
   await click('首页')
+  assert.equal(navigation.getSnapshot().decisionActive, false)
   assert.equal(registrations('sidebar.workspaces').length, 1)
   assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id).sort(), ['experts', 'plugins'])
   await act(async () => ctx.layout.selectPanel('experts'))

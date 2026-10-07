@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { styles } from './styles.js'
+import { DecisionSettings } from './settings.jsx'
+import { openDecisionConversation } from './conversation.js'
 
-export const inject = ['slots', 'layout', 'connection']
+export const inject = ['slots', 'layout', 'connection', 'sessions', 'workspaces', 'uiWorkspace']
 
 const modeLabels = { yes_no: '是非判断', choice: '候选选择', score: '行动评分' }
 const percentages = value => `${Math.round(value * 100)}%`
@@ -109,6 +111,17 @@ export function apply(ctx) {
   }
   const navigation = ctx.get?.('sealHarnessNavigation')
   const leave = () => { navigation?.select(null); ctx.layout.selectPanel(null) }
+  function DecisionConversationLauncher() {
+    const [error, setError] = useState('')
+    const [attempt, retry] = useState(0)
+    useEffect(() => {
+      let cancelled = false
+      openDecisionConversation(ctx, navigation, navigation.getSnapshot().decisionSessionId)
+        .catch(cause => { if (!cancelled) setError(cause.message) })
+      return () => { cancelled = true }
+    }, [attempt])
+    return <main className="ask-jev-launcher" role="status">{error ? <><p>{error}</p><button type="button" onClick={() => { setError(''); retry(value => value + 1) }}>重试</button></> : '正在打开决策会话…'}</main>
+  }
   function Panel() { return <DecisionPanel api={api} onBack={leave} /> }
   ctx.effect(() => {
     const element = document.createElement('style')
@@ -117,7 +130,10 @@ export function apply(ctx) {
     document.head.append(element)
     return () => element.remove()
   }, 'ask-jev: styles')
-  if (navigation) ctx.effect(() => navigation.register({ id: 'ask-jev', label: '问问决策', description: 'Jev 与阿里双模型决策', order: 45, icon: 'plugins', Panel }), 'ask-jev: home navigation')
+  ctx.slots.inject('settings.section', () => ctx.slots.register({
+    name: 'settings.section', id: 'ask-jev', order: 15, label: () => '问问决策',
+  }, () => <DecisionSettings api={api} />))
+  if (navigation) ctx.effect(() => navigation.register({ id: 'ask-jev', label: '问问决策', description: '与助手对话，需要时调用结构化决策模型', order: 45, icon: 'plugins', Panel: DecisionConversationLauncher }), 'ask-jev: home navigation')
   else {
     ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'ask-jev' }, Panel))
     ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({ name: 'sidebar.panellist', id: 'ask-jev', order: 45, label: () => '问问决策' }, () => <span aria-hidden="true">◇</span>))

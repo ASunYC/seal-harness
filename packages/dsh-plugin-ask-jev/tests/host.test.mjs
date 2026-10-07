@@ -10,13 +10,13 @@ test('DSH Host routes keep API keys out of Client responses and call the selecte
     return Response.json({ model: 'jev-1', answers: { decision: { type: 'noul', noul: .7 } } })
   }
   t.after(() => { globalThis.fetch = previousFetch })
-  const routes = new Map(), cleanup = []
+  const routes = new Map(), cleanup = [], tools = new Map()
   const credentials = {
     async readRecord() { return record },
     async modifyRecord(_key, operation) { record = await operation(record); return record },
   }
   const ctx = {
-    get: name => name === 'credentials' ? credentials : undefined,
+    get: name => name === 'credentials' ? credentials : name === 'tools' ? { register(tool) { tools.set(tool.name, tool); return () => tools.delete(tool.name) } } : undefined,
     effect: callback => cleanup.push(callback()),
     connection: { fetch: { register: route => routes.set(route.path, route) } },
     logger: { warn() {} },
@@ -39,6 +39,11 @@ test('DSH Host routes keep API keys out of Client responses and call the selecte
   assert.equal(decided.result.value.yesProbability, .7)
   assert.equal(external.url, 'https://api.typesafe.ai/v1/systemone')
   assert.equal(external.options.headers.authorization, 'Bearer host-secret')
+  const decisionTool = tools.get('ask_jev_decide')
+  assert(decisionTool, 'native conversation has a decision tool')
+  const toolResult = JSON.parse(await decisionTool.execute({ question: '继续吗？', mode: 'yes_no' }, { signal: new AbortController().signal }))
+  assert.equal(toolResult.yesProbability, .7)
+  assert.equal(JSON.stringify(toolResult).includes('host-secret'), false)
   const missing = await rpc('status', {}, { 'content-type': 'text/plain' })
   assert.equal(missing.status, 415)
 })
