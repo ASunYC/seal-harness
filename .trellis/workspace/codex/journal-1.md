@@ -461,3 +461,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 17: 问问决策设置与原生会话
+<!-- trellis-session: v=2 fp=087606199561835c -->
+
+**Date**: 2026-10-08
+**Task**: 问问决策设置与原生会话
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+将决策配置移入原生设置、一级决策入口改为原生会话并注册结构化决策工具；产品构建、完整检查、Windows 隔离窗口 UI 核对通过。真实外部模型未调用。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `eafcdf2` | feat(seal): move decision settings into native settings and open chat |
+
+### Status
+
+[OK] **Completed**
