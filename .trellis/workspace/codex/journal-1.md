@@ -439,3 +439,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 16: 自定义模型推理档位配置
+<!-- trellis-session: v=2 fp=14cd77add46f7574 -->
+
+**Date**: 2026-10-07
+**Task**: 自定义模型推理档位配置
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+通过公开 settings.models.footer 槽为手动配置模型增加逐模型推理档位与 wire 值设置，沿用 settings namespace 版本化持久化。验证产品构建、检查、布局及 Windows Electron 页面真实保存；现有用户 Profile 的 DeepSeek-V4.1-Flash 仍可显示 High。未推送。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5040741` | feat(seal): 配置自定义模型推理档位 |
+
+### Status
+
+[OK] **Completed**
