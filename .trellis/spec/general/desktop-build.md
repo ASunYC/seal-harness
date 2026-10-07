@@ -31,6 +31,10 @@ Node 要求 `^22.19.0 || >=24.0.0`，根 Yarn 固定 `4.18.0`。使用 `corepack
 
 `identity` 只提供本地用户名密码认证与首次管理员创建，密码以独立 salt 和 scrypt 哈希存储。会话仅驻留 Host 内存。企业微信、SSO、远端密码和记住登录不属于当前产品。专家、技能状态与包按用户存入 SQLite；知识库绑定和云端目录不属于默认 UI。DSH 原生工作区与会话历史由上游管理，产品不提供项目管理插件。
 
+品牌 Client 使用上游公开的 `settings.models.footer` 槽，为手动列出的 pi-ai 模型提供逐模型推理档位设置。使用 `remote.settings.describe/mutate` 读取和写入原有 Profile 的 `reasoningEfforts`，对模型数组做最小字段变更并以 namespace revision 拒绝并发覆盖。用户须依据服务商文档填写实际 wire 值；产品不从供应商名称推断推理能力，也不向远端探测。未声明能力的模型在对话菜单中继续不显示推理档位。
+
+模型选择菜单的分组标题由上游 CSS 设为粘性半透明层；长列表滚动时下方模型文字会透出。品牌 Client 只在该菜单的滚动分组标题上叠加与原菜单色一致的实底，不修改只读上游子模块，也不影响模型选择或推理等级逻辑。
+
 ## 验证
 
 每次修改产品装配后运行 `corepack yarn seal-harness:build`、`corepack yarn seal-harness:check`，并检查 `scripts/verify-profile.mjs` 的实际插件组合。数据库迁移测试须覆盖原文件保留、重启后从 SQLite 恢复、不同用户隔离。认证测试须覆盖首次创建、错误密码、会话退出与重启、改密。产品包核对 `lib` 与装配目录没有已删除的项目、知识库及产品智能体模块。构建/类型检查不等于真实 UI、模型回复、签名安装或跨平台通过；各自记录实测范围。

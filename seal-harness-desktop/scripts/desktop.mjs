@@ -41,7 +41,7 @@ if (command === 'build' || command === 'dev') {
   linkProductDependencies()
   const decisionTests = join(root, 'packages/dsh-plugin-ask-jev/tests')
   run(process.execPath, ['--test', ...readdirSync(decisionTests).filter(file => file.endsWith('.test.mjs')).map(file => join(decisionTests, file))])
-  run(process.execPath, ['--test', join(productRoot, 'scripts/product.test.mjs')])
+  run(process.execPath, ['--test', join(productRoot, 'scripts/product.test.mjs'), join(productRoot, 'scripts/model-reasoning.test.mjs')])
   for (const folder of ['local-data', 'identity', 'user', 'navigation', ...capabilityPlugins, 'capability-shared', 'session-context-selector']) {
     const tests = join(productRoot, 'plugins', folder, 'tests')
     run(process.execPath, ['--test', ...readdirSync(tests).filter(file => file.endsWith('.test.mjs')).map(file => join(tests, file))])
