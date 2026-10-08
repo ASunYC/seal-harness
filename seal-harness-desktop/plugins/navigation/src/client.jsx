@@ -12,7 +12,7 @@ const SCHEDULES = 'seal-harness-schedules'
 function NavGlyph({ name, size = 20 }) {
   const paths = {
     home: <><path d="m3 10 9-7 9 7v10H3V10Z" /><path d="M9 20v-7h6v7" /></>,
-    decision: <><path d="M12 3v5M5 12h14M5 12l7 9 7-9M5 12l7-4 7 4" /><circle cx="12" cy="3" r="1" /></>,
+    decision: <><path d="M12 21v-8M12 13 6 7m6 6 6-6" /><circle cx="5" cy="6" r="1.5" /><circle cx="19" cy="6" r="1.5" /></>,
     spaces: <><path d="M3 7V5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /></>,
     schedules: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
     experts: <><rect x="4" y="7" width="16" height="13" rx="2" /><path d="M9 7V4h6v3M9 12h.01M15 12h.01M9 16h6" /></>,
