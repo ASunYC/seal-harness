@@ -74,3 +74,28 @@ Deliverables UI、Jobs UI、权限档位 UI、Plan UI、定时任务 UI、SubAge
 - 已装配的 25 项中，哪些在兼容模式外壳下真正渲染，需要真实 Electron 窗口确认，不能靠单测推断。
 - H5 远程访问与公网暴露涉及安全边界，需单独设计，不在本阶段范围。
 - 桌面宠物需要新的 Electron 透明窗口与 preload，DSH 的 `ElectronShellGeneration` 独占窗口生命周期，需评估是否有公开接缝。
+
+## 七、阶段 4（Browser Use / Computer Use）实测：不是单行装配
+
+原计划把 `dsh-browser-use`、`dsh-experimental-browser-use-runtime`、`dsh-computer-use`、
+`dsh-experimental-computer-use-cua-driver-native` 按单行 insert 装配。实测后该计划不成立。
+
+**依赖闭包（实测自各包 package.json）**：
+
+| 包 | 角色 | 关键依赖 |
+| --- | --- | --- |
+| `dsh-browser-use` | 接口 | 仅 `cordis` + `dsh-brand`；**注册 0 个工具**，只导出 `BrowserUseRegistry` Service（1.2 KB） |
+| `dsh-computer-use` | 接口 | 同上（1.3 KB） |
+| `dsh-experimental-browser-use-runtime` | 实现 | peer: `dsh-mcp-client`、`dsh-scope`、`dsh-system-prompt`、`dsh-tools` |
+| `dsh-experimental-computer-use-cua-driver-native` | 实现 | peer: `dsh-mcp-client`；dep: `@trycua/cua-driver`（**未安装**） |
+| `dsh-experimental-browser-use-{stagehand-native,playwright-mcp,chrome-devtools-mcp}` | 驱动 | 分别依赖 `@browserbasehq/stagehand`+`@puppeteer/browsers`、`@playwright/mcp`、`chrome-devtools-mcp` |
+
+**两个结论**：
+
+1. **单独装配两个「接口」包毫无产出** —— 它们只是空的 registry Service，不注册任何工具、不产生任何模型可见能力。
+2. **`mcp-client` 是 Browser Use 与 Computer Use 的前置依赖，不是可选项** —— 两个 runtime 实现都以它为 peer。此前把它当作「MCP 设置功能」而搁置，判断有误：它在 DSH 里是运行时依赖，不是一项待启用的功能。
+3. 三个驱动各带外部 npm 依赖，均未安装，需要分别评估体积与跨平台能力。
+
+**对 mcp-client 的纠正**：README 证实它是「每 server 一条配置」的设计（`serverName` + `transport: stdio|streamable-http`）。但它同时被 runtime 实现当作 peer 依赖消费 —— 也就是说浏览器/桌面的运行时内部会自己创建 mcp-client 实例去连它启动的驱动进程。因此它既需要**框架层装配**（供 runtime 解析），又需要**用户配置层按 server 添加**。
+
+**该阶段的正确顺序**：先装配 `dsh-mcp-client` 的框架层，再选一个驱动（`playwright-mcp` 跨平台性最好），最后接 `dsh-browser-use` + runtime。Computer Use 需先确认 `@trycua/cua-driver` 的许可与跨平台能力（macOS 有原生 helper，Windows 依赖 Python）。

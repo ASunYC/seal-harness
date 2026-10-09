@@ -35,11 +35,17 @@
 - `session-query-sqlite` 从 `openAt: never` 改为按需开启，使全局搜索可用
 - 确认 Token 计量与会话统计的实际可见入口
 
-## 阶段 4：补依赖后装配（9 项中剩余）
+## 阶段 4：补依赖后装配（**已修正：非单行装配**）
 
-`dsh-browser-use`、`dsh-experimental-browser-use-runtime`、`dsh-computer-use`、`dsh-experimental-computer-use-cua-driver-native`、`dsh-schedule`。
+原计划单行 insert 5 个包。实测后该计划不成立，见 `design.md` 第七节：
+两个「接口」包各自只导出空 registry（0 工具），而两个 runtime 实现都以
+`dsh-mcp-client` 为 peer 依赖，三个浏览器驱动各带未安装的外部 npm 包。
 
-需先在 `dsh-plugin-desktop-beta/package.json` 补声明并重跑 `yarn install`。`dsh-schedule` 与产品已有的定时任务空态壳对接。
+正确顺序：
+1. 装配 `dsh-mcp-client` 框架层（此前误判为「MCP 设置功能」而搁置）
+2. 选一个浏览器驱动（建议 `playwright-mcp`，跨平台性最好），评估外部依赖体积
+3. 接 `dsh-browser-use` + `dsh-experimental-browser-use-runtime`
+4. Computer Use 单独评估：需确认 `@trycua/cua-driver` 许可与跨平台能力
 
 ## 阶段 5：独有能力产品插件
 
@@ -53,5 +59,15 @@
 
 ## 进度
 
-- 阶段 0 完成，产出分层结论与矩阵。
-- 阶段 1 待启动。
+- 阶段 0 完成：产出 25 / 6 / 9 / 0 分层，修正初版误判。
+- 阶段 1 完成并提交（`d450ea4`）：8 行官方能力装配，修正门禁单复数漏报。
+- 阶段 3 完成并提交（`a8548fa`）：会话全文搜索。
+- 阶段 4 已勘察并修正计划（非单行装配，见 `design.md` 第七节），未实现。
+- 阶段 2（Agent Teams）与阶段 4 均待用户决策；阶段 5 未启动。
+
+## 已知工具陷阱
+
+`seal-harness:check` 从**装配副本**读产品 patch，不自动 build。改了
+`seal-harness-desktop/cordis.patch.yml` 而忘记 build 时，check 会验证旧副本并
+静默通过。本轮已实际触发一次假通过。固定做法：改 patch → build → check →
+**再核对组合后配置确实变化**（用 `composeEntries` 打印目标 id 的 config）。
