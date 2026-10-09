@@ -103,6 +103,7 @@
       config:
         mode: launch
         headless: true
+        executablePath: 'C:\Program Files\Google\Chrome\Application\chrome.exe'
 
 # Agent Teams 未在此启用：官方 agent-team-profile 会同时禁用 subagent 委派工具
 # （tool-subagent / tool-subagent-control / tool-subagent-list-agents / tool-subagent-fork），
