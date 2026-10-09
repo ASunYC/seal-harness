@@ -86,6 +86,24 @@
     - id: ui-voice-input
       name: '@deepseek-ai/dsh-experimental-client-ui-voice-input'
 
+# Browser Use 装配（playwright-mcp 驱动）。
+# 两行：browserUse Service 注册层 + 驱动层。
+# dsh-browser-use 只提供一个 BrowserUseRegistry Service（key: "browserUse"），
+# 不注册任何工具，是驱动层的 peer 依赖。
+# dsh-experimental-browser-use-playwright-mcp 在每个 Agent session 里
+# 用 ctx.plugin(McpClient, ...) 按需起一个 stdio 子进程连到 @playwright/mcp，
+# 无需任何 framework 级 mcp-client 静态行。
+# 注：enableScripts: false 阻止 playwright postinstall 下载 Chromium，
+# 使用系统 Chromium 或在安装后手动运行 `playwright install chromium`。
+- insert:
+    - id: browser-use
+      name: '@deepseek-ai/dsh-browser-use'
+    - id: experimental-browser-use-playwright-mcp
+      name: '@deepseek-ai/dsh-experimental-browser-use-playwright-mcp'
+      config:
+        mode: launch
+        headless: true
+
 # Agent Teams 未在此启用：官方 agent-team-profile 会同时禁用 subagent 委派工具
 # （tool-subagent / tool-subagent-control / tool-subagent-list-agents / tool-subagent-fork），
 # 属于改变产品默认行为的决策，需用户确认后再装配。

@@ -80,22 +80,35 @@ Deliverables UI、Jobs UI、权限档位 UI、Plan UI、定时任务 UI、SubAge
 原计划把 `dsh-browser-use`、`dsh-experimental-browser-use-runtime`、`dsh-computer-use`、
 `dsh-experimental-computer-use-cua-driver-native` 按单行 insert 装配。实测后该计划不成立。
 
-**依赖闭包（实测自各包 package.json）**：
+**依赖闭包（实测自各包 package.json 及 lib/index.js）**：
 
 | 包 | 角色 | 关键依赖 |
 | --- | --- | --- |
-| `dsh-browser-use` | 接口 | 仅 `cordis` + `dsh-brand`；**注册 0 个工具**，只导出 `BrowserUseRegistry` Service（1.2 KB） |
+| `dsh-browser-use` | 接口 | 仅 `cordis`；导出 `BrowserUseRegistry extends Service("browserUse")`，不注册任何工具 |
 | `dsh-computer-use` | 接口 | 同上（1.3 KB） |
-| `dsh-experimental-browser-use-runtime` | 实现 | peer: `dsh-mcp-client`、`dsh-scope`、`dsh-system-prompt`、`dsh-tools` |
-| `dsh-experimental-computer-use-cua-driver-native` | 实现 | peer: `dsh-mcp-client`；dep: `@trycua/cua-driver`（**未安装**） |
-| `dsh-experimental-browser-use-{stagehand-native,playwright-mcp,chrome-devtools-mcp}` | 驱动 | 分别依赖 `@browserbasehq/stagehand`+`@puppeteer/browsers`、`@playwright/mcp`、`chrome-devtools-mcp` |
+| `dsh-experimental-browser-use-runtime` | 实现 | 导出 `mountSessionMcp(ctx, options)` —— **以 JS 模块方式 import `@deepseek-ai/dsh-mcp-client`，在每个 Agent session 内调用 `ctx.plugin(McpClient, ...)` 起一个 stdio 子进程** |
+| `dsh-experimental-browser-use-playwright-mcp` | 驱动 | inject: `["browserUse","agents","tools","systemPrompt"]`；dep: `@playwright/mcp@0.0.80`（外部 npm，非 vendor） |
+| `dsh-experimental-browser-use-{stagehand-native,chrome-devtools-mcp}` | 驱动 | 分别依赖 `@browserbasehq/stagehand`+`@puppeteer/browsers`、`chrome-devtools-mcp`（均未安装） |
+| `dsh-experimental-computer-use-cua-driver-native` | 实现 | dep: `@trycua/cua-driver`（**未安装**，macOS 原生 helper，Windows 依赖 Python） |
 
-**两个结论**：
+**修正结论（取代初版三条结论）**：
 
-1. **单独装配两个「接口」包毫无产出** —— 它们只是空的 registry Service，不注册任何工具、不产生任何模型可见能力。
-2. **`mcp-client` 是 Browser Use 与 Computer Use 的前置依赖，不是可选项** —— 两个 runtime 实现都以它为 peer。此前把它当作「MCP 设置功能」而搁置，判断有误：它在 DSH 里是运行时依赖，不是一项待启用的功能。
-3. 三个驱动各带外部 npm 依赖，均未安装，需要分别评估体积与跨平台能力。
+1. **`dsh-browser-use` 只是 `browserUse` Service 注册层** —— 驱动层通过 `inject: ["browserUse"]` 拿到它，是 Cordis 框架层的 peer 依赖，需要一行 insert。
+2. **`mcp-client` 不需要 Cordis 框架层 insert** —— `mountSessionMcp` 直接以 ES 模块 `import * as McpClient from '@deepseek-ai/dsh-mcp-client'` 引入，每个 Agent session 内调用 `ctx.plugin(McpClient, ...)` 按需起子进程。它是 npm 安装级依赖（peer），不是 Cordis 注册级依赖。此前「需要框架层装配」的判断有误。
+3. **playwright-mcp 是唯一外部 npm 依赖** —— `@playwright/mcp@0.0.80` 不在 vendor，需网络安装（已完成，17.87 MiB）。`enableScripts: false` 阻止 Playwright 的 postinstall 下载 Chromium，需手动运行 `playwright install chromium`。
+4. 三个驱动的其余外部依赖（stagehand、chrome-devtools-mcp、@trycua/cua-driver）均未安装，需分别评估。
 
-**对 mcp-client 的纠正**：README 证实它是「每 server 一条配置」的设计（`serverName` + `transport: stdio|streamable-http`）。但它同时被 runtime 实现当作 peer 依赖消费 —— 也就是说浏览器/桌面的运行时内部会自己创建 mcp-client 实例去连它启动的驱动进程。因此它既需要**框架层装配**（供 runtime 解析），又需要**用户配置层按 server 添加**。
+**Browser Use 的正确装配**（两行，已实装）：
 
-**该阶段的正确顺序**：先装配 `dsh-mcp-client` 的框架层，再选一个驱动（`playwright-mcp` 跨平台性最好），最后接 `dsh-browser-use` + runtime。Computer Use 需先确认 `@trycua/cua-driver` 的许可与跨平台能力（macOS 有原生 helper，Windows 依赖 Python）。
+```yaml
+- insert:
+    - id: browser-use
+      name: '@deepseek-ai/dsh-browser-use'       # 提供 browserUse Service
+    - id: experimental-browser-use-playwright-mcp
+      name: '@deepseek-ai/dsh-experimental-browser-use-playwright-mcp'
+      config:
+        mode: launch
+        headless: true
+```
+
+Computer Use 仍需确认 `@trycua/cua-driver` 的许可与跨平台能力后再推进。

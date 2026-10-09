@@ -2400,6 +2400,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@deepseek-ai/dsh-browser-use@file:vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-browser-use-0.1.7-alpha.2.tgz::locator=seal-harness%40workspace%3A.":
+  version: 0.1.7-alpha.2
+  resolution: "@deepseek-ai/dsh-browser-use@file:vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-browser-use-0.1.7-alpha.2.tgz#vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-browser-use-0.1.7-alpha.2.tgz::hash=696cb4&locator=seal-harness%40workspace%3A."
+  peerDependencies:
+    "@deepseek-ai/cordis": ~4.0.4
+    "@deepseek-ai/dsh-brand": 0.1.7-alpha.2
+  checksum: 10c0/134b91a0bc1671707bedd795ef98b88ba2a11e30306aa65957fd4c1e9eb7d406c62f3095948f21aa5bfca3b5f362fb6f7f5d3b116b9b6fc41526c208e7027cb8
+  languageName: node
+  linkType: hard
+
 "@deepseek-ai/dsh-chunked-list@file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-chunked-list-0.1.5-rc.2.tgz::locator=seal-harness%40workspace%3A.":
   version: 0.1.5-rc.2
   resolution: "@deepseek-ai/dsh-chunked-list@file:vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-chunked-list-0.1.5-rc.2.tgz#vendor/dsh-runtime/0.1.5-rc.2/deepseek-ai-dsh-chunked-list-0.1.5-rc.2.tgz::hash=e3095d&locator=seal-harness%40workspace%3A."
@@ -4096,6 +4106,39 @@ __metadata:
     "@deepseek-ai/dsh-experimental-speech-to-text": 0.1.7-alpha.2
     "@deepseek-ai/dsh-typert-protocol": 0.1.7-alpha.2
   checksum: 10c0/965c3d439aa2dfaa996b0588b69d1d7ff4009afd04c8e269c391af3aa13bd7c8c1e7946411929f39906ea60a2aa3f34a599e281e01120c47739ad14cfa1765d8
+  languageName: node
+  linkType: hard
+
+"@deepseek-ai/dsh-experimental-browser-use-playwright-mcp@file:vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-playwright-mcp-0.1.7-alpha.2.tgz::locator=seal-harness%40workspace%3A.":
+  version: 0.1.7-alpha.2
+  resolution: "@deepseek-ai/dsh-experimental-browser-use-playwright-mcp@file:vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-playwright-mcp-0.1.7-alpha.2.tgz#vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-playwright-mcp-0.1.7-alpha.2.tgz::hash=26686d&locator=seal-harness%40workspace%3A."
+  dependencies:
+    "@deepseek-ai/dsh-experimental-browser-use-runtime": "npm:0.1.7-alpha.2"
+    "@playwright/mcp": "npm:0.0.80"
+  peerDependencies:
+    "@deepseek-ai/cordis": ~4.0.4
+    "@deepseek-ai/dsh-agent": 0.1.7-alpha.2
+    "@deepseek-ai/dsh-browser-use": 0.1.7-alpha.2
+    "@deepseek-ai/dsh-system-prompt": 0.1.7-alpha.2
+    "@deepseek-ai/dsh-tools": 0.1.7-alpha.2
+  checksum: 10c0/8e38fd91777fdbb7d8bca7b8212e38dbe17593e606e2c1cd376a6d0698c6abba737a118b6351a6d0c13e4d4cefbd69b87edb16b7c5323513393f489d4aaab4de
+  languageName: node
+  linkType: hard
+
+"@deepseek-ai/dsh-experimental-browser-use-runtime@file:vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-runtime-0.1.7-alpha.2.tgz::locator=seal-harness%40workspace%3A.":
+  version: 0.1.7-alpha.2
+  resolution: "@deepseek-ai/dsh-experimental-browser-use-runtime@file:vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-runtime-0.1.7-alpha.2.tgz#vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-runtime-0.1.7-alpha.2.tgz::hash=47341c&locator=seal-harness%40workspace%3A."
+  dependencies:
+    "@deepseek-ai/schemastery": "npm:~3.18.4"
+  peerDependencies:
+    "@deepseek-ai/cordis": ~4.0.4
+    "@deepseek-ai/dsh-agent": 0.1.7-alpha.2
+    "@deepseek-ai/dsh-browser-use": 0.1.7-alpha.2
+    "@deepseek-ai/dsh-mcp-client": 0.1.7-alpha.2
+    "@deepseek-ai/dsh-scope": 0.1.7-alpha.2
+    "@deepseek-ai/dsh-system-prompt": 0.1.7-alpha.2
+    "@deepseek-ai/dsh-tools": 0.1.7-alpha.2
+  checksum: 10c0/468ee572437857e28f02c91ae44058f49140c72b83310a8692400680f32e8cd43c46d6d4a2848d013785c7873b3888516233c0a4a020460e9c7d3a020a82ef5e
   languageName: node
   linkType: hard
 
@@ -11375,6 +11418,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@playwright/mcp@npm:0.0.80":
+  version: 0.0.80
+  resolution: "@playwright/mcp@npm:0.0.80"
+  dependencies:
+    playwright: "npm:1.63.0-alpha-2026-08-31"
+    playwright-core: "npm:1.63.0-alpha-2026-08-31"
+  bin:
+    playwright-mcp: cli.js
+  checksum: 10c0/d5b628948257fd008d4929796f6ae3367e1b08be8757952d37a4e6f9609e5c2b16b272baf01aa2ac930eb27dae6929694b397c71375d49bf5f79a385676d9cb2
+  languageName: node
+  linkType: hard
+
 "@protobufjs/aspromise@npm:^1.1.1, @protobufjs/aspromise@npm:^1.1.2":
   version: 1.1.2
   resolution: "@protobufjs/aspromise@npm:1.1.2"
@@ -15038,6 +15093,7 @@ __metadata:
     "@deepseek-ai/dsh-base": "npm:0.1.7-alpha.2"
     "@deepseek-ai/dsh-bash-local": "npm:0.1.7-alpha.2"
     "@deepseek-ai/dsh-brand": "npm:0.1.7-alpha.2"
+    "@deepseek-ai/dsh-browser-use": "npm:0.1.7-alpha.2"
     "@deepseek-ai/dsh-client-connection": "npm:0.1.7-alpha.2"
     "@deepseek-ai/dsh-client-file-upload": "npm:0.1.7-alpha.2"
     "@deepseek-ai/dsh-client-locale": "npm:0.1.7-alpha.2"
@@ -15076,6 +15132,7 @@ __metadata:
     "@deepseek-ai/dsh-experimental-agent-team": "npm:0.1.7-alpha.2"
     "@deepseek-ai/dsh-experimental-agent-team-profile": "npm:0.1.7-alpha.2"
     "@deepseek-ai/dsh-experimental-api-speech-to-text": "npm:0.1.7-alpha.2"
+    "@deepseek-ai/dsh-experimental-browser-use-playwright-mcp": "npm:0.1.7-alpha.2"
     "@deepseek-ai/dsh-experimental-client-ui-agent-team": "npm:0.1.7-alpha.2"
     "@deepseek-ai/dsh-experimental-client-ui-voice-input": "npm:0.1.7-alpha.2"
     "@deepseek-ai/dsh-experimental-speech-to-text": "npm:0.1.7-alpha.2"
@@ -19416,6 +19473,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"playwright-core@npm:1.63.0-alpha-2026-08-31":
+  version: 1.63.0-alpha-2026-08-31
+  resolution: "playwright-core@npm:1.63.0-alpha-2026-08-31"
+  bin:
+    playwright-core: cli.js
+  checksum: 10c0/502654b75f156c1dad1f546b6da549c00e52ca1569b48137bd213b06584786f8fd62ca02ad7a053c6338dd602be44b1d4fe6e679fe79903f02efa6f2bd9a2f0d
+  languageName: node
+  linkType: hard
+
 "playwright@npm:1.63.0":
   version: 1.63.0
   resolution: "playwright@npm:1.63.0"
@@ -19424,6 +19490,17 @@ __metadata:
   bin:
     playwright: cli.js
   checksum: 10c0/d1fd048a89be27c9aba6757dc4f70eff4a5163b49f439ad691767be8b2a482327d0dd1928b4f73c8fe0d8b33aab2c9dc2670424ab60f112d9e98e91b94e3b090
+  languageName: node
+  linkType: hard
+
+"playwright@npm:1.63.0-alpha-2026-08-31":
+  version: 1.63.0-alpha-2026-08-31
+  resolution: "playwright@npm:1.63.0-alpha-2026-08-31"
+  dependencies:
+    playwright-core: "npm:1.63.0-alpha-2026-08-31"
+  bin:
+    playwright: cli.js
+  checksum: 10c0/c97543b9661ffa54ecc5e4bc5a69f48bd1aa46f6712700a36b706fc557cb4971299e7d00e2d4fd640fd80e7cf0e7b2aa0234c930fa1f1936b5fc1ed05b8c98c8
   languageName: node
   linkType: hard
 
