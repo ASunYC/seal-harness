@@ -39,3 +39,43 @@
       name: '@seal-harness/experts'
     - id: seal-harness-session-context-selector
       name: '@seal-harness/session-context-selector'
+
+# cc-haha 功能对齐：官方 Host 能力按需装配。这些包已随 Beta Desktop 安装，
+# 但活动 web profile 模板（dsh-base + dsh-web-app）未包含对应行。
+# 单独成块便于按能力回退。
+- insert:
+    # 应用内持久 PTY 注册；上游 UI 行 ui-sidebar-terminal 已装配，此前缺此 Host。
+    - id: terminal
+      name: '@deepseek-ai/dsh-terminal'
+    # MCP 客户端不在此静态装配：dsh-mcp-client 按 MCP server 逐实例化，
+    # 每行需要 serverName 与传输配置，由 DSH 的 MCP 设置入口在用户添加服务器时创建。
+    # 上游 mcp-resources 已装配，连接端随 server 配置出现。
+    # 工作流编排运行时；上游 tool-workflow 与 ui-workflow-run 已装配，此前缺编排端。
+    - id: workflow
+      name: '@deepseek-ai/dsh-workflow'
+    # 向用户提问工具；上游 ui-user-questions 已装配，此前无提问工具。
+    - id: tool-ask-user
+      name: '@deepseek-ai/dsh-tool-ask-user'
+    # 计划任务 Host；上游 ui-schedule 已装配，此前只有界面空态而无调度服务。
+    - id: schedule
+      name: '@deepseek-ai/dsh-schedule'
+
+# 语音输入成套装配（对应官方 OPTIONAL_BUNDLES 之一）。
+# 四行同时提供 STT 服务、本地 SenseVoice provider、远端 API provider 与输入界面。
+- insert:
+    - id: speech-to-text
+      name: '@deepseek-ai/dsh-experimental-speech-to-text'
+      config:
+        defaultProvider: sensevoice-local
+    - id: speech-to-text-sensevoice
+      name: '@deepseek-ai/dsh-experimental-speech-to-text-sensevoice'
+      config:
+        dataRoot: !!js dshHomePath('speech-to-text', 'sensevoice')
+    - id: api-speech-to-text
+      name: '@deepseek-ai/dsh-experimental-api-speech-to-text'
+    - id: ui-voice-input
+      name: '@deepseek-ai/dsh-experimental-client-ui-voice-input'
+
+# Agent Teams 未在此启用：官方 agent-team-profile 会同时禁用 subagent 委派工具
+# （tool-subagent / tool-subagent-control / tool-subagent-list-agents / tool-subagent-fork），
+# 属于改变产品默认行为的决策，需用户确认后再装配。
