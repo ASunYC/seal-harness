@@ -112,6 +112,11 @@
 # bundle 另有 4 行禁用全局 tool-subagent*，dsh-web-app 顶层已禁用同样 4 行
 # （Web 预设在各自作用域挂载 subagent 控件），故无需重复，现有委派能力不变。
 - insert:
+    # ImageGen + ImageEdit 工具；凭据通过 DSH credentials 管理（BaseURL + API Key + Model）。
+    # 支持 OpenAI Images API 兼容接口（/v1/images/generations + /v1/images/edits）。
+    # 图片保存到 ~/.seal-harness/images/<YYYY-MM-DD>/。
+    - id: seal-harness-image-generation
+      name: '@seal-harness/image-generation'
     - id: agent-team
       name: '@deepseek-ai/dsh-experimental-agent-team'
       config:
