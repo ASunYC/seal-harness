@@ -27,6 +27,8 @@
       name: '@seal-harness/user'
     - id: seal-harness-navigation
       name: '@seal-harness/navigation'
+    - id: seal-harness-scheduled-tasks
+      name: '@seal-harness/scheduled-tasks'
     - id: ask-jev
       name: dsh-plugin-ask-jev
     - id: seal-harness-store

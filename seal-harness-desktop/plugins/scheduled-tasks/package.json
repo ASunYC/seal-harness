@@ -1,0 +1,27 @@
+{
+  "name": "@seal-harness/scheduled-tasks",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Seal Harness 定时任务与独立会话执行",
+  "main": "lib/index.js",
+  "exports": { ".": "./lib/index.js", "./client": "./lib/client.js", "./package.json": "./package.json" },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer", "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-connection", "@deepseek-ai/dsh-client-ui-workspace",
+        "@deepseek-ai/dsh-api-workspace-controller", "@deepseek-ai/dsh-api-session-controller",
+        "@seal-harness/identity", "@seal-harness/navigation"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@seal-harness/navigation": "0.1.0",
+    "@deepseek-ai/dsh-client-connection": "0.1.7-alpha.2",
+    "@deepseek-ai/dsh-api-session-controller": "0.1.7-alpha.2",
+    "@deepseek-ai/dsh-workspace": "0.1.7-alpha.2",
+    "react": "18.3.1", "zod": "4.4.3"
+  }
+}

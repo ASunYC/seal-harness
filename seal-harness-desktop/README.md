@@ -38,7 +38,8 @@ corepack yarn seal-harness:dev
 - `scripts/` 复用上游安装的构建工具和打包检查，没有第二套依赖或锁文件。
 - `plugins/local-data/` 负责同一个 SQLite 数据库、迁移和事务。`plugins/identity/` 负责本地账号认证；`plugins/experts/`、`plugins/skills/` 共用该库。既有项目表保留为历史数据，不再有产品项目插件读取它。
 - 根 `packages/dsh-plugin-ask-jev/` 是可独立安装的 DSH 决策插件，产品构建装配同一包；支持 TypeSafe Jev 和阿里百炼 `decision-model-preview`，不依赖 Seal Harness 本地身份服务。
-- `plugins/navigation/` 通过公开 Desktop slot 组合“首页、问问决策、空间、定时任务”一级窄栏；问问决策打开独立页面，首页并列专家、技能、连接器、插件等功能入口与 DSH 原生工作区、会话列表。顶部“新会话”按钮进入原生对话。专家、技能、连接器仍独立管理数据和生命周期；插件管理复用 DSH 原生主面板。空间和定时任务暂为空态。
+- `plugins/navigation/` 通过公开 Desktop slot 组合“首页、问问决策、空间、定时任务”一级窄栏；问问决策打开独立页面，首页并列专家、技能、连接器、插件等功能入口与 DSH 原生工作区、会话列表。顶部“新会话”按钮进入原生对话。专家、技能、连接器仍独立管理数据和生命周期；插件管理复用 DSH 原生主面板。空间暂为空态。
+- `plugins/scheduled-tasks/` 补齐定时任务内容，支持每天、每周、每隔若干分钟和指定时间一次执行，保存时区、工作区及提示词。每次运行通过公开 Session Controller 新建独立会话，使用当前默认模型与权限策略；可编辑、启停、手动运行、停止和查看最近 100 条记录。任务按本地账号保存在 SQLite。应用运行且已登录时执行；关闭、休眠、退出登录错过的计划不补跑。同一任务不重叠，30 分钟超时请求停止；重启将未确认完成的执行标记中断。删除计划不删除原生会话。
 
 构建仅在忽略目录中装配插件到 `dsh-plugin-desktop-beta/node_modules/seal-harness-desktop/`，资源到 `dsh-plugin-desktop-beta/lib/product-assets/`。安装包通过electron-builder的文件映射包含同一插件。上游源码、图标源文件及Harness子模块不会被构建脚本改写。
 

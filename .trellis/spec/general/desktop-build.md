@@ -37,6 +37,49 @@ Node 要求 `^22.19.0 || >=24.0.0`，根 Yarn 固定 `4.18.0`。使用 `corepack
 
 Seal Harness 不显示上游 DeepSeek Harness 的内测声明。品牌 Client 通过公开的 `settings.onboarding` 槽，以更低优先级覆盖 `welcome-notice` 并调用 `complete`，让引导继续；不修改上游源码，也不写入用户的声明确认状态。
 
+## 定时任务契约
+
+### 1. 范围与触发
+
+`@seal-harness/scheduled-tasks` 是产品自有插件，在 identity/navigation 后装配。导航继续拥有已有一级入口，任务插件注册其内容，不重复增加首页资源入口。Host 使用 `sealHarnessDatabase` 的 v3 表，任务和查询按当前本地账号隔离；应用启动将尚未结算的 running 记录标记 interrupted。
+
+### 2. 接口与存储签名
+
+POST `/api/seal-harness-scheduled-tasks/{action}` 使用现有 client-request/server-response RPC envelope。`list` 接收 `{}`；`save` 接收 `{ id?, name, prompt, workspaceId, schedule, enabled? }`；`runs/delete/run/stop` 接收 `{ id }`；`toggle` 接收 `{ id, enabled }`。结果为 `{ ok: true, value }` 或 `{ ok: false, error: { code: 'scheduledTaskFailed', message, details: {} } }`。
+
+`scheduled_tasks` 保存账号、工作区、schedule JSON、启用状态和下一次时间；`scheduled_runs` 保存任务快照名称、唯一 session_id、session_available、fire_key、status、开始/结束时间与错误。`UNIQUE(task_id, fire_key)` 防止重复自动触发，partial unique index 禁止同任务多个 running 记录。
+
+### 3. 请求与执行约束
+
+执行频率支持 daily、weekly、interval、once。daily/weekly 保存 IANA 时区并按当地时间计算，夏令时不存在的分钟跳过、重复分钟同日只运行一次。运行中每 10 秒检查，超过 60 秒的过期触发只推进；启动和账号变更重新计算过期计划，不补跑未登录、关闭或休眠期间的执行。
+
+`schedule` 为 `{ kind: 'daily', time, timeZone }`、`{ kind: 'weekly', time, timeZone, weekdays }`、`{ kind: 'interval', minutes }` 或 `{ kind: 'once', at }`。时间戳返回 epoch milliseconds，once 输入为 UTC ISO 字符串，日/周计划的 time 为 `HH:mm`。`list` 返回任务数组及各自 lastRun，`runs` 返回最近 100 条运行记录；会话创建成功才公开 sessionId。
+
+自动推进计划和领取运行记录同 SQLite 事务提交；每个任务只允许一个 running 记录。预先保存唯一会话 ID，通过公开 `sessionController.create/rename/prompt/cancel/resolveAgent` 创建及执行原生会话，不启动另一套 CLI。等待 `turn/end` 和 Agent `whenIdle()` 后结算；取消/超时使用原有取消接口，权限策略和默认模型保持原生选择。记录仅保存状态与会话引用，完整输出由上游会话持久化。关闭插件清理定时器、账号订阅和正在执行的任务。
+
+### 4. 校验与错误矩阵
+
+| 边界 | 行为 |
+| --- | --- |
+| 未登录、跨账号 ID | 拒绝任务读写或执行 |
+| 名称 1–120 字符、提示词 1–30000 字符、现存 workspaceId | strict schema 校验；不接受调用方指定账号 |
+| daily/weekly | 校验 HH:mm、有效时区；weekly 至少一天，日编号 0–6 |
+| interval / once | 间隔为 1–10080 整数分钟；启用的 once 必须在未来 |
+| 同任务运行中 | 拒绝手动重复运行和删除；自动触发推进计划但不重叠 |
+| 模型错误、取消、超时、重启 | 分别记录 failed/cancelled/timeout/interrupted，原生会话保留 |
+
+### 5. 正常、基础与错误案例
+
+基础：每天 Asia/Shanghai 09:00 执行，下一次保存为对应 UTC 时间。正常：暂停后手动运行仍可新建独立会话，执行记录可打开该会话；删除计划只删除计划/记录。错误：一次执行时间已经过去、工作区消失或另一账号请求任务 ID 时明确拒绝。
+
+### 6. 必需测试
+
+回归覆盖 v2 迁移、账号隔离、重启恢复、重复/重叠防护、时区与夏令时、实际 RPC 提示词、取消等待和页面创建/运行/记录/删除交互。产品 build/check 和 Profile 激活仍是必需门禁；真实模型执行与跨平台安装分别记录。
+
+### 7. 错误与正确实现
+
+错误：在 SQLite 事务内先创建外部会话，随后提交数据库；提交失败会留下无记录的执行。正确：事务内只推进时间和领取记录，提交成功后再调用会话服务，并测试回滚时外部执行次数为 0。
+
 ## 验证
 
 每次修改产品装配后运行 `corepack yarn seal-harness:build`、`corepack yarn seal-harness:check`，并检查 `scripts/verify-profile.mjs` 的实际插件组合。数据库迁移测试须覆盖原文件保留、重启后从 SQLite 恢复、不同用户隔离。认证测试须覆盖首次创建、错误密码、会话退出与重启、改密。产品包核对 `lib` 与装配目录没有已删除的项目、知识库及产品智能体模块。构建/类型检查不等于真实 UI、模型回复、签名安装或跨平台通过；各自记录实测范围。

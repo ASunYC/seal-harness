@@ -41,7 +41,7 @@ export function apply(ctx) {
   function EmptyMenu() { return null }
 
   function TasksMenu() {
-    return <nav className="seal-nav-secondary" aria-label="定时任务二级菜单"><header><span>SEAL HARNESS</span><h2>定时任务</h2></header><p className="seal-nav-secondary__empty">定时任务尚未开放。</p></nav>
+    return <nav className="seal-nav-secondary" aria-label="定时任务二级菜单"><header><span>SEAL HARNESS</span><h2>定时任务</h2></header><p className="seal-nav-secondary__empty">管理执行计划，查看每次运行的独立会话。</p></nav>
   }
 
   function Rail({ usePanelInfo }) {
@@ -50,7 +50,7 @@ export function apply(ctx) {
     const sessions = useSyncExternalStore(ctx.sessions.list.subscribe, ctx.sessions.list.getSnapshot)
     const mainSessionId = Object.values(sessions.byId).find(session => (session.retainedBy?.mainView ?? 0) > 0)?.id
     const inDecisionConversation = activePanelId === null && decisionActive && mainSessionId === decisionSessionId
-    const homeEntries = entries.filter(entry => entry.id !== DECISION)
+    const homeEntries = entries.filter(entry => entry.id !== DECISION && entry.id !== SCHEDULES)
     const decision = entries.find(entry => entry.id === DECISION)
     const homeActive = (activePanelId === null && !inDecisionConversation) || activePanelId === HOME || activePanelId === 'plugins' || homeEntries.some(entry => entry.id === activePanelId)
     const resourceIds = entries.map(entry => entry.id).join('|')
@@ -63,7 +63,7 @@ export function apply(ctx) {
       if (activePanelId === null && decisionActive && mainSessionId && mainSessionId !== decisionSessionId) resources.leaveDecision()
     }, [activePanelId, decisionActive, decisionSessionId, mainSessionId])
     useEffect(() => {
-      const releases = entries.filter(entry => entry.id !== 'plugins').map(entry => ctx.slots.inject('main', () => ctx.slots.register(
+      const releases = entries.filter(entry => entry.id !== 'plugins' && entry.id !== SCHEDULES).map(entry => ctx.slots.inject('main', () => ctx.slots.register(
         { name: 'main', key: entry.id },
         () => <div className="seal-nav-content"><entry.Panel /></div>,
       )))
@@ -116,7 +116,9 @@ export function apply(ctx) {
   }
 
   function SchedulesPanel() {
-    return <main className="seal-nav-page" data-seal-nav-panel="schedules"><p className="seal-nav-page__eyebrow">SEAL HARNESS / AUTOMATIONS</p><h1>定时任务</h1><p>让重复的工作有固定的节奏。</p><section className="seal-nav-page__empty"><NavGlyph name="schedules" size={30} /><h2>当前没有定时任务</h2><p>定时任务功能尚未开放，当前无法创建或执行任务。</p></section></main>
+    const { entries } = useSyncExternalStore(resources.subscribe, resources.getSnapshot)
+    const entry = entries.find(item => item.id === SCHEDULES)
+    return entry ? <entry.Panel /> : <main className="seal-nav-page" data-seal-nav-panel="schedules"><h1>定时任务</h1><p role="status">正在加载定时任务…</p></main>
   }
 
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({ name: 'shell.overlay', id: 'seal-harness-navigation', label: '一级导航' }, Rail))

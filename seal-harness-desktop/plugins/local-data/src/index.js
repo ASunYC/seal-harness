@@ -7,7 +7,7 @@ import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 export const name = 'seal-harness-local-data'
 export const inject = []
 
-const SCHEMA_VERSION = 2
+const SCHEMA_VERSION = 3
 
 export function openProductDatabase(home = resolveDshHome(process.env.DSH_HOME || join(homedir(), '.seal-harness'))) {
   mkdirSync(home, { recursive: true })
@@ -96,6 +96,46 @@ export function openProductDatabase(home = resolveDshHome(process.env.DSH_HOME |
             state_json TEXT NOT NULL
           );
           PRAGMA user_version = 2;
+        `)
+        db.exec('COMMIT')
+      } catch (error) {
+        db.exec('ROLLBACK')
+        throw error
+      }
+    }
+    if (version < 3) {
+      db.exec('BEGIN IMMEDIATE')
+      try {
+        db.exec(`
+          CREATE TABLE scheduled_tasks (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            name TEXT NOT NULL,
+            prompt TEXT NOT NULL,
+            workspace_id TEXT NOT NULL,
+            schedule_json TEXT NOT NULL,
+            enabled INTEGER NOT NULL CHECK (enabled IN (0, 1)),
+            next_run_at INTEGER,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL
+          );
+          CREATE INDEX scheduled_tasks_owner ON scheduled_tasks(user_id, created_at DESC);
+          CREATE TABLE scheduled_runs (
+            id TEXT PRIMARY KEY,
+            task_id TEXT NOT NULL REFERENCES scheduled_tasks(id) ON DELETE CASCADE,
+            task_name TEXT NOT NULL,
+            session_id TEXT NOT NULL UNIQUE,
+            session_available INTEGER NOT NULL DEFAULT 0 CHECK (session_available IN (0, 1)),
+            fire_key TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (status IN ('running', 'completed', 'failed', 'cancelled', 'timeout', 'interrupted')),
+            started_at INTEGER NOT NULL,
+            finished_at INTEGER,
+            error TEXT NOT NULL DEFAULT '',
+            UNIQUE (task_id, fire_key)
+          );
+          CREATE UNIQUE INDEX scheduled_runs_active ON scheduled_runs(task_id) WHERE status = 'running';
+          CREATE INDEX scheduled_runs_history ON scheduled_runs(task_id, started_at DESC);
+          PRAGMA user_version = 3;
         `)
         db.exec('COMMIT')
       } catch (error) {

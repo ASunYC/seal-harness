@@ -81,3 +81,11 @@ Stable/Beta 的原生远程控制确认文案已改为读取自定义产品名�
 `packages/dsh-plugin-ask-jev/` 独立构建并打出 `dsh-plugin-ask-jev-0.1.0.tgz`。使用隔离 `DSH_HOME`，官方 `dsh plugin add` 将 tarball 安装到 Web Profile，Profile 配置出现 `ask-jev` bundle；Host 可从安装后的包直接导入，DSH Web 服务成功启动。在真实浏览器中打开侧栏“问问决策”，切换阿里模型后看到地域、WorkspaceId 与独立密钥配置。Seal Harness 产品构建、完整检查、根 `typecheck`、`check:layout`、`yarn install --immutable` 通过。七项插件定向测试覆盖两个官方端点、请求/响应、Host RPC、账号隔离、持久化、Client 选择与结果展示。
 
 Windows 解包目录中确认插件的 Host、Client、bundle、许可证和 README 齐全，Host 文件与构建源哈希一致。完整 `seal-harness:package` 的后置上游运行时 smoke 在 `@deepseek-ai/dsh-fs-local` 的 BigInt 计算处失败；这项分发检查不能报告通过。测试环境没有 TypeSafe Jev Key、百炼 Key 或 WorkspaceId，两个真实远端模型尚未联调；协议测试使用受控夹具，不宣称云端成功。
+
+## 2026-10-09 定时任务与独立会话
+
+既有定时任务入口接入新产品插件，支持每天、每周、间隔和一次执行，创建/编辑/启停/删除、手动运行、停止、执行记录和原生会话跳转。计划与记录存入同一 SQLite v3；每次执行使用唯一的新会话 ID，复用公开 Session Controller 和当前默认模型/权限策略。
+
+Node 24.19.0、Yarn 4.18.0 下产品完整构建通过。最终源码重新装配后 `seal-harness:check` 通过：163 项，161 passed、2 个已有平台条件 skipped、0 failed；真实 Profile 的 10 个业务插件激活、重复组合与两代 HMR 检查通过。定时任务新增 13 项测试通过（Client 会话跳转最后单独检查），覆盖旧库迁移、账号隔离、重复/重叠、SQLite 回滚不启动会话、时区/DST、取消/超时、中断恢复、RPC 和页面交互。`git diff --check` 通过。
+
+测试使用隔离数据库与受控模型执行接口；未运行真实远端模型、真实 Electron 窗口验收或三平台安装/升级。全部改动按用户要求保留未提交。
