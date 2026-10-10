@@ -105,6 +105,25 @@
         headless: true
         executablePath: 'C:\Program Files\Google\Chrome\Application\chrome.exe'
 
-# Agent Teams 未在此启用：官方 agent-team-profile 会同时禁用 subagent 委派工具
-# （tool-subagent / tool-subagent-control / tool-subagent-list-agents / tool-subagent-fork），
-# 属于改变产品默认行为的决策，需用户确认后再装配。
+# Agent Teams（实验性），复刻官方 agent-team-profile bundle 的 insert 部分。
+# 该 bundle 是 dsh.bundle.patch，只能进 profile 的 dsh.profile.bundles，
+# 而 desktopBundleList 会按 REQUIRED_BUNDLES 重写该列表，产品层无法注入，
+# 因此直接在这里插入它的三行。
+# bundle 另有 4 行禁用全局 tool-subagent*，dsh-web-app 顶层已禁用同样 4 行
+# （Web 预设在各自作用域挂载 subagent 控件），故无需重复，现有委派能力不变。
+- insert:
+    - id: agent-team
+      name: '@deepseek-ai/dsh-experimental-agent-team'
+      config:
+        maxMembers: 8
+        maxTasks: 256
+        maxPendingMessagesPerMember: 64
+        maxMessageBytes: 65536
+        disposalTimeoutMs: 5000
+    - id: tool-agent-team
+      name: '@deepseek-ai/dsh-experimental-tool-agent-team'
+      config:
+        freshProvider: spawn
+        forkProvider: fork
+    - id: ui-agent-team
+      name: '@deepseek-ai/dsh-experimental-client-ui-agent-team'
