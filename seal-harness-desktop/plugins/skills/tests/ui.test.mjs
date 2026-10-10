@@ -1,6 +1,29 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mountPanel } from './ui-support.mjs'
+import { skillCatalog } from '../../capability-shared/src/catalog.js'
+
+test('系统技能显示完整目录，查看许可和安装要求后接入既有安装动作', async t => {
+  const calls = []
+  const catalog = skillCatalog.map(item => ({ ...item, installed: false, skillCount: 1 }))
+  const { click } = await mountPanel(t, 'skills', async (endpoint, payload) => {
+    calls.push({ endpoint, payload })
+    if (endpoint === 'skills/list') return { revision: 1, skills: [], catalog }
+    if (endpoint === 'skills/installCatalog') return { revision: 2, skills: [], catalog: catalog.map(item => ({ ...item, installed: item.id === payload.id })) }
+    throw new Error(endpoint)
+  })
+  assert.equal(document.querySelectorAll('.cap-catalog__card').length, 407)
+  await click('查看 前端界面设计')
+  const dialog = document.querySelector('[role="dialog"][aria-label="前端界面设计"]')
+  assert(dialog)
+  assert.match(dialog.textContent, /许可|使用要求/)
+  await click('安装')
+  const installed = calls.find(call => call.endpoint === 'skills/installCatalog')
+  assert.equal(installed.payload.id, 'bundle:frontend-design')
+  assert.equal(installed.payload.expectedRevision, 1)
+  assert.equal(document.querySelector('[role="dialog"]'), null)
+  assert.match(document.body.textContent, /前端界面设计 已安装/)
+})
 
 test('技能页保留已安装区块，系统个人为页签，创建进入会话', async t => {
   const calls = []

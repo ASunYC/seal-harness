@@ -53,6 +53,12 @@ export async function buildProductPlugins() {
     const entry = 'src/index.js'
     await build({ ...common, entry: { index: entry, ...(folder === 'experts' ? { runtime: 'src/runtime.js' } : {}) }, format: 'esm', platform: 'node', fixedExtension: false,
       deps: { neverBundle: [/^@deepseek-ai\//, /^@seal-harness\//, 'zod', 'yaml', 'adm-zip', 'unzipper', 'pdfjs-dist', '@silurus/ooxml', 'ssf', 'ssh2'] } })
+    if (['connectors', 'skills'].includes(folder)) {
+      const notices = join(cwd, 'lib/third-party/cc-haha')
+      mkdirSync(notices, { recursive: true })
+      for (const file of ['LICENSE', 'NOTICE.md']) cpSync(join(productRoot, 'plugins/capability-shared/vendor/cc-haha', file), join(notices, file))
+      cpSync(join(productRoot, 'plugins/capability-shared/catalog/cc-haha-provenance.json'), join(notices, 'provenance.json'))
+    }
     if (manifest.dsh?.client) {
       await build({ ...common, entry: { client: 'src/client.jsx' }, format: 'cjs', platform: 'browser', target: 'es2022', deps: { neverBundle: [/^react(?:-dom)?(?:\/|$)/] },
         define: {

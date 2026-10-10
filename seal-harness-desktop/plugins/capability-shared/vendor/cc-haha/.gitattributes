@@ -1,0 +1,3 @@
+# 保留来源文件字节，使原始 SHA 校验在每个平台和新 checkout 中一致。
+*.ts -text whitespace=trailing-space,space-before-tab,cr-at-eol
+LICENSE -text whitespace=trailing-space,space-before-tab,cr-at-eol

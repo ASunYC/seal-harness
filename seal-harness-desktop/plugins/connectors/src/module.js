@@ -1,5 +1,8 @@
 import { hasCompletionMarker, prepareWorkspace } from './workspace.js'
 import { resolveStdioRuntime } from './runtime.js'
+import { connectorCatalog, catalogConnector, remoteConfiguration, remoteUrl, skillBundles } from '../../capability-shared/src/catalog.js'
+import { nativeAdapter } from './native.js'
+import * as nativePlugin from './native.js'
 import { join, relative, isAbsolute } from 'node:path'
 import { readFile, realpath } from 'node:fs/promises'
 import { safeRelative } from '../../skills/src/package.js'
@@ -56,6 +59,7 @@ export async function createModule(ctx, { home, backend }) {
   let currentAccountId = 'local'
   let packagePreview
   let disposed = false
+  const nativeJobs = new Map()
   let chain = Promise.resolve()
   const own = exec => entries.find(entry => exec.name.startsWith(prefix(entry.id)))
   const identity = () => ctx.get('sealHarnessIdentity')
@@ -141,7 +145,10 @@ export async function createModule(ctx, { home, backend }) {
     for (const [name, environmentName] of Object.entries(entry.headerEnvironment)) {
       if (process.env[environmentName] !== undefined) assign(name, process.env[environmentName])
     }
-    for (const [name, value] of Object.entries(entry.headers)) assign(name, value)
+    for (const [name, value] of Object.entries(entry.headers)) {
+      const prefix = Object.entries(entry.headerPrefixes).find(([key]) => key.toLowerCase() === name.toLowerCase())?.[1] ?? ''
+      assign(name, value && prefix && !value.startsWith(prefix) ? `${prefix}${value}` : value)
+    }
     return resolved
   }
 
@@ -159,7 +166,7 @@ export async function createModule(ctx, { home, backend }) {
       },
     } })
     const config = {
-      serverName, transport: entry.transport, url: entry.url, headers: runtimeHeaders(entry),
+      serverName, transport: entry.transport, url: remoteUrl(entry), headers: runtimeHeaders(entry),
       toolCallTimeoutMs: entry.toolCallTimeoutMs, failOnStartupError: true,
     }
     const fiber = registration.plugin(entry.transport === 'sse' ? sseClient : mcpClient, config)
@@ -201,6 +208,7 @@ export async function createModule(ctx, { home, backend }) {
       return
     }
     const runtimeEnv = runtimeEnvironment(entry)
+    if (entry.requiredQuery.some(name => !entry.queryCredentials[name])) { outcomes.set(entry.id, { status: 'unconfigured', issue: '请先配置所需 API Key。' }); return }
     if (entry.requiredEnv.some(name => !runtimeEnv[name]) || entry.credentialSlots.some(slot => slot.required && !entry.credentialValues[slot.name])) { outcomes.set(entry.id, { status: 'unconfigured', issue: '请先配置所需环境变量或凭据。' }); return }
     try {
       await validateTransport(entry)
@@ -210,6 +218,12 @@ export async function createModule(ctx, { home, backend }) {
         if (current?.accountId !== session?.accountId || current?.epoch !== session?.epoch) throw new ConnectorError('identityChanged')
       }
       let headers = resolvedHeaders
+      let native
+      if (entry.nativeCli) {
+        native = nativeAdapter(entry.catalogId, home, entry.ownerAccountId)
+        const status = await native.adapter.check(native.installation, signal ?? AbortSignal.timeout(30000))
+        if (!status.authenticated) { outcomes.set(entry.id, { status: 'unconfigured', issue: '请先完成官方账号授权。' }); return }
+      }
       if (entry.oauth) {
         const authorized = await oauth.refresh(entry, signal)
         headers = { ...entry.headers, Authorization: `Bearer ${authorized.tokens.access_token}` }
@@ -222,7 +236,7 @@ export async function createModule(ctx, { home, backend }) {
         serverName: `zz-${entry.id}`, transport: entry.transport,
         ...(entry.transport === 'stdio'
           ? resolveStdioRuntime(entry, runtimeEnv)
-          : { url: entry.url, headers }),
+          : { url: remoteUrl(entry), headers }),
         toolCallTimeoutMs: entry.toolCallTimeoutMs, failOnStartupError: true,
       }
       // 只记录子插件自己的注册；全局 schemas() 会投影无关原生工具。
@@ -233,7 +247,7 @@ export async function createModule(ctx, { home, backend }) {
           return () => { toolNames.delete(definition.name); return dispose() }
         },
       } })
-      const fiber = registration.plugin(entry.adapter ? httpAdapter : entry.transport === 'sse' ? sseClient : mcpClient, entry.adapter ? { ...config, adapter: entry.adapter, values: entry.credentialValues } : config)
+      const fiber = registration.plugin(native ? nativePlugin : entry.adapter ? httpAdapter : entry.transport === 'sse' ? sseClient : mcpClient, native ? { ...config, native } : entry.adapter ? { ...config, adapter: entry.adapter, values: entry.credentialValues } : config)
       running.set(entry.id, fiber)
       await fiber.await()
       assertActive(signal)
@@ -303,13 +317,15 @@ export async function createModule(ctx, { home, backend }) {
   }
 
   function view(entry) {
-    const { headers, env, credentialValues, adapter, bootstrap, source, oauth: authorization, ownerAccountId, ...publicConfig } = entry
+    const { headers, env, queryCredentials, credentialValues, adapter, bootstrap, source, oauth: authorization, ownerAccountId, ...publicConfig } = entry
     const schemas = [...toolNames].filter(name => name.startsWith(prefix(entry.id))).map(name => tools.get(name)).filter(Boolean)
     return {
       ...publicConfig,
+      catalogIcon: entry.catalogId ? catalogConnector(entry.catalogId).icon : null,
       adapter: !!adapter,
       workspaceBootstrap: !!bootstrap,
       configuredCredentials: Object.keys(credentialValues),
+      queryCredentials: Object.keys(queryCredentials), configuredQuery: Object.entries(queryCredentials).filter(([, value]) => !!value).map(([name]) => name),
       authorization: authorization ? { configured: !!authorization.tokens, expiresAt: authorization.expiresAt } : null,
       source: source ? { id: source.id, version: source.version, ...(source.centerId ? { centerId: source.centerId } : {}) } : null,
       headers: Object.keys(headers).sort(), env: Object.keys(env).sort(),
@@ -323,7 +339,14 @@ export async function createModule(ctx, { home, backend }) {
   async function list() {
     if (!credentials) return { items: [], capabilities, issue: 'DSH 凭据服务未加载，本地连接器不可用。' }
     const session = await currentSession()
-    return { items: entries.filter(entry => visible(entry, session)).map(view), capabilities, identityNotifications: typeof identity()?.subscribe === 'function' }
+    const items = entries.filter(entry => visible(entry, session)).map(view)
+    const installedSkills = session ? ctx.get('sealHarnessSkills')?.catalogStatus?.(session.accountId) ?? {} : {}
+    const catalog = connectorCatalog.map(item => ({ ...item,
+      supported: item.transport !== 'cli' || item.platforms.includes(`${process.platform}-${process.arch}`),
+      installed: item.transport === 'skills' ? (installedSkills[`bundle:${item.id}`] ?? 0) >= skillBundles.find(recipe => recipe.id === item.id).files.filter(file => file.target.endsWith('/SKILL.md')).length : items.some(entry => entry.catalogId === item.id),
+      installationId: items.find(entry => entry.catalogId === item.id)?.id,
+    }))
+    return { items, catalog, capabilities, identityNotifications: typeof identity()?.subscribe === 'function' }
   }
 
   async function mutate(payload, transform, signal) {
@@ -383,10 +406,11 @@ export async function createModule(ctx, { home, backend }) {
   const unsubscribe = identity()?.subscribe?.(() => {
     if (disposed) return
     oauth.dispose()
+    for (const job of nativeJobs.values()) job.controller.abort()
     clearSessionRestrictions()
     knownSessions.clear()
     currentAccountId = '__identity-changing__'
-    void Promise.all(entries.filter(entry => entry.source).map(async entry => {
+    void Promise.all(entries.filter(entry => entry.source || entry.ownerAccountId).map(async entry => {
       await stop(entry.id)
       outcomes.delete(entry.id)
     })).catch(() => { ctx.logger.warn('连接器身份变更清理失败。') })
@@ -458,6 +482,67 @@ export async function createModule(ctx, { home, backend }) {
     },
     handlers: {
       list: () => serial(async () => { assertActive(); if (credentials) await load(); return list() }),
+      installCatalog: (input, signal) => serial(async () => {
+        const { id } = parse(z.strictObject({ id: z.string().min(1).max(80) }), input)
+        const account = await currentSession()
+        if (!account?.accountId) throw new ConnectorError('请先登录本机账号。')
+        const item = catalogConnector(id)
+        if (item.transport === 'skills') {
+          const skills = ctx.get('sealHarnessSkills')
+          if (!skills) throw new ConnectorError('技能服务未加载，请重试。')
+          const snapshot = await skills.call('list', {}, signal)
+          await skills.call('installCatalog', { id: `bundle:${id}`, expectedRevision: snapshot.revision }, signal)
+          return list()
+        }
+        if (entries.some(entry => entry.catalogId === id && visible(entry, account))) return list()
+        let config
+        if (item.transport === 'cli') {
+          if (!item.platforms.includes(`${process.platform}-${process.arch}`)) throw new ConnectorError('该官方 CLI 暂不支持当前平台。')
+          const native = nativeAdapter(id, home, account.accountId)
+          const installed = await native.adapter.prepare(signal ?? AbortSignal.timeout(600000), () => {})
+          config = { id: `cc-${id}`, catalogId: id, nativeCli: true, name: item.displayName, summary: '使用官方办公 CLI；请先在访问凭据中授权。', category: 'office',
+            transport: 'stdio', command: installed.command, args: installed.args, env: installed.env, installed: true, enabled: false }
+        } else config = remoteConfiguration(id)
+        const current = await currentSession()
+        if (current?.accountId !== account.accountId || current?.epoch !== account.epoch) throw new ConnectorError('当前账号已变化，请重新安装。')
+        config.id = `${config.id}-${createHash('sha256').update(account.accountId).digest('hex').slice(0, 8)}`
+        return mutate({ id: config.id }, () => parse(configSchema, { ...config, ownerAccountId: account.accountId }), signal)
+      }),
+      nativeAuthorize: (input, signal) => serial(async () => {
+        const { id, revision } = parse(mutationSchema, input), account = await currentSession()
+        const entry = entries.find(entry => entry.id === id && entry.revision === revision && visible(entry, account))
+        if (!entry?.nativeCli || !account?.accountId) throw new ConnectorError('请先安装办公连接器。')
+        const previous = nativeJobs.get(id)
+        if (previous && !['ready', 'error', 'cancelled'].includes(previous.phase)) return {
+          phase: previous.controller.signal.aborted ? 'cancelling' : previous.phase, url: previous.url,
+        }
+        const controller = new AbortController(), job = { controller, phase: 'authorizing', url: null, error: '' }
+        nativeJobs.set(id, job)
+        const native = nativeAdapter(entry.catalogId, home, account.accountId)
+        job.promise = native.adapter.authenticate(native.installation, controller.signal, (phase, url) => { job.phase = phase; if (url) job.url = url }).then(async () => {
+          const checked = await native.adapter.check(native.installation, controller.signal)
+          if (!checked.authenticated) throw new Error('官方 CLI 尚未确认授权。')
+          await serial(async () => {
+            const current = await currentSession()
+            if (current?.accountId !== account.accountId || current?.epoch !== account.epoch) throw new ConnectorError('账号已变化，授权结果未应用。')
+            await mutate({ id, revision }, previous => ({ ...previous, enabled: true }), controller.signal)
+          })
+          job.phase = 'ready'
+        }).catch(() => { job.phase = controller.signal.aborted ? 'cancelled' : 'error'; job.error = controller.signal.aborted ? '' : '授权未完成，请检查官方账号和应用权限后重试。' })
+        return { phase: job.phase, url: job.url }
+      }),
+      nativeStatus: (input, signal) => serial(async () => {
+        const { id } = parse(z.strictObject({ id: idSchema }), input), account = await currentSession()
+        if (!entries.some(entry => entry.id === id && entry.nativeCli && visible(entry, account))) throw new ConnectorError('办公连接器不存在。')
+        const job = nativeJobs.get(id)
+        return { phase: job?.controller.signal.aborted && !['ready', 'error', 'cancelled'].includes(job.phase) ? 'cancelling' : job?.phase ?? 'idle', url: job?.url ?? null, error: job?.error ?? '' }
+      }),
+      nativeCancel: (input, signal) => serial(async () => {
+        const { id } = parse(z.strictObject({ id: idSchema }), input), account = await currentSession()
+        if (!entries.some(entry => entry.id === id && visible(entry, account))) throw new ConnectorError('连接器不存在。')
+        nativeJobs.get(id)?.controller.abort()
+        return { cancelled: true }
+      }),
       createDraft: (input, signal) => serial(async () => {
         assertActive(signal)
         const session = await currentSession()
@@ -526,7 +611,7 @@ export async function createModule(ctx, { home, backend }) {
         return { ...result, importedId: config.id }
       }),
       checkConnection: (input, signal) => serial(async () => {
-        const payload = parse(configSchema.omit({ source: true, revision: true, oauth: true, adapter: true, tokenExchange: true, bootstrap: true, headerEnvironment: true, installed: true, ownerAccountId: true }).extend({
+        const payload = parse(configSchema.omit({ source: true, revision: true, oauth: true, adapter: true, tokenExchange: true, bootstrap: true, headerEnvironment: true, installed: true, ownerAccountId: true, catalogId: true, nativeCli: true, headerPrefixes: true, queryParameters: true, queryCredentials: true, requiredQuery: true }).extend({
           authMode: z.enum(['none', 'api_key', 'oauth_authorization_code_pkce']).optional(),
           summary: configSchema.shape.summary.unwrap().optional(), category: configSchema.shape.category.unwrap().optional(),
           headers: configSchema.shape.headers.unwrap().optional(), env: configSchema.shape.env.unwrap().optional(),
@@ -599,16 +684,20 @@ export async function createModule(ctx, { home, backend }) {
           summary: configSchema.shape.summary.unwrap().optional(), category: configSchema.shape.category.unwrap().optional(),
           headers: configSchema.shape.headers.unwrap().optional(), env: configSchema.shape.env.unwrap().optional(),
           revision: z.number().int().nonnegative().optional(),
+          queryValues: configSchema.shape.queryCredentials.unwrap().optional(),
           headerValues: configSchema.shape.headers.unwrap().optional(),
           headerEnvironment: configSchema.shape.headerEnvironment.unwrap().optional(),
           envValues: configSchema.shape.env.unwrap().optional(),
           environmentPassthrough: configSchema.shape.environmentPassthrough.unwrap().optional(),
         }), input)
-        const { headerValues, headerEnvironment, envValues, environmentPassthrough, authMode, ...fields } = payload
+        const { headerValues, headerEnvironment, envValues, queryValues, environmentPassthrough, authMode, ...fields } = payload
+        if (entries.some(entry => entry.id === payload.id && entry.nativeCli)) throw new ConnectorError('官方 CLI 的连接配置由安装器管理，请使用访问凭据完成授权。')
         if (fields.transport === 'stdio' && authMode && authMode !== 'none') throw new ConnectorError('本地程序使用环境变量配置认证。')
         return mutate(payload, previous => parse(configSchema, {
           ...(!previous && authMode === 'oauth_authorization_code_pkce' ? { oauth: { scopes: [] } } : {}),
           ...fields, summary: fields.summary ?? previous?.summary ?? '', category: fields.category ?? previous?.category ?? 'office', headerEnvironment: headerEnvironment ?? previous?.headerEnvironment ?? {}, environmentPassthrough: environmentPassthrough ?? previous?.environmentPassthrough ?? [], ...(previous?.bootstrap ? { bootstrap: previous.bootstrap, workspacePath: previous.workspacePath } : {}), ...(previous?.adapter ? { adapter: previous.adapter, credentialSlots: previous.credentialSlots } : {}), credentialValues: { ...previous?.credentialValues, ...fields.credentialValues }, ...(previous?.tokenExchange ? { tokenExchange: previous.tokenExchange } : {}), ...(previous?.oauth ? { oauth: previous.oauth } : {}), ...(previous?.source ? { source: previous.source, requiredHeaders: previous.requiredHeaders, requiredEnv: previous.requiredEnv } : {}), ...(previous ? { installed: previous.installed, ...(previous.ownerAccountId ? { ownerAccountId: previous.ownerAccountId } : {}) } : {}),
+          ...(previous?.catalogId ? { catalogId: previous.catalogId, ...(previous.nativeCli ? { nativeCli: true } : {}), headerPrefixes: previous.headerPrefixes,
+            queryParameters: previous.queryParameters, queryCredentials: { ...previous.queryCredentials, ...queryValues }, requiredQuery: previous.requiredQuery, requiredHeaders: previous.requiredHeaders } : {}),
           headers: headerValues ? { ...(payload.headers ?? previous?.headers ?? {}), ...headerValues } : payload.headers ?? previous?.headers ?? {}, env: envValues ? { ...(payload.env ?? previous?.env ?? {}), ...envValues } : payload.env ?? previous?.env ?? {},
         }), signal)
       }),
@@ -632,7 +721,12 @@ export async function createModule(ctx, { home, backend }) {
         const token = z.object({ access_token: z.string().min(1).max(16384) }).parse(await response.json())
         return mutate(payload, previous => ({ ...previous, headers: { ...previous.headers, Authorization: `Bearer ${token.access_token}` } }), signal)
       }),
-      remove: (input, signal) => serial(() => { oauth.cancel(input.id); return mutate(parse(mutationSchema, input), () => null, signal) }),
+      remove: (input, signal) => serial(async () => {
+        const payload = parse(mutationSchema, input)
+        const result = await mutate(payload, () => null, signal)
+        oauth.cancel(payload.id); nativeJobs.get(payload.id)?.controller.abort()
+        return result
+      }),
       setEnabled: (input, signal) => serial(async () => {
         const payload = parse(mutationSchema.extend({ enabled: z.boolean() }), input)
         return mutate(payload, previous => {
@@ -678,7 +772,7 @@ export async function createModule(ctx, { home, backend }) {
       clearAuthorization: (input, signal) => serial(() => {
         const payload = parse(mutationSchema, input)
         oauth.cancel(payload.id)
-        return mutate(payload, previous => ({ ...previous, enabled: false, headers: {}, ...(previous.oauth ? { oauth: { scopes: previous.oauth.scopes } } : {}) }), signal)
+        return mutate(payload, previous => ({ ...previous, enabled: false, headers: {}, queryCredentials: {}, ...(previous.oauth ? { oauth: { scopes: previous.oauth.scopes } } : {}) }), signal)
       }),
       installCenter: (input, signal) => serial(async () => {
         const { connectorId } = z.object({ connectorId: z.string().regex(/^[a-z0-9][a-z0-9_-]{1,63}$/) }).parse(input)
@@ -738,6 +832,7 @@ export async function createModule(ctx, { home, backend }) {
     },
     async dispose() {
       disposed = true
+      for (const job of nativeJobs.values()) job.controller.abort()
       packagePreview = undefined
       oauth.dispose()
       unsubscribe?.()
@@ -745,6 +840,7 @@ export async function createModule(ctx, { home, backend }) {
       knownSessions.clear()
       await Promise.all([...running.keys()].map(stop))
       await chain
+      await Promise.all([...nativeJobs.values()].map(job => job.promise))
       releaseGuard?.(); releaseExecution(); releaseAgentCreated(); releaseAgentDisposed()
       outcomes.clear()
     },

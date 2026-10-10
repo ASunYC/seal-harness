@@ -7,6 +7,8 @@ import { FileSystemSkillProvider } from '@deepseek-ai/dsh-skill-filesystem'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
 import { createArchive, inside, inspectFiles, inspectPath, MAX_PACKAGE_BYTES, parseSkill, readArchive, readDirectory, safeRelative, SkillError } from './package.js'
 import { createSkillPersistence } from './sqlite-store.js'
+import { skillCatalog, skillBundles } from '../../capability-shared/src/catalog.js'
+import { downloadMarketSkill } from '../../capability-shared/src/catalog-download.js'
 
 const PROVIDER = 'seal-harness-skills'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
@@ -183,7 +185,12 @@ export async function createModule(ctx, { home, backend }) {
   async function list() {
     invalidate()
     const runtime = await skills.list({ scope: scopeOf(ctx) })
-    return { revision: state.revision, skills: state.skills.filter(item => visibleTo(item, actionAccount)).map(item => ({ ...item, active: runtime.some(skill => skill.provider === PROVIDER && inside(join(canonicalRoot, 'packages', item.id), skill.path ?? skill.resourceBase?.path ?? '')) })), pendingReports: state.reports.filter(report => report.accountId === actionAccount?.accountId).length }
+    return { revision: state.revision, skills: state.skills.filter(item => visibleTo(item, actionAccount)).map(item => ({ ...item, active: runtime.some(skill => skill.provider === PROVIDER && inside(join(canonicalRoot, 'packages', item.id), skill.path ?? skill.resourceBase?.path ?? '')) })),
+      catalog: skillCatalog.map(item => {
+        const installedCount = state.skills.filter(skill => skill.origin?.catalogId === item.id && skill.installed !== false).length
+        const skillCount = item.source === 'bundle' ? skillBundles.find(recipe => `bundle:${recipe.id}` === item.id).files.filter(file => file.target.endsWith('/SKILL.md')).length : 1
+        return { ...item, installed: installedCount >= skillCount, installedCount, skillCount }
+      }), pendingReports: state.reports.filter(report => report.accountId === actionAccount?.accountId).length }
   }
 
   async function sources() {
@@ -361,6 +368,24 @@ export async function createModule(ctx, { home, backend }) {
     actionAccount = await currentAccount()
     await syncAccount(actionAccount)
     switch (payload.action) {
+      case 'installCatalog': {
+        checkRevision(payload)
+        if (!actionAccount) throw new SkillError('请先登录本机账号。')
+        const id = requiredString(payload.id, '系统技能 ID', 512)
+        const download = await downloadMarketSkill(id, signal)
+        await backend.assertAccount(actionAccount)
+        const candidates = inspectFiles(download.files)
+        const roots = candidates.map(candidate => candidate.key === '.' ? '' : candidate.key)
+        const shared = download.files.filter(file => !roots.some(root => file.path.startsWith(root)))
+        const missing = candidates.filter(candidate => !state.skills.some(skill => skill.name === candidate.name && skill.origin?.catalogId === id && skill.installed !== false))
+        for (const candidate of missing) {
+          if (candidate.error) throw new SkillError(candidate.error)
+          for (const file of shared) if (!candidate.files.some(member => member.path === file.path)) candidate.files.push(file)
+          Object.assign(candidate, inspectFiles(candidate.files).find(candidate => candidate.key === '.'))
+        }
+        if (missing.length) await importCandidates(missing, { enable: true }, signal, download.origin)
+        return list()
+      }
       case 'setDefaultCopy': {
         checkRevision(payload)
         const result = lastDiscovery ?? { skills: [] }
@@ -530,7 +555,7 @@ export async function createModule(ctx, { home, backend }) {
 
   // ponytail: 单个管理队列避免并发覆盖；大量技能远端安装成为瓶颈时再拆为每包队列。
   let queue = Promise.resolve()
-  const actions = ['list', 'sources', 'setDefaultCopy', 'approveSource', 'revokeSource', 'discover', 'inspect', 'import', 'detail', 'create', 'installPersonal', 'saveFile', 'setEnabled', 'remove', 'install', 'export', 'retryReports']
+  const actions = ['list', 'installCatalog', 'sources', 'setDefaultCopy', 'approveSource', 'revokeSource', 'discover', 'inspect', 'import', 'detail', 'create', 'installPersonal', 'saveFile', 'setEnabled', 'remove', 'install', 'export', 'retryReports']
   const handlers = Object.fromEntries([...actions, 'workflowResources', 'workflowExport', 'runtimeSkill', 'installResolved'].map(name => [name, (payload = {}, signal) => {
       const result = queue.then(async () => {
         if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new SkillError('技能请求格式无效')
@@ -546,6 +571,12 @@ export async function createModule(ctx, { home, backend }) {
     queue = queue.then(async () => { await syncAccount(await currentAccount()) }).catch(error => ctx.logger?.warn?.(`技能数据切换失败：${error.message}`))
   })
   return {
+    catalogStatus(accountId) {
+      if (loadedAccountId !== accountId) return {}
+      const counts = {}
+      for (const skill of state.skills) if (skill.installed !== false && skill.origin?.catalogId) counts[skill.origin.catalogId] = (counts[skill.origin.catalogId] ?? 0) + 1
+      return counts
+    },
     handlers: Object.fromEntries(actions.map(name => [name, handlers[name]])),
     hostHandlers: { installResolved: handlers.installResolved, runtimeSkill: handlers.runtimeSkill, workflowResources: handlers.workflowResources, workflowExport: handlers.workflowExport },
     async dispose() {

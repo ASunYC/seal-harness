@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { join, resolve } from 'node:path'
 import { runInNewContext } from 'node:vm'
+import { connectorCatalog } from '../../capability-shared/src/catalog.js'
 
 const repo = fileURLToPath(new URL('../../../../', import.meta.url))
 const require = createRequire(resolve(process.env.SEAL_HARNESS_TOOLS_ROOT || repo, 'dsh-plugin-desktop-beta/package.json'))
@@ -26,7 +27,7 @@ async function mount(t, api, props = {}) {
   dom.window.HTMLDialogElement.prototype.close = function () { this.open = false }
   const module = { exports: {} }
   runInNewContext(await readFile(join(outDir, 'panel.js'), 'utf8'), { module, exports: module.exports, require,
-    AbortController, document: dom.window.document, window: dom.window, FileReader: dom.window.FileReader, crypto: require('node:crypto').webcrypto, console })
+    AbortController, setInterval, clearInterval, document: dom.window.document, window: dom.window, FileReader: dom.window.FileReader, crypto: require('node:crypto').webcrypto, console })
   const root = createRoot(document.querySelector('main'))
   t.after(async () => { await act(async () => root.unmount()); dom.window.close(); Object.assign(globalThis, previous); delete globalThis.IS_REACT_ACT_ENVIRONMENT; await rm(outDir, { recursive: true, force: true }) })
   await act(async () => root.render(React.createElement(module.exports.ConnectorsPanel, { api, ...props })))
@@ -79,4 +80,30 @@ test('installed connector still opens runtime and local credential management', 
   await click('配置访问凭据')
   assert(document.querySelector('dialog[open] input[type="password"]'))
   assert.equal(calls.some(call => call.endpoint.startsWith('store/')), false)
+})
+
+test('system connector catalog contains all cards and installs into the native credential manager', async t => {
+  const calls = []
+  let snapshot = { items: [], catalog: connectorCatalog.map(item => ({ ...item, supported: true, installed: false })) }
+  const { click } = await mount(t, async (endpoint, payload) => {
+    calls.push({ endpoint, payload })
+    if (endpoint === 'connectors/list') return snapshot
+    if (endpoint === 'connectors/installCatalog') {
+      const item = { id: 'maps-account', name: '腾讯地图', summary: '地图服务', catalogId: payload.id, catalogIcon: connectorCatalog.find(item => item.id === payload.id).icon,
+        transport: 'streamable-http', url: 'https://mcp.map.qq.com/mcp', category: 'office', enabled: false, installed: true, revision: 0,
+        headers: [], env: [], requiredHeaders: [], requiredEnv: [], requiredQuery: ['key'], configuredQuery: [], credentialSlots: [], tools: [], status: 'disabled' }
+      snapshot = { items: [item], catalog: snapshot.catalog.map(entry => ({ ...entry, installed: entry.id === payload.id, installationId: entry.id === payload.id ? item.id : undefined })) }
+      return snapshot
+    }
+    throw new Error(endpoint)
+  })
+  assert.equal(document.querySelectorAll('.cap-catalog__card').length, 55)
+  await click('查看 腾讯地图')
+  assert.match(document.querySelector('[role="dialog"]').textContent, /腾讯位置服务 Key/)
+  await click('安装')
+  assert.equal(calls.find(call => call.endpoint === 'connectors/installCatalog').payload.id, 'tencent-maps')
+  await click('管理 腾讯地图')
+  await click('配置访问凭据')
+  assert.match(document.querySelector('dialog[open]').textContent, /API Key \/ Token · key/)
+  assert(document.querySelector('dialog[open] input[type="password"]'))
 })

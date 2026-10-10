@@ -32,6 +32,12 @@ corepack yarn seal-harness:dev
 
 ## 目录和扩展
 
+“连接器 > 系统”提供来自 cc-haha 的 55 项完整目录与图标，支持搜索、分类/来源筛选、详情、安装及现有凭据管理。43 项远程 MCP 保留原官方端点与 OAuth/API Key 模式；URL 参数密钥独立保存并只在传输时组装。飞书、钉钉、企业微信使用固定版本官方 CLI 和原始校验值，下载不执行 npm 生命周期脚本，授权通过官方流程。当前这些 CLI 只支持来源清单列出的 Windows/macOS 架构。
+
+“技能 > 系统”提供 398 条精选在线技能与 9 套固定工具包（29 项技能）。安装完整资源树，保留许可与来源，复用 SQLite 和 DSH Skill Registry；个人技能和已安装区块保留。网络安装不会复制 cc-haha 的用户凭据，也不会自动安装渲染器、运行库或执行技能脚本。固定包逐文件校验 SHA-256；在线包从当前版本清单下载并校验供应商提供的文件摘要。
+
+目录与校验清单位于 `plugins/capability-shared/catalog/`。办公 CLI 的原始源码和 MIT 许可保存在 `plugins/capability-shared/vendor/cc-haha/`。可使用 `node scripts/import-cc-haha-catalog.mjs <cc-haha-checkout>` 重新导入指定 checkout；正常产品构建与运行不依赖该 checkout。
+
 - `product.json` 是产品身份的唯一来源。构建期注入使Host、子进程和原生窗口保持一致。
 - `src/` 和 `cordis.patch.yml` 是标准Cordis品牌插件及bundle。这里的YAML是Loader配置，不是源码补丁。
 - `assets/` 使用按 ip-as-logo 风格生成的小海豹图标，并通过 Git LFS 跟踪；`app-icon.png` 保留生成原图，各平台和托盘资源由它派生，来源及资源哈希见 `icon-provenance.json`。运行 `python scripts/export-product-icons.py` 可重新导出，需安装 Pillow。

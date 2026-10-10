@@ -4,10 +4,11 @@ import { ToolRunner } from './tool-runner.jsx'
 import { Dialog } from './dialog.jsx'
 import { connectorDraft, connectorPayload, SecretFields } from './editor.jsx'
 import { CatalogIcon } from './catalog-icon.jsx'
+import { NativeAuthorization } from './native-authorization.jsx'
 
 export const statusLabels = { disabled: '已停用', active: '可用', inactive: '尚未连接', unconfigured: '需要配置', error: '需修复' }
 export const statusTone = status => status === 'active' ? 'success' : status === 'error' ? 'danger' : status === 'unconfigured' ? 'warning' : 'neutral'
-const hasCredentialConfiguration = item => !!(item.authorization || item.tokenExchange || item.headers.length || item.requiredHeaders.length || item.env.length || item.requiredEnv.length || item.credentialSlots?.length)
+const hasCredentialConfiguration = item => !!(item.nativeCli || item.authorization || item.tokenExchange || item.headers.length || item.requiredHeaders.length || item.requiredQuery?.length || item.env.length || item.requiredEnv.length || item.credentialSlots?.length)
 
 // 来源 McpRuntimePanel，操作仍使用连接器已提供的 revision 和初始化检查。
 export function ConnectorRuntime({ item, api, busy, error, run, open, close, confirmRemove = false }) {
@@ -20,24 +21,30 @@ export function ConnectorRuntime({ item, api, busy, error, run, open, close, con
       {hasCredentialConfiguration(item) && <section className="mcp-runtime-row"><div><h3>访问凭据</h3><p>认证信息只保存在本机，不会显示在页面中。</p></div><button className="btn btn--secondary" onClick={() => open('credentials')}>配置访问凭据</button></section>}
       <section className="mcp-runtime-row"><div><h3>{item.workspaceBootstrap ? '工作区初始化' : '工作区绑定'}</h3><p>{item.workspacePath ? `当前工作区：${item.workspacePath}` : item.workspaceBootstrap ? '选择代码仓库并运行初始化。' : '将连接器限定到指定工作区。'}</p></div><button className="btn btn--secondary" onClick={() => open('workspace')}>{item.workspaceBootstrap ? '初始化工作区' : '绑定工作区'}</button></section>
       <section className="mcp-runtime-row"><div><h3>工具</h3><p>{item.tools.length ? `已发现 ${item.tools.length} 个工具。` : '连接检查后会显示服务提供的工具。'}</p><ul className="mcp-runtime-tools-summary__list">{item.tools.slice(0, 3).map(tool => <li key={tool.name}>{tool.name}</li>)}</ul></div><button className="btn btn--secondary" onClick={() => open('tools')}>查看工具</button></section>
-      <details className="mcp-runtime-disclosure"><summary><strong>连接配置与版本</strong></summary><div className="mcp-runtime-disclosure__content mcp-stack"><p>{item.transport} · {item.source ? `v${item.source.version}` : '本地连接器'}</p><code>{item.transport === 'stdio' ? item.command : item.url}</code><button className="btn btn--secondary" onClick={() => open('edit')}>编辑连接配置</button></div></details>
+      <details className="mcp-runtime-disclosure"><summary><strong>连接配置与版本</strong></summary><div className="mcp-runtime-disclosure__content mcp-stack"><p>{item.nativeCli ? '官方 CLI 固定版本' : item.transport} · {item.source ? `v${item.source.version}` : item.catalogId ? '系统连接器' : '本地连接器'}</p><code>{item.transport === 'stdio' ? item.command : item.url}</code>{!item.nativeCli && <button className="btn btn--secondary" onClick={() => open('edit')}>编辑连接配置</button>}</div></details>
       <details className="mcp-runtime-disclosure"><summary><strong>连接有问题？</strong></summary><div className="mcp-runtime-disclosure__content mcp-stack"><p>最近检查：{item.checkedAt ? new Date(item.checkedAt).toLocaleString() : '尚未检查'}</p>{item.issue && <p role="status">{item.issue}</p>}<div className="mcp-inline-actions"><button className="btn btn--secondary" disabled={busy || !item.enabled} onClick={() => run('reconnect', { id: item.id })}>重新连接</button><button className="btn btn--secondary" disabled={busy} onClick={() => run('setEnabled', { id: item.id, revision: item.revision, enabled: !item.enabled })}>{item.enabled ? '停用' : '启用'}</button></div></div></details>
     </div><footer className="mcp-runtime__footer"><span className="mcp-muted">不再需要这个连接器？</span><button className="btn btn--danger" disabled={busy} onClick={() => setRemove(true)}>删除连接器</button></footer>
     {remove && <Dialog closeIconName="mcp-close-small" closeIconStrokeWidth={1.6} title="删除连接器" className="mcp-dialog mcp-dialog--narrow" busy={busy} close={() => setRemove(false)}><div className="mcp-dialog__body"><p>删除「{item.name}」及其已保存的凭据？</p>{error && <p role="alert">{error}</p>}</div><footer className="mcp-dialog__footer"><button className="btn btn--secondary" disabled={busy} onClick={() => setRemove(false)}>取消</button><button className="btn btn--danger" disabled={busy} onClick={async () => { if (await run('remove', { id: item.id, revision: item.revision })) close() }}>确认删除</button></footer></Dialog>}
   </Dialog>
 }
 
-export function ConnectorCredentials({ item, busy, error, run, authorize, close }) {
+export function ConnectorCredentials(props) {
+  return props.item.nativeCli ? <NativeAuthorization {...props} /> : <McpCredentials {...props} />
+}
+
+function McpCredentials({ item, busy, error, run, authorize, close }) {
   const [headers, setHeaders] = useState([...new Set([...item.headers, ...item.requiredHeaders])].map(name => ({ name, value: '' })))
   const [env, setEnv] = useState([...new Set([...item.env, ...(item.requiredEnv ?? [])])].map(name => ({ name, value: '' })))
   const [credentialValues, setCredentialValues] = useState({}), [subjectToken, setSubjectToken] = useState('')
   const [authorization, setAuthorization] = useState(null), [clear, setClear] = useState(false)
+  const [queryValues, setQueryValues] = useState({})
   return <Dialog closeIconName="mcp-close-small" closeIconStrokeWidth={1.6} title={`${item.name} · 访问凭据`} className="mcp-dialog mcp-dialog--narrow" busy={busy} close={close}>
-    <form onSubmit={async event => { event.preventDefault(); if (await run('save', { ...connectorPayload(connectorDraft(item), headers, env), credentialValues: Object.fromEntries(Object.entries(credentialValues).filter(([, value]) => value)) })) close() }}>
+    <form onSubmit={async event => { event.preventDefault(); if (await run('save', { ...connectorPayload(connectorDraft(item), headers, env), queryValues: Object.fromEntries(Object.entries(queryValues).filter(([, value]) => value)), credentialValues: Object.fromEntries(Object.entries(credentialValues).filter(([, value]) => value)) })) close() }}>
       <div className="mcp-dialog__body mcp-stack"><fieldset className="zz-reset-fieldset mcp-stack" disabled={busy}>
         {error && <p role="alert" className="mcp-alert">{error}</p>}<p className="mcp-muted">仅更新你填写的值；留空保留已保存的凭据。</p>
         {item.authorization ? <section className="mcp-stack"><h3>浏览器授权</h3><p>{item.authorization.configured ? '已保存授权，可以重新授权。' : '在浏览器完成授权后返回此处。'}</p><button type="button" className="btn btn--primary" onClick={async () => { const result = await authorize(item); if (result) setAuthorization(result) }}>{item.authorization.configured ? '重新授权' : '浏览器授权'}</button>{authorization && <div role="status"><a href={authorization.url} target="_blank" rel="noreferrer">打开授权页面</a><button type="button" className="btn btn--secondary" onClick={async () => { if (await run('list')) close() }}>我已完成，刷新连接</button></div>}</section> : <SecretFields title={item.transport === 'stdio' ? '环境变量' : '请求头'} rows={item.transport === 'stdio' ? env : headers} change={item.transport === 'stdio' ? setEnv : setHeaders} />}
         {(item.credentialSlots ?? []).map(slot => <label className="mcp-field" key={slot.name}><span>{slot.name}{slot.required ? '（必填）' : ''}</span><input type="password" autoComplete="off" value={credentialValues[slot.name] ?? ''} onChange={event => setCredentialValues(current => ({ ...current, [slot.name]: event.target.value }))} /></label>)}
+        {(item.requiredQuery ?? []).map(name => <label className="mcp-field" key={name}><span>API Key / Token · {name}{item.configuredQuery?.includes(name) ? '（已保存）' : '（必填）'}</span><input type="password" autoComplete="off" value={queryValues[name] ?? ''} onChange={event => setQueryValues(previous => ({ ...previous, [name]: event.target.value }))} /></label>)}
         {item.tokenExchange && <section className="mcp-stack"><label className="mcp-field"><span>用于交换的访问令牌</span><input type="password" autoComplete="off" value={subjectToken} onChange={event => setSubjectToken(event.target.value)} /></label><button type="button" className="btn btn--secondary" disabled={!subjectToken} onClick={async () => { if (await run('exchangeToken', { id: item.id, revision: item.revision, subjectToken })) { setSubjectToken(''); close() } }}>交换令牌</button></section>}
         {(item.authorization?.configured || item.headers.length > 0) && <button type="button" className="btn btn--danger" onClick={() => setClear(true)}><Icon name="mcp-trash" size={15} strokeWidth={1.7} />清除认证并停用</button>}
       </fieldset></div><footer className="mcp-dialog__footer"><button type="button" className="btn btn--secondary" disabled={busy} onClick={close}>返回管理</button><button className="btn btn--primary" disabled={busy}>保存凭据</button></footer>

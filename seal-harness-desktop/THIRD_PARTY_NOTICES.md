@@ -1,5 +1,13 @@
 # Third-Party Notices
 
+## cc-haha capability catalog and official CLI adapters
+
+Source: https://github.com/NanmiCoder/cc-haha, commit `0a3b549d5ec020569d766a7c16ce209c6110af51`.
+
+The connector catalog, skill catalog snapshot, connector SVG resources, and managed CLI adapters are adapted from cc-haha under its MIT license. The complete original license and adaptation notes are preserved in `plugins/capability-shared/vendor/cc-haha/` and copied into the packaged connectors/skills plugins. Original file hashes and pinned third-party skill file checksums are preserved in `plugins/capability-shared/catalog/`.
+
+Third-party service names and logos identify their respective services and rights holders. Skill package licenses, authors and source revisions remain attached to each installed package; the MIT license of cc-haha does not replace the separate licenses of those packages.
+
 ## morphicons 1.7.0
 
 MIT License
