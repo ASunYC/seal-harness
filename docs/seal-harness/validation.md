@@ -97,3 +97,9 @@ Node 24.19.0、Yarn 4.18.0 下产品完整构建通过。最终源码重新装�
 Node 24.19.0 / Yarn 4.18.0 下产品完整构建通过；最终代码重新装配后完整检查通过（176 tests：174 passed、2 个已有平台条件 skipped、0 failed），包括 10 个产品插件和两代 Profile HMR。12 项新增回归覆盖完整目录、原图/源码哈希、43 协议转换、查询参数密钥隐藏/清除/传输、账号隔离、原有队列并发与错误语义、SQLite/真实 Skill Registry、CLI ToolRuntime 桥接、文件完整性/许可/重试、全部页面条目与安装交互。`git diff --check` 通过。
 
 安装与注册测试使用隔离数据和受控供应商响应。仅固定技能资源执行真实网络下载，没有执行第三方业务工具、真实 CLI 登录或批量运行在线技能；供应商授权、配额、运行库及跨平台安装尚未逐项联调。上一任务与本任务全部改动保留未提交。
+
+## 2026-10-12 产品版本与 DSH Desktop 更新评估
+
+产品包版本仍为 `0.1.0`，未变更主/次版本。构建将此值写入忽略目录中的产品配置与 `lib/product-build.json`；Beta 原生 bundle 的版本表达式优先读取定制产品版本。`seal-harness:build`、`seal-harness:check`、根 `typecheck`、`check:layout`、`check:desktop-variants` 和 Stable/Beta 产品配置测试通过。重启 Windows 开发应用后，实际标题栏显示 `Seal Harness v0.1.0`。Windows 未签名解包构建已经把 `resources/app/package.json` 写为 `version: 0.1.0`，但 electron-builder 在遍历依赖树时耗时过长，本轮中止了完整打包；**不宣称打包后校验或安装通过**。没有执行签名安装或从旧 `2.0.14-beta.1` 应用覆盖升级。
+
+上游 `dsh-upstream/master` 已独立抓取到 `7abe94d`，没有合并或更新只读 `deepseek-harness` pin。对比 `v2.0.14-beta.1` 的候选与兼容风险见 [上游更新评估](dsh-upstream-review-2026-10-12.md)。
