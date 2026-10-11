@@ -25,8 +25,10 @@ it('validates the build file and rejects unsafe identity and resource paths', ()
   const path = join(home, 'product.json')
   writeFileSync(path, JSON.stringify(product))
   expect(readDesktopProduct(path)).toEqual(product)
+  writeFileSync(path, JSON.stringify({ ...product, version: '0.1.0' }))
+  expect(readDesktopProduct(path)?.version).toBe('0.1.0')
   for (const invalid of [
-    { name: '' }, { appId: 'invalid/id' }, { homeDirectoryName: '..' },
+    { name: '' }, { version: 'invalid' }, { appId: 'invalid/id' }, { homeDirectoryName: '..' },
     { homeDirectoryName: '.data/other' }, { assetDirectory: 'https://example.com/' },
     { bundle: '../another-package' }, { updatesEnabled: 'false' }, { setupWizardEnabled: 'false' },
   ]) {
@@ -54,6 +56,7 @@ it('keeps the upstream identities and update policy without a distribution defin
   expect(DESKTOP_PRODUCT.updatesEnabled).toBe(true)
   expect(DESKTOP_PRODUCT.bundle).toBeNull()
   expect(DESKTOP_PRODUCT.setupWizardEnabled).not.toBe(false)
+  expect(DESKTOP_PRODUCT.version).toBeUndefined()
   expect(remoteControlOfferCopy.zh.message).toContain('DeepSeek Harness')
   expect(remoteControlOfferCopy.en.detail).toContain('DeepSeek Harness')
   expect(DESKTOP_RELEASE_IDENTITIES.stable).toMatchObject({
@@ -65,10 +68,12 @@ it('keeps the upstream identities and update policy without a distribution defin
 })
 
 it('preserves explicit product identity across runtime editions and rejects even a direct update check before any request', async () => {
-  vi.stubGlobal('__DSH_DESKTOP_PRODUCT__', product)
+  vi.stubGlobal('__DSH_DESKTOP_PRODUCT__', { ...product, version: '0.1.0' })
   vi.resetModules()
   const { DESKTOP_WINDOW_TITLE } = await import('../src/product-config.ts')
   expect(DESKTOP_WINDOW_TITLE).toBe(product.name)
+  const { DESKTOP_PRODUCT } = await import('../src/product-config.ts')
+  expect(DESKTOP_PRODUCT.version).toBe('0.1.0')
   const { DESKTOP_RELEASE_IDENTITIES } = await import('../src/product-identity.ts')
   const { desktopRecoveryCopy } = await import('../src/recovery-copy.ts')
   const { desktopSetupWizardCopy } = await import('../src/setup-wizard-copy.ts')

@@ -60,6 +60,7 @@ export default async function verifyPackage(result) {
   for (const context of resolveFinalPackagedRuntimeContexts(checked)) {
     const appRoot = resolvePackagedApplicationRoot(context)
     const require = createRequire(join(appRoot, 'package.json'))
+    assert.equal(JSON.parse(readFileSync(join(appRoot, 'package.json'), 'utf8')).version, product.version)
     const manifest = JSON.parse(readFileSync(require.resolve('seal-harness-desktop/package.json'), 'utf8'))
     assert.equal(manifest.dsh.client.platform, 'web')
     assert.ok(readFileSync(require.resolve('seal-harness-desktop/client'), 'utf8').includes('seal-harness-desktop'))

@@ -8,6 +8,8 @@ Node 要求 `^22.19.0 || >=24.0.0`，根 Yarn 固定 `4.18.0`。使用 `corepack
 
 `product.json` 是产品名、应用 ID、数据目录与更新渠道的来源。名称是 Seal Harness，应用 ID 是 `com.seal-harness.desktop`，默认 Home 是 `~/.seal-harness`；显式 `DSH_HOME` 覆盖保留。社区 DSH 更新渠道不得作用于产品。海豹图标原图和派生资源由 `assets/`、`icon-provenance.json` 和 `scripts/export-product-icons.py` 管理；保留 Git LFS 与来源记录。构建产物不入库。
 
+产品发布版本的唯一来源为 `seal-harness-desktop/package.json`。构建入口在忽略目录生成带 `version` 的 Desktop 产品配置；定制构建的原生 Host、标题栏与 electron-builder `extraMetadata.version` 使用这个值。无定制产品配置时 Stable/Beta 仍使用各自 Desktop 包版本。只改变产品包版本即可同步下一次构建的显示与打包版本；不得用 DSH Desktop 社区更新渠道更新 Seal Harness。
+
 原生远程控制确认弹窗由 Desktop Host 显示，不能通过网页品牌 slot 改写。其文案在 `remote-control-offer.ts` 从自定义 `DESKTOP_PRODUCT.name` 读取产品名；无自定义产品配置时保留上游 DeepSeek Harness 文案。此共享接缝必须同步 Stable/Beta，并分别验证中英文。
 
 ## 当前插件组合

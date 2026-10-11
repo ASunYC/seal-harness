@@ -1,11 +1,14 @@
 import { spawnSync } from 'node:child_process'
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { buildBrand, buildProductPlugins, capabilityPlugins, desktop, desktopPackage, desktopRequire, installBrand, linkProductDependencies, product, productRoot, root } from './build.mjs'
 
 const command = process.argv[2]
-const environment = { ...process.env, DSH_DESKTOP_PRODUCT: join(productRoot, 'product.json') }
+const productConfigPath = join(root, '.build', 'seal-harness-product.json')
+mkdirSync(join(root, '.build'), { recursive: true })
+writeFileSync(productConfigPath, `${JSON.stringify(product)}\n`)
+const environment = { ...process.env, DSH_DESKTOP_PRODUCT: productConfigPath }
 
 function run(executable, args, cwd = root, env = environment) {
   const result = spawnSync(executable, args, { cwd, env, stdio: 'inherit', shell: process.platform === 'win32' && executable === 'corepack' })
@@ -25,7 +28,7 @@ async function build() {
 
 function start() {
   const receipt = JSON.parse(readFileSync(join(desktop, 'lib/product-build.json'), 'utf8'))
-  if (receipt.name !== product.name || receipt.appId !== product.appId) {
+  if (receipt.name !== product.name || receipt.appId !== product.appId || receipt.version !== product.version) {
     throw new Error('当前产物不是Seal Harness，请先执行 corepack yarn seal-harness:build。')
   }
   run('corepack', ['yarn', 'workspace', desktopPackage, 'prepare:electron-native'])

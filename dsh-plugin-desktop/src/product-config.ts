@@ -1,6 +1,7 @@
 /** Build-time distribution settings shared by Node and browser bundles. */
 export interface DesktopProductConfig {
   readonly name: string
+  readonly version?: string
   readonly appId: string
   readonly homeDirectoryName: string
   readonly assetDirectory: string

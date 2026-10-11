@@ -9,7 +9,10 @@ export const decisionPlugin = join(root, 'packages/dsh-plugin-ask-jev')
 export const desktopPackage = 'dsh-plugin-desktop-beta'
 export const desktop = join(root, desktopPackage)
 export const desktopRequire = createRequire(join(desktop, 'package.json'))
-export const product = JSON.parse(readFileSync(join(productRoot, 'product.json'), 'utf8'))
+export const product = {
+  ...JSON.parse(readFileSync(join(productRoot, 'product.json'), 'utf8')),
+  version: JSON.parse(readFileSync(join(productRoot, 'package.json'), 'utf8')).version,
+}
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
 export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', ...capabilityPlugins, 'session-context-selector', 'image-generation']
 

@@ -10,6 +10,7 @@ import {
 } from 'electron'
 import { spawn } from 'node:child_process'
 import { RemoteControlOffer, remoteControlOfferCopy } from './remote-control-offer.ts'
+import { DESKTOP_PRODUCT } from './product-config.ts'
 import { DesktopProtocolUrls, openDesktopLoginView, openDesktopLoginWindow } from './desktop-login.ts'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -94,7 +95,7 @@ export function desktopPreloadPath(moduleUrl: string = import.meta.url): string 
   return fileURLToPath(new URL('./preload.cjs', moduleUrl))
 }
 
-const PRODUCT_VERSION = desktopProductVersion()
+const PRODUCT_VERSION = DESKTOP_PRODUCT.version ?? desktopProductVersion()
 
 /** Main-process deadline for one Renderer generation to settle its client Loader. */
 export const RENDERER_BOOT_TIMEOUT_MS = 30_000

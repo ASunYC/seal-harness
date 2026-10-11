@@ -30,6 +30,8 @@ test('Seal Harness随品牌插件分发 Morphicons 许可证，不修改上游 D
 test('产品安装身份和品牌资源来源一致，分发配置不连接社区更新', () => {
   assert.equal(configuration.appId, 'com.seal-harness.desktop')
   assert.equal(configuration.productName, product.name)
+  assert.equal(product.version, JSON.parse(readFileSync(join(productRoot, 'package.json'), 'utf8')).version)
+  assert.equal(configuration.extraMetadata.version, product.version)
   assert.deepEqual(configuration.protocols, [{ name: product.name, schemes: ['seal-harness'] }])
   assert.equal(configuration.nsis.shortcutName, product.name)
   assert.equal(configuration.extraMetadata.desktopName, `${product.appId}.desktop`)

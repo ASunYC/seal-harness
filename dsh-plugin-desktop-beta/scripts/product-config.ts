@@ -7,6 +7,7 @@ export function readDesktopProduct(path = process.env.DSH_DESKTOP_PRODUCT): Desk
   const value: unknown = JSON.parse(readFileSync(path, 'utf8'))
   if (value === null || typeof value !== 'object' || Array.isArray(value)
     || !('name' in value) || typeof value.name !== 'string' || !value.name.trim()
+    || ('version' in value && (typeof value.version !== 'string' || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(value.version)))
     || !('appId' in value) || typeof value.appId !== 'string' || !/^[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/.test(value.appId)
     || !('homeDirectoryName' in value) || typeof value.homeDirectoryName !== 'string'
     || !/^\.[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(value.homeDirectoryName)
@@ -23,6 +24,7 @@ export function readDesktopProduct(path = process.env.DSH_DESKTOP_PRODUCT): Desk
   }
   return {
     name: value.name, appId: value.appId, homeDirectoryName: value.homeDirectoryName,
+    ...('version' in value ? { version: value.version as string } : {}),
     assetDirectory: value.assetDirectory, updatesEnabled: value.updatesEnabled, bundle: value.bundle,
     ...('protocolScheme' in value ? { protocolScheme: value.protocolScheme as string } : {}),
     ...('identityHomeModule' in value ? { identityHomeModule: value.identityHomeModule as string } : {}),

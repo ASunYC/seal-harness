@@ -18,10 +18,11 @@ export default {
   protocols: [{ name: product.name, schemes: [product.protocolScheme] }],
   publish: null,
   extraMetadata: {
+    version: product.version,
     description: product.description,
     author: product.publisher,
     desktopName: `${product.appId}.desktop`,
-    dependencies: { ...manifest.dependencies, 'seal-harness-desktop': '0.1.0', 'dsh-plugin-ask-jev': '0.1.0', ...Object.fromEntries(productPlugins.map(folder => [`@seal-harness/${folder}`, '0.1.0'])) },
+    dependencies: { ...manifest.dependencies, 'seal-harness-desktop': product.version, 'dsh-plugin-ask-jev': '0.1.0', ...Object.fromEntries(productPlugins.map(folder => [`@seal-harness/${folder}`, '0.1.0'])) },
   },
   directories: { ...upstream.directories, output: join(productRoot, 'dist', process.platform) },
   files: [
