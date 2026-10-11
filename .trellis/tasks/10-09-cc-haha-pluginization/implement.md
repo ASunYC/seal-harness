@@ -62,9 +62,12 @@
 - 阶段 0 完成：产出 25 / 6 / 9 / 0 分层，修正初版误判。
 - 阶段 1 完成并提交（`d450ea4`）：8 行官方能力装配，修正门禁单复数漏报。
 - 阶段 3 完成并提交（`a8548fa`）：会话全文搜索。
-- 阶段 4 Browser Use 已实装（待提交）：`dsh-browser-use` + `dsh-experimental-browser-use-playwright-mcp`（2 行 insert），`@playwright/mcp@0.0.80` 从 npm 安装（17.87 MiB）。`mcp-client` 无需框架层行（设计修正见 `design.md` 第七节）。Chromium 二进制需手动 `playwright install chromium`。
-- Computer Use（`dsh-computer-use` + `cua-driver-native`）、其余浏览器驱动（stagehand / chrome-devtools）待单独评估。
-- 阶段 2（Agent Teams）待用户决策；阶段 5 未启动。
+- 阶段 4 Browser Use 完成并提交（`52bce96`、`2331110`）：`dsh-browser-use` + `dsh-experimental-browser-use-playwright-mcp`，指向系统 Chrome 跳过版本检查。`mcp-client` 无需框架层行（设计修正见 `design.md` 第七节）。
+- 阶段 2 Agent Teams 完成并提交（`dd42a56`）：复刻官方 bundle 三行 insert（`agent-team` + `tool-agent-team` + `ui-agent-team`）。
+- 阶段 5a Image Generation 完成并提交（`e4f6051`、`4b12a75`）：`ImageGen` + `ImageEdit` 工具插件，含设置页 React 组件（`settings.section` 槽位），凭据通过 DSH credentials 管理。
+- Computer Use（`dsh-computer-use` + `cua-driver-native`）用户明确不需要（DSH 生态自带）。
+- H5 远程访问、宠物用户明确不需要。
+- 剩余 Phase 5 待议：Git Worktree、Official Login（OAuth）、IM Adapters（8 平台）。
 
 ## 已知工具陷阱
 
