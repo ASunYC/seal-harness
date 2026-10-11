@@ -1,0 +1,15 @@
+diff --git a/lib/index.js b/lib/index.js
+index c0f282b32fd23fc0f76449196140bbbfbc0b578d..8102f7228e9b30e5515de40e6dc78d5fa4935716 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -24,6 +24,10 @@ function apply(ctx, config) {
+ 	validateBrowserMcpConfig(config);
+ 	const cli = join(dirname(fileURLToPath(import.meta.resolve("@playwright/mcp/package.json"))), "cli.js");
+ 	const env = Object.fromEntries(Object.keys(process.env).filter((key) => key.toUpperCase().startsWith("PLAYWRIGHT_MCP_")).map((key) => [key, ""]));
++	// Electron hosts spawn `process.execPath` (the Electron binary) to run this
++	// npm server; without this flag Electron launches in GUI mode instead of
++	// Node mode and the child exits immediately, breaking the MCP connection.
++	if (process.versions.electron !== void 0) env.ELECTRON_RUN_AS_NODE = "1";
+ 	const args = [
+ 		cli,
+ 		"--browser",

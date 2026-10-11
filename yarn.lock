@@ -4125,6 +4125,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@deepseek-ai/dsh-experimental-browser-use-playwright-mcp@patch:@deepseek-ai/dsh-experimental-browser-use-playwright-mcp@file%3Avendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-playwright-mcp-0.1.7-alpha.2.tgz#./patches/dsh-experimental-browser-use-playwright-mcp@0.1.7-alpha.2.patch::locator=seal-harness%40workspace%3A.":
+  version: 0.1.7-alpha.2
+  resolution: "@deepseek-ai/dsh-experimental-browser-use-playwright-mcp@patch:@deepseek-ai/dsh-experimental-browser-use-playwright-mcp@file%3Avendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-playwright-mcp-0.1.7-alpha.2.tgz%23vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-playwright-mcp-0.1.7-alpha.2.tgz%3A%3Ahash=26686d&locator=seal-harness%2540workspace%253A.#./patches/dsh-experimental-browser-use-playwright-mcp@0.1.7-alpha.2.patch::version=0.1.7-alpha.2&hash=e5f163&locator=seal-harness%40workspace%3A."
+  dependencies:
+    "@deepseek-ai/dsh-experimental-browser-use-runtime": "npm:0.1.7-alpha.2"
+    "@playwright/mcp": "npm:0.0.80"
+  peerDependencies:
+    "@deepseek-ai/cordis": ~4.0.4
+    "@deepseek-ai/dsh-agent": 0.1.7-alpha.2
+    "@deepseek-ai/dsh-browser-use": 0.1.7-alpha.2
+    "@deepseek-ai/dsh-system-prompt": 0.1.7-alpha.2
+    "@deepseek-ai/dsh-tools": 0.1.7-alpha.2
+  checksum: 10c0/672f07f8423692008185ce526bb1f739b1b4d89c49fc753cbd8504dd303e094f6e7710fc48b3ccf960a07bd525dfb4605b116e85b93069f2fcac36017a730bed
+  languageName: node
+  linkType: hard
+
 "@deepseek-ai/dsh-experimental-browser-use-runtime@file:vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-runtime-0.1.7-alpha.2.tgz::locator=seal-harness%40workspace%3A.":
   version: 0.1.7-alpha.2
   resolution: "@deepseek-ai/dsh-experimental-browser-use-runtime@file:vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-runtime-0.1.7-alpha.2.tgz#vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-experimental-browser-use-runtime-0.1.7-alpha.2.tgz::hash=47341c&locator=seal-harness%40workspace%3A."
