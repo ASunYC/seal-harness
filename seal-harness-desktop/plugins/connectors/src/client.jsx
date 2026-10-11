@@ -11,7 +11,7 @@ export function apply(ctx) {
   function Panel() {
     const status = useSyncExternalStore(auth.subscribe, auth.getStatus)
     const workspaces = useSyncExternalStore(listener => ctx.workspaces.list.subscribe(listener), () => ctx.workspaces.list.getSnapshot())
-    return <ConnectorsPanel onBack={() => leaveResource(ctx)} key={JSON.stringify([status?.accountId, status?.epoch, !!status?.user])} api={api} workspaces={workspaces.items} startConnectorCreation={() => createConnectorDraftConversation(ctx)} />
+    return <ConnectorsPanel onBack={() => leaveResource(ctx)} key={JSON.stringify([status?.accountId, status?.epoch, !!status?.user])} api={api} workspaces={workspaces.items} startConnectorCreation={() => createConnectorDraftConversation(ctx)} openSkills={() => { ctx.sealHarnessNavigation.select('skills'); ctx.layout.selectPanel('skills') }} />
   }
   registerPanel(ctx, { id: 'connectors', label: '连接器', order: 50, icon: 'connectors', description: '接入 MCP 工具与服务' }, Panel)
 }

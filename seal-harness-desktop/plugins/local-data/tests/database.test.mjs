@@ -38,6 +38,27 @@ test('one database persists users, projects, experts and skills with user isolat
     assert.equal(reopened.db.prepare('SELECT COUNT(*) AS count FROM projects').get().count, 1)
     assert.equal(reopened.db.prepare('SELECT COUNT(*) AS count FROM experts').get().count, 1)
     assert.equal(reopened.db.prepare('SELECT COUNT(*) AS count FROM skills').get().count, 1)
-    assert.equal(reopened.db.prepare('PRAGMA user_version').get().user_version, 2)
+    assert.equal(reopened.db.prepare('PRAGMA user_version').get().user_version, 3)
   } finally { reopened.close() }
+})
+
+test('v2 migration retains existing users and skills while adding scheduled task tables', t => {
+  const home = mkdtempSync(join(tmpdir(), 'seal-harness-v2-db-'))
+  t.after(() => rmSync(home, { recursive: true, force: true }))
+  const old = openProductDatabase(home)
+  const now = new Date().toISOString()
+  old.db.prepare('INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    .run('owner', 'owner', 'Owner', Buffer.alloc(16), Buffer.alloc(64), 'admin', 'active', now, now)
+  old.db.prepare('INSERT INTO skills VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+    .run('skill', 'owner', 'Existing', '{}', Buffer.from('original-package'), 1, now, now)
+  old.db.exec('DROP TABLE scheduled_runs; DROP TABLE scheduled_tasks; PRAGMA user_version = 2')
+  old.close()
+  const upgraded = openProductDatabase(home)
+  try {
+    assert.equal(upgraded.db.prepare('SELECT username FROM users').get().username, 'owner')
+    assert.equal(Buffer.from(upgraded.db.prepare('SELECT archive_blob FROM skills').get().archive_blob).toString(), 'original-package')
+    assert.equal(upgraded.db.prepare('SELECT count(*) AS n FROM scheduled_tasks').get().n, 0)
+    assert.equal(upgraded.db.prepare('SELECT count(*) AS n FROM scheduled_runs').get().n, 0)
+    assert.equal(upgraded.db.prepare('PRAGMA user_version').get().user_version, 3)
+  } finally { upgraded.close() }
 })

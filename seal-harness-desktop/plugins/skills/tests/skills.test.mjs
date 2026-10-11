@@ -11,6 +11,35 @@ import AdmZip from 'adm-zip'
 import { createModule } from '../src/module.js'
 import { openProductDatabase } from '../../local-data/src/index.js'
 import { createArchive, inspectFiles, parseSkill, readArchive, safeRelative } from '../src/package.js'
+import { skillCatalog } from '../../capability-shared/src/catalog.js'
+
+test('system market skills install the complete verified files into SQLite and the real DSH registry', async t => {
+  const fixture = await setup(t)
+  const item = skillCatalog.find(item => item.source === 'clawhub')
+  const files = { 'SKILL.md': instruction('catalog-example'), 'references/guide.md': 'Full reference', LICENSE: 'MIT example license' }
+  const original = globalThis.fetch
+  globalThis.fetch = async url => {
+    if (url.includes('/versions/')) return Response.json({ version: { files: Object.entries(files).map(([path, text]) => ({ path, sha256: createHash('sha256').update(text).digest('hex') })), license: 'MIT' } })
+    if (url.includes('/file?')) return new Response(files[new URL(url).searchParams.get('path')])
+    return Response.json({ latestVersion: { version: '1.0.0' } })
+  }
+  t.after(() => { globalThis.fetch = original })
+  const initial = await fixture.action('list')
+  assert.equal(initial.catalog.length, 407)
+  const installed = await fixture.action('installCatalog', { id: item.id, expectedRevision: initial.revision })
+  assert.equal(installed.skills.length, 1)
+  assert.equal(installed.skills[0].enabled, true)
+  assert.equal(installed.skills[0].origin.catalogId, item.id)
+  assert.equal(installed.catalog.find(entry => entry.id === item.id).installed, true)
+  const archive = fixture.storage.db.prepare('SELECT archive_blob FROM skills').get().archive_blob
+  const persisted = readArchive(Buffer.from(archive))
+  assert.equal(persisted.find(file => file.path === 'references/guide.md').bytes.toString(), 'Full reference')
+  assert(persisted.some(file => file.path === 'LICENSE'))
+  assert(persisted.some(file => file.path === 'SEAL-SOURCE.md'))
+  assert((await fixture.ctx.skills.list({ scope: scopeOf(fixture.ctx) })).some(skill => skill.name === 'catalog-example'))
+  const repeated = await fixture.action('installCatalog', { id: item.id, expectedRevision: installed.revision })
+  assert.equal(repeated.skills.length, 1)
+})
 
 const instruction = (name = 'sample-skill', policy = '') => `---\nname: ${name}\ndescription: Test skill instructions\n${policy}---\nRead references/guide.md before doing the task.\n`
 

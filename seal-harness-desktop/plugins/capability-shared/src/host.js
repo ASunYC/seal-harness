@@ -25,7 +25,8 @@ export async function mountCapability(ctx, module, createModule) {
     if (typeof handler !== 'function') throw new Error(`未知能力操作：${module}/${action}`)
     return handler(payload, signal ? AbortSignal.any([signal, lifetime.signal]) : lifetime.signal)
   }
-  ctx.provide(`sealHarness${module[0].toUpperCase()}${module.slice(1)}`, { call })
+  ctx.provide(`sealHarness${module[0].toUpperCase()}${module.slice(1)}`, { call,
+    ...(instance.catalogStatus ? { catalogStatus: accountId => instance.catalogStatus(accountId) } : {}) })
   const dispatch = async (action, payload, signal) => {
     try {
       const value = await call(action, payload, signal)

@@ -2,11 +2,15 @@ export function createNavigationState() {
   const entries = new Map()
   const listeners = new Set()
   let selectedId = null
-  let snapshot = Object.freeze({ entries: Object.freeze([]), selectedId })
+  let decisionSessionId = null
+  let decisionActive = false
+  let snapshot = Object.freeze({ entries: Object.freeze([]), selectedId, decisionSessionId, decisionActive })
   const publish = () => {
     snapshot = Object.freeze({
       entries: Object.freeze([...entries.values()].sort((a, b) => a.order - b.order)),
       selectedId,
+      decisionSessionId,
+      decisionActive,
     })
     for (const listener of listeners) listener()
   }
@@ -32,6 +36,17 @@ export function createNavigationState() {
       selectedId = id
       publish()
     },
-    dispose() { entries.clear(); listeners.clear(); selectedId = null },
+    markDecisionSession(id) {
+      if (typeof id !== 'string' || !id) throw new Error('决策会话 ID 无效。')
+      decisionSessionId = id
+      decisionActive = true
+      publish()
+    },
+    leaveDecision() {
+      if (!decisionActive) return
+      decisionActive = false
+      publish()
+    },
+    dispose() { entries.clear(); listeners.clear(); selectedId = null; decisionSessionId = null; decisionActive = false },
   })
 }

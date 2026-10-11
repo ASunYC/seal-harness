@@ -18,6 +18,37 @@ import { capabilityOptions } from '../../experts/src/capabilities.js'
 import { createArchive } from '../../skills/src/package.js'
 import { MAX_CONNECTOR_PACKAGE_BYTES, MAX_CONNECTOR_PACKAGE_EXPANDED_BYTES } from '../src/package.js'
 
+test('system MCP catalog installs per account and sends query credentials only to the transport', async t => {
+  const fixture = await httpFixture(t), listeners = new Set()
+  let account = { accountId: 'catalog-owner', epoch: 1 }
+  const { handlers, ctx } = await host(t, {}, ctx => ctx.provide('sealHarnessIdentity', {
+    getSession: () => account, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener) },
+  }))
+  const installed = await handlers.installCatalog({ id: 'tencent-maps' })
+  assert.equal(installed.catalog.length, 55)
+  const entry = installed.items[0]
+  assert.equal(entry.catalogId, 'tencent-maps')
+  assert.equal(entry.enabled, false)
+  const secret = 'example&token ?% value'
+  const saved = await handlers.save({ id: entry.id, revision: entry.revision, name: entry.name, transport: entry.transport,
+    url: fixture.url, enabled: true, queryValues: { key: secret } })
+  assert.equal(saved.items[0].status, 'active')
+  assert.equal(JSON.stringify(saved).includes(secret), false)
+  assert.deepEqual(saved.items[0].queryCredentials, ['key'])
+  assert.deepEqual(saved.items[0].configuredQuery, ['key'])
+  assert(fixture.requestUrls.length > 0)
+  const request = new URL(fixture.requestUrls[0], fixture.url)
+  assert.equal(request.searchParams.get('format'), '0')
+  assert.equal(request.searchParams.get('key'), secret)
+  const cleared = await handlers.clearAuthorization({ id: entry.id, revision: saved.items[0].revision })
+  const missing = await handlers.setEnabled({ id: entry.id, revision: cleared.items[0].revision, enabled: true })
+  assert.equal(missing.items[0].status, 'unconfigured')
+  account = { accountId: 'second-owner', epoch: 2 }
+  for (const listener of listeners) listener()
+  assert.equal((await handlers.list()).items.length, 0)
+  assert.notEqual((await handlers.installCatalog({ id: 'tencent-maps' })).items[0].id, entry.id)
+})
+
 async function host(t, backend = {}, prepare) {
   const home = await mkdtemp(join(tmpdir(), 'seal-harness-connectors-'))
   const ctx = new Context()
@@ -64,9 +95,11 @@ test('session selection isolates connector schemas and execution between agents'
 
 async function httpFixture(t) {
   const headers = []
+  const requestUrls = []
   const environmentHeaders = []
   let toolCalls = 0
   const server = createServer(async (request, response) => {
+    requestUrls.push(request.url)
     if (request.method !== 'POST') { response.writeHead(405).end(); return }
     const chunks = []
     for await (const chunk of request) chunks.push(chunk)
@@ -83,7 +116,7 @@ async function httpFixture(t) {
   })
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)) })
-  return { url: `http://127.0.0.1:${server.address().port}/mcp`, headers, environmentHeaders, toolCalls: () => toolCalls }
+  return { url: `http://127.0.0.1:${server.address().port}/mcp`, headers, requestUrls, environmentHeaders, toolCalls: () => toolCalls }
 }
 
 test('personal connector stays uninstalled and account-scoped until explicit installation', async t => {

@@ -25,6 +25,12 @@ export const configSchema = z.strictObject({
   cwd: text.default(''),
   url: text.default(''),
   headers: secrets(headerName).default({}),
+  headerPrefixes: secrets(headerName).default({}),
+  queryParameters: secrets(environmentName).default({}),
+  queryCredentials: secrets(environmentName).default({}),
+  requiredQuery: z.array(environmentName).max(100).default([]),
+  catalogId: z.string().max(80).optional(),
+  nativeCli: z.boolean().optional(),
   headerEnvironment: z.record(headerName, environmentName).refine(value => Object.keys(value).length <= 100).default({}),
   env: secrets(environmentName).default({}),
   environmentPassthrough: z.array(environmentName).max(100).default([]),
@@ -65,7 +71,7 @@ export async function validateTransport(config) {
     if (config.command || config.cwd || config.args.length || Object.keys(config.env).length || config.environmentPassthrough.length) throw new ConnectorError('HTTP 连接器不能包含本地命令或环境变量。')
     return
   }
-  if (config.url || Object.keys(config.headers).length || Object.keys(config.headerEnvironment).length || config.requiredHeaders.length) throw new ConnectorError('stdio 连接器不能包含 HTTP 地址或请求头。')
+  if (config.url || Object.keys(config.headers).length || Object.keys(config.headerEnvironment).length || config.requiredHeaders.length || Object.keys(config.queryCredentials).length || Object.keys(config.queryParameters).length || config.requiredQuery.length) throw new ConnectorError('stdio 连接器不能包含 HTTP 地址或请求头。')
   if (!isAbsolute(config.command)) throw new ConnectorError('本地命令必须使用可执行文件的绝对路径。')
   let executable
   try { executable = await lstat(config.command) } catch { throw new ConnectorError('找不到本地可执行文件。') }

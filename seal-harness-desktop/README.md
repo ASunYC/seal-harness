@@ -32,13 +32,20 @@ corepack yarn seal-harness:dev
 
 ## 目录和扩展
 
+“连接器 > 系统”提供来自 cc-haha 的 55 项完整目录与图标，支持搜索、分类/来源筛选、详情、安装及现有凭据管理。43 项远程 MCP 保留原官方端点与 OAuth/API Key 模式；URL 参数密钥独立保存并只在传输时组装。飞书、钉钉、企业微信使用固定版本官方 CLI 和原始校验值，下载不执行 npm 生命周期脚本，授权通过官方流程。当前这些 CLI 只支持来源清单列出的 Windows/macOS 架构。
+
+“技能 > 系统”提供 398 条精选在线技能与 9 套固定工具包（29 项技能）。安装完整资源树，保留许可与来源，复用 SQLite 和 DSH Skill Registry；个人技能和已安装区块保留。网络安装不会复制 cc-haha 的用户凭据，也不会自动安装渲染器、运行库或执行技能脚本。固定包逐文件校验 SHA-256；在线包从当前版本清单下载并校验供应商提供的文件摘要。
+
+目录与校验清单位于 `plugins/capability-shared/catalog/`。办公 CLI 的原始源码和 MIT 许可保存在 `plugins/capability-shared/vendor/cc-haha/`。可使用 `node scripts/import-cc-haha-catalog.mjs <cc-haha-checkout>` 重新导入指定 checkout；正常产品构建与运行不依赖该 checkout。
+
 - `product.json` 是产品身份的唯一来源。构建期注入使Host、子进程和原生窗口保持一致。
 - `src/` 和 `cordis.patch.yml` 是标准Cordis品牌插件及bundle。这里的YAML是Loader配置，不是源码补丁。
 - `assets/` 使用按 ip-as-logo 风格生成的小海豹图标，并通过 Git LFS 跟踪；`app-icon.png` 保留生成原图，各平台和托盘资源由它派生，来源及资源哈希见 `icon-provenance.json`。运行 `python scripts/export-product-icons.py` 可重新导出，需安装 Pillow。
 - `scripts/` 复用上游安装的构建工具和打包检查，没有第二套依赖或锁文件。
 - `plugins/local-data/` 负责同一个 SQLite 数据库、迁移和事务。`plugins/identity/` 负责本地账号认证；`plugins/experts/`、`plugins/skills/` 共用该库。既有项目表保留为历史数据，不再有产品项目插件读取它。
 - 根 `packages/dsh-plugin-ask-jev/` 是可独立安装的 DSH 决策插件，产品构建装配同一包；支持 TypeSafe Jev 和阿里百炼 `decision-model-preview`，不依赖 Seal Harness 本地身份服务。
-- `plugins/navigation/` 通过公开 Desktop slot 组合“首页、问问决策、空间、定时任务”一级窄栏；问问决策打开独立页面，首页并列专家、技能、连接器、插件等功能入口与 DSH 原生工作区、会话列表。顶部“新会话”按钮进入原生对话。专家、技能、连接器仍独立管理数据和生命周期；插件管理复用 DSH 原生主面板。空间和定时任务暂为空态。
+- `plugins/navigation/` 通过公开 Desktop slot 组合“首页、问问决策、空间、定时任务”一级窄栏；问问决策打开独立页面，首页并列专家、技能、连接器、插件等功能入口与 DSH 原生工作区、会话列表。顶部“新会话”按钮进入原生对话。专家、技能、连接器仍独立管理数据和生命周期；插件管理复用 DSH 原生主面板。空间暂为空态。
+- `plugins/scheduled-tasks/` 补齐定时任务内容，支持每天、每周、每隔若干分钟和指定时间一次执行，保存时区、工作区及提示词。每次运行通过公开 Session Controller 新建独立会话，使用当前默认模型与权限策略；可编辑、启停、手动运行、停止和查看最近 100 条记录。任务按本地账号保存在 SQLite。应用运行且已登录时执行；关闭、休眠、退出登录错过的计划不补跑。同一任务不重叠，30 分钟超时请求停止；重启将未确认完成的执行标记中断。删除计划不删除原生会话。
 
 构建仅在忽略目录中装配插件到 `dsh-plugin-desktop-beta/node_modules/seal-harness-desktop/`，资源到 `dsh-plugin-desktop-beta/lib/product-assets/`。安装包通过electron-builder的文件映射包含同一插件。上游源码、图标源文件及Harness子模块不会被构建脚本改写。
 

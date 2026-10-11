@@ -1,8 +1,9 @@
 import { createDecisionService } from './service.js'
 import { DecisionError } from './decision.js'
+import { registerDecisionTool } from './tool.js'
 
 export const name = 'ask-jev'
-export const inject = ['connection', 'credentials']
+export const inject = ['connection', 'credentials', 'tools']
 
 function clientMessage(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)
@@ -16,6 +17,8 @@ export function apply(ctx) {
     credentials: ctx.get('credentials'),
     identity: () => ctx.get('sealHarnessIdentity'),
   })
+  const tools = ctx.get('tools')
+  if (tools) ctx.effect(() => registerDecisionTool(tools, service), 'ask-jev: decision tool')
   const lifetime = new AbortController()
   ctx.effect(() => () => lifetime.abort(), 'ask-jev: pending requests')
   const handlers = {

@@ -22,7 +22,7 @@ npm pack ./packages/dsh-plugin-ask-jev
 
 在普通 DSH 的活动 Profile 中使用官方插件命令安装生成的 `dsh-plugin-ask-jev-0.1.0.tgz`，然后重启 Desktop；插件包的 `dsh.bundle.patch` 会注册 Host 和 Client。Seal Harness 的产品构建会自动构建并装配同一包。不要把生成的 `lib/`、`node_modules/` 或 API Key 加入 Git。
 
-打开“问问决策”后选择提供方，配置 API Key；使用阿里百炼时再填地域和 WorkspaceId。Key 通过 DSH Host 的 credentials 服务保存，状态查询只返回是否已配置，不返回密钥。若本机没有凭据服务，插件无法激活。两家提供方的凭据独立保存；Seal Harness 本地账号之间也按账号隔离。
+在 Seal Harness 的原生“设置 > 问问决策”中选择提供方并配置 API Key；使用阿里百炼时再填地域和 WorkspaceId。左侧一级“问问决策”直接打开原生对话。普通对话模型可在需要结构化判断时调用 `ask_jev_decide` 工具，结果会标明实际提供方；决策模型自身只返回结构化数值。普通 DSH Desktop 保留独立表单入口。Key 通过 DSH Host 的 credentials 服务保存，状态查询只返回是否已配置，不返回密钥。若本机没有凭据服务，插件无法激活。两家提供方的凭据独立保存；Seal Harness 本地账号之间也按账号隔离。
 
 没有密钥或远端失败时会显示错误，不会把模拟结果标成 Jev 或阿里返回值。本包不包含 ask-jev 的本地 mock。真实调用需要可用的服务权限、网络和对应 API Key。
 
