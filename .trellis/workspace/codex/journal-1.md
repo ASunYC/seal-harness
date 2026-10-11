@@ -506,3 +506,39 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 19: 产品版本统一与 DSH Desktop 更新评估
+<!-- trellis-session: v=2 fp=76c9372a30771c13 -->
+
+**Date**: 2026-10-12
+**Task**: 产品版本统一与 DSH Desktop 更新评估
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+标题栏和打包元数据改用 Seal Harness 产品包版本 0.1.0；独立抓取 DSH Desktop 2.0.17-beta.2 并评估可移植修复。
+
+### Main Changes
+
+- Stable/Beta 支持可选产品版本，产品构建从 seal-harness-desktop/package.json 注入；保留上游默认版本语义。
+- 记录上游安全清理、Windows 沙箱、Linux AppImage、macOS 权限及新内核相关更新的优先级。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c8f4606a` | feat(seal-harness): use product release version across desktop |
+| `17ebc679` | docs(seal-harness): assess DSH Desktop 2.0.17 updates |
+
+### Testing
+
+- [OK] Stable/Beta 定向测试、双变体、产品构建/检查、根 typecheck/layout 通过；实际 Windows 开发窗口显示 v0.1.0，解包清单为 0.1.0。完整解包构建在依赖树遍历期间中止。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 先单独移植旧 Profile junction 安全清理；每个平台的安装升级和 0.1.0 覆盖旧 2.0.14-beta.1 行为需独立验收。
