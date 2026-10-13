@@ -26,3 +26,13 @@
 1. 单独处理旧 Profile junction 清理的安全修复，先确认本机是否存在旧投影，再跑 Stable/Beta 双变体和 Windows 文件安全测试。
 2. 按实际发行平台选择 Windows 控制台、Linux AppImage、macOS 麦克风/目录选择器的独立补丁。每项分别记录构建、启动、安装和回归结果。
 3. 规划 DeepSeek Harness 内核从 `0.1.7-alpha.2` 升级到新版的兼容矩阵后，再考虑插件包服务、开发者日志与整版 Desktop 同步。子模块 pin 更新必须单独提交，不与产品行为混合。
+
+## 整合进度（2026-10-13）
+
+用户已明确授权同时升级内核和新版插件服务。Beta 固定内核已更新到 `d743267`（`0.2.1-alpha.2`），Stable 运行时目标为 `639ed015`（`0.2.0-rc.2`）。两个运行时的官方包、补丁和来源哈希均已校验；活动子模块仅固定 Beta 提交。内核 pin 与产品行为分阶段提交。
+
+已迁入官方 `pluginPackages` 服务和 Profile 包解析接缝，并更新 Seal Harness 的产品插件依赖声明。Agents Anywhere 桥接包换为上游 `2.0.3-desktop.c7fe1fce32650.r49b34c10`，其来源和 SHA-256 记录于 `vendor/agents-anywhere/provenance.json`。Stable/Beta 的 AA 启用 Profile、插件管理器和两轮热重载均已验证。旧 Profile 链接投影的安全清理也已独立移植。
+
+Seal Harness 保持独立的 `0.1.0` 产品版本、本地登录、SQLite 业务数据与关闭社区更新的策略。Windows 上产品构建、产品检查和图形应用健康启动已实测；第一次冷启动出现渲染器超时，第二次启动正常，仍需在分发包与覆盖安装中复核。macOS/Linux 的构建、签名、安装和升级尚未实测。Windows ACL 沙箱控制台、Linux AppImage 重启和 macOS 麦克风/目录选择器等平台补丁仍按独立阶段评估，不能因内核升级而视作已迁入。
+
+最终源代码门禁：根不可变安装、`typecheck`、`check:layout`、`seal-harness:build`、`seal-harness:check` 通过；Stable/Beta 的 AA 启用 Profile、两轮 HMR、插件包服务与恢复卸载定向测试通过。最终 Windows 图形启动记录为 `rendererStatus: healthy`，主窗口可响应。Next 实验壳仍采用其独立的 `0.1.7-alpha.2` 来源和运行时，本轮仅补齐跨包类型声明。Stable 全量 Vitest 在本机为 1559 通过、28 失败、13 跳过；失败主要分布于 Windows 文件符号链接权限、Linux 工件模拟、浏览器辅助进程超时和部分平台窗口断言，不能写成全量测试通过。

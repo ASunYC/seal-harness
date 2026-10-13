@@ -4,13 +4,14 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { desktop, desktopRequire, product, productPlugins, productRoot } from './build.mjs'
+import { desktop, desktopRequire, product, productPlugins, productRoot, root } from './build.mjs'
 
 const importDesktop = file => import(pathToFileURL(join(desktop, 'lib', file)))
 const receipt = JSON.parse(readFileSync(join(desktop, 'lib/product-build.json'), 'utf8'))
 assert.equal(receipt.appId, product.appId, '请先 corepack yarn seal-harness:build')
 const { prepareDesktopProfile } = await importDesktop('profile.js')
-assert.equal(JSON.parse(readFileSync(desktopRequire.resolve('@deepseek-ai/dsh-web-app/package.json'), 'utf8')).version, '0.1.7-alpha.2')
+const runtimeVersion = JSON.parse(readFileSync(join(root, 'upstream.json'), 'utf8')).channels.beta.runtimePackageVersion
+assert.equal(JSON.parse(readFileSync(desktopRequire.resolve('@deepseek-ai/dsh-web-app/package.json'), 'utf8')).version, runtimeVersion)
 const { composeEntries } = await import(pathToFileURL(desktopRequire.resolve('@deepseek-ai/dsh-app-boot')))
 const { checkForDesktopUpdate } = await importDesktop('update-checker.js')
 let requests = 0
@@ -22,6 +23,8 @@ try {
   const first = prepareDesktopProfile('1', home)
   const rows = composeEntries([first.patches])
   assert.equal(rows.find(row => row.id === 'seal-harness-brand')?.name, 'seal-harness-desktop')
+  assert.equal(rows.find(row => row.id === 'desktop-product-telemetry')?.disabled, true)
+  assert.equal(rows.find(row => row.id === 'product-analytics')?.disabled, true)
   assert.equal(rows.find(row => row.id === 'ask-jev')?.name, 'dsh-plugin-ask-jev')
   assert.ok(readFileSync(desktopRequire.resolve('dsh-plugin-ask-jev'), 'utf8').length > 0)
   assert.ok(readFileSync(desktopRequire.resolve('dsh-plugin-ask-jev/client'), 'utf8').includes('dsh-plugin-ask-jev'))

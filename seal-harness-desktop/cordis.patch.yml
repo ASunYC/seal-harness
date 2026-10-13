@@ -68,9 +68,6 @@
     # 向用户提问工具；上游 ui-user-questions 已装配，此前无提问工具。
     - id: tool-ask-user
       name: '@deepseek-ai/dsh-tool-ask-user'
-    # 计划任务 Host；上游 ui-schedule 已装配，此前只有界面空态而无调度服务。
-    - id: schedule
-      name: '@deepseek-ai/dsh-schedule'
 
 # 语音输入成套装配（对应官方 OPTIONAL_BUNDLES 之一）。
 # 四行同时提供 STT 服务、本地 SenseVoice provider、远端 API provider 与输入界面。
