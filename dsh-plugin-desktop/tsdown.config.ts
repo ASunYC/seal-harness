@@ -10,11 +10,13 @@ export default defineConfig([
     entry: {
       index: 'src/index.ts',
       'module-resolution': 'src/module-resolution.ts',
+      'plugin-packages': 'src/plugin-packages.ts',
       webserver: 'src/webserver.ts',
       profile: 'src/profile.ts',
       'product-config': 'src/product-config.ts',
       'profile-manager': 'src/profile-manager.ts',
       'profile-service': 'src/profile-service.ts',
+      'profile-context': 'src/profile-context.ts',
       'desktop-plugins': 'src/desktop-plugins.ts',
       pnpm: 'src/pnpm.ts',
       profiles: 'src/profiles.ts',

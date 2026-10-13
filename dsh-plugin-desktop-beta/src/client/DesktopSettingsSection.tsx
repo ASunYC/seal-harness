@@ -12,6 +12,7 @@ import type {
   DesktopMarketProvider, DesktopProfileView, DesktopSettingsApi, DesktopSettingsView,
 } from './desktop-settings-api.ts'
 import type { DesktopSettingsLocaleKey } from './desktop-settings-locales.ts'
+import type {} from './desktop-settings-namespace.d.ts'
 import type { DesktopClientPlatform } from './environment.ts'
 import {
   desktopBrowserAccessAvailable,

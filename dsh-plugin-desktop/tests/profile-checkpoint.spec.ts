@@ -262,12 +262,12 @@ describe('Desktop profile health checkpoints', () => {
       userDataDir: target.userData,
       profileDir: target.profile,
       profileName: 'work',
-      legacyDesktopPackageName: 'dsh-plugin-desktop-beta',
+      legacyDesktopPackageName: 'dsh-plugin-desktop',
       legacyReleaseChannel: 'beta',
     })).toMatchObject({
       status: 'valid',
       evidence: {
-        desktopPackageName: 'dsh-plugin-desktop-beta',
+        desktopPackageName: 'dsh-plugin-desktop',
         releaseChannel: 'beta',
         desktopVersion: '2.0.3',
       },
@@ -282,7 +282,7 @@ describe('Desktop profile health checkpoints', () => {
       userDataDir: target.userData,
       profileDir: target.profile,
       profileName: 'work',
-      legacyDesktopPackageName: 'dsh-plugin-desktop-beta',
+      legacyDesktopPackageName: 'dsh-plugin-desktop',
       legacyReleaseChannel: 'beta',
     })).toMatchObject({
       status: 'valid',
@@ -294,7 +294,7 @@ describe('Desktop profile health checkpoints', () => {
       userDataDir: target.userData,
       profileDir: target.profile,
       profileName: 'work',
-      legacyDesktopPackageName: 'dsh-plugin-desktop-beta',
+      legacyDesktopPackageName: 'dsh-plugin-desktop',
       legacyReleaseChannel: 'beta',
     })).toMatchObject({ status: 'invalid' })
   })
@@ -306,7 +306,7 @@ describe('Desktop profile health checkpoints', () => {
       userDataDir: missing,
       profileDir: target.profile,
       profileName: 'work',
-      legacyDesktopPackageName: 'dsh-plugin-desktop-beta',
+      legacyDesktopPackageName: 'dsh-plugin-desktop',
       legacyReleaseChannel: 'beta',
     })).toEqual({ status: 'none' })
     expect(existsSync(missing)).toBe(false)

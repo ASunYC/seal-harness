@@ -1,16 +1,17 @@
 /** Private RunAsNode bootstrap for the packaged DeepSeek Harness CLI. */
 
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { dirname, join } from 'node:path'
+import { dirname, isAbsolute, join } from 'node:path'
 import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 import { resolveProfileDir } from '@deepseek-ai/dsh-app-boot'
 import { packagedDependencyPath } from './packaged-runtime-path.ts'
 import { assertDesktopProfileName } from './profile-manager.ts'
-import { withoutForwardedDesktopPnpmPolicy } from './pnpm-policy.ts'
+import { withDesktopPnpmPolicy, withoutForwardedDesktopPnpmPolicy } from './pnpm-policy.ts'
 import { installProfilePackageResolver } from './module-resolution.ts'
 
 const RUN_AS_NODE = 'ELECTRON_RUN_AS_NODE'
 const DEFAULT_PROFILE = 'DSH_DESKTOP_DEFAULT_PROFILE'
+const RECOVERY_PNPM_SCRIPT = 'DSH_DESKTOP_RECOVERY_PNPM_SCRIPT'
 const DSH_ENTRY_URL = pathToFileURL(
   packagedDependencyPath(import.meta.url, '@deepseek-ai/dsh/lib/bin.js'),
 ).href
@@ -86,10 +87,26 @@ export function desktopCliProfileManifestUrl(
  */
 export async function runDesktopDshCli(
   environment: NodeJS.ProcessEnv = process.env,
-  load: (url: string) => Promise<{ runCli(options: { allowDesktopProfile: boolean }): Promise<void> }> = url => import(url),
+  load: (url: string) => Promise<{ runCli(options: {
+    manageDesktopProfile: boolean
+    packageManager?: { command: string; args: readonly string[]; env: Readonly<Record<string, string>> }
+  }): Promise<void> }> = url => import(url),
   argv: string[] = process.argv,
 ): Promise<void> {
   const profileName = takeDefaultProfile(environment)
+  const recoveryPnpmScript = environment[RECOVERY_PNPM_SCRIPT]
+  delete environment[RECOVERY_PNPM_SCRIPT]
+  if (recoveryPnpmScript !== undefined && !isAbsolute(recoveryPnpmScript)) {
+    throw new Error('dsh-desktop: recovery pnpm runtime must be absolute')
+  }
+  const cliOptions = {
+    manageDesktopProfile: true,
+    ...(recoveryPnpmScript === undefined ? {} : { packageManager: {
+      command: process.execPath,
+      args: [recoveryPnpmScript, ...withDesktopPnpmPolicy([])],
+      env: { ELECTRON_RUN_AS_NODE: '1' },
+    } }),
+  }
   clearElectronRunAsNode(environment)
   const selected = profileName === undefined
     ? argv.slice(2)
@@ -105,13 +122,13 @@ export async function runDesktopDshCli(
   // Keep it until process exit rather than treating CLI settlement as app
   // shutdown. A packaged CLI process owns exactly one Profile invocation.
   if (releaseResolver === undefined) {
-    await (await load(DSH_ENTRY_URL)).runCli({ allowDesktopProfile: true })
+    await (await load(DSH_ENTRY_URL)).runCli(cliOptions)
     return
   }
   const releaseAtExit = (): void => { releaseResolver() }
   process.once('exit', releaseAtExit)
   try {
-    await (await load(DSH_ENTRY_URL)).runCli({ allowDesktopProfile: true })
+    await (await load(DSH_ENTRY_URL)).runCli(cliOptions)
   } catch (cause) {
     process.off('exit', releaseAtExit)
     releaseResolver()

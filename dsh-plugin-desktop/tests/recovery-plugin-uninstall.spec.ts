@@ -32,6 +32,7 @@ function fixture(source: string) {
     nodeBinDir,
     nodeShimPath: join(nodeBinDir, 'node'),
     pnpmBinDir,
+    pnpmBinPath: join(pnpmBinDir, 'packaged-pnpm.cjs'),
     electronVersion: '43.4.0',
     packageName: 'third-party-plugin',
   }

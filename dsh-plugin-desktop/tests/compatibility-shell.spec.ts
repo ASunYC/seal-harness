@@ -51,7 +51,6 @@ function fixture(platform: 'darwin' | 'win32' = 'darwin', mode: 'compatibility' 
   })
   const actions: CompatibilityShellActions = {
     locale: () => 'en', version: '2.0.3',
-    dataLocations: { show: vi.fn(async () => {}) },
     openTerminal: vi.fn(), restart: vi.fn(async () => {}), restartToRecovery: vi.fn(async () => {}),
     reload: vi.fn(), developerTools: vi.fn(),
     checkForUpdates: vi.fn(async () => {}),
@@ -71,7 +70,7 @@ describe('isolated compatibility shell', () => {
 
   it.each([
     ['darwin', 'extended', 'transparent', true],
-    ['win32', 'extended', 'mica', true],
+    ['win32', 'extended', 'off', false],
     ['darwin', 'extended', 'off', false],
     ['darwin', 'compatibility', 'transparent', false],
   ] as const)('preserves the content material boundary for %s %s %s', (platform, mode, material, transparent) => {
@@ -104,7 +103,7 @@ describe('isolated compatibility shell', () => {
   it('rejects other renderers, child frames, navigated chrome, and arbitrary commands', async () => {
     const { shell, handler, event, webContents, actions } = fixture()
     await shell.load()
-    expect(handler(event(), 'state')).toEqual({ mode: 'compatibility', locale: 'en', platform: 'darwin', version: '2.0.3', material: 'off', dataLocations: true })
+    expect(handler(event(), 'state')).toEqual({ mode: 'compatibility', locale: 'en', platform: 'darwin', version: '2.0.3', material: 'off' })
     expect(() => handler({ ...event(), sender: electron.content }, 'terminal')).toThrow('untrusted')
     expect(() => handler({ ...event(), senderFrame: { url: webContents.mainFrame.url } }, 'terminal')).toThrow('untrusted')
     expect(() => handler(event(), { command: 'terminal' })).toThrow('unsupported')
@@ -189,11 +188,9 @@ describe('isolated compatibility shell', () => {
     await handler(event(), 'restart-recovery')
     await handler(event(), 'reload')
     await handler(event(), 'developer')
-    await handler(event(), 'data-locations')
     for (const action of ['openTerminal', 'checkForUpdates', 'restart', 'restartToRecovery', 'reload', 'developerTools'] as const) {
       expect(actions[action]).toHaveBeenCalledOnce()
     }
-    expect(actions.dataLocations?.show).toHaveBeenCalledOnce()
     expect(() => handler(event(), 'version')).toThrow('unsupported')
     expect(() => handler(event(), 'mode')).toThrow('unsupported')
     shell.dispose()

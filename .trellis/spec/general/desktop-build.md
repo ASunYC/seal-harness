@@ -6,6 +6,8 @@
 
 Node 要求 `^22.19.0 || >=24.0.0`，根 Yarn 固定 `4.18.0`。使用 `corepack yarn seal-harness:build` 编译产品插件并装配 Beta Desktop；`seal-harness:check` 是无图形产品验证入口；`seal-harness:start` 显式启动图形应用；各 `seal-harness:dist:*` 在目标操作系统打包。上游 `build` 与产品 `seal-harness:build` 共享编译目录，不并行运行。发布前仍按根发布流程准备 Agents Anywhere 产物，签名和跨平台安装分别实测。
 
+内核 0.2.x 的 Desktop Host 在 `boot` 之前提供 `profileContext` 与 `appReady`，并在成功绑定 Host 后发出 ready；嵌入式 Host 和图形主进程必须走同一接入。官方 `pluginPackages` 服务沿 Profile 包解析器取得安装包元信息，包操作及热重载后刷新选择。恢复模式中的独立 CLI 使用新版 `manageDesktopProfile` 授权，并把随包 pnpm 脚本以绝对路径提供给 `packageManager`；Windows 上不能只靠 PATH 查找 `.cmd`。Stable/Beta 的该共享行为保持镜像，Next 实验壳保留自己的上游来源与运行时 pin。
+
 `product.json` 是产品名、应用 ID、数据目录与更新渠道的来源。名称是 Seal Harness，应用 ID 是 `com.seal-harness.desktop`，默认 Home 是 `~/.seal-harness`；显式 `DSH_HOME` 覆盖保留。社区 DSH 更新渠道不得作用于产品。海豹图标原图和派生资源由 `assets/`、`icon-provenance.json` 和 `scripts/export-product-icons.py` 管理；保留 Git LFS 与来源记录。构建产物不入库。
 
 产品发布版本的唯一来源为 `seal-harness-desktop/package.json`。构建入口在忽略目录生成带 `version` 的 Desktop 产品配置；定制构建的原生 Host、标题栏与 electron-builder `extraMetadata.version` 使用这个值。无定制产品配置时 Stable/Beta 仍使用各自 Desktop 包版本。只改变产品包版本即可同步下一次构建的显示与打包版本；不得用 DSH Desktop 社区更新渠道更新 Seal Harness。

@@ -1291,9 +1291,9 @@ describe('published package surface', () => {
 
     expect(dshResolution('@deepseek-ai/dsh')).toContain(dshPatchPath)
     expect(lockfile).toContain(dshPatchPath)
-    expect(dshPatch).toContain('allowDesktopProfile')
-    expect(dshBin).toContain('allowDesktopProfile')
-    expect(dshBin).toMatch(/if \(!allowDesktopProfile\) rejectElectronProfile/u)
+    expect(dshPatch).toContain('manageDesktopProfile')
+    expect(dshBin).toContain('manageDesktopProfile')
+    expect(dshBin).toMatch(/if \(!manageDesktopProfile\) rejectElectronProfile/u)
   })
 
   it('hides official plugin-manager and general subprocess consoles on Windows', () => {

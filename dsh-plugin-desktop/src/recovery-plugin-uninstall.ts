@@ -20,6 +20,8 @@ export interface RecoveryPluginUninstallOptions {
   readonly nodeShimPath: string
   /** Directory containing Desktop's packaged pnpm command shim. */
   readonly pnpmBinDir: string
+  /** Absolute entry of the bundled pnpm 11 runtime. */
+  readonly pnpmBinPath: string
   readonly electronVersion: string
   readonly packageName: string
   readonly signal?: AbortSignal
@@ -69,6 +71,7 @@ export function recoveryPluginEnvironment(
     | 'nodeBinDir'
     | 'nodeShimPath'
     | 'pnpmBinDir'
+    | 'pnpmBinPath'
     | 'electronVersion'
     | 'environment'>,
   platform: NodeJS.Platform = process.platform,
@@ -84,6 +87,7 @@ export function recoveryPluginEnvironment(
     .filter(value => value.length > 0)
     .join(platform === 'win32' ? ';' : ':')
   environment.NODE = options.nodeShimPath
+  environment.DSH_DESKTOP_RECOVERY_PNPM_SCRIPT = options.pnpmBinPath
   environment.ELECTRON_RUN_AS_NODE = '1'
   environment.DSH_HOME = options.homeDir
   environment.CI = 'true'
@@ -133,6 +137,7 @@ export async function removeRecoveryPlugin(
     ['Node command directory', options.nodeBinDir],
     ['Node command', options.nodeShimPath],
     ['pnpm command directory', options.pnpmBinDir],
+    ['pnpm runtime', options.pnpmBinPath],
   ] as const) assertAbsolutePath(label, value)
   if (options.electronVersion.length === 0 || options.electronVersion.includes('\0')) {
     throw new RecoveryPluginUninstallError('recovery plugin uninstall Electron version is invalid')

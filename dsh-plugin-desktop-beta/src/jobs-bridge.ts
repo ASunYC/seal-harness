@@ -1,13 +1,10 @@
 /**
- * Edition-local adapter between the shared Desktop sources and the core job
- * registry's completion stream.
+ * Adapter between Desktop notifications and the core job registry's completion stream.
  *
- * Beta rides dsh 0.1.7, which removed `JobRegistry#onJobDone` and the
- * `JobSnapshot` projection in favour of one filtered event stream:
+ * Both 0.2.x channels use the filtered event stream:
  * `jobs.events.subscribe(filter, listener)` delivers `registered`, `progress`,
  * `stopping`, `settled`, `removed`, and `output` events carrying a `JobView`.
- * Desktop only ever wanted terminal states, so the adapter narrows the stream
- * to the same shape stable's completion listener hands out.
+ * Desktop only needs terminal states, so the adapter narrows settled jobs to an outcome.
  */
 
 import type { Context } from '@deepseek-ai/cordis'

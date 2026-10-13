@@ -770,6 +770,7 @@ function loadRecoveryFilteredProfile(
       layers,
       patchPath,
       patches: existsSync(patchPath) ? loadOverlayPatches(BIN_NAME, patchPath) : [],
+      skippedBundles: [],
     },
     ...(dshMarketFailure === undefined ? {} : { dshMarketFailure }),
     ...(aaFailure === undefined ? {} : { aaFailure }),
@@ -820,6 +821,32 @@ function webRuntimeTrustedHosts(
     throw new Error(`${BIN_NAME}: web-runtime trustedHosts must be an array of strings`)
   }
   return [...new Set([...configured, ...lanAddresses])]
+}
+
+/** 0.2.1-alpha.2 的 Connection 不再从 webRuntime 读取 LAN 信任地址。 */
+function connectionTrustPatch(
+  connection: EntryOptions | undefined,
+  trustedHosts: readonly string[],
+): PatchOptions | undefined {
+  if (connection === undefined) return undefined
+  const inject = connection.inject
+  const injected = Array.isArray(inject) ? inject : Object.keys(inject ?? {})
+  if (injected.includes('webRuntime')) return undefined
+  const config = rowConfig(connection)
+  const configured: unknown = config.trustedHosts
+  let merged: unknown
+  if (isJsExpr(configured)) {
+    merged = trustedHosts.length === 0
+      ? configured
+      : { __jsExpr: `[...new Set([...(${configured.__jsExpr}), ...${JSON.stringify(trustedHosts)}])]` }
+  } else if (configured === undefined) {
+    merged = [...trustedHosts]
+  } else if (Array.isArray(configured) && configured.every(entry => typeof entry === 'string')) {
+    merged = [...new Set([...configured as string[], ...trustedHosts])]
+  } else {
+    throw new Error(`${BIN_NAME}: connection trustedHosts must be an array of strings`)
+  }
+  return { id: 'connection', config: { ...config, trustedHosts: merged } }
 }
 
 /** Resolve a Loader row's platform gate without mutating the host process. */
@@ -1237,6 +1264,7 @@ export function prepareDesktopProfile(
     throw new Error(`${BIN_NAME}: desktop profile has no web-runtime row`)
   }
   const webRuntimeConfig = rowConfig(webRuntime)
+  const desktopTrustedHosts = webRuntimeTrustedHosts(webRuntimeConfig.trustedHosts, lanAddresses)
   patches.push({
     id: 'web-runtime',
     config: {
@@ -1244,9 +1272,11 @@ export function prepareDesktopProfile(
       // Browser access is an advertised Desktop capability, never an
       // instruction to launch the operating system's default browser.
       openBrowser: false,
-      trustedHosts: webRuntimeTrustedHosts(webRuntimeConfig.trustedHosts, lanAddresses),
+      trustedHosts: desktopTrustedHosts,
     },
   })
+  const connectionPatch = connectionTrustPatch(rows.get('connection'), desktopTrustedHosts)
+  if (connectionPatch !== undefined) patches.push(connectionPatch)
   if (mode === 'advanced' || mode === 'extended') {
     for (const [id, packageName] of [
       ['ui-layout', UI_LAYOUT_PACKAGE],
@@ -1360,6 +1390,10 @@ export function prepareDesktopProfile(
   }
   if ((telemetryDisabled ?? '') !== '' && rows.has('session-telemetry-otel')) {
     patches.push({ id: 'session-telemetry-otel', disabled: true })
+  }
+  // Seal Harness 不参与上游 Desktop 产品分析；新版内核也要求未提供的 DSH_CLIENT_VERSION。
+  for (const id of ['desktop-product-telemetry', 'product-analytics']) {
+    if (rows.has(id)) patches.push({ id, disabled: true })
   }
   // Keep the shell row enabled, but pin none of its configuration.
   //
