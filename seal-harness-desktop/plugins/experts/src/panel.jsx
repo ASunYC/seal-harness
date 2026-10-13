@@ -4,6 +4,7 @@ import { Dialog } from '../../connectors/src/dialog.jsx'
 import { readZip } from '../../capability-shared/src/files.js'
 import { ExpertDetail, ExpertManage, ExpertVersions, expertIdentity } from './details.jsx'
 import { categoryForExpert } from './catalog-view.js'
+import { InstalledSection } from '../../capability-shared/src/installed-section.jsx'
 import { styles } from './styles.js'
 
 function PersonalCard({ item, busy, open, summon }) {
@@ -94,12 +95,14 @@ export function ExpertsPanel({ api, startConversation, startExpertCreation, work
   const close = () => { detailRequest.current?.abort(); setModal(null); setError('') }
   const matches = item => `${item.displayName || item.name} ${item.description || ''} ${(item.tags ?? []).join(' ')}`.toLowerCase().includes(query.trim().toLowerCase())
   const personal = snapshot.items.filter(matches)
+  const installedIcons = personal.map(item => ({ key: item.name, label: item.displayName || item.name, icon: (item.displayName || item.name).slice(0, 1) }))
   return <div className="zz-resource-page zz-experts experts-page resource-page-shell" aria-busy={busy || loading}>
     <style>{styles}</style>
     <header className="resource-page-nav"><div className="resource-page-nav__path">{onBack && <button type="button" className="resource-page-nav__back" aria-label="返回会话，离开专家页" title="返回会话，离开专家页" onClick={onBack}><Icon name="back" size={17} /></button>}<strong>专家</strong><span className="resource-page-nav__badge">RESOURCE</span></div><div className="experts-actions"><button className="btn btn--primary" disabled={busy} onClick={() => { void run(async () => { if (!startExpertCreation) throw new Error('会话创建服务尚未就绪。'); await startExpertCreation() }) }}>创建专家</button><button className="btn btn--secondary" disabled={busy} onClick={() => { setModal('import'); setError('') }}>导入专家</button></div></header>
     <div className="experts-page__content">
       <section className="resource-page-hero"><div className="resource-page-hero__copy"><p className="resource-page-hero__eyebrow">WORKBENCH RESOURCE</p><h1>专家</h1><p className="resource-page-hero__subtitle">通过会话创建、导入和管理专家；已启用的专家可以在对话中使用。</p></div><label className="zz-directory-search"><span>搜索专家</span><Icon name="search" size={16} /><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="搜索专家名称、描述或标签" />{query && <button type="button" className="zz-search-clear" aria-label="清除搜索" onClick={() => setQuery('')}><Icon name="close" size={15} /></button>}</label></section>
       {!modal && error && <div role="alert" className="editor-page__error">{error}<button className="btn btn--secondary" onClick={() => { void run(refresh) }}>重试</button></div>}
+      <section className="experts-installed-section" aria-label="已安装专家"><InstalledSection label="专家" icons={installedIcons} loading={loading}>{loading ? <div className="directory-state directory-state--slim" role="status">正在加载专家…</div> : error && !snapshot.items.length ? <div className="directory-state directory-state--error">专家暂时读不到，请重试。</div> : personal.length ? <div className="expert-grid">{personal.map(item => <PersonalCard key={item.name} item={item} busy={busy} open={open} summon={summonName} />)}</div> : <div className="directory-state directory-state--slim"><strong>{query ? '没有匹配的专家' : '还没有安装专家'}</strong></div>}</InstalledSection></section>
       <ExpertDirectoryTabs value={directory} onChange={setDirectory} disabled={busy} />
       {directory === 'system' && <section id="zz-expert-system" role="tabpanel" className="zz-directory-section" aria-label="系统专家"><div className="directory-state directory-state--slim"><strong>暂无系统专家</strong><span>系统专家会在后续版本中提供。</span></div></section>}
       {directory === 'personal' && <section id="zz-expert-personal" role="tabpanel" className="zz-directory-section" aria-label="个人专家">{loading ? <div className="directory-state" role="status">正在加载专家…</div> : error && !snapshot.items.length ? <div className="directory-state directory-state--error">专家暂时读不到，请重试。</div> : personal.length ? <div className="expert-grid">{personal.map(item => <PersonalCard key={item.name} item={item} busy={busy} open={open} summon={summonName} />)}</div> : <div className="directory-state directory-state--slim"><strong>{query ? '没有匹配的个人专家' : '你还没有创建过专家'}</strong><span>{query ? '试试更换关键词。' : '点右上「创建专家」，或导入专家。'}</span></div>}</section>}

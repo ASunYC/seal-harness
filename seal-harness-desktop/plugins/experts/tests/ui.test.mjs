@@ -11,7 +11,7 @@ const require = createRequire(resolve(process.env.SEAL_HARNESS_TOOLS_ROOT || fil
 const React = require('react'), { act } = React
 const { createRoot } = require('react-dom/client'), { JSDOM } = require('jsdom')
 
-test('expert page has only system and personal tabs and creation enters a conversation', async t => {
+test('expert page folds installed experts and creation enters a conversation', async t => {
   const outDir = await mkdtemp(join(tmpdir(), 'seal-harness-experts-ui-'))
   t.after(() => rm(outDir, { recursive: true, force: true }))
   const { build } = await import(pathToFileURL(require.resolve('tsdown')).href)
@@ -37,7 +37,7 @@ test('expert page has only system and personal tabs and creation enters a conver
   const root = createRoot(document.querySelector('main'))
   t.after(async () => { await act(async () => root.unmount()); dom.window.close(); delete globalThis.window; delete globalThis.document; delete globalThis.IS_REACT_ACT_ENVIRONMENT })
   const click = async label => {
-    const button = [...document.querySelectorAll('button')].find(item => item.textContent.trim() === label || item.getAttribute('aria-label') === label)
+    const button = [...document.querySelectorAll('button')].find(item => !item.closest('details:not([open])') && (item.textContent.trim() === label || item.getAttribute('aria-label') === label))
     assert(button, `missing ${label}`)
     await act(async () => button.click())
   }
@@ -47,8 +47,17 @@ test('expert page has only system and personal tabs and creation enters a conver
   })))
   assert.deepEqual([...document.querySelectorAll('.experts-directory-tabs [role=tab]')].map(tab => tab.textContent), ['系统', '个人'])
   assert.equal(document.querySelector('[aria-label="个人专家"] .personal-expert-card__identity h3')?.textContent, '分析专家')
-  assert.equal(document.querySelector('.resource-sync-refresh, .my-experts-trigger, .experts-installed, .editor-page'), null)
-  assert.doesNotMatch(document.body.textContent, /已安装|本地专家|导入专家包|我的专家/)
+  const installed = document.querySelector('[aria-label="已安装专家"] details')
+  assert(installed)
+  assert.equal(installed.open, false)
+  assert.match(installed.querySelector('summary').textContent, /已安装\s*1/)
+  assert.equal(installed.querySelector('.resource-installed__icon')?.title, '分析专家')
+  await act(async () => installed.querySelector('summary').click())
+  assert.equal(installed.open, true)
+  await act(async () => installed.querySelector('summary').click())
+  assert.equal(installed.open, false)
+  assert.equal(document.querySelector('.resource-sync-refresh, .my-experts-trigger, .editor-page'), null)
+  assert.doesNotMatch(document.body.textContent, /本地专家|导入专家包|我的专家/)
   await click('系统')
   assert.match(document.querySelector('[aria-label="系统专家"]').textContent, /暂无系统专家/)
   await click('个人')

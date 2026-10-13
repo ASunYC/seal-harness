@@ -5,6 +5,7 @@ import { styles as storeStyles } from '../../store/src/styles.js'
 import { Dialog, SkillWorkbench } from './workbench.jsx'
 import { styles } from './styles.js'
 import { CatalogGrid } from '../../capability-shared/src/catalog-grid.jsx'
+import { InstalledSection } from '../../capability-shared/src/installed-section.jsx'
 
 export function SkillsPanel({ api, onBack, startSkillCreation }) {
   const [snapshot, setSnapshot] = useState({ revision: 0, skills: [] })
@@ -45,6 +46,7 @@ export function SkillsPanel({ api, onBack, startSkillCreation }) {
   }
   const matches = item => `${item.name} ${item.description}`.toLowerCase().includes(search.toLowerCase())
   const installed = snapshot.skills.filter(item => item.installed !== false && matches(item))
+  const installedIcons = installed.map(item => ({ key: item.id, label: item.name, icon: <Icon name="skill-folder" size={18} /> }))
   const personal = snapshot.skills.filter(item => !['store', 'system'].includes(item.origin?.kind) && matches(item))
   const feedback = <>{error && <div role="alert" className="state-banner is-error"><strong>操作未完成</strong><span>{error}</span></div>}{notice && <p role="status" className="state-banner">{notice}</p>}</>
   const row = (item, context) => <article className="local-skill-row" key={item.id}>
@@ -57,7 +59,7 @@ export function SkillsPanel({ api, onBack, startSkillCreation }) {
     <style>{storeStyles + styles}</style>
     <header className="resource-page-nav"><div className="resource-page-nav__path">{onBack && <button type="button" className="resource-page-nav__back" aria-label="返回会话，离开技能页" title="返回会话，离开技能页" onClick={onBack}><Icon name="back" size={17} /></button>}<strong>技能</strong><span className="resource-page-nav__badge">RESOURCE</span></div><div className="skills-actions"><button className="primary" disabled={busy} onClick={() => run(startSkillCreation)}>创建技能</button><button disabled={busy} onClick={() => { setError(''); setPreview(null); setDialog({ kind: 'import' }) }}>导入技能</button></div></header>
     <div className="skills-page-content"><section className="skills-hero"><h1>技能</h1><p>创建、安装并使用你的技能。</p></section>{feedback}
-      <section className="local-skill-catalog" aria-label="已安装技能"><h2>已安装 <small>{installed.length}</small></h2>{loading ? <p role="status">正在读取技能…</p> : installed.length ? <div className="local-skill-list">{installed.map(item => row(item, 'installed'))}</div> : <div className="empty-state"><strong>还没有安装技能</strong><span>可以从个人技能安装，或导入技能。</span></div>}</section>
+      <section className="local-skill-catalog" aria-label="已安装技能"><InstalledSection label="技能" icons={installedIcons} loading={loading}>{loading ? <p role="status">正在读取技能…</p> : installed.length ? <div className="local-skill-list">{installed.map(item => row(item, 'installed'))}</div> : <div className="empty-state"><strong>还没有安装技能</strong><span>可以从个人技能安装，或导入技能。</span></div>}</InstalledSection></section>
       <section className="local-skill-catalog skills-library" aria-label="技能库"><nav className="skills-primary-tabs" aria-label="技能分类"><button aria-pressed={tab === 'system'} onClick={() => setTab('system')}>系统</button><button aria-pressed={tab === 'personal'} onClick={() => setTab('personal')}>个人</button></nav><div className="local-skill-toolbar"><label className="local-skill-search"><Icon name="search" size={15} /><input type="search" aria-label="搜索技能" placeholder="搜索名称或描述" value={search} onChange={event => setSearch(event.target.value)} /></label></div>{tab === 'system' ? <CatalogGrid items={snapshot.catalog ?? []} label="系统技能" busy={busy} install={item => run(async () => { setSnapshot(await request('installCatalog', { id: item.id, expectedRevision: snapshot.revision })); setNotice(`${item.name} 已安装。`) })} empty={<div className="empty-state"><strong>暂无系统技能</strong><span>系统技能上线后将在这里显示。</span></div>} /> : personal.length ? <div className="local-skill-list">{personal.map(item => row(item, 'personal'))}</div> : <div className="empty-state"><strong>{search ? '没有符合条件的技能' : '还没有个人技能'}</strong><span>点击右上角「创建技能」，在会话中描述你需要的技能。</span></div>}</section>
     </div>
     {workbench && <SkillWorkbench key={workbench.id} api={api} id={workbench.id} revision={snapshot.revision} close={() => setWorkbench(null)} saved={refresh} />}

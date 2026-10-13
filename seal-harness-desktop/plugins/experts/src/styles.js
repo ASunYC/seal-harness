@@ -102,6 +102,8 @@ to { opacity: 1; transform: none; }
 .zz-experts .editor-page__error { padding: var(--sp-3); border: var(--bw) solid var(--danger-line); border-radius: var(--r-md); color: var(--danger-text); background: var(--danger-soft); }
 .zz-experts { position: relative; min-height: 100%; width: 100%; box-sizing: border-box; background: var(--bg); }
 .zz-experts .experts-page__content { width: 100%; max-width: 1740px; box-sizing: border-box; margin-inline: auto; padding: var(--sp-5) var(--sp-6) var(--sp-7); }
+.zz-experts .experts-installed-section { margin-top: 20px; }
+.zz-experts .experts-installed-section + .experts-directory-tabs { margin-top: 18px; }
 .zz-experts .resource-page-nav { padding-inline: var(--sp-6); }
 .zz-experts .resource-page-hero { grid-template-columns: minmax(0, 1fr) minmax(260px, 1fr); align-items: center; gap: var(--sp-6); }
 .zz-experts .resource-page-hero h1 { font-size: var(--fs-700); }

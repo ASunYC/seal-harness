@@ -51,6 +51,10 @@ test('connector page separates installed items from system and personal tabs', a
     throw new Error(endpoint)
   }
   const { click } = await mount(t, api, { startConnectorCreation: async () => { started++ } })
+  const installedFold = document.querySelector('[aria-label="已安装连接器"] details')
+  assert.equal(installedFold.open, false)
+  assert.match(installedFold.querySelector('summary').textContent, /已安装\s*1/)
+  assert.equal(installedFold.querySelector('.resource-installed__icon')?.title, '旧连接器')
   assert.match(document.querySelector('[aria-label="已安装连接器"]').textContent, /旧连接器/)
   assert.doesNotMatch(document.querySelector('[aria-label="已安装连接器"]').textContent, /新连接器/)
   assert.deepEqual([...document.querySelectorAll('[aria-label="连接器分类"] [role="tab"]')].map(tab => tab.textContent), ['系统', '个人'])
@@ -75,6 +79,7 @@ test('installed connector still opens runtime and local credential management', 
     if (endpoint === 'connectors/list' || endpoint === 'connectors/save') return { items: [item] }
     throw new Error(endpoint)
   })
+  document.querySelector('[aria-label="已安装连接器"] summary').click()
   await click('管理 工具连接器')
   assert.match(document.querySelector('dialog[open]').textContent, /访问凭据/)
   await click('配置访问凭据')
@@ -97,6 +102,9 @@ test('system connector catalog contains all cards and installs into the native c
     }
     throw new Error(endpoint)
   })
+  const emptyInstalled = document.querySelector('[aria-label="已安装连接器"] details')
+  assert.equal(emptyInstalled.open, false)
+  assert.match(emptyInstalled.querySelector('summary').textContent, /已安装\s*0\s*暂无/)
   assert.equal(document.querySelectorAll('.cap-catalog__card').length, 55)
   await click('查看 腾讯地图')
   assert.match(document.querySelector('[role="dialog"]').textContent, /腾讯位置服务 Key/)

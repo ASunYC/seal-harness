@@ -12,6 +12,9 @@ test('系统技能显示完整目录，查看许可和安装要求后接入既�
     if (endpoint === 'skills/installCatalog') return { revision: 2, skills: [], catalog: catalog.map(item => ({ ...item, installed: item.id === payload.id })) }
     throw new Error(endpoint)
   })
+  const emptyInstalled = document.querySelector('[aria-label="已安装技能"] details')
+  assert.equal(emptyInstalled.open, false)
+  assert.match(emptyInstalled.querySelector('summary').textContent, /已安装\s*0\s*暂无/)
   assert.equal(document.querySelectorAll('.cap-catalog__card').length, 407)
   await click('查看 前端界面设计')
   const dialog = document.querySelector('[role="dialog"][aria-label="前端界面设计"]')
@@ -37,6 +40,10 @@ test('技能页保留已安装区块，系统个人为页签，创建进入会�
     if (endpoint === 'skills/installPersonal') return {}
     throw new Error(endpoint)
   }, { startSkillCreation: async () => { started++ } })
+  const installedFold = document.querySelector('[aria-label="已安装技能"] details')
+  assert.equal(installedFold.open, false)
+  assert.match(installedFold.querySelector('summary').textContent, /已安装\s*1/)
+  assert.equal(installedFold.querySelector('.resource-installed__icon')?.title, 'old-skill')
   assert.match(document.querySelector('[aria-label="已安装技能"]').textContent, /old-skill/)
   assert.doesNotMatch(document.querySelector('[aria-label="已安装技能"]').textContent, /new-skill/)
   assert(document.querySelector('[aria-label="技能分类"]'))
@@ -63,6 +70,7 @@ test('技能页返回会话并可查看已安装技能', async t => {
   }, { onBack: () => returns++ })
   await click('返回会话，离开技能页')
   assert.equal(returns, 1)
+  document.querySelector('[aria-label="已安装技能"] summary').click()
   await click('local-skill说明')
   assert(document.querySelector('dialog[open][aria-label="local-skill"]'))
 })
