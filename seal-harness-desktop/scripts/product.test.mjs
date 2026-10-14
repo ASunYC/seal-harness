@@ -39,6 +39,7 @@ test('产品安装身份和品牌资源来源一致，分发配置不连接社�
   assert.equal(configuration.deb.packageName, 'seal-harness')
   assert.equal(configuration.publish, null)
   assert.equal(product.updatesEnabled, false)
+  assert.equal(product.isolatedHost, false)
   const provenance = JSON.parse(readFileSync(join(productRoot, 'icon-provenance.json'), 'utf8'))
   for (const [file, { sha256 }] of Object.entries(provenance.files)) {
     assert.equal(createHash('sha256').update(readFileSync(join(productRoot, 'assets', file))).digest('hex'), sha256, file)

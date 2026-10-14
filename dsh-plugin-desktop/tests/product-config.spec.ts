@@ -30,11 +30,19 @@ it('validates the build file and rejects unsafe identity and resource paths', ()
   for (const invalid of [
     { name: '' }, { version: 'invalid' }, { appId: 'invalid/id' }, { homeDirectoryName: '..' },
     { homeDirectoryName: '.data/other' }, { assetDirectory: 'https://example.com/' },
-    { bundle: '../another-package' }, { updatesEnabled: 'false' }, { setupWizardEnabled: 'false' },
+    { bundle: '../another-package' }, { updatesEnabled: 'false' }, { setupWizardEnabled: 'false' }, { isolatedHost: 'false' },
   ]) {
     writeFileSync(path, JSON.stringify({ ...product, ...invalid }))
     expect(() => readDesktopProduct(path)).toThrow('Invalid Desktop product configuration')
   }
+})
+
+it('retains the product Host mode when validating the distribution file', () => {
+  const home = mkdtempSync(join(tmpdir(), 'desktop-product-'))
+  homes.push(home)
+  const path = join(home, 'product.json')
+  writeFileSync(path, JSON.stringify({ ...product, isolatedHost: false }))
+  expect(readDesktopProduct(path)?.isolatedHost).toBe(false)
 })
 
 it.each([undefined, true, false])('keeps setup wizard policy %s independent of the account Home module', setupWizardEnabled => {

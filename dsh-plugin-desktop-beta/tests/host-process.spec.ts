@@ -4,7 +4,14 @@ import { createLaunchEnvironmentSnapshot } from '@deepseek-ai/dsh-launch-environ
 import type { DesktopStartupGenerationHost } from '../src/startup-generation.ts'
 const state = vi.hoisted(() => ({ fork: vi.fn() }))
 vi.mock('electron', () => ({ utilityProcess: { fork: state.fork } }))
-import { startIsolatedDesktopHost, type IsolatedHostOptions } from '../src/host-process.ts'
+import { shouldIsolateDesktopHost, startIsolatedDesktopHost, type IsolatedHostOptions } from '../src/host-process.ts'
+
+it('honors the product Host mode while keeping explicit diagnostic overrides', () => {
+  expect(shouldIsolateDesktopHost({})).toBe(true)
+  expect(shouldIsolateDesktopHost({ isolatedHost: false })).toBe(false)
+  expect(shouldIsolateDesktopHost({ isolatedHost: false }, '1')).toBe(true)
+  expect(shouldIsolateDesktopHost({ isolatedHost: true }, '0')).toBe(false)
+})
 
 function fixture() {
   const child = Object.assign(new EventEmitter(), {

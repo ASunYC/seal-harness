@@ -6,6 +6,7 @@ import { performance } from 'node:perf_hooks'
 import { HostRpc } from './host-rpc.ts'
 import { bindNativeRuntime, runtimeSnapshot } from './host-runtime-bridge.ts'
 import type { DesktopHostOptions } from './host-bootstrap.ts'
+import type { DesktopProductConfig } from './product-config.ts'
 import type { DesktopRuntime } from './runtime.ts'
 import type { DesktopStartupGenerationHost } from './startup-generation.ts'
 import type { DesktopLanHttpsRuntimeOptions } from './lan-https-runtime.ts'
@@ -26,6 +27,13 @@ export interface IsolatedHostExit {
   readonly exitCode: number
   /** Milliseconds between fork and exit; separates an instant death from one hours in. */
   readonly uptimeMs: number
+}
+
+/** Product defaults can opt out; explicit environment choices still win. */
+export function shouldIsolateDesktopHost(product: Pick<DesktopProductConfig, 'isolatedHost'>, override?: string): boolean {
+  if (override === '0') return false
+  if (override === '1') return true
+  return product.isolatedHost !== false
 }
 
 export async function startIsolatedDesktopHost(options: IsolatedHostOptions): Promise<void> {

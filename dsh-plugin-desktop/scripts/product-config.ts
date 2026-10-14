@@ -15,6 +15,7 @@ export function readDesktopProduct(path = process.env.DSH_DESKTOP_PRODUCT): Desk
     || !/^(?:\.\/|\.\.\/)[a-zA-Z0-9_/-]+\/$/.test(value.assetDirectory)
     || !('updatesEnabled' in value) || typeof value.updatesEnabled !== 'boolean'
     || ('setupWizardEnabled' in value && typeof value.setupWizardEnabled !== 'boolean')
+    || ('isolatedHost' in value && typeof value.isolatedHost !== 'boolean')
     || ('protocolScheme' in value && (typeof value.protocolScheme !== 'string' || !/^[a-z][a-z0-9+.-]*$/.test(value.protocolScheme)))
     || ('identityHomeModule' in value && (typeof value.identityHomeModule !== 'string'
       || !/^@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*$/.test(value.identityHomeModule)))
@@ -29,6 +30,7 @@ export function readDesktopProduct(path = process.env.DSH_DESKTOP_PRODUCT): Desk
     ...('protocolScheme' in value ? { protocolScheme: value.protocolScheme as string } : {}),
     ...('identityHomeModule' in value ? { identityHomeModule: value.identityHomeModule as string } : {}),
     ...('setupWizardEnabled' in value ? { setupWizardEnabled: value.setupWizardEnabled as boolean } : {}),
+    ...('isolatedHost' in value ? { isolatedHost: value.isolatedHost as boolean } : {}),
   }
 }
 

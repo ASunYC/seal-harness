@@ -5,6 +5,7 @@
   "protocolScheme": "seal-harness",
   "homeDirectoryName": ".seal-harness",
   "setupWizardEnabled": false,
+  "isolatedHost": false,
   "publisher": "Seal Harness",
   "description": "Seal Harness 智能体桌面工作台",
   "assetDirectory": "./product-assets/",

@@ -10,6 +10,7 @@ export interface DesktopProductConfig {
   readonly protocolScheme?: string
   readonly identityHomeModule?: string
   readonly setupWizardEnabled?: boolean
+  readonly isolatedHost?: boolean
 }
 
 declare const __DSH_DESKTOP_PRODUCT__: DesktopProductConfig | undefined

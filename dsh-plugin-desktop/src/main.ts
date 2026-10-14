@@ -7,7 +7,7 @@
 // before it could launch. The dsh-subprocess-local patch scopes the flag to the
 // runner child alone.
 
-import { startIsolatedDesktopHost } from './host-process.ts'
+import { shouldIsolateDesktopHost, startIsolatedDesktopHost } from './host-process.ts'
 import { app, crashReporter, safeStorage, shell } from 'electron'
 import { randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
@@ -1585,7 +1585,7 @@ async function start(): Promise<void> {
     if (profilePreferences === undefined) {
       throw new Error(`${BIN_NAME}: active Profile preferences were not initialized`)
     }
-    if (process.env.DSH_DESKTOP_ISOLATED_HOST !== '0') {
+    if (shouldIsolateDesktopHost(DESKTOP_PRODUCT, process.env.DSH_DESKTOP_ISOLATED_HOST)) {
       startupStage = 'host-boot'
       lifecycleRecorder.transitionStartupStage(startupStage)
       await startIsolatedDesktopHost({

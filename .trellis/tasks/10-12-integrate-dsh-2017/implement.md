@@ -16,3 +16,5 @@
 - `corepack yarn install --immutable`、`corepack yarn typecheck`、`corepack yarn check:layout`、`corepack yarn seal-harness:build`、`corepack yarn seal-harness:check` 均通过。Stable/Beta 的 AA 启用 Profile 与两轮 HMR 通过；插件包和恢复卸载定向测试通过。
 - Windows 图形应用在最终产品构建后健康启动，主窗口响应正常。第一次升级冷启动曾超时，后续启动成功；未进行签名安装、覆盖升级或 macOS/Linux 图形实测。真实模型回复需在用户现有凭据下验收。
 - Stable 全量 Vitest 本机结果为 1559 通过、28 失败、13 跳过；剩余失败主要涉及本机无文件符号链接权限、Linux 工件测试、浏览器辅助进程超时及部分原生窗口断言。它们不作为跨平台通过的证据；定向产品与新插件服务门禁结果以上述通过项为准。
+
+后续 Windows 启动回归（2026-10-15）：原 Profile 的独立 Host 在 `host-boot` 阶段触及 120 秒 RPC 截止并进入恢复页；进程内 Host 对同一数据 30 秒内完成 Host 启动，临时空 Home 的独立 Host 约 4 秒完成。Seal Harness 因此改用构建时产品配置 `isolatedHost: false`，保留显式 `DSH_DESKTOP_ISOLATED_HOST=1` 供独立进程排障；Stable/Beta 默认不变。两变体定向测试各 13/13、双变体镜像、根类型检查、产品构建与产品检查通过；最终无环境覆盖的 Windows 图形启动约 7 秒，主窗口响应且 `rendererStatus: healthy`，未创建独立 Host 子进程。独立 Host 冷启动的上游卡顿原因尚未确定，产品当前使用有明确代价的进程内模式。
