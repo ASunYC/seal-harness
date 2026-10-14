@@ -542,3 +542,25 @@
 ### Next Steps
 
 - 先单独移植旧 Profile junction 安全清理；每个平台的安装升级和 0.1.0 覆盖旧 2.0.14-beta.1 行为需独立验收。
+
+
+## Session 20: 修复 Seal Harness Host 启动超时
+<!-- trellis-session: v=2 fp=0a9f3b05a7724a6b -->
+
+**Date**: 2026-10-15
+**Task**: 修复 Seal Harness Host 启动超时
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+复现原 Profile 独立 Host 120 秒超时；用产品配置默认选择进程内 Host，保留显式独立模式。Stable/Beta 定向测试、双变体、类型、产品构建和检查通过；Windows 原数据无环境覆盖启动健康。原独立 Host 冷启动原因仍待进一步定位，迁移任务保持进行中。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1ed4dd2d` | fix(seal-harness): 避免独立 Host 冷启动超时进入恢复模式 |
+
+### Status
+
+[OK] **Completed**
