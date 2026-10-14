@@ -3,6 +3,7 @@ export const styles = `
 #root :has(> [data-shell-overlay]) { box-sizing: border-box; padding-left: 56px; }
 #root :has(> [data-shell-overlay]) > [data-side="sidebar"] { transform: translateX(56px); }
 #root [data-slot="sidebar"] button[aria-label="插件"], #root [data-slot="sidebar"] button[aria-label="Plugins"] { display: none !important; }
+#root [data-slot="sidebar"] button[aria-label="自动化任务"], #root [data-slot="sidebar"] button[aria-label="Automation tasks"] { display: none !important; }
 #root:has(.seal-nav-rail[data-home-active="true"]) [data-slot="sidebar"] button[aria-label="插件"], #root:has(.seal-nav-rail[data-home-active="true"]) [data-slot="sidebar"] button[aria-label="Plugins"] { display: flex !important; }
 .seal-nav-rail { position: absolute; z-index: 2; inset: 0 auto 0 0; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 56px; padding: 48px 7px 14px; box-sizing: border-box; border-right: 1px solid var(--dsw-alias-border-l1,#34363b); background: var(--dsw-alias-bg-layer-1,#1c1d20); color: var(--dsw-alias-label-secondary,#a6a8ae); pointer-events: auto; -webkit-app-region: no-drag; }
 .seal-nav-rail button { display: grid; width: 42px; height: 42px; padding: 0; place-items: center; border: 0; border-radius: 12px; background: transparent; color: inherit; cursor: pointer; }
@@ -45,6 +46,10 @@ export const styles = `
 @media (max-width: 800px) { .seal-nav-rail { width: 48px; padding-inline: 3px; } #root :has(> [data-shell-overlay]) { padding-left: 48px; } #root :has(> [data-shell-overlay]) > [data-side="sidebar"] { transform: translateX(48px); } .seal-nav-page { padding: 24px; } .seal-nav-page__heading { align-items: flex-start; flex-direction: column; } }
 #root [data-sidebar-collapsed] .seal-nav-secondary { display: none; }
 #root [data-sidebar-collapsed] .seal-nav-compact-tabs { display: flex; }
+#root [data-sidebar-collapsed] .seal-nav-task-tabs { position: absolute; z-index: 3; top: 0; right: 0; left: 112px; pointer-events: auto; }
+#root [data-sidebar-collapsed]:has(.seal-nav-task-tabs) [data-seal-nav-panel="schedules"] { box-sizing: border-box; padding-top: 52px; }
+#root [data-sidebar-collapsed]:has(.seal-nav-task-tabs) [data-testid="task-manager-page"] { box-sizing: border-box; padding-top: 52px; }
+@media (max-width: 800px) { #root [data-sidebar-collapsed] .seal-nav-task-tabs { left: 104px; } }
 #root [data-sidebar-collapsed] .seal-nav-plugin-tabs { position: absolute; z-index: 3; top: 0; right: 0; left: 112px; display: flex; pointer-events: auto; }
 #root [data-sidebar-collapsed]:has(.seal-nav-plugin-tabs) [data-plugin-panel] { padding-top: 52px; }
 @media (max-width: 800px) { #root [data-sidebar-collapsed] .seal-nav-plugin-tabs { left: 104px; } }

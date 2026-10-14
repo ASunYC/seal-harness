@@ -10,7 +10,7 @@ import { createRoot } from 'react-dom/client'
 const require = createRequire(import.meta.url)
 
 test('home resources share the sidebar with native workspaces and sessions', async t => {
-  const dom = new JSDOM('<!doctype html><html><head></head><body><main></main><div data-slot="sidebar.settings"><button aria-haspopup="dialog">原生设置</button></div><button class="seal-harness-user-footer">原生账号</button></body></html>')
+  const dom = new JSDOM('<!doctype html><html><head></head><body><main></main><div id="root"><div data-slot="sidebar"><button aria-label="自动化任务">上游入口</button></div></div><div data-slot="sidebar.settings"><button aria-haspopup="dialog">原生设置</button></div><button class="seal-harness-user-footer">原生账号</button></body></html>')
   const previous = { window: globalThis.window, document: globalThis.document }
   globalThis.window = dom.window; globalThis.document = dom.window.document
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -62,8 +62,9 @@ test('home resources share the sidebar with native workspaces and sessions', asy
     delete globalThis.IS_REACT_ACT_ENVIRONMENT
   })
   await act(async () => root.render(React.createElement(rail, { usePanelInfo })))
+  assert.equal(dom.window.getComputedStyle(document.querySelector('[data-slot="sidebar"] button[aria-label="自动化任务"]')).display, 'none')
   assert.equal(document.querySelector('button[aria-label="对话"]'), null)
-  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '空间', '定时任务'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '定时任务', '空间'])
   assert.deepEqual([...document.querySelectorAll('.seal-nav-rail__footer button')].map(button => button.getAttribute('aria-label')), ['设置', '账户'])
   await act(async () => document.querySelector('.seal-nav-rail__footer button[aria-label="设置"]').click())
   await act(async () => document.querySelector('.seal-nav-rail__footer button[aria-label="账户"]').click())
@@ -88,7 +89,7 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   let releaseDecision
   await act(async () => { releaseDecision = navigation.register({ id: 'ask-jev', label: '问问决策', order: 45, icon: 'plugins', Panel: () => React.createElement('span', null, '独立决策页面') }) })
   assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id).sort(), ['experts', 'plugins'])
-  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '问问决策', '空间', '定时任务'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '问问决策', '定时任务', '空间'])
   const expertMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'experts')?.component
   const decisionMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'ask-jev')?.component
   assert(expertMain)
@@ -157,6 +158,18 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   assert.equal(registrations('main').filter(entry => entry.options.key === 'seal-harness-schedules').length, 1)
   await click('定时任务')
   assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), null)
+  assert.equal(document.querySelector('.seal-nav-rail button[aria-label="定时任务"]')?.getAttribute('aria-current'), 'page')
+  await act(async () => root.render(React.createElement(React.Fragment, null,
+    React.createElement(rail, { usePanelInfo }),
+    React.createElement('aside', null, React.createElement(registrations('sidebar.workspaces')[1].component)),
+  )))
+  assert.deepEqual([...document.querySelectorAll('aside button')].map(button => button.textContent), ['定时计划', '自动化任务'])
+  await act(async () => document.querySelector('aside button:last-of-type').click())
+  assert.equal(activePanelId, 'schedules', 'native Automation tasks opens from the first-level task group')
+  assert.equal(document.querySelector('.seal-nav-rail button[aria-label="定时任务"]')?.getAttribute('aria-current'), 'page')
+  assert.equal(registrations('sidebar.panellist').some(entry => entry.options.id === 'seal-harness-schedules'), false)
+  await act(async () => document.querySelector('.seal-nav-task-tabs button:first-of-type').click())
+  assert.equal(activePanelId, 'seal-harness-schedules')
   await click('首页')
   assert.equal(registrations('sidebar.panellist').some(entry => entry.options.id === 'seal-harness-schedules'), false)
   await act(async () => releaseSchedules())
