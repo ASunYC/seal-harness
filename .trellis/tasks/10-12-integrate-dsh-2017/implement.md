@@ -18,3 +18,5 @@
 - Stable 全量 Vitest 本机结果为 1559 通过、28 失败、13 跳过；剩余失败主要涉及本机无文件符号链接权限、Linux 工件测试、浏览器辅助进程超时及部分原生窗口断言。它们不作为跨平台通过的证据；定向产品与新插件服务门禁结果以上述通过项为准。
 
 后续 Windows 启动回归（2026-10-15）：原 Profile 的独立 Host 在 `host-boot` 阶段触及 120 秒 RPC 截止并进入恢复页；进程内 Host 对同一数据 30 秒内完成 Host 启动，临时空 Home 的独立 Host 约 4 秒完成。Seal Harness 因此改用构建时产品配置 `isolatedHost: false`，保留显式 `DSH_DESKTOP_ISOLATED_HOST=1` 供独立进程排障；Stable/Beta 默认不变。两变体定向测试各 13/13、双变体镜像、根类型检查、产品构建与产品检查通过；最终无环境覆盖的 Windows 图形启动约 7 秒，主窗口响应且 `rendererStatus: healthy`，未创建独立 Host 子进程。独立 Host 冷启动的上游卡顿原因尚未确定，产品当前使用有明确代价的进程内模式。
+
+后续插件元信息回归（2026-10-17）：实验性插件卡片显示 `Plugin metadata requires the Node module resolver`。Windows Electron 44.0.0 内置 Node 24.18.1 对旧 `node-addon-require-builtin` 0.1.4 报 `Unsupported/no-realm`，导致官方 `ModuleLoader.fromInternal()` 无法读取图标和多语言标题。Stable/Beta 直接依赖对齐到 0.1.9，根锁文件移除只为两变体保留的旧 0.1.4。两变体 Electron 均可通过官方 `readPluginMeta()` 读取实际实验性插件标题和图标；不可变安装、根类型、布局、产品构建与产品检查通过。Windows 原 Profile 图形启动为 healthy；macOS/Linux 图形及安装包尚未实测。

@@ -8,6 +8,8 @@ Node 要求 `^22.19.0 || >=24.0.0`，根 Yarn 固定 `4.18.0`。使用 `corepack
 
 内核 0.2.x 的 Desktop Host 在 `boot` 之前提供 `profileContext` 与 `appReady`，并在成功绑定 Host 后发出 ready；嵌入式 Host 和图形主进程必须走同一接入。官方 `pluginPackages` 服务沿 Profile 包解析器取得安装包元信息，包操作及热重载后刷新选择。恢复模式中的独立 CLI 使用新版 `manageDesktopProfile` 授权，并把随包 pnpm 脚本以绝对路径提供给 `packageManager`；Windows 上不能只靠 PATH 查找 `.cmd`。Stable/Beta 的该共享行为保持镜像，Next 实验壳保留自己的上游来源与运行时 pin。
 
+Electron 44 内置 Node 24.18.1；Stable/Beta 必须直接使用支持它的 `node-addon-require-builtin` 0.1.9 或更新兼容版本。0.1.4 在 Windows Electron 下报 `Unsupported/no-realm`，`ModuleLoader.fromInternal()` 因此不可用，官方 `readPluginMeta()` 会为实验性插件返回 `Plugin metadata requires the Node module resolver`。两变体的无图形验证应在 `ELECTRON_RUN_AS_NODE=1` 下用各自 Electron 可执行文件读取一个实际插件的标题和图标；普通 Node 的同一测试不能覆盖该问题。保持插件元信息与 Host Profile 解析器一致，不把错误简单隐藏成空信息。
+
 `product.json` 是产品名、应用 ID、数据目录与更新渠道的来源。名称是 Seal Harness，应用 ID 是 `com.seal-harness.desktop`，默认 Home 是 `~/.seal-harness`；显式 `DSH_HOME` 覆盖保留。社区 DSH 更新渠道不得作用于产品。海豹图标原图和派生资源由 `assets/`、`icon-provenance.json` 和 `scripts/export-product-icons.py` 管理；保留 Git LFS 与来源记录。构建产物不入库。
 
 ## 产品 Host 模式契约

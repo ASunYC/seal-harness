@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
@@ -17,6 +19,19 @@ test('Seal Harness构建依赖由根工作区持有，不污染 Stable 或 Beta 
   assert.equal(workspace.devDependencies.morphicons, '1.7.0')
   assert.equal(stable.devDependencies.morphicons, undefined)
   assert.equal(beta.devDependencies.morphicons, undefined)
+})
+
+test('Stable 和 Beta 的 Electron 能解析插件元信息所需的 Node 内部模块', () => {
+  for (const variant of ['dsh-plugin-desktop', 'dsh-plugin-desktop-beta']) {
+    const cwd = join(root, variant)
+    const electron = createRequire(join(cwd, 'package.json'))('electron')
+    const result = spawnSync(electron, [join(productRoot, 'scripts/verify-electron-plugin-meta.cjs'), cwd], {
+      cwd, env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, encoding: 'utf8', timeout: 15_000, windowsHide: true,
+    })
+    assert.ifError(result.error)
+    assert.equal(result.status, 0, `${variant}: ${result.stderr || result.stdout}`)
+    assert.match(result.stdout, /resolver-ready/, variant)
+  }
 })
 
 test('Seal Harness随品牌插件分发 Morphicons 许可证，不修改上游 Desktop 许可证清单', () => {
