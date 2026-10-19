@@ -586,3 +586,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 22: 恢复决策导航并统一资源页标题
+<!-- trellis-session: v=2 fp=1118038f149d967d -->
+
+**Date**: 2026-10-20
+**Task**: 恢复决策导航并统一资源页标题
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+已修复导航加载顺序导致决策入口丢失，统一专家、技能、连接器和应用顶部标题并删除正文重复介绍；产品build与完整check通过，186项通过、3项条件跳过；首次Electron超时在构建结束后重跑通过；本轮未启动图形应用。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5bc7cc73` | fix: 恢复决策一级入口并统一资源页标题 |
+
+### Status
+
+[OK] **Completed**

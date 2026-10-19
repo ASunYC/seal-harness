@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 21
+- **Total Sessions**: 22
 - **Last Active**: 2026-10-20
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~588 | Active |
+| `journal-1.md` | ~610 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 22 | 2026-10-20 | 恢复决策导航并统一资源页标题 | `5bc7cc73` | `codex/seal-harness-migration` |
 | 21 | 2026-10-20 | 首页应用与 DBX 安装卸载及 MCP | `b01b6bff` | `codex/seal-harness-migration` |
 | 20 | 2026-10-15 | 修复 Seal Harness Host 启动超时 | `1ed4dd2d` | `codex/seal-harness-migration` |
 | 19 | 2026-10-12 | 产品版本统一与 DSH Desktop 更新评估 | `c8f4606a`, `17ebc679` | `codex/seal-harness-migration` |
