@@ -109,7 +109,7 @@ export function apply(ctx) {
     if (!response.ok) throw new Error(response.error.message)
     return response.value
   }
-  const navigation = ctx.get?.('sealHarnessNavigation')
+  let navigation = ctx.get?.('sealHarnessNavigation')
   const leave = () => { navigation?.select(null); ctx.layout.selectPanel(null) }
   function DecisionConversationLauncher() {
     const [error, setError] = useState('')
@@ -133,9 +133,18 @@ export function apply(ctx) {
   ctx.slots.inject('settings.section', () => ctx.slots.register({
     name: 'settings.section', id: 'ask-jev', order: 15, label: () => '问问决策',
   }, () => <DecisionSettings api={api} />))
-  if (navigation) ctx.effect(() => navigation.register({ id: 'ask-jev', label: '问问决策', description: '与助手对话，需要时调用结构化决策模型', order: 45, icon: 'plugins', Panel: DecisionConversationLauncher }), 'ask-jev: home navigation')
+  const registerNavigation = scope => scope.effect(() => navigation.register({ id: 'ask-jev', label: '问问决策', description: '与助手对话，需要时调用结构化决策模型', order: 45, icon: 'plugins', Panel: DecisionConversationLauncher }), 'ask-jev: home navigation')
+  if (navigation) registerNavigation(ctx)
   else {
-    ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'ask-jev' }, Panel))
-    ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({ name: 'sidebar.panellist', id: 'ask-jev', order: 45, label: () => '问问决策' }, () => <span aria-hidden="true">◇</span>))
+    const releases = [
+      ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'ask-jev' }, Panel)),
+      ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({ name: 'sidebar.panellist', id: 'ask-jev', order: 45, label: () => '问问决策' }, () => <span aria-hidden="true">◇</span>)),
+    ]
+    // 产品导航可晚于独立插件加载；服务就绪后再接入一级菜单。
+    ctx.inject(['sealHarnessNavigation'], scope => {
+      navigation = scope.get('sealHarnessNavigation')
+      releases.forEach(release => release())
+      registerNavigation(scope)
+    })
   }
 }

@@ -540,7 +540,7 @@ export const styles = `.zz-resource-page.zz-skills {
 
 .zz-skills{height:100%;overflow:auto;box-sizing:border-box;padding-top:var(--dsh-frame-top-clearance,0px);color:var(--ink)}
 .zz-skills button,.zz-skills input,.zz-skills select{font:inherit;color:inherit}.zz-skills button{cursor:pointer}.zz-skills button:disabled{opacity:.5;cursor:default}.zz-skills :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.zz-skills .skills-page-content{padding:34px 26px 44px}.zz-skills .skills-hero h1{margin:0;font-size:clamp(26px,3vw,36px);font-weight:680;line-height:1.12;letter-spacing:-.022em}.zz-skills .skills-hero p{margin:9px 0 0;color:var(--muted2);font-size:13.5px;line-height:1.7}
+.zz-skills .skills-page-content{padding:var(--sp-5) var(--sp-6) var(--sp-7)}
 .zz-skills .resource-page-nav > .skills-actions{margin-left:auto}
 .zz-skills .skills-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.zz-skills .skills-actions button:not(.resource-sync-button),.zz-skills .skills-dialog button,.zz-skills .skills-batch button,.zz-skills .empty-state button{padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:12px}
 .zz-skills button.primary{background:var(--ink);color:var(--btn-p-fg)}

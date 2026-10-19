@@ -30,7 +30,7 @@ export function ApplicationsPage({ api, onBack }) {
   }
   return <main className="seal-apps-page">
     <header className="seal-apps-nav"><button type="button" aria-label="返回会话" onClick={onBack}>←</button><strong>应用</strong><span>APPS</span></header>
-    <div className="seal-apps-content"><h1>应用</h1><p className="seal-apps-subtitle">安装本机应用，将它的工具带入会话。</p>
+    <div className="seal-apps-content">
       {(error || loadError) && <p role="alert" className="seal-apps-error">{error || loadError}</p>}
       {!items.length && !error && !loadError && <p role="status">正在读取应用…</p>}
       <div className="seal-apps-grid">{items.map(item => {

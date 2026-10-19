@@ -9,6 +9,25 @@ const require = createRequire(new URL('../../../dsh-plugin-desktop-beta/package.
 const React = require('react'), { act } = React
 const { createRoot } = require('react-dom/client')
 
+test('navigation arriving after the decision client replaces standalone entries', async () => {
+  const dom = new JSDOM('<!doctype html><html><head></head><body></body></html>')
+  const { Context } = require('@deepseek-ai/cordis')
+  const ctx = new Context()
+  try {
+    const module = await clientModule(dom.window.document)
+    const slots = new Set(), registered = []
+    ctx.provide('slots', { inject(name) { slots.add(name); return () => slots.delete(name) } })
+    module.apply(ctx)
+    assert(slots.has('sidebar.panellist'))
+    const navigation = { register(entry) { registered.push(entry); return () => registered.pop() } }
+    ctx.provide('sealHarnessNavigation', navigation)
+    await new Promise(resolve => setImmediate(resolve))
+    assert.deepEqual([...slots], ['settings.section'])
+    assert.equal(registered.length, 1)
+    assert.equal(registered[0].id, 'ask-jev')
+  } finally { ctx.fiber.dispose(); dom.window.close() }
+})
+
 async function clientModule(document) {
   const registered = []
   const source = await readFile(new URL('../lib/client.js', import.meta.url), 'utf8')
@@ -27,6 +46,7 @@ test('standalone DSH Client registers a sidebar panel; Seal Harness uses its hom
     const slots = [], effects = [], calls = []
     const ctx = {
       get: () => undefined,
+      inject() {},
       effect: callback => { effects.push(callback()) },
       slots: { inject: (name, register) => slots.push({ name, register }),
         register: (meta, component) => registry.push({ meta, component }) },
@@ -129,6 +149,7 @@ test('native Settings owns the decision credentials without showing the decision
     providers: { jev: { label: 'TypeSafe Jev' }, alibaba: { label: '阿里百炼决策模型' } }, regions: { 'cn-beijing': '华北2（北京）' } }
   module.apply({
     get: () => undefined,
+    inject() {},
     effect: callback => callback(),
     slots: { inject(name, register) { if (name === 'settings.section') register() }, register(meta, Component) { registrations.push({ meta, Component }) } },
     layout: { selectPanel() {} },

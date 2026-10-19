@@ -78,6 +78,10 @@ Stable/Beta 均测试配置验证及模式优先级，再运行双变体、产�
 
 Seal Harness 不显示上游 DeepSeek Harness 的内测声明。品牌 Client 通过公开的 `settings.onboarding` 槽，以更低优先级覆盖 `welcome-notice` 并调用 `complete`，让引导继续；不修改上游源码，也不写入用户的声明确认状态。
 
+## 资源页标题与决策导航
+
+资源页标题统一放在顶部导航栏：专家、技能、连接器和应用标题为 20px，内容区不重复展示大标题与介绍；原有搜索、创建、安装和分类操作保留。独立决策插件通过 `ctx.inject(['sealHarnessNavigation'], callback)` 接入晚到的产品导航服务，并释放普通 DSH 的侧栏与主面板注册；不能只在首次 `apply` 时读取一次服务，否则启动顺序变化会丢失决策一级入口。回归须用真实 Cordis 容器先加载决策 Client、后提供导航服务。
+
 ## 定时任务契约
 
 ### 1. 范围与触发

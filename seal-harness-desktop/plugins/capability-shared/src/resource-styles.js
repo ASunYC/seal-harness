@@ -89,7 +89,7 @@ export const resourceStyles = `
 }
 
 .zz-resource-page .resource-page-nav__path strong {
-  font-size: var(--fs-300);
+  font-size: var(--fs-600);
   font-weight: var(--fw-title);
 }
 
@@ -118,7 +118,7 @@ export const resourceStyles = `
   border-radius: var(--r-pill);
   color: var(--accent-text);
   background: var(--accent-soft);
-  font: var(--fw-label) 10px / 1.2 var(--font-mono);
+  font: var(--fw-label) 12px / 1.2 var(--font-mono);
   letter-spacing: 0.04em;
 }
 

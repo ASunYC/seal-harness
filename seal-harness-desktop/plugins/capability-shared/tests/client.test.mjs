@@ -70,6 +70,8 @@ test('built resource clients contribute independent home pages and clean up on u
   for (const entry of navigation.getSnapshot().entries) {
     await act(async () => root.render(React.createElement(entry.Panel)))
     assert.equal(document.querySelector('[role=alert]'), null, entry.id)
+    assert.equal(document.querySelector('.resource-page-nav__path strong')?.textContent, entry.label)
+    assert.equal(document.querySelector('h1'), null, `${entry.id} has no duplicate body heading`)
   }
   assert(calls.includes('skills/list'))
   assert(calls.includes('experts/list'))
