@@ -6,6 +6,8 @@
 
 ## Quality Check
 
+涉及本机应用安装、启动和自动接入 MCP 时，阅读 [应用管理契约](application-management.md)。
+
 涉及系统技能、连接器目录或 cc-haha 能力迁移时，阅读 [系统能力目录契约](capability-catalog.md)，检查完整内容、安装与凭据边界。
 
 验证按构建契约执行，区分源码检查、构建、安装和真实平台验证。未执行的项目不能报告通过。

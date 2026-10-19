@@ -45,6 +45,8 @@
       name: '@seal-harness/store'
     - id: seal-harness-connectors
       name: '@seal-harness/connectors'
+    - id: seal-harness-apps
+      name: '@seal-harness/apps'
     - id: seal-harness-skills
       name: '@seal-harness/skills'
     - id: seal-harness-experts

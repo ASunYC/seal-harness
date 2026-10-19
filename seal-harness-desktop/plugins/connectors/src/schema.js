@@ -31,6 +31,7 @@ export const configSchema = z.strictObject({
   requiredQuery: z.array(environmentName).max(100).default([]),
   catalogId: z.string().max(80).optional(),
   nativeCli: z.boolean().optional(),
+  managedApplication: z.literal('dbx').optional(),
   headerEnvironment: z.record(headerName, environmentName).refine(value => Object.keys(value).length <= 100).default({}),
   env: secrets(environmentName).default({}),
   environmentPassthrough: z.array(environmentName).max(100).default([]),

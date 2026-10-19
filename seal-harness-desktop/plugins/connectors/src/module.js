@@ -449,6 +449,32 @@ export async function createModule(ctx, { home, backend }) {
 
   return {
     hostHandlers: {
+      registerApplication: (input, signal) => serial(async () => {
+        const value = parse(z.strictObject({ appId: z.literal('dbx'), expectedAccountId: z.string().min(1), command: z.string().min(1), cwd: z.string().min(1), dataDir: z.string().min(1) }), input)
+        const account = await currentSession()
+        if (!account?.accountId || account.accountId !== value.expectedAccountId) throw new ConnectorError('账号已变化，请重新操作。')
+        await load()
+        if ((await currentSession())?.accountId !== account.accountId) throw new ConnectorError('账号已变化，请重新操作。')
+        const id = `app-dbx-${createHash('sha256').update(account.accountId).digest('hex').slice(0, 8)}`
+        const previous = entries.find(entry => entry.id === id)
+        if (previous && (previous.managedApplication !== 'dbx' || previous.ownerAccountId !== account.accountId)) throw new ConnectorError('DBX 连接器标识已被其他连接器占用。')
+        return mutate({ id, ...(previous ? { revision: previous.revision } : {}) }, () => parse(configSchema, {
+          id, name: 'DBX', summary: '应用 DBX 自动接入；数据库连接与 MCP 访问范围在 DBX 中管理。', category: 'development',
+          transport: 'stdio', command: value.command, cwd: value.cwd, args: [],
+          env: { DBX_DATA_DIR: value.dataDir, DBX_MCP_ALLOW_WRITES: '0' },
+          enabledTools: previous?.enabledTools ?? null,
+          managedApplication: 'dbx', ownerAccountId: account.accountId, installed: true, enabled: true,
+        }), signal)
+      }),
+      removeApplication: (input, signal) => serial(async () => {
+        const value = parse(z.strictObject({ appId: z.literal('dbx'), expectedAccountId: z.string().min(1) }), input)
+        const account = await currentSession()
+        if (!account?.accountId || account.accountId !== value.expectedAccountId) throw new ConnectorError('账号已变化，请重新操作。')
+        await load()
+        if ((await currentSession())?.accountId !== account.accountId) throw new ConnectorError('账号已变化，请重新操作。')
+        const entry = entries.find(item => item.managedApplication === 'dbx' && item.ownerAccountId === account.accountId)
+        return entry ? mutate({ id: entry.id, revision: entry.revision }, () => null, signal) : list()
+      }),
       installResolved: (input, signal) => serial(async () => {
         const account = await backend.account()
         for (const item of input.items) {
@@ -679,7 +705,7 @@ export async function createModule(ctx, { home, backend }) {
         return { ...snapshot, items: visibleItems, selectedIds: selectedIds(account, payload.sessionId).filter(id => visibleIds.has(id)) }
       }),
       save: (input, signal) => serial(async () => {
-        const payload = parse(configSchema.omit({ source: true, revision: true, oauth: true, adapter: true, tokenExchange: true, bootstrap: true, headerEnvironment: true, installed: true, ownerAccountId: true }).extend({
+        const payload = parse(configSchema.omit({ source: true, revision: true, oauth: true, adapter: true, tokenExchange: true, bootstrap: true, headerEnvironment: true, installed: true, ownerAccountId: true, managedApplication: true }).extend({
           authMode: z.enum(['none', 'api_key', 'oauth_authorization_code_pkce']).optional(),
           summary: configSchema.shape.summary.unwrap().optional(), category: configSchema.shape.category.unwrap().optional(),
           headers: configSchema.shape.headers.unwrap().optional(), env: configSchema.shape.env.unwrap().optional(),
@@ -691,6 +717,7 @@ export async function createModule(ctx, { home, backend }) {
           environmentPassthrough: configSchema.shape.environmentPassthrough.unwrap().optional(),
         }), input)
         const { headerValues, headerEnvironment, envValues, queryValues, environmentPassthrough, authMode, ...fields } = payload
+        if (entries.some(entry => entry.id === payload.id && entry.managedApplication)) throw new ConnectorError('此连接器由应用管理，请到「应用」页面操作。')
         if (entries.some(entry => entry.id === payload.id && entry.nativeCli)) throw new ConnectorError('官方 CLI 的连接配置由安装器管理，请使用访问凭据完成授权。')
         if (fields.transport === 'stdio' && authMode && authMode !== 'none') throw new ConnectorError('本地程序使用环境变量配置认证。')
         return mutate(payload, previous => parse(configSchema, {
