@@ -564,3 +564,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 21: 首页应用与 DBX 安装卸载及 MCP
+<!-- trellis-session: v=2 fp=1d03c1e46eac29ce -->
+
+**Date**: 2026-10-20
+**Task**: 首页应用与 DBX 安装卸载及 MCP
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+实现首页应用页及 DBX Windows 便携版安装、打开、卸载和 MCP 自动登记。构建、布局、11 项应用测试、真实 MCP 会话调用及隔离窗口生命周期通过；其余产品回归与 Profile/HMR 通过。完整门禁仍受原有 Stable Electron 元信息 15 秒超时阻断，任务保留进行中，未推送。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b01b6bff` | feat(seal-harness): 新增应用管理与 DBX 安装卸载及 MCP 接入 |
+
+### Status
+
+[OK] **Completed**

@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 20
-- **Last Active**: 2026-10-15
+- **Total Sessions**: 21
+- **Last Active**: 2026-10-20
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~566 | Active |
+| `journal-1.md` | ~588 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 21 | 2026-10-20 | 首页应用与 DBX 安装卸载及 MCP | `b01b6bff` | `codex/seal-harness-migration` |
 | 20 | 2026-10-15 | 修复 Seal Harness Host 启动超时 | `1ed4dd2d` | `codex/seal-harness-migration` |
 | 19 | 2026-10-12 | 产品版本统一与 DSH Desktop 更新评估 | `c8f4606a`, `17ebc679` | `codex/seal-harness-migration` |
 | 18 | 2026-10-10 | 定时任务与能力目录分组提交到主分支 | `ae53d58`, `38fe453` | `codex/seal-harness-migration` |
