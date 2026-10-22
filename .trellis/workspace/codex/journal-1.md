@@ -608,3 +608,26 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 23: 升级DSH内核至0.2.1-rc.2
+<!-- trellis-session: v=2 fp=c57b433e19ea5103 -->
+
+**Date**: 2026-10-22
+**Task**: 升级DSH内核至0.2.1-rc.2
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+已固定官方687f282源码并校验343个npm包，迁移23份版本补丁并适配可空端口、持久化入口、HMR和AA构建。不可变安装、完整构建、全仓类型、布局和产品检查通过；产品186通过3条件跳过，双变体各129通过，Market22通过，真实Profile及两轮HMR通过。未执行真实模型、GUI、安装包和跨平台图形验证；仅本地提交，未推送。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7ab69b7e` | chore: 固定DSH官方0.2.1-rc.2子模块提交 |
+| `cda35899` | chore: 升级 DSH Beta 内核至 0.2.1-rc.2 并完成桌面兼容验证 |
+
+### Status
+
+[OK] **Completed**
