@@ -5,6 +5,7 @@ import { DESKTOP_PRODUCT, DESKTOP_WINDOW_TITLE } from './product-config.ts'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
+import { requireDesktopWebPort } from './desktop-port.ts'
 import type {} from '@deepseek-ai/dsh-cmdline'
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-client-connection'
@@ -176,7 +177,8 @@ export function apply(ctx: Context, config: DesktopShellConfig): void {
   if (ctx.webServer.host !== desktopWebServerHost(resolved.networkExposure)) {
     throw new Error('dsh-plugin-desktop: desktop shell WebServer host does not match networkExposure')
   }
-  lanHttps.attach(ctx.webServer.port)
+  const webPort = requireDesktopWebPort(ctx.webServer.port)
+  lanHttps.attach(webPort)
   const iconFilename = runtime.platform === 'darwin'
     ? 'app-icon-mac.png'
     : 'app-icon.png'
@@ -186,7 +188,7 @@ export function apply(ctx: Context, config: DesktopShellConfig): void {
     bluePath: fileURLToPath(new URL(`${DESKTOP_PRODUCT.assetDirectory}tray-icon-blue.png`, import.meta.url)),
   }
   const settings = createDesktopSettingsPort(ctx, config, runtime.platform)
-  const rendererOrigin = `http://127.0.0.1:${String(ctx.webServer.port)}`
+  const rendererOrigin = `http://127.0.0.1:${String(webPort)}`
   ctx.effect(
     () => ctx.webServer.register({
       kind: 'exact',
@@ -388,7 +390,7 @@ export function apply(ctx: Context, config: DesktopShellConfig): void {
         resolved.linuxMaterial,
       )
       const url = desktopRendererUrl(
-        ctx.webServer.port,
+        webPort,
         resolved.mode,
         runtime.platform,
         runtime.updates.currentVersion,

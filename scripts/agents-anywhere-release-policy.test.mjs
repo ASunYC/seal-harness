@@ -6,12 +6,29 @@ import { dirname, join } from 'node:path'
 import { test } from 'node:test'
 import { AA_PACKAGE, AA_PEERS, AA_REPOSITORY, AA_WORKSPACES, assertPreparedAaRelease } from './agents-anywhere-release-policy.mjs'
 import { prepareInstalledAaRuntime } from './prepare-agents-anywhere-runtime.mjs'
+import { patchManifest } from './prepare-agents-anywhere-release.mjs'
 
 const commit = 'a'.repeat(40)
 const version = '0.1.0-dev.0.desktop.caaaaaaaaaaaa.r12345678'
 const artifact = `agents-anywhere-dsh-bridge-next-${version}.tgz`
 
-function fixture(t) {
+test('AA build graph stays on source versions while runtime peers accept a newer kernel', t => {
+  const root = mkdtempSync(join(tmpdir(), 'dsh-aa-type-graph-'))
+  t.after(() => rmSync(root, { recursive: true, force: true }))
+  const path = join(root, 'package.json')
+  const development = { '@deepseek-ai/cordis': '4.0.4', '@deepseek-ai/schemastery': '3.18.4', '@deepseek-ai/dsh-session': '0.2.0-rc.2', typescript: '6.0.3' }
+  writeFileSync(path, JSON.stringify({ version: '2.0.3', devDependencies: development, resolutions: { lodash: '4.17.21' } }))
+  const peers = { '@deepseek-ai/dsh-session': '0.2.0-rc.2 || 0.2.1-rc.2' }
+  assert.equal(patchManifest(root, peers).sourceVersion, '2.0.3')
+  const manifest = JSON.parse(readFileSync(path, 'utf8'))
+  assert.deepEqual(manifest.devDependencies, development)
+  assert.deepEqual(manifest.peerDependencies, peers)
+  assert.deepEqual(manifest.resolutions, { lodash: '4.17.21', '@deepseek-ai/cordis': '4.0.4', '@deepseek-ai/schemastery': '3.18.4', '@deepseek-ai/dsh-session': '0.2.0-rc.2' })
+})
+
+function fixture(t, desktopVersion = version) {
+  const version = desktopVersion
+  const artifact = `agents-anywhere-dsh-bridge-next-${version}.tgz`
   const root = mkdtempSync(join(tmpdir(), 'dsh-aa-policy-'))
   t.after(() => rmSync(root, { recursive: true, force: true }))
   const write = (path, data) => {
@@ -43,6 +60,11 @@ function fixture(t) {
 
 test('accepts the latest AA with both Desktop runtime peer ranges installed', t => {
   const { root } = fixture(t)
+  assert.equal(assertPreparedAaRelease(root, commit).commit, commit)
+})
+
+test('accepts a prepared artifact whose source is a stable AA release', t => {
+  const { root } = fixture(t, '2.0.3-desktop.caaaaaaaaaaaa.r12345678')
   assert.equal(assertPreparedAaRelease(root, commit).commit, commit)
 })
 

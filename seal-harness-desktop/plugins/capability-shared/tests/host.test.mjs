@@ -38,7 +38,7 @@ test('independent Host plugins preserve data across unloading and reloading with
     if (rejection) { response.writeHead(rejection).end(); return }
     const chunks = []
     for await (const chunk of request) chunks.push(chunk)
-    const result = await connection.createSharedFetchHandler('/api').fetch(new Request(`http://${request.headers.host}${request.url}`, { method: request.method, headers: request.headers, body: Buffer.concat(chunks) }))
+    const result = await connection.createSharedFetchHandler('/api').fetch(new Request(`http://${request.headers.host}${request.url}`, { method: request.method, headers: request.headers, body: Buffer.concat(chunks) }), connection.browserPeer)
     response.writeHead(result.status, Object.fromEntries(result.headers)).end(Buffer.from(await result.arrayBuffer()))
   })
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
@@ -51,7 +51,10 @@ test('independent Host plugins preserve data across unloading and reloading with
   await ctx.plugin(ToolRuntime).await()
   await ctx.plugin(SkillRegistry).await()
   await ctx.plugin(LocalCredentials, { dshHome: home, watch: false }).await()
-  connection = new HostConnectionService(ctx, [], { isAuthenticated: request => request.headers.authorization === 'Bearer fixture' })
+  connection = new HostConnectionService(ctx, [], {
+    isAuthenticated: request => request.headers.authorization === 'Bearer fixture',
+    authenticateApi: () => undefined,
+  })
   const mounted = new Map()
   const rpc = async (endpoint, payload = {}, authenticated = true) => fetch(`http://127.0.0.1:${server.address().port}/api/seal-harness-capabilities/${endpoint}`, {
     method: 'POST', headers: { 'content-type': 'application/json', ...(authenticated ? { authorization: 'Bearer fixture' } : {}) },

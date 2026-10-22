@@ -28,7 +28,7 @@ export function assertPreparedAaRelease(root, expectedCommit, { installed = true
   const artifact = provenance.artifact
   if (typeof artifact !== 'string' || basename(artifact) !== artifact || !artifact.endsWith('.tgz')) fail('invalid artifact path')
   if (JSON.stringify(provenance.runtimePeers) !== JSON.stringify(runtimePeerRanges(root))) fail('runtime peers have changed')
-  if (!provenance.desktopVersion?.includes(`.desktop.c${expectedCommit.slice(0, 12)}.`)) fail('artifact version does not identify the selected commit')
+  if (!new RegExp(`[-.]desktop\\.c${expectedCommit.slice(0, 12)}\\.`).test(provenance.desktopVersion ?? '')) fail('artifact version does not identify the selected commit')
   const bytes = readFileSync(join(root, 'vendor/agents-anywhere', artifact))
   if (createHash('sha256').update(bytes).digest('hex') !== provenance.sha256) fail('artifact checksum mismatch')
   for (const workspace of AA_WORKSPACES) {

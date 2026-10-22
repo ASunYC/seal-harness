@@ -18,6 +18,7 @@ import { rgPath } from '@vscode/ripgrep'
 import AdmZip from 'adm-zip'
 import { exportDiagnosticsZip } from './diagnostic-export.ts'
 import { installProfilePackageResolver } from './module-resolution.ts'
+import { loadJsonlSessionPersistence } from './session-persistence-plugin.ts'
 
 const OK_MARKER = 'DSH_PACKAGED_RUNTIME_OK'
 
@@ -43,11 +44,7 @@ assert(existsSync(rgPath), `cannot find ripgrep at ${rgPath}`)
 const rgVersion = execFileSync(rgPath, ['--version'], { encoding: 'utf8', windowsHide: true })
 assert(/^ripgrep\s/u.test(rgVersion), `received an invalid ripgrep version: ${JSON.stringify(rgVersion.trim())}`)
 if (process.platform === 'win32') {
-  const sessionBackend = await import('@deepseek-ai/dsh-session-persistence-jsonl')
-  assert(
-    typeof sessionBackend.default === 'function',
-    'could not import the Windows JSONL session backend without fs-ext',
-  )
+  await loadJsonlSessionPersistence()
 } else {
   const fsExt = createRequire(installAnchor)('fs-ext') as { flockSync?: unknown }
   assert(typeof fsExt.flockSync === 'function', 'did not load the Electron ABI fs-ext binding')
@@ -57,7 +54,7 @@ if (process.platform === 'win32') {
 async function smokeSessionMigration(): Promise<void> {
   const { Context } = await import('@deepseek-ai/cordis')
   const { SessionId } = await import('@deepseek-ai/dsh-session')
-  const { default: JsonlSessionPersistence } = await import('@deepseek-ai/dsh-session-persistence-jsonl')
+  const JsonlSessionPersistence = await loadJsonlSessionPersistence()
   const root = mkdtempSync(join(tmpdir(), 'dsh-packaged-session-migration-'))
   const id = SessionId('packaged-migration')
   const directory = join(root, '_no-cwd', id)

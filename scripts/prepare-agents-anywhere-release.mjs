@@ -75,6 +75,11 @@ function patchManifest(packagePath, peerRanges) {
   // Build/typecheck explicitly above packaging; prepack's integration suite
   // requires Server/Web/Python fixtures that are not part of a release build.
   if (manifest.scripts) { delete manifest.scripts.prepack; delete manifest.scripts.postpack }
+  // 构建期沿用 AA 声明的开发类型图；运行时 peer 范围独立，避免多版本声明合并冲突。
+  manifest.resolutions = {
+    ...manifest.resolutions,
+    ...Object.fromEntries(Object.entries(manifest.devDependencies ?? {}).filter(([name]) => name.startsWith('@deepseek-ai/'))),
+  }
   manifest.peerDependencies = { ...manifest.peerDependencies, ...peerRanges }
   writeFileSync(join(packagePath, 'package.json'), `${JSON.stringify(manifest, null, 2)}\n`)
   return { sourceVersion }
@@ -186,6 +191,7 @@ function prepare() {
       manifestChanges: [
         `version set to ${desktopVersion}`,
         'release staging removes prepack/postpack hooks; build, typecheck and check:build run explicitly',
+        'release staging pins the AA build-time DSH type graph to the source devDependencies',
         ...peerPackages.map(name => `${name} peer accepts ${peerRanges[name]}`),
       ],
       sourceChanges: [],

@@ -2,6 +2,7 @@
 
 import type { Config as WebServerConfig } from '@deepseek-ai/dsh-host-webserver'
 import type { DesktopShellMode } from './runtime.ts'
+import { requireDesktopWebPort } from './desktop-port.ts'
 
 /** Listener scope selected for the next Desktop generation. */
 export type DesktopNetworkExposure = 'loopback' | 'lan'
@@ -66,8 +67,8 @@ export function desktopWebServerHost(_exposure: DesktopNetworkExposure): WebServ
 }
 
 /** Marker-free URL suitable for an ordinary local browser. */
-export function desktopLoopbackBrowserUrl(port: number): string {
-  return `http://127.0.0.1:${String(port)}/`
+export function desktopLoopbackBrowserUrl(port: number | undefined): string {
+  return `http://127.0.0.1:${String(requireDesktopWebPort(port))}/`
 }
 
 /** HTTPS URLs advertised for the edge's startup-sampled LAN IPv4 addresses. */

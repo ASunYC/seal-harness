@@ -18,6 +18,7 @@ function createHarness() {
   const injections: Injection[] = []
   const globalCleanups: (() => void)[] = []
   let activeInjection: Injection | undefined
+  let port: number | undefined = 43_120
 
   const registerEffect = (factory: () => void | (() => void), owner = activeInjection): void => {
     const cleanup = factory()
@@ -40,7 +41,7 @@ function createHarness() {
   const context = {
     logger: { error: vi.fn(), warn: vi.fn() },
     webServer: {
-      port: 43_120,
+      get port() { return port },
       register: vi.fn((route: { path: string; handler: Handler }) => {
         handlers.set(route.path, route.handler)
         return () => { handlers.delete(route.path) }
@@ -91,6 +92,7 @@ function createHarness() {
   return {
     context,
     request,
+    setPort(value: number | undefined) { port = value },
     /** Every soft-injection `apply` asked for, in registration order. */
     injectedNames: () => injections.map(injection => [...injection.names]),
     provide(name: string, value: unknown) {
@@ -116,6 +118,20 @@ function createHarness() {
 }
 
 describe('community market Host capability lifecycle', () => {
+  it('reads the bound port per request and rejects unbound or mismatched ports', async () => {
+    const harness = createHarness()
+    harness.setPort(undefined)
+    apply(harness.context as never)
+    try {
+      await expect(harness.request(marketRoutes.state)).resolves.toMatchObject({ status: 403 })
+      harness.setPort(43_120)
+      await expect(harness.request(marketRoutes.state)).resolves.toMatchObject({ status: 200 })
+      harness.setPort(43_121)
+      await expect(harness.request(marketRoutes.state)).resolves.toMatchObject({ status: 403 })
+      harness.setPort(undefined)
+      await expect(harness.request(marketRoutes.state)).resolves.toMatchObject({ status: 403 })
+    } finally { harness.dispose() }
+  })
   it('starts and serves state on a Host that has no storage domain', async () => {
     const harness = createHarness()
     apply(harness.context as never)

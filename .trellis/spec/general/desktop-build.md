@@ -12,6 +12,22 @@ Electron 44 内置 Node 24.18.1；Stable/Beta 必须直接使用支持它的 `no
 
 `product.json` 是产品名、应用 ID、数据目录与更新渠道的来源。名称是 Seal Harness，应用 ID 是 `com.seal-harness.desktop`，默认 Home 是 `~/.seal-harness`；显式 `DSH_HOME` 覆盖保留。社区 DSH 更新渠道不得作用于产品。海豹图标原图和派生资源由 `assets/`、`icon-provenance.json` 和 `scripts/export-product-icons.py` 管理；保留 Git LFS 与来源记录。构建产物不入库。
 
+## 公开 Loader 与配置 HMR
+
+公开 Loader 没有内部 ESM 缓存；rc.2 的 HMR 在初始化时就计算入口模块，因此 `hasEsmCache()` 必须先排除缺省的内部接口。保留 Profile 配置监听，模块级 HMR 的内部接口要求不变；实际验证必须完成两轮配置热重载，不能通过禁用 HMR 条目消除未激活告警。
+
+## 持久化兼容验证
+
+持久化迁移与打包冒烟通过共享 `loadJsonlSessionPersistence()` 加载 JSONL 后端：Stable 使用默认类入口，rc.2 使用公开模块 `apply` 入口，并显式导入 `dsh-session-persistence` 的 Context 服务声明。保持真实迁移和原日志不变的断言；不要用任意类型转换或删除旧会话迁移检查来消除 API 差异。
+
+## WebServer 绑定端口
+
+DSH rc.2 的 `webServer.port` 在监听完成前可为 `undefined`。Desktop 通过 `requireDesktopWebPort` 验证后再生成渲染器 URL 或附加 LAN 边缘，不回退到默认端口；Market 路由在每次请求时读取绑定端口，未绑定或 Host/Origin 不匹配时拒绝。对应回归为两变体 `desktop-network.spec.ts` 和 Market `market-host-lifecycle.spec.ts` 的延迟绑定案例。
+
+## AA 构建与版本来源
+
+AA 产物准备时，临时构建项目将 `@deepseek-ai/*` 解析约束到 AA 源码的 `devDependencies` 类型图，运行时兼容范围仍由两通道的 `runtimePeers` 单独决定。否则放宽 peer 后可能加载两份 schemastery 全局声明并触发 TS6200。来源标记校验同时接受正式源版本的 `x.y.z-desktop.c<commit>.r<hash>` 和预发布源版本的 `x.y.z-alpha.desktop.c<commit>.r<hash>`；提交号和产物 SHA 校验必须保留。`scripts/agents-anywhere-release-policy.test.mjs` 覆盖这两种版本形式及构建/运行依赖分离。
+
 ## 产品 Host 模式契约
 
 ### 1. 范围与触发

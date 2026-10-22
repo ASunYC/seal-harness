@@ -1,0 +1,8 @@
+diff --git a/lib/types/client/contract/slots.d.ts b/lib/types/client/contract/slots.d.ts
+--- a/lib/types/client/contract/slots.d.ts
++++ b/lib/types/client/contract/slots.d.ts
+@@ -1,3 +1,4 @@
++import type {} from './toast.ts';
+ /**
+  * ui-workspace contracts. Two registrations share this package:
+  *

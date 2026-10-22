@@ -25,3 +25,11 @@
 2026-09-30 更新目录的功能差异及品牌保留范围见 [`source-update-2026-09-30.md`](source-update-2026-09-30.md)。
 
 2026-09-30 后续本地化改造：移除企微/SSO/远端身份、知识库、产品智能体及旧远端项目协作插件；项目、专家、技能转到共享 SQLite。海豹图标与 DSH 原生对话机制保留。详见 [本地产品数据](local-sqlite.md)。
+
+## 2026-10-22：DSH 0.2.1-rc.2
+
+Seal Harness 使用的 Beta 内核从 `0.2.1-alpha.2` 升级到官方 [`dsh-v0.2.1-rc.2`](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.2)，子模块固定为 `687f282e8625c6b8d11ff58211a90524be2e4317`。Stable 和 Next 保留原有版本，Seal Harness 产品版本及更新渠道独立管理。
+
+`vendor/dsh-runtime/0.2.1-rc.2/` 保存官方 npm 发布的完整 343 包，下载时核对 npm SRI，清单记录原始包的 SHA256、npm integrity 与官方源码提交。22 份既有 Desktop 补丁迁移到该版本，另补齐一份工作区槽位声明依赖；Profile 组合、插件管理页和桌面引导页按新结构适配，未修改子模块源码。
+
+完整兼容处理和验证范围见 [升级记录](dsh-021-rc2-upgrade.md)；真实模型及 Search/Fetch 调用、签名安装与跨平台图形启动需分别验收。

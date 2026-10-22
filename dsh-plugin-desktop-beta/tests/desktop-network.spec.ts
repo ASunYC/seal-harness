@@ -3,11 +3,16 @@ import {
   DESKTOP_LAN_HTTPS_AVAILABLE,
   desktopEffectiveNetworkExposure,
   desktopLanBrowserUrls,
+  desktopLoopbackBrowserUrl,
   desktopWebServerHost,
   parseDesktopNetworkExposure,
 } from '../src/desktop-network.ts'
 
 describe('Desktop LAN HTTPS boundary', () => {
+  it('rejects an unbound WebServer instead of creating an invalid browser URL', () => {
+    expect(() => desktopLoopbackBrowserUrl(undefined)).toThrow('WebServer has not bound a port')
+    expect(desktopLoopbackBrowserUrl(43_120)).toBe('http://127.0.0.1:43120/')
+  })
   it('keeps the HTTP origin loopback while preserving HTTPS edge intent', () => {
     expect(parseDesktopNetworkExposure('lan')).toBe('lan')
     expect(DESKTOP_LAN_HTTPS_AVAILABLE).toBe(true)
