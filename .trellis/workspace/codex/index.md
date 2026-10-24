@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 23
-- **Last Active**: 2026-10-22
+- **Total Sessions**: 26
+- **Last Active**: 2026-10-24
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~633 | Active |
+| `journal-1.md` | ~726 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,9 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 26 | 2026-10-24 | 完成新会话与决策入口的真实界面验收 | - | `codex/seal-harness-migration` |
+| 25 | 2026-10-24 | 修复Electron浏览器MCP导致的会话初始化失败 | - | `codex/seal-harness-migration` |
+| 24 | 2026-10-24 | 修复Renderer冷启动超时误判并恢复应用 | - | `codex/seal-harness-migration` |
 | 23 | 2026-10-22 | 升级DSH内核至0.2.1-rc.2 | `7ab69b7e`, `cda35899` | `codex/seal-harness-migration` |
 | 22 | 2026-10-20 | 恢复决策导航并统一资源页标题 | `5bc7cc73` | `codex/seal-harness-migration` |
 | 21 | 2026-10-20 | 首页应用与 DBX 安装卸载及 MCP | `b01b6bff` | `codex/seal-harness-migration` |

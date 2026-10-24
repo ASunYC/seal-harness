@@ -631,3 +631,96 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 24: 修复Renderer冷启动超时误判并恢复应用
+<!-- trellis-session: v=2 fp=d2ccd5e0f7aa8aad -->
+
+**Date**: 2026-10-24
+**Task**: 修复Renderer冷启动超时误判并恢复应用
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+为Seal Harness配置90秒首次Renderer健康等待，保留上游30秒及明确失败语义；双版本139项回归、全仓类型、完整构建和产品检查通过。原desktop Profile真实Renderer耗时81.3秒后healthy，应用已打开。改动未提交。
+
+### Main Changes
+
+- Beta先改并同步Stable的产品配置验证和原生截止时间；未重置用户数据。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 两变体各139项回归；202个共享源码对齐；全仓typecheck；产品build/check；原Profile图形healthy。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 实现待用户授权提交；未推送或发布。
+
+
+## Session 25: 修复Electron浏览器MCP导致的会话初始化失败
+<!-- trellis-session: v=2 fp=7eba0dc653766248 -->
+
+**Date**: 2026-10-24
+**Task**: 修复Electron浏览器MCP导致的会话初始化失败
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+补回rc.2的Playwright MCP子进程Node模式兼容补丁；不可变安装、343包来源及202共享源码检查通过；完整产品检查通过，另以隔离DSH_HOME重跑Electron标准会话和24浏览器工具通过。安装固定Chrome for Testing后，打开空白页并返回快照成功。应用保持登录页，已请求用户登录，界面两个入口仍待验收。
+
+### Main Changes
+
+- provider仅给MCP子进程设置ELECTRON_RUN_AS_NODE；补齐真正Electron环境下的会话回归及临时基础Home隔离。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 标准会话创建及24个MCP工具、Creator/插件管理/两轮HMR、浏览器导航快照、不可变安装、来源和双变体对齐均通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 用户在应用完成登录后验证新会话和问问决策；不发送模型提示词。所有改动未提交。
+- 临时下载文件自动清理被工具安全审查拒绝，文件保留在忽略目录，未绕过策略。
+
+
+## Session 26: 完成新会话与决策入口的真实界面验收
+<!-- trellis-session: v=2 fp=64e342230287da92 -->
+
+**Date**: 2026-10-24
+**Task**: 完成新会话与决策入口的真实界面验收
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+用户在应用完成登录后，实际点击新会话与问问决策。两个入口均显示原生输入框且没有session create failed；决策创建接口HTTP 200，包含会话标识且无远端错误。prompt请求为0，未发送模型消息。应用保持登录并停在决策页，改动未提交。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 真实用户Profile：新会话输入界面、决策创建接口及输入界面均正常，未发送提示词。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 实现和验收已完成；等待用户另行授权提交或推送。

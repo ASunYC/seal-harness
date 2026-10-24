@@ -459,6 +459,20 @@ try {
   ]) {
     if (ids.has(id)) throw new Error(`assembled advanced Web graph unexpectedly includes ${id}`)
   }
+  if (process.env.DSH_VERIFY_SESSION_BROWSER === '1') {
+    if (!process.versions.electron || process.env.ELECTRON_RUN_AS_NODE !== undefined) {
+      throw new Error('浏览器会话验证须模拟没有全局 Node 标志的 Electron Host')
+    }
+    const created = await ctx.sessionController.create({ cwd: home, agentPreset: 'standard' })
+    const resolved = await ctx.sessionController.resolveAgent(created.sessionId)
+    if (resolved.error) throw new Error(resolved.error.message)
+    const browserTools = ctx.tools.schemas(resolved.agent).filter(tool => tool.name.startsWith('mcp__playwright-mcp__'))
+    if (!browserTools.some(tool => tool.name.endsWith('__browser_snapshot'))) {
+      throw new Error(`标准会话未注册浏览器 MCP 工具：${browserTools.map(tool => tool.name).join(', ')}`)
+    }
+    if (process.env.ELECTRON_RUN_AS_NODE !== undefined) throw new Error('浏览器 MCP 污染了 Host 环境')
+    process.stdout.write(`verify-profile-boot: Electron standard session and ${browserTools.length} browser MCP tools passed\n`)
+  }
   process.stdout.write('verify-profile-boot: Creator, plugin manager and two Profile HMR generations passed\n')
 } finally {
   await ctx?.fiber.dispose()

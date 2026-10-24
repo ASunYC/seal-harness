@@ -37,3 +37,9 @@
 - 最终 343 个 Beta 原始包哈希、202 个共享源码文件对齐及 `git diff --check` 通过，源码子模块无内部修改。
 
 本机曾遇到 Electron 冷启动和 Vitest 子进程启动超时，单独复核后按原门禁重跑通过，未放宽超时或跳过断言。没有执行真实供应商模型或 Search/Fetch 请求，也没有执行图形应用、签名安装、覆盖升级及 macOS/Linux 图形验证。
+
+## 2026-10-24 图形复测补充
+
+Renderer 健康不代表会话能创建。复测发现当前 rc.2 的 Playwright MCP 未带入旧 0.1.7 已有的 Electron 子进程兼容补丁：provider 用 process.execPath 运行 npm CLI，在进程内 Host 中实际启动了普通 Electron，导致连接关闭，standard 会话和决策会话随之创建失败。现为 rc.2 补齐叶子包补丁，仅在 MCP 子进程环境设置 ELECTRON_RUN_AS_NODE=1；原始 343 个 npm tarball 和子模块 pin 保持不变。
+
+产品 Profile 校验增加真实 Electron 运行时下的 standard 会话创建和浏览器工具注册检查，先清除父进程的全局标志，以确保测试确实覆盖局部环境配置。旧有 Creator、插件管理和两轮 HMR 检查保留。实际验证结果见本次 Trellis 任务记录。

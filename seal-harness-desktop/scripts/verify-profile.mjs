@@ -1,10 +1,16 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
-import { desktop } from './build.mjs'
+import { desktop, desktopRequire, productRoot } from './build.mjs'
 
 // 上游允许可选插件未激活；产品组合中的业务插件必须全部激活。
-const result = spawnSync(process.execPath, [join(desktop, 'scripts/verify-profile-boot.mjs')], { encoding: 'utf8', env: process.env })
+const result = spawnSync(desktopRequire('electron'), [
+  join(productRoot, 'scripts/verify-electron-profile.cjs'),
+  join(desktop, 'scripts/verify-profile-boot.mjs'),
+], {
+  encoding: 'utf8', windowsHide: true, timeout: 180_000,
+  env: { ...process.env, ELECTRON_RUN_AS_NODE: '1', DSH_VERIFY_SESSION_BROWSER: '1' },
+})
 if (result.error) throw result.error
 process.stdout.write(result.stdout)
 process.stderr.write(result.stderr)

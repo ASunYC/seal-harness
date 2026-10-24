@@ -31,6 +31,7 @@ it('validates the build file and rejects unsafe identity and resource paths', ()
     { name: '' }, { version: 'invalid' }, { appId: 'invalid/id' }, { homeDirectoryName: '..' },
     { homeDirectoryName: '.data/other' }, { assetDirectory: 'https://example.com/' },
     { bundle: '../another-package' }, { updatesEnabled: 'false' }, { setupWizardEnabled: 'false' }, { isolatedHost: 'false' },
+    ...[0, -1, 1.5, '90000', 2_147_483_648].map(rendererBootTimeoutMs => ({ rendererBootTimeoutMs })),
   ]) {
     writeFileSync(path, JSON.stringify({ ...product, ...invalid }))
     expect(() => readDesktopProduct(path)).toThrow('Invalid Desktop product configuration')
@@ -43,6 +44,19 @@ it('retains the product Host mode when validating the distribution file', () => 
   const path = join(home, 'product.json')
   writeFileSync(path, JSON.stringify({ ...product, isolatedHost: false }))
   expect(readDesktopProduct(path)?.isolatedHost).toBe(false)
+})
+
+it.each([undefined, 90_000])('uses the validated product Renderer deadline %s without changing the upstream default', async rendererBootTimeoutMs => {
+  const home = mkdtempSync(join(tmpdir(), 'desktop-product-'))
+  homes.push(home)
+  const path = join(home, 'product.json')
+  writeFileSync(path, JSON.stringify({ ...product, rendererBootTimeoutMs }))
+  const config = readDesktopProduct(path)
+  expect(config?.rendererBootTimeoutMs).toBe(rendererBootTimeoutMs)
+  vi.stubGlobal('__DSH_DESKTOP_PRODUCT__', config)
+  vi.resetModules()
+  const { DESKTOP_RENDERER_BOOT_TIMEOUT_MS } = await import('../src/product-config.ts')
+  expect(DESKTOP_RENDERER_BOOT_TIMEOUT_MS).toBe(rendererBootTimeoutMs ?? 30_000)
 })
 
 it.each([undefined, true, false])('keeps setup wizard policy %s independent of the account Home module', setupWizardEnabled => {
@@ -65,6 +79,8 @@ it('keeps the upstream identities and update policy without a distribution defin
   expect(DESKTOP_PRODUCT.bundle).toBeNull()
   expect(DESKTOP_PRODUCT.setupWizardEnabled).not.toBe(false)
   expect(DESKTOP_PRODUCT.version).toBeUndefined()
+  const { DESKTOP_RENDERER_BOOT_TIMEOUT_MS } = await import('../src/product-config.ts')
+  expect(DESKTOP_RENDERER_BOOT_TIMEOUT_MS).toBe(30_000)
   expect(remoteControlOfferCopy.zh.message).toContain('DeepSeek Harness')
   expect(remoteControlOfferCopy.en.detail).toContain('DeepSeek Harness')
   expect(DESKTOP_RELEASE_IDENTITIES.stable).toMatchObject({

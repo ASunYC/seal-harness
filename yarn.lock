@@ -6212,6 +6212,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@deepseek-ai/dsh-experimental-browser-use-playwright-mcp@patch:@deepseek-ai/dsh-experimental-browser-use-playwright-mcp@file%3Avendor/dsh-runtime/0.2.1-rc.2/deepseek-ai-dsh-experimental-browser-use-playwright-mcp-0.2.1-rc.2.tgz#./patches/dsh-experimental-browser-use-playwright-mcp@0.2.1-rc.2.patch::locator=seal-harness%40workspace%3A.":
+  version: 0.2.1-rc.2
+  resolution: "@deepseek-ai/dsh-experimental-browser-use-playwright-mcp@patch:@deepseek-ai/dsh-experimental-browser-use-playwright-mcp@file%3Avendor/dsh-runtime/0.2.1-rc.2/deepseek-ai-dsh-experimental-browser-use-playwright-mcp-0.2.1-rc.2.tgz%23vendor/dsh-runtime/0.2.1-rc.2/deepseek-ai-dsh-experimental-browser-use-playwright-mcp-0.2.1-rc.2.tgz%3A%3Ahash=65f882&locator=seal-harness%2540workspace%253A.#./patches/dsh-experimental-browser-use-playwright-mcp@0.2.1-rc.2.patch::version=0.2.1-rc.2&hash=bd8234&locator=seal-harness%40workspace%3A."
+  dependencies:
+    "@deepseek-ai/dsh-experimental-browser-use-runtime": "npm:0.2.1-rc.2"
+    "@playwright/mcp": "npm:0.0.80"
+  peerDependencies:
+    "@deepseek-ai/cordis": ~4.0.5
+    "@deepseek-ai/dsh-agent": 0.2.1-rc.2
+    "@deepseek-ai/dsh-browser-use": 0.2.1-rc.2
+    "@deepseek-ai/dsh-system-prompt": 0.2.1-rc.2
+    "@deepseek-ai/dsh-tools": 0.2.1-rc.2
+    "@deepseek-ai/dsh-working-directory": 0.2.1-rc.2
+  checksum: 10c0/4ec055756988f22db9ad858fb8e56ca69ebc34680f45c19e800e54b2c80033f9e2b346c703b0f2035f9b1502b20b75da900a768de1af50611178fbd213e755d8
+  languageName: node
+  linkType: hard
+
 "@deepseek-ai/dsh-experimental-browser-use-runtime@file:vendor/dsh-runtime/0.2.1-rc.2/deepseek-ai-dsh-experimental-browser-use-runtime-0.2.1-rc.2.tgz::locator=seal-harness%40workspace%3A.":
   version: 0.2.1-rc.2
   resolution: "@deepseek-ai/dsh-experimental-browser-use-runtime@file:vendor/dsh-runtime/0.2.1-rc.2/deepseek-ai-dsh-experimental-browser-use-runtime-0.2.1-rc.2.tgz#vendor/dsh-runtime/0.2.1-rc.2/deepseek-ai-dsh-experimental-browser-use-runtime-0.2.1-rc.2.tgz::hash=aec079&locator=seal-harness%40workspace%3A."

@@ -12,6 +12,16 @@ Electron 44 内置 Node 24.18.1；Stable/Beta 必须直接使用支持它的 `no
 
 `product.json` 是产品名、应用 ID、数据目录与更新渠道的来源。名称是 Seal Harness，应用 ID 是 `com.seal-harness.desktop`，默认 Home 是 `~/.seal-harness`；显式 `DSH_HOME` 覆盖保留。社区 DSH 更新渠道不得作用于产品。海豹图标原图和派生资源由 `assets/`、`icon-provenance.json` 和 `scripts/export-product-icons.py` 管理；保留 Git LFS 与来源记录。构建产物不入库。
 
+## Electron 浏览器 MCP 子进程
+
+1. **范围与触发**：内置 Playwright MCP provider 用 `process.execPath` 运行 npm CLI。进程内 Electron Host 的该路径不是普通 Node；缺少子进程模式标志会导致 Connection closed，继而阻断 standard 会话创建。
+2. **接口**：沿官方 `mountSessionMcp(ctx, { command, args, env })`，在 `dsh-experimental-browser-use-playwright-mcp@0.2.1-rc.2` 的 Yarn 补丁中补齐环境；不编辑只读子模块，不更改 provider Config 或 MCP 协议。
+3. **契约**：当且仅当 `process.versions.electron !== undefined` 时，在该 MCP 的 `env` 写入 `ELECTRON_RUN_AS_NODE=1`。不向主进程全局环境写入该值，以免 Chromium、GPU 和网络子进程误入 Node 模式。
+4. **错误矩阵**：普通 Node 不额外添加标志；Electron 的该 npm 子进程携带标志。真实 MCP 启动/同步错误仍由原来的 failOnStartupError 返回，不吞错、不禁用浏览器。
+5. **案例**：同一 CLI 在普通 Electron 模式关闭连接；带局部标志后返回真实浏览器工具。标准会话创建成功且包含 browser_snapshot，不能只把 Renderer healthy 当成会话可用。
+6. **必需测试**：产品 `verify-profile.mjs` 以 Electron Node 模式执行真实 Profile；CJS 引导先为基础 DSH_HOME 设置独立临时目录，再清除父进程的全局 Node 标志，随后创建 standard 会话并检查浏览器 MCP 工具，最终再确认 Host 环境未受污染。产品数据库按基础 Home 打开，不能只隔离 Profile 目录。保留 Creator、插件管理器及两轮 HMR 检查。新会话和决策入口还须图形实测。
+7. **错误与正确实现**：错误：全局设置 ELECTRON_RUN_AS_NODE 或关闭浏览器 provider 来让会话创建通过。正确：保留旧版本已有的局部启动兼容补丁，为新运行时独立加入 patch resolution，校验不可变安装与实际握手。
+
 ## 公开 Loader 与配置 HMR
 
 公开 Loader 没有内部 ESM 缓存；rc.2 的 HMR 在初始化时就计算入口模块，因此 `hasEsmCache()` 必须先排除缺省的内部接口。保留 Profile 配置监听，模块级 HMR 的内部接口要求不变；实际验证必须完成两轮配置热重载，不能通过禁用 HMR 条目消除未激活告警。
@@ -62,6 +72,16 @@ Stable/Beta 均测试配置验证及模式优先级，再运行双变体、产�
 ### 7. 错误与正确实现
 
 错误：只在开发脚本设置 `DSH_DESKTOP_ISOLATED_HOST=0`，安装包直接进入 Electron 主入口后仍会走独立 Host。正确：在构建时把产品默认值写入 Desktop 配置，由 Stable/Beta 主入口统一选择模式。
+
+### Renderer 冷启动截止时间
+
+1. **范围与触发**：首次原生窗口与客户端插件加载的健康等待。本机原 Profile 冷启动曾在约 35 秒后才加载页面，原截止时间先关闭 Host，后续页面停在 Loading plugins；另一次原预算实测在约 29 秒才健康，不能据此认定客户端插件损坏。
+2. **签名**：`DesktopProductConfig.rendererBootTimeoutMs?: number`；`readDesktopProduct(path)` 在构建边界验证；`DESKTOP_RENDERER_BOOT_TIMEOUT_MS` 传给原生健康监测的默认参数。
+3. **配置契约**：产品 JSON 声明 `"rendererBootTimeoutMs": 90000`，构建 define 写入两种启动路径共用的 Electron 产物。未指定的上游 Desktop 仍为 30000ms。只改变首次等待上限，不延迟明确插件失败、不伪造健康，不改变已经启动后的 Renderer 恢复策略。
+4. **校验与错误矩阵**：省略采用默认；1–2147483647 的整数毫秒接受；字符串、零、负数、小数及超出 Node timer 上限的值在构建时抛出 `Invalid Desktop product configuration`。真实插件失败立即失败，预算耗尽仍进入恢复。
+5. **正常、基础、错误案例**：产品 45 秒完成加载后报告健康可通过；上游仍在 30 秒截止；产品 90 秒未就绪进入恢复，明确的 `failed` 报告无须等到截止。
+6. **必需测试**：两变体的 `product-config.spec.ts` 验证传递/默认/非法值，`renderer-health.spec.ts` 用虚拟计时验证慢启动、插件失败和耗尽；`electron-runtime.spec.ts` 保留主进程失败链路。产品构建/检查及原 Profile、默认 Host 模式的 Windows GUI 验收须核对 `rendererStatus: healthy`。
+7. **错误与正确实现**：错误：只修改忽略目录的已编译 JS 计时后声称永久修复，或仅因进程存活而判定就绪。正确：产品配置经构建边界验证并进入实际产物，仍由原 Loader 报告和原生挂载共同提交健康证据。
 
 产品发布版本的唯一来源为 `seal-harness-desktop/package.json`。构建入口在忽略目录生成带 `version` 的 Desktop 产品配置；定制构建的原生 Host、标题栏与 electron-builder `extraMetadata.version` 使用这个值。无定制产品配置时 Stable/Beta 仍使用各自 Desktop 包版本。只改变产品包版本即可同步下一次构建的显示与打包版本；不得用 DSH Desktop 社区更新渠道更新 Seal Harness。
 

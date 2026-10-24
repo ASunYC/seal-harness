@@ -16,6 +16,9 @@ export function readDesktopProduct(path = process.env.DSH_DESKTOP_PRODUCT): Desk
     || !('updatesEnabled' in value) || typeof value.updatesEnabled !== 'boolean'
     || ('setupWizardEnabled' in value && typeof value.setupWizardEnabled !== 'boolean')
     || ('isolatedHost' in value && typeof value.isolatedHost !== 'boolean')
+    || ('rendererBootTimeoutMs' in value && (typeof value.rendererBootTimeoutMs !== 'number'
+      || !Number.isSafeInteger(value.rendererBootTimeoutMs) || value.rendererBootTimeoutMs <= 0
+      || value.rendererBootTimeoutMs > 2_147_483_647))
     || ('protocolScheme' in value && (typeof value.protocolScheme !== 'string' || !/^[a-z][a-z0-9+.-]*$/.test(value.protocolScheme)))
     || ('identityHomeModule' in value && (typeof value.identityHomeModule !== 'string'
       || !/^@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*$/.test(value.identityHomeModule)))
@@ -31,6 +34,7 @@ export function readDesktopProduct(path = process.env.DSH_DESKTOP_PRODUCT): Desk
     ...('identityHomeModule' in value ? { identityHomeModule: value.identityHomeModule as string } : {}),
     ...('setupWizardEnabled' in value ? { setupWizardEnabled: value.setupWizardEnabled as boolean } : {}),
     ...('isolatedHost' in value ? { isolatedHost: value.isolatedHost as boolean } : {}),
+    ...('rendererBootTimeoutMs' in value ? { rendererBootTimeoutMs: value.rendererBootTimeoutMs as number } : {}),
   }
 }
 

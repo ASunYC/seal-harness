@@ -16,6 +16,33 @@ function deferred(): {
 }
 
 describe('Desktop renderer health gate', () => {
+  it('accepts a slow cold boot within the product budget while retaining failure and timeout verdicts', async () => {
+    vi.useFakeTimers()
+    try {
+      const commitHealthy = vi.fn(async () => {})
+      const slow = new DesktopRendererHealthGate({ commitHealthy })
+      const slowResult = slow.begin(90_000)
+      slow.acceptNativeMount()
+      await vi.advanceTimersByTimeAsync(45_000)
+      expect(commitHealthy).not.toHaveBeenCalled()
+      slow.report({ status: 'healthy' })
+      await expect(slowResult).resolves.toEqual({ report: { status: 'healthy' } })
+
+      const failed = new DesktopRendererHealthGate({ commitHealthy })
+      const failedResult = failed.begin(90_000)
+      failed.report({ status: 'failed', plugins: ['broken-client'] })
+      await expect(failedResult).resolves.toMatchObject({ failureReason: 'renderer-failed' })
+
+      const stalled = new DesktopRendererHealthGate({ commitHealthy })
+      const stalledResult = stalled.begin(90_000)
+      await vi.advanceTimersByTimeAsync(90_000)
+      await expect(stalledResult).resolves.toMatchObject({ failureReason: 'renderer-timeout' })
+      expect(commitHealthy).toHaveBeenCalledOnce()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('commits healthy only after Renderer evidence and native mount are both ready', async () => {
     const commitHealthy = vi.fn(async () => {})
     const gate = new DesktopRendererHealthGate({ commitHealthy })

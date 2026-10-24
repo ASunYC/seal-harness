@@ -11,6 +11,7 @@ export interface DesktopProductConfig {
   readonly identityHomeModule?: string
   readonly setupWizardEnabled?: boolean
   readonly isolatedHost?: boolean
+  readonly rendererBootTimeoutMs?: number
 }
 
 declare const __DSH_DESKTOP_PRODUCT__: DesktopProductConfig | undefined
@@ -31,3 +32,6 @@ export const DESKTOP_PRODUCT: DesktopProductConfig = Object.freeze(
 /** Native accessibility title, preserving the original upstream default. */
 export const DESKTOP_WINDOW_TITLE = typeof __DSH_DESKTOP_PRODUCT__ === 'undefined'
   ? 'DeepSeek Harness Desktop' : DESKTOP_PRODUCT.name
+
+/** 产品冷启动包含首次页面与插件加载；普通 Desktop 保持原来的截止时间。 */
+export const DESKTOP_RENDERER_BOOT_TIMEOUT_MS = DESKTOP_PRODUCT.rendererBootTimeoutMs ?? 30_000
