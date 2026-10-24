@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 26
+- **Total Sessions**: 27
 - **Last Active**: 2026-10-24
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~726 | Active |
+| `journal-1.md` | ~748 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 27 | 2026-10-24 | 提交启动与MCP修复并准备合入main | `a557be7d` | `codex/seal-harness-migration` |
 | 26 | 2026-10-24 | 完成新会话与决策入口的真实界面验收 | - | `codex/seal-harness-migration` |
 | 25 | 2026-10-24 | 修复Electron浏览器MCP导致的会话初始化失败 | - | `codex/seal-harness-migration` |
 | 24 | 2026-10-24 | 修复Renderer冷启动超时误判并恢复应用 | - | `codex/seal-harness-migration` |

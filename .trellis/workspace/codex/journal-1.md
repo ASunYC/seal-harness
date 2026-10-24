@@ -724,3 +724,25 @@
 ### Next Steps
 
 - 实现和验收已完成；等待用户另行授权提交或推送。
+
+
+## Session 27: 提交启动与MCP修复并准备合入main
+<!-- trellis-session: v=2 fp=fb1e3e59fa102545 -->
+
+**Date**: 2026-10-24
+**Task**: 提交启动与MCP修复并准备合入main
+**Branch**: `codex/seal-harness-migration`
+
+### Summary
+
+用户授权提交全部改动并合入推送main。启动和浏览器MCP修复已提交，代码及真实界面验收通过，归档完成任务；随后执行main快进同步及远端推送。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a557be7d` | fix: 修复桌面冷启动及浏览器MCP会话初始化 |
+
+### Status
+
+[OK] **Completed**
