@@ -47,7 +47,7 @@ async function fixture(t, options = {}) {
 
 test('install, open, restore and uninstall share one DBX data directory; uninstall restores install state', async t => {
   const { service, storage, calls, launches } = await fixture(t)
-  assert.equal(storage.db.prepare('PRAGMA user_version').get().user_version, 4)
+  assert.equal(storage.db.prepare('PRAGMA user_version').get().user_version, 6)
   assert.equal((await service.list()).items[0].installed, false)
   service.start('install')
   await service.jobs.get('first').promise

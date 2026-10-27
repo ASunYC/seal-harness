@@ -7,7 +7,7 @@ import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 export const name = 'seal-harness-local-data'
 export const inject = []
 
-const SCHEMA_VERSION = 5
+const SCHEMA_VERSION = 6
 
 export function openProductDatabase(home = resolveDshHome(process.env.DSH_HOME || join(homedir(), '.seal-harness'))) {
   mkdirSync(home, { recursive: true })
@@ -165,6 +165,43 @@ export function openProductDatabase(home = resolveDshHome(process.env.DSH_HOME |
           created_at INTEGER NOT NULL
         );
         PRAGMA user_version = 5;
+        COMMIT;`)
+    }
+    if (version < 6) {
+      db.exec(`BEGIN IMMEDIATE;
+        CREATE TABLE organization_settings (
+          user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          company_name TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        );
+        CREATE TABLE organization_departments (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          name TEXT NOT NULL,
+          parent_id TEXT,
+          sort_order INTEGER NOT NULL DEFAULT 0,
+          enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          UNIQUE (user_id, id),
+          FOREIGN KEY (user_id, parent_id) REFERENCES organization_departments(user_id, id) ON DELETE RESTRICT
+        );
+        CREATE INDEX organization_departments_owner ON organization_departments(user_id, parent_id, sort_order);
+        CREATE TABLE organization_people (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          name TEXT NOT NULL,
+          department_id TEXT,
+          job_title TEXT NOT NULL DEFAULT '',
+          email TEXT NOT NULL DEFAULT '',
+          phone TEXT NOT NULL DEFAULT '',
+          status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'disabled')),
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          FOREIGN KEY (user_id, department_id) REFERENCES organization_departments(user_id, id) ON DELETE RESTRICT
+        );
+        CREATE INDEX organization_people_owner ON organization_people(user_id, department_id, name);
+        PRAGMA user_version = 6;
         COMMIT;`)
     }
     return Object.freeze({

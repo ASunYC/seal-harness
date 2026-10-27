@@ -18,6 +18,7 @@ function NavGlyph({ name, size = 20 }) {
     spaces: <><path d="M3 7V5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /></>,
     schedules: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
     experts: <><rect x="4" y="7" width="16" height="13" rx="2" /><path d="M9 7V4h6v3M9 12h.01M15 12h.01M9 16h6" /></>,
+    organization: <><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M8 7V3h8v4M8 12h2m4 0h2M8 16h2m4 0h2M11 21v-4h2v4" /></>,
     skills: <><path d="m12 2 9 5v10l-9 5-9-5V7l9-5Z" /><path d="m3 7 9 5 9-5M12 12v10" /></>,
     connectors: <><path d="M8 3v5m8-5v5M6 8h12v5a6 6 0 0 1-12 0V8Zm6 11v3" /></>,
     plugins: <><path d="M9 3h6v4a2 2 0 1 0 2 2h4v6h-4a2 2 0 1 0-2 2v4H9v-4a2 2 0 1 0-2-2H3V9h4a2 2 0 1 0 2-2V3Z" /></>,

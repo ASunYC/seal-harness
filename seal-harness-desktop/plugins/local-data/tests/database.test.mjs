@@ -38,7 +38,7 @@ test('one database persists users, projects, experts and skills with user isolat
     assert.equal(reopened.db.prepare('SELECT COUNT(*) AS count FROM projects').get().count, 1)
     assert.equal(reopened.db.prepare('SELECT COUNT(*) AS count FROM experts').get().count, 1)
     assert.equal(reopened.db.prepare('SELECT COUNT(*) AS count FROM skills').get().count, 1)
-    assert.equal(reopened.db.prepare('PRAGMA user_version').get().user_version, 5)
+    assert.equal(reopened.db.prepare('PRAGMA user_version').get().user_version, 6)
   } finally { reopened.close() }
 })
 
@@ -51,7 +51,7 @@ test('v2 migration retains existing users and skills while adding scheduled task
     .run('owner', 'owner', 'Owner', Buffer.alloc(16), Buffer.alloc(64), 'admin', 'active', now, now)
   old.db.prepare('INSERT INTO skills VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
     .run('skill', 'owner', 'Existing', '{}', Buffer.from('original-package'), 1, now, now)
-  old.db.exec('DROP TABLE remembered_logins; DROP TABLE application_installations; DROP TABLE scheduled_runs; DROP TABLE scheduled_tasks; PRAGMA user_version = 2')
+  old.db.exec('DROP TABLE organization_people; DROP TABLE organization_departments; DROP TABLE organization_settings; DROP TABLE remembered_logins; DROP TABLE application_installations; DROP TABLE scheduled_runs; DROP TABLE scheduled_tasks; PRAGMA user_version = 2')
   old.close()
   const upgraded = openProductDatabase(home)
   try {
@@ -60,7 +60,7 @@ test('v2 migration retains existing users and skills while adding scheduled task
     assert.equal(upgraded.db.prepare('SELECT count(*) AS n FROM scheduled_tasks').get().n, 0)
     assert.equal(upgraded.db.prepare('SELECT count(*) AS n FROM scheduled_runs').get().n, 0)
     assert.equal(upgraded.db.prepare('SELECT count(*) AS n FROM remembered_logins').get().n, 0)
-    assert.equal(upgraded.db.prepare('PRAGMA user_version').get().user_version, 5)
+    assert.equal(upgraded.db.prepare('PRAGMA user_version').get().user_version, 6)
   } finally { upgraded.close() }
 })
 
@@ -71,12 +71,12 @@ test('v4 product database gains remembered login storage without losing its acco
   const now = new Date().toISOString()
   old.db.prepare('INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
     .run('owner', 'owner', 'Owner', Buffer.alloc(16), Buffer.alloc(64), 'admin', 'active', now, now)
-  old.db.exec('DROP TABLE remembered_logins; PRAGMA user_version = 4')
+  old.db.exec('DROP TABLE organization_people; DROP TABLE organization_departments; DROP TABLE organization_settings; DROP TABLE remembered_logins; PRAGMA user_version = 4')
   old.close()
   const upgraded = openProductDatabase(home)
   try {
     assert.equal(upgraded.db.prepare('SELECT username FROM users').get().username, 'owner')
-    assert.equal(upgraded.db.prepare('PRAGMA user_version').get().user_version, 5)
+    assert.equal(upgraded.db.prepare('PRAGMA user_version').get().user_version, 6)
     assert.equal(upgraded.db.prepare('SELECT count(*) AS n FROM remembered_logins').get().n, 0)
   } finally { upgraded.close() }
 })

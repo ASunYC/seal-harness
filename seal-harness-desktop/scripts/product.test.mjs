@@ -102,6 +102,16 @@ test('产品不再装配项目插件', () => {
   assert.equal(patch.some(row => row.id === 'seal-harness-projects'), false)
 })
 
+test('组织架构作为独立 Host/Client 插件装配', () => {
+  const manifest = JSON.parse(readFileSync(join(productRoot, 'plugins/organization/package.json'), 'utf8'))
+  assert.equal(manifest.name, '@seal-harness/organization')
+  assert.equal(manifest.dsh.client.platform, 'web')
+  assert.equal(productPlugins.includes('organization'), true)
+  const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))
+  const entry = patch.flatMap(row => row.insert ?? []).find(row => row.id === 'seal-harness-organization')
+  assert.equal(entry.name, manifest.name)
+})
+
 test('产品关闭首次模型凭据弹窗但保留模型设置插件', () => {
   const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))
   const models = patch.find(row => row.id === 'ui-settings-models')

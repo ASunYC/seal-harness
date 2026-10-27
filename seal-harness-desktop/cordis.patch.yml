@@ -39,6 +39,8 @@
       name: '@seal-harness/navigation'
     - id: seal-harness-scheduled-tasks
       name: '@seal-harness/scheduled-tasks'
+    - id: seal-harness-organization
+      name: '@seal-harness/organization'
     - id: ask-jev
       name: dsh-plugin-ask-jev
     - id: seal-harness-store

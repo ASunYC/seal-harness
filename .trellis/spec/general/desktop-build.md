@@ -89,7 +89,7 @@ Stable/Beta 均测试配置验证及模式优先级，再运行双变体、产�
 
 ## 当前插件组合
 
-构建顺序由 `seal-harness-desktop/scripts/build.mjs` 的 `productPlugins` 和 `cordis.patch.yml` 对齐。`local-data` 在 `identity` 之前加载，之后装配账号界面、能力插件和会话选择。项目、知识库和产品智能体插件不装配；保留 DSH 原生工作区、会话与 Agent 供普通对话和专家使用。删除插件时还需从已装配目录清理旧包，防止旧构建残留进入安装包。
+构建顺序由 `seal-harness-desktop/scripts/build.mjs` 的 `productPlugins` 和 `cordis.patch.yml` 对齐。`local-data` 在 `identity` 之前加载，之后装配账号界面、组织架构、能力插件和会话选择。项目、知识库和产品智能体插件不装配；保留 DSH 原生工作区、会话与 Agent 供普通对话和专家使用。删除插件时还需从已装配目录清理旧包，防止旧构建残留进入安装包。
 
 `packages/dsh-plugin-ask-jev/` 是可单独打包并通过 `dsh plugin add` 安装的 DSH bundle。它使用公开的 Connection RPC、credentials、tools 和 Client slots，Host 固定 TypeSafe/阿里百炼端点并注册 `ask_jev_decide` 工具。原生 `settings.section` 承载决策模型与凭据设置；Client 在普通 DSH 中保留侧栏表单，在 Seal Harness 中借可选 `sealHarnessNavigation` 将一级入口接到原生会话。结构化决策工具只返回真实模型结果，自然语言解释由普通会话模型承担。产品构建先生成该包，再复制到 Beta 装配目录；安装包必须包含同一包的 Host、Client、patch、许可证。不要让此可复用包依赖 Seal Harness 身份或导航服务。
 此独立包不加入根 Yarn workspaces，也不创建第二份锁文件；其构建复用已安装的 Beta Desktop 工具链。普通 DSH 安装后的 Host 不依赖 Seal Harness 私有服务或额外运行包，Client 仅依赖 DSH 提供的 React 模块。
@@ -107,6 +107,8 @@ Stable/Beta 均测试配置验证及模式优先级，再运行双变体、产�
 连接器页也使用默认收起的“已安装”单行摘要，显示数量、最多八个真实连接器图标及溢出数量；展开后显示原管理卡片或空态。下方为“系统 / 个人”页签；系统目录提供 cc-haha 的全部连接器配置与安装方式，具体契约见 capability-catalog.md。公开目录、被授权和同步状态不出现在连接器页，商店安装仍通过独立插件市场与现有 Host 接口执行。现有本地和商店连接器缺少 `installed` 字段时按已安装处理，凭据继续保存在 DSH Host credentials grant record。创建连接器按钮新建原生会话并填入可编辑模板，不自动发送；Host 的 `create_connector` 工具只保存当前本机账号的无凭据个人配置。未安装的个人连接器不注册工具，也不进入会话选择器、专家能力或流程资源；用户显式安装后，再通过既有管理面板配置凭据与启用。本地 STDIO 包导入仍沿用校验和安装流程。
 
 `identity` 提供本地用户名密码认证与首次管理员创建，密码以独立 salt 和 scrypt 哈希存储。活动会话驻留 Host 内存；用户勾选记住登录时，渲染器持久分区保存随机凭证，SQLite 只保存哈希、所属账号及 30 天有效期。重启经 `resume` 换发凭证，退出、改密和到期后失效。登录页滑块仅为本地界面交互，不充当服务端验证码。企业微信、SSO 和远端密码不属于当前产品。专家、技能状态与包按用户存入 SQLite；知识库绑定和云端目录不属于默认 UI。DSH 原生工作区与会话历史由上游管理，产品不提供项目管理插件。
+
+`@seal-harness/organization` 是独立的 Host/Client 产品插件，在首页资源侧栏注册“组织架构”。Host 依赖当前本地账号和 `sealHarnessDatabase`，提供公司名称、层级部门、人员资料的 CRUD RPC；Client 展示部门树、搜索、人数、资料和编辑操作。SQLite v6 前向迁移新增组织表，组织资料按账号隔离；部门不能移动到自己或后代下，非空部门不能删除，跨账号部门引用拒绝。人员是目录资料，不是可登录账号；消息、群聊、在线状态与跨设备同步不由此插件提供。测试覆盖旧库升级、Host RPC、权限边界和页面操作。
 
 品牌 Client 使用上游公开的 `settings.models.footer` 槽，为手动列出的 pi-ai 模型提供逐模型推理档位设置。使用 `remote.settings.describe/mutate` 读取和写入原有 Profile 的 `reasoningEfforts`，对模型数组做最小字段变更并以 namespace revision 拒绝并发覆盖。用户须依据服务商文档填写实际 wire 值；产品不从供应商名称推断推理能力，也不向远端探测。未声明能力的模型在对话菜单中继续不显示推理档位。
 
