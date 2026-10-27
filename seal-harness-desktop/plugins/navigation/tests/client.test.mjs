@@ -10,7 +10,7 @@ import { createRoot } from 'react-dom/client'
 const require = createRequire(import.meta.url)
 
 test('home resources share the sidebar with native workspaces and sessions', async t => {
-  const dom = new JSDOM('<!doctype html><html><head></head><body><main></main><div id="root"><div data-slot="sidebar"><button aria-label="自动化任务">上游入口</button></div></div><div data-slot="sidebar.settings"><button aria-haspopup="dialog">原生设置</button></div><button class="seal-harness-user-footer">原生账号</button></body></html>')
+  const dom = new JSDOM('<!doctype html><html><head></head><body><main></main><div id="root"><div data-slot="sidebar"><button aria-label="自动化任务">上游入口</button></div></div><div data-slot="sidebar.settings"><button aria-haspopup="menu">上游账户菜单</button></div><button class="seal-harness-user-footer">原生账号</button></body></html>')
   const previous = { window: globalThis.window, document: globalThis.document }
   globalThis.window = dom.window; globalThis.document = dom.window.document
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -18,13 +18,13 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   const entries = [
     { options: { name: 'sidebar.workspaces', priority: 0 }, component: () => React.createElement('span', null, '原生工作区与会话') },
     { options: { name: 'main', key: 'schedules' }, component: () => React.createElement('span', null, '原生自动化任务页面') },
+    { options: { name: 'settings.launcher', priority: 0 }, component: () => React.createElement('button', { 'aria-haspopup': 'menu' }, '上游账户菜单') },
   ]
   const effects = [], listeners = new Set(), provided = new Map()
   let activePanelId = null
   let sessionSnapshot = { byId: {} }
   const sessionListeners = new Set()
   let settingsClicks = 0, accountClicks = 0
-  document.querySelector('[data-slot="sidebar.settings"] button').addEventListener('click', () => settingsClicks++)
   document.querySelector('.seal-harness-user-footer').addEventListener('click', () => accountClicks++)
   const ctx = {
     provide(name, value) { provided.set(name, value) },
@@ -51,6 +51,8 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   const spaces = entries.find(entry => entry.options.key === 'seal-harness-spaces')?.component
   const nativeSchedules = entries.find(entry => entry.options.key === 'schedules')?.component
   assert(rail && home && spaces && nativeSchedules)
+  const settingsLauncher = entries.filter(entry => entry.options.name === 'settings.launcher').sort((a, b) => a.options.priority - b.options.priority)[0]
+  assert.equal(settingsLauncher.options.priority, -100)
   const registrations = name => entries.filter(entry => entry.options.name === name)
   const usePanelInfo = selector => React.useSyncExternalStore(listener => { listeners.add(listener); return () => listeners.delete(listener) }, () => selector({ activePanelId }))
   const click = async label => {
@@ -64,11 +66,15 @@ test('home resources share the sidebar with native workspaces and sessions', asy
     dom.window.close(); globalThis.window = previous.window; globalThis.document = previous.document
     delete globalThis.IS_REACT_ACT_ENVIRONMENT
   })
-  await act(async () => root.render(React.createElement(rail, { usePanelInfo })))
+  await act(async () => root.render(React.createElement(React.Fragment, null,
+    React.createElement(rail, { usePanelInfo }),
+    React.createElement(settingsLauncher.component, { openSettings: () => settingsClicks++ }),
+  )))
   assert.equal(dom.window.getComputedStyle(document.querySelector('[data-slot="sidebar"] button[aria-label="自动化任务"]')).display, 'none')
   assert.equal(document.querySelector('button[aria-label="对话"]'), null)
   assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '自动化任务', '空间'])
   assert.deepEqual([...document.querySelectorAll('.seal-nav-rail__footer button')].map(button => button.getAttribute('aria-label')), ['设置', '账户'])
+  assert.equal(document.querySelector('[data-slot="sidebar.settings"] button[aria-haspopup="dialog"]'), null)
   await act(async () => document.querySelector('.seal-nav-rail__footer button[aria-label="设置"]').click())
   await act(async () => document.querySelector('.seal-nav-rail__footer button[aria-label="账户"]').click())
   assert.equal(settingsClicks, 1)

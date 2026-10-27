@@ -96,7 +96,7 @@ Stable/Beta 均测试配置验证及模式优先级，再运行双变体、产�
 
 `@seal-harness/navigation` 在专家/技能/连接器 Client 之前加载，提供 `sealHarnessNavigation` 注册服务。一级窄栏依次显示首页、问问决策、自动化任务、空间；问问决策复用 DSH Session/Workspace 服务打开原生对话，重进时复用该会话，切换普通会话或点击首页则退出决策导航状态。首页侧栏同时显示专家、技能、连接器、插件等功能入口与 DSH 原生工作区及会话列表，不提供概览页或重复的会话菜单。顶部“新会话”按钮进入 DSH 对话，点击一级首页可返回当前对话。资源插件在自身 Client 生命周期内通过导航服务注册，导航插件用公开 `sidebar.panellist` 和 keyed `main` slot 组成入口与页面；问问决策不进入首页资源列表，改由一级 rail 进入。一级“自动化任务”直接选中上游 keyed `main` 的 `schedules` 页面；上游同名侧栏行在产品中隐藏，上游页面、会话提醒工具和任务记录保留。产品 `seal-harness-schedules` 页面当前不作为可见导航入口，已有 SQLite 任务数据与服务不删除。首页不覆盖 `sidebar.workspaces`；决策会话、空间和自动化任务页隐藏工作区列表。插件管理仍复用 DSH 原生 `plugins` 主面板，其侧栏行在首页由产品同 ID 注册覆盖，在其他一级菜单隐藏。产品样式在 Desktop frame 左侧预留窄栏宽度并补偿侧栏拖拽线；兼容/扩展/高级模式、窄窗口和三平台标题栏是回归重点。
 
-设置与账号图标放在一级窄栏底部。导航插件只触发原生 `sidebar.settings` 设置按钮和产品 `sidebar.footer.action` 账号按钮；原按钮行在宽侧栏隐藏但保持挂载，因此设置弹窗、登录分支和用户详情页仍由各自插件管理。
+设置与账号图标放在一级窄栏底部。导航插件通过上游 `settings.launcher` 插槽取得设置打开回调，并触发产品 `sidebar.footer.action` 账号按钮；原按钮行在宽侧栏隐藏但保持挂载，因此设置弹窗、登录分支和用户详情页仍由各自插件管理。
 
 `local-data` 在基础 Home 管理唯一的 `seal-harness.sqlite`。`users`、`experts`、`skills` 及状态、迁移记录表共用该库；历史 `projects` 表保留以避免删除已有用户数据。数据库版本用 `PRAGMA user_version` 顺序迁移，启用外键与 WAL。Host 插件通过 `sealHarnessDatabase` 共享连接和事务。数据库是用户、专家版本和技能包的持久来源；物化到文件系统的技能/专家目录是可重建缓存。自动迁移旧本地文件只复制、不删除原文件。
 
