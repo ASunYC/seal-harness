@@ -59,7 +59,7 @@ export function apply(ctx) {
       <dt>用户 ID</dt><dd>{user.id}</dd>
       <dt>角色</dt><dd>{user.role}</dd>
       <dt>存储方式</dt><dd>本机 SQLite</dd>
-      <dt>登录状态</dt><dd>仅本次运行</dd>
+      <dt>登录状态</dt><dd>{status.remembered ? '已记住（最长 30 天）' : '仅本次运行'}</dd>
     </dl>{error && <p role="alert">{error}</p>}<button disabled={busy} onClick={logout}>退出登录</button></section>
   }
   ctx.effect(() => {

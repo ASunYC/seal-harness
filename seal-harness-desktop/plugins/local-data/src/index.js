@@ -7,7 +7,7 @@ import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 export const name = 'seal-harness-local-data'
 export const inject = []
 
-const SCHEMA_VERSION = 4
+const SCHEMA_VERSION = 5
 
 export function openProductDatabase(home = resolveDshHome(process.env.DSH_HOME || join(homedir(), '.seal-harness'))) {
   mkdirSync(home, { recursive: true })
@@ -154,6 +154,17 @@ export function openProductDatabase(home = resolveDshHome(process.env.DSH_HOME |
           PRIMARY KEY (user_id, app_id)
         );
         PRAGMA user_version = 4;
+        COMMIT;`)
+    }
+    if (version < 5) {
+      db.exec(`BEGIN IMMEDIATE;
+        CREATE TABLE remembered_logins (
+          user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          token_hash BLOB NOT NULL UNIQUE,
+          expires_at INTEGER NOT NULL,
+          created_at INTEGER NOT NULL
+        );
+        PRAGMA user_version = 5;
         COMMIT;`)
     }
     return Object.freeze({

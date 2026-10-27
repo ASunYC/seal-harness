@@ -20,6 +20,7 @@ export async function apply(ctx, config = {}) {
     status(input) { empty.parse(input); return identity.getStatus() },
     register(input) { return identity.register(input) },
     login(input) { return identity.login(input) },
+    resume(input) { return identity.resume(input) },
     logout(input) { empty.parse(input); return identity.logout() },
     'password/change'(input) { return identity.changePassword(input) },
   }

@@ -21,7 +21,7 @@ test('local login page shows seal artwork and releases the workbench after regis
     define: { 'process.env.NODE_ENV': JSON.stringify('production'), __SEAL_HARNESS_ICON__: JSON.stringify(brand) },
     outputOptions: { entryFileNames: 'client.cjs' },
   })
-  const dom = new JSDOM('<!doctype html><html><head></head><body><div id="app"></div></body></html>')
+  const dom = new JSDOM('<!doctype html><html><head></head><body><div id="app"></div></body></html>', { url: 'http://localhost' })
   const oldWindow = globalThis.window, oldDocument = globalThis.document, oldFormData = globalThis.FormData
   globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.FormData = dom.window.FormData
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -47,8 +47,14 @@ test('local login page shows seal artwork and releases the workbench after regis
       if (method.endsWith('/status')) return { ok: true, value: status }
       if (method.endsWith('/register')) {
         assert.equal(payload.username, 'admin')
-        status = { user: { id: 'user-1', username: 'admin', displayName: '管理员', role: 'admin' }, accountId: 'user-1', epoch: 1, canRegister: false }
-        return { ok: true, value: status }
+        assert.equal(payload.remember, true)
+        status = { user: { id: 'user-1', username: 'admin', displayName: '管理员', role: 'admin' }, accountId: 'user-1', epoch: 1, canRegister: false, remembered: true }
+        return { ok: true, value: { ...status, rememberToken: 'test-remember-token' } }
+      }
+      if (method.endsWith('/resume')) {
+        assert.equal(payload.token, 'test-remember-token')
+        status = { user: { id: 'user-1', username: 'admin', displayName: '管理员', role: 'admin' }, accountId: 'user-1', epoch: 1, canRegister: false, remembered: true }
+        return { ok: true, value: { ...status, rememberToken: 'rotated-remember-token' } }
       }
       throw new Error(`Unexpected ${method}`)
     } } },
@@ -59,8 +65,21 @@ test('local login page shows seal artwork and releases the workbench after regis
   await act(async () => root.render(React.createElement(gate.component)))
   assert.equal(document.querySelector('img[alt="Seal Harness 小海豹"]')?.getAttribute('src'), brand)
   assert.match(document.body.textContent, /创建本机管理员/)
+  assert.match(document.body.textContent, /Seal Harness/)
   assert.doesNotMatch(document.body.textContent, /企业微信|统一认证|集团 SSO/)
-  const inputs = document.querySelectorAll('input')
+  assert.doesNotMatch(document.body.textContent, /服务器地址/)
+  const submit = document.querySelector('button[type=submit]')
+  assert.equal(submit.disabled, true)
+  const slider = document.querySelector('[role=slider]')
+  slider.getBoundingClientRect = () => ({ width: 360 })
+  await act(async () => {
+    slider.dispatchEvent(new dom.window.MouseEvent('pointerdown', { bubbles: true, clientX: 0 }))
+    dom.window.dispatchEvent(new dom.window.MouseEvent('pointermove', { bubbles: true, clientX: 320 }))
+    dom.window.dispatchEvent(new dom.window.MouseEvent('pointerup', { bubbles: true, clientX: 320 }))
+  })
+  assert.equal(slider.getAttribute('aria-valuenow'), '100')
+  assert.equal(submit.disabled, false)
+  const inputs = document.querySelectorAll('input[name]')
   await act(async () => {
     for (const [input, value] of [[inputs[0], 'admin'], [inputs[1], '管理员'], [inputs[2], 'valid-password-123']]) {
       input.value = value; input.dispatchEvent(new dom.window.Event('input', { bubbles: true }))
@@ -70,5 +89,10 @@ test('local login page shows seal artwork and releases the workbench after regis
   })
   assert.equal(gate.disposed, true)
   assert.equal(provided.get('sealHarnessAuthClient').getStatus().user.id, 'user-1')
+  assert.equal(dom.window.localStorage.getItem('seal-harness.identity.remember.v1'), 'test-remember-token')
   assert.deepEqual(selected, [null])
+  status = { user: null, accountId: null, epoch: 0, canRegister: false, remembered: false }
+  await act(async () => provided.get('sealHarnessAuthClient').refresh())
+  assert.equal(provided.get('sealHarnessAuthClient').getStatus().user.id, 'user-1')
+  assert.equal(dom.window.localStorage.getItem('seal-harness.identity.remember.v1'), 'rotated-remember-token')
 })

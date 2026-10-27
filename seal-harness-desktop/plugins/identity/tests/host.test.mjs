@@ -36,6 +36,11 @@ test('local identity RPC registers, logs in and logs out without WeCom routes', 
     assert.equal((await rpc('logout')).value.user, null)
     assert.equal((await rpc('login', { username: 'admin', password: 'bad' })).error.code, 'invalidCredentials')
     assert.equal((await rpc('login', { username: 'admin', password: 'local-password-123' })).ok, true)
+    const remembered = await rpc('login', { username: 'admin', password: 'local-password-123', remember: true })
+    assert.equal(remembered.ok, true)
+    assert.equal(remembered.value.remembered, true)
+    assert.equal((await rpc('resume', { token: remembered.value.rememberToken })).value.user.username, 'admin')
+    assert.equal((await rpc('resume', { token: remembered.value.rememberToken })).error.code, 'sessionExpired')
     assert.equal(provided.get('sealHarnessServices').getConfig().identityBaseUrl, '')
   } finally { disposers.forEach(dispose => dispose?.()); storage.close() }
 })
