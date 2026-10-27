@@ -14,7 +14,7 @@ export const product = {
   version: JSON.parse(readFileSync(join(productRoot, 'package.json'), 'utf8')).version,
 }
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
-export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps']
+export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora']
 
 export function linkProductDependencies() {
   const link = join(productRoot, 'node_modules')
@@ -53,14 +53,19 @@ export async function buildProductPlugins() {
     const manifest = JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8'))
     rmSync(join(cwd, 'lib'), { recursive: true, force: true })
     const common = { config: false, cwd, outDir: join(cwd, 'lib'), clean: false, dts: false, sourcemap: true }
-    const entry = 'src/index.js'
-    await build({ ...common, entry: { index: entry, ...(folder === 'experts' ? { runtime: 'src/runtime.js' } : {}) }, format: 'esm', platform: 'node', fixedExtension: false,
+    if (folder === 'weknora') cpSync(join(cwd, 'upstream'), join(cwd, 'lib/upstream'), { recursive: true })
+    await build({ ...common, entry: { index: 'src/index.js', ...(folder === 'experts' ? { runtime: 'src/runtime.js' } : {}) }, format: 'esm', platform: 'node', fixedExtension: false,
       deps: { neverBundle: [/^@deepseek-ai\//, /^@seal-harness\//, 'zod', 'yaml', 'adm-zip', 'unzipper', 'pdfjs-dist', '@silurus/ooxml', 'ssf', 'ssh2'] } })
     if (['connectors', 'skills'].includes(folder)) {
       const notices = join(cwd, 'lib/third-party/cc-haha')
       mkdirSync(notices, { recursive: true })
       for (const file of ['LICENSE', 'NOTICE.md']) cpSync(join(productRoot, 'plugins/capability-shared/vendor/cc-haha', file), join(notices, file))
       cpSync(join(productRoot, 'plugins/capability-shared/catalog/cc-haha-provenance.json'), join(notices, 'provenance.json'))
+    }
+    if (folder === 'weknora') {
+      const notices = join(cwd, 'lib/third-party/weknora')
+      mkdirSync(notices, { recursive: true })
+      for (const file of ['LICENSE', 'PROVENANCE.md', 'upstream-sha256.json']) cpSync(join(cwd, file), join(notices, file))
     }
     if (manifest.dsh?.client) {
       await build({ ...common, entry: { client: 'src/client.jsx' }, format: 'cjs', platform: 'browser', target: 'es2022', deps: { neverBundle: [/^react(?:-dom)?(?:\/|$)/] },
@@ -69,7 +74,7 @@ export async function buildProductPlugins() {
           ...(folder === 'identity' ? { __SEAL_HARNESS_ICON__: JSON.stringify(`data:image/png;base64,${readFileSync(join(productRoot, 'assets/icons/128x128.png')).toString('base64')}`) } : {}),
         },
         outputOptions: {
-          entryFileNames: 'client.js',
+          entryFileNames: folder === 'weknora' ? 'settings-client.js' : 'client.js',
           banner: `window.__ModuleLoader__.load({ id: ${JSON.stringify(manifest.name)}, factory: (require) => {`,
           footer: 'return module.exports; } });', intro: 'var module = { exports: {} }; var exports = module.exports;',
         },

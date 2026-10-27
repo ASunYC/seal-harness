@@ -96,6 +96,25 @@ test('独立 Ask Jev bundle 同时具备 Host 与 Client 入口', () => {
   assert.equal(patch.find(row => row.insert)?.insert.some(row => row.id === 'ask-jev' && row.name === manifest.name), true)
 })
 
+test('WeKnora 官方插件作为产品本地插件装配并保留环境变量回退', () => {
+  const manifest = JSON.parse(readFileSync(join(productRoot, 'plugins/weknora/package.json'), 'utf8'))
+  assert.equal(manifest.name, '@seal-harness/weknora')
+  assert.equal(productPlugins.includes('weknora'), true)
+  const patchText = readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8')
+  const patch = desktopRequire('yaml').parse(patchText)
+  const row = patch.flatMap(entry => entry.insert ?? []).find(entry => entry.id === 'seal-harness-weknora')
+  assert.equal(row.name, manifest.name)
+  assert.match(patchText, /process\.env\.WEKNORA_API_KEY/)
+  assert.match(readFileSync(join(productRoot, 'THIRD_PARTY_NOTICES.md'), 'utf8'), /WeKnora DSH plugin 0\.1\.0/)
+  const hashes = JSON.parse(readFileSync(join(productRoot, 'plugins/weknora/upstream-sha256.json'), 'utf8'))
+  for (const [file, expected] of Object.entries(hashes)) {
+    const original = readFileSync(join(productRoot, 'plugins/weknora/upstream', file))
+    assert.equal(createHash('sha256').update(original).digest('hex'), expected, file)
+    const packaged = readFileSync(join(root, 'dsh-plugin-desktop-beta/node_modules/@seal-harness/weknora/lib/upstream', file))
+    assert.deepEqual(packaged, original, `${file} was changed during packaging`)
+  }
+})
+
 test('产品不再装配项目插件', () => {
   assert.equal(productPlugins.includes('projects'), false)
   const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))

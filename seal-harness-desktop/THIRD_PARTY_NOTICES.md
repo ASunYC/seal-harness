@@ -1,5 +1,10 @@
 # Third-Party Notices
 
+## WeKnora DSH plugin 0.1.0
+
+Source: https://www.npmjs.com/package/@wxg-prc-cpg/dsh-weknora, MIT license.
+The local `@seal-harness/weknora` plugin is adapted from the official WeKnora plugin in Tencent/WeKnora. Its original license and source provenance are kept in `plugins/weknora/` and copied into the packaged plugin.
+
 ## cc-haha capability catalog and official CLI adapters
 
 Source: https://github.com/NanmiCoder/cc-haha, commit `0a3b549d5ec020569d766a7c16ce209c6110af51`.
