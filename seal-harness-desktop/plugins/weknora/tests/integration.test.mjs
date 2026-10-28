@@ -33,6 +33,7 @@ test('bundled WeKnora plugin registers DSH tools and retrieves a passage over HT
       async modifyRecord(key, update) { assert.match(key, /^seal-harness-weknora\/connection-[a-z0-9-]+$/u); records.set(key, update(records.get(key))) },
     }
     apply({
+      provide(name, value) { assert.equal(name, 'sealHarnessWeknora'); assert.equal(typeof value.request, 'function') },
       get(name) {
         if (name === 'credentials') return credentials
         assert.equal(name, 'sealHarnessIdentity')

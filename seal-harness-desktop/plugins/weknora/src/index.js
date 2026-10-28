@@ -1,6 +1,7 @@
 import { WeknoraClient } from '../upstream/client.js'
 import { resolveConfig } from '../upstream/config.js'
 import { createTools } from '../upstream/tools.js'
+import { managementRequest } from './management.js'
 
 export const name = '@seal-harness/weknora'
 export const inject = ['tools', 'credentials', 'connection', 'sealHarnessIdentity']
@@ -62,6 +63,15 @@ export function apply(ctx, raw) {
     if (!value.config.apiKey) throw new Error('请先在 Seal 设置的 WeKnora 项中填写 API Key。')
     return value
   }
+  ctx.provide('sealHarnessWeknora', Object.freeze({
+    async status() { return publicStatus((await connection(credentials, fallback, identity)).config) },
+    async request(path, options = {}) {
+      const { config, session } = await configured()
+      const result = await managementRequest(config, path, options, lifetime.signal)
+      await sameAccount(identity, session)
+      return result
+    },
+  }))
   const handlers = {
     'weknora/status': async () => publicStatus((await connection(credentials, fallback, identity)).config),
     'weknora/configure': async payload => {
