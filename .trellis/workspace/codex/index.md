@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 31
+- **Total Sessions**: 32
 - **Last Active**: 2026-10-28
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~828 | Active |
+| `journal-1.md` | ~859 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 32 | 2026-10-28 | 按功能提交全部改动并同步main | `b444d54f`, `6b740a44`, `a0ec5e75`, `846cd152`, `20f47ec9`, `a2019c6d`, `a098b842`, `dd2e5ee6`, `57656999`, `1d0e4242` | `main` |
 | 31 | 2026-10-28 | 修正专家顺序及旧Host接口404并实测窗口 | - | `main` |
 | 30 | 2026-10-28 | 按确认改为会话唯一当前专家 | - | `main` |
 | 29 | 2026-10-28 | 会话专家支持系统个人分组与动态多选 | - | `main` |

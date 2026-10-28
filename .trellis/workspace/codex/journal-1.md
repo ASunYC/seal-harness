@@ -826,3 +826,34 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 32: 按功能提交全部改动并同步main
+<!-- trellis-session: v=2 fp=785da6b068a8e58c -->
+
+**Date**: 2026-10-28
+**Task**: 按功能提交全部改动并同步main
+**Branch**: `main`
+
+### Summary
+
+用户授权全部改动按功能提交并推送main。当前已在main，拆为存储、导航、统计、知识库、远程主机、ACP、页面排版、内核版本显示、会话资源、反馈隐私10个功能提交，另提交文档验收记录。最终完整构建、产品check、真实Electron Profile与202共享源码检查通过；清理一处EOF空行。归档本会话专家与标题栏任务；未使用stash，无合并冲突。随后刷新origin并正常推送main，不创建版本标签或Release。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b444d54f` | feat(storage): 增加用量统计、ACP和远程主机数据迁移 |
+| `6b740a44` | feat(navigation): 调整一级导航及插件市场入口 |
+| `a0ec5e75` | feat(token-stats): 接入会话用量统计与Excel导出 |
+| `846cd152` | feat(knowledge): 接入WeKnora知识库及文档管理 |
+| `20f47ec9` | feat(remote-hosts): 支持SSH、RDP和VNC主机管理 |
+| `a2019c6d` | feat(acp): 接入编程Runner协议与会话工具 |
+| `a098b842` | style(workbench): 统一一级页面留白与标题排版 |
+| `dd2e5ee6` | fix(version): 标题栏自动显示实际DSH内核版本 |
+| `57656999` | feat(session): 支持当前专家单选及统一资源分类 |
+| `1d0e4242` | fix(privacy): 移除反馈入口及上游反馈遥测 |
+
+### Status
+
+[OK] **Completed**
