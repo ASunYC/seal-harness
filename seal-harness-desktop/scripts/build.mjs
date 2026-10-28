@@ -14,7 +14,7 @@ export const product = {
   version: JSON.parse(readFileSync(join(productRoot, 'package.json'), 'utf8')).version,
 }
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
-export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora']
+export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats']
 
 export function linkProductDependencies() {
   const link = join(productRoot, 'node_modules')
