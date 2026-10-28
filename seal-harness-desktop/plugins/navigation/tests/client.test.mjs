@@ -10,7 +10,7 @@ import { createRoot } from 'react-dom/client'
 const require = createRequire(import.meta.url)
 
 test('home resources share the sidebar with native workspaces and sessions', async t => {
-  const dom = new JSDOM('<!doctype html><html><head></head><body><main></main><div id="root"><div data-slot="sidebar"><button aria-label="自动化任务">上游入口</button></div></div><div data-slot="sidebar.settings"><button aria-haspopup="menu">上游账户菜单</button></div><button class="seal-harness-user-footer">原生账号</button></body></html>')
+  const dom = new JSDOM('<!doctype html><html><head></head><body><main></main><div id="root"><div data-slot="sidebar"><button aria-label="自动化任务">上游入口</button><button class="dshMarketLauncher">旧市场入口</button></div></div><div data-slot="sidebar.settings"><button aria-haspopup="menu">上游账户菜单</button></div><button class="seal-harness-user-footer">原生账号</button></body></html>')
   const previous = { window: globalThis.window, document: globalThis.document }
   globalThis.window = dom.window; globalThis.document = dom.window.document
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -21,6 +21,7 @@ test('home resources share the sidebar with native workspaces and sessions', asy
     { options: { name: 'settings.launcher', priority: 0 }, component: () => React.createElement('button', { 'aria-haspopup': 'menu' }, '上游账户菜单') },
   ]
   const effects = [], listeners = new Set(), provided = new Map()
+  const slotListeners = new Set()
   let activePanelId = null
   let sessionSnapshot = { byId: {} }
   const sessionListeners = new Set()
@@ -31,13 +32,22 @@ test('home resources share the sidebar with native workspaces and sessions', asy
     effect(callback) { effects.push(callback()) },
     slots: {
       inject(_name, callback) { return callback() },
+      entries(name) { return entries.filter(entry => entry.options.name === name) },
+      subscribe(name, listener) {
+        assert.equal(name, 'settings.plugins.tab')
+        slotListeners.add(listener)
+        return () => slotListeners.delete(listener)
+      },
       register(options, component) {
-        const entry = { options, component }
+        const entry = { options, component, locale: options.locale, inject: options.inject, store: options.store }
         entries.push(entry)
         return () => { const index = entries.indexOf(entry); if (index >= 0) entries.splice(index, 1) }
       },
     },
-    layout: { selectPanel(id) { activePanelId = id; for (const listener of listeners) listener() } },
+    layout: {
+      selectPanel(id) { activePanelId = id; for (const listener of listeners) listener() },
+      toggleSidebar() { assert.fail('页面切换不能改写用户的侧栏收起偏好') },
+    },
     sessions: { list: { subscribe(listener) { sessionListeners.add(listener); return () => sessionListeners.delete(listener) }, getSnapshot: () => sessionSnapshot } },
   }
   const loaded = {}
@@ -71,6 +81,7 @@ test('home resources share the sidebar with native workspaces and sessions', asy
     React.createElement(settingsLauncher.component, { openSettings: () => settingsClicks++ }),
   )))
   assert.equal(dom.window.getComputedStyle(document.querySelector('[data-slot="sidebar"] button[aria-label="自动化任务"]')).display, 'none')
+  assert.equal(dom.window.getComputedStyle(document.querySelector('.dshMarketLauncher')).display, 'none')
   assert.equal(document.querySelector('button[aria-label="对话"]'), null)
   assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '自动化任务', '空间'])
   assert.deepEqual([...document.querySelectorAll('.seal-nav-rail__footer button')].map(button => button.getAttribute('aria-label')), ['设置', '账户'])
@@ -173,6 +184,66 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   await click('首页')
   assert.equal(registrations('sidebar.panellist').some(entry => entry.options.id === 'seal-harness-schedules'), false)
   await act(async () => releaseSchedules())
+  const primaryEntries = [
+    ['token-stats', 'Token 统计', 'usage'], ['knowledge', '知识库', 'knowledge'],
+    ['remote-desktop', '远程主机', 'desktop'], ['acp', 'ACP', 'acp'],
+  ]
+  const primaryDisposers = []
+  await act(async () => {
+    for (const [index, [id, label, icon]] of primaryEntries.entries()) primaryDisposers.push(navigation.register({
+      id, label, icon, order: 100 + index * 10, primary: true, Panel: () => React.createElement('span', null, label),
+    }))
+  })
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '问问决策', '自动化任务', 'Token 统计', '知识库', '远程主机', 'ACP', '空间'])
+  assert.equal(registrations('sidebar.panellist').some(entry => primaryEntries.some(([id]) => id === entry.options.id)), false)
+  for (const [id, label] of primaryEntries) {
+    await click(label)
+    assert.equal(activePanelId, id)
+    assert.equal(document.querySelector('.seal-nav-rail').dataset.homeActive, 'false')
+    assert.equal(registrations('sidebar.workspaces').length, 2)
+    assert(registrations('main').some(entry => entry.options.key === id))
+  }
+  await act(async () => primaryDisposers.forEach(dispose => dispose()))
+  assert.equal(activePanelId, null, '当前一级插件卸载后回到首页')
+  assert.equal(document.querySelector('.seal-nav-rail').dataset.homeActive, 'true')
+  const marketEntry = {
+    options: { name: 'settings.plugins.tab', id: 'community-market' },
+    component: ({ readLocale }) => React.createElement('span', null, `市场内容 ${readLocale()}`),
+    locale: 'community-market',
+    inject: () => ({ readLocale: () => 'zh' }),
+  }
+  await act(async () => {
+    entries.push(marketEntry)
+    for (const listener of slotListeners) listener()
+  })
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '问问决策', '自动化任务', '空间', '插件市场'])
+  const marketMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'seal-harness-market')
+  assert(marketMain)
+  assert.equal(marketMain.locale, marketEntry.locale)
+  assert.equal(marketMain.inject, marketEntry.inject)
+  await act(async () => document.querySelector('.seal-nav-rail button[aria-label="插件市场"]').click())
+  assert.equal(activePanelId, 'seal-harness-market')
+  assert.equal(document.querySelector('.seal-nav-rail').dataset.homeActive, 'false')
+  assert.equal(document.querySelector('button[aria-label="插件市场"]').getAttribute('aria-current'), 'page')
+  assert.equal(registrations('sidebar.workspaces').length, 2)
+  await act(async () => root.render(React.createElement(React.Fragment, null,
+    React.createElement(rail, { usePanelInfo }), React.createElement(marketMain.component, marketMain.inject()),
+    React.createElement(settingsLauncher.component, { openSettings: () => settingsClicks++ }),
+  )))
+  assert.match(document.querySelector('[data-seal-nav-panel="market"]').textContent, /市场内容 zh/)
+  await act(async () => document.querySelector('.seal-nav-rail__footer button[aria-label="设置"]').click())
+  assert.equal(settingsClicks, 2, '非首页仍能打开原生设置')
+  await click('首页')
+  assert.equal(document.querySelector('.seal-nav-rail').dataset.homeActive, 'true')
+  assert.equal(registrations('sidebar.workspaces').length, 1)
+  await act(async () => document.querySelector('.seal-nav-rail button[aria-label="插件市场"]').click())
+  await act(async () => {
+    entries.splice(entries.indexOf(marketEntry), 1)
+    for (const listener of slotListeners) listener()
+  })
+  assert.equal(activePanelId, null, '市场卸载后回到首页')
+  assert.equal(entries.some(entry => entry.options.key === 'seal-harness-market'), false)
+  assert.equal(document.querySelector('button[aria-label="插件市场"]'), null)
   await act(async () => release())
   await act(async () => releaseDecision())
 })

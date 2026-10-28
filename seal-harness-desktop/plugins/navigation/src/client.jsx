@@ -1,4 +1,4 @@
-import React, { useEffect, useSyncExternalStore } from 'react'
+import React, { useEffect, useRef, useSyncExternalStore } from 'react'
 import { createNavigationState } from './model.js'
 import { styles } from './styles.js'
 
@@ -9,6 +9,7 @@ const DECISION = 'ask-jev'
 const SPACES = 'seal-harness-spaces'
 const SCHEDULES = 'seal-harness-schedules'
 const NATIVE_SCHEDULES = 'schedules'
+const MARKET = 'seal-harness-market'
 
 function NavGlyph({ name, size = 20 }) {
   const paths = {
@@ -16,7 +17,12 @@ function NavGlyph({ name, size = 20 }) {
     home: <><path d="m3 10 9-7 9 7v10H3V10Z" /><path d="M9 20v-7h6v7" /></>,
     decision: <><path d="M12 20V5a3 3 0 0 0-5.8-1A4 4 0 0 0 4 11a4 4 0 0 0 2 7c1 2 4 2 6 1" /><path d="M12 20V5a3 3 0 0 1 5.8-1A4 4 0 0 1 20 11a4 4 0 0 1-2 7c-1 2-4 2-6 1" /><path d="M7 9c2 0 3 1 3 3m-4 3c2 0 3-1 3-3m8-3c-2 0-3 1-3 3m4 3c-2 0-3-1-3-3" /></>,
     spaces: <><path d="M3 7V5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /></>,
+    market: <><path d="M3 10v10h18V10M2 9l2-6h16l2 6a3 3 0 0 1-5 2 3 3 0 0 1-5 0 3 3 0 0 1-5 0 3 3 0 0 1-5-2Z" /><path d="M9 20v-6h6v6" /></>,
     schedules: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+    usage: <><path d="M3 20h18M6 16v-5m6 5V4m6 12V8" /></>,
+    knowledge: <><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0" /></>,
+    desktop: <><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 22h8m-4-5v5" /></>,
+    acp: <><circle cx="5" cy="12" r="3" /><circle cx="18" cy="5" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8 10 7-4M8 14l7 4" /></>,
     experts: <><rect x="4" y="7" width="16" height="13" rx="2" /><path d="M9 7V4h6v3M9 12h.01M15 12h.01M9 16h6" /></>,
     organization: <><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M8 7V3h8v4M8 12h2m4 0h2M8 16h2m4 0h2M11 21v-4h2v4" /></>,
     skills: <><path d="m12 2 9 5v10l-9 5-9-5V7l9-5Z" /><path d="m3 7 9 5 9-5M12 12v10" /></>,
@@ -59,13 +65,31 @@ export function apply(ctx) {
   function Rail({ usePanelInfo }) {
     const activePanelId = usePanelInfo(info => info.activePanelId)
     const { entries, decisionSessionId, decisionActive } = useSyncExternalStore(resources.subscribe, resources.getSnapshot)
+    const market = useSyncExternalStore(
+      listener => ctx.slots.subscribe('settings.plugins.tab', listener),
+      () => ctx.slots.entries('settings.plugins.tab').find(entry => entry.options.id === 'community-market') ?? null,
+    )
     const sessions = useSyncExternalStore(ctx.sessions.list.subscribe, ctx.sessions.list.getSnapshot)
     const mainSessionId = Object.values(sessions.byId).find(session => (session.retainedBy?.mainView ?? 0) > 0)?.id
     const inDecisionConversation = activePanelId === null && decisionActive && mainSessionId === decisionSessionId
-    const homeEntries = entries.filter(entry => entry.id !== DECISION && entry.id !== SCHEDULES)
+    const homeEntries = entries.filter(entry => entry.id !== DECISION && entry.id !== SCHEDULES && !entry.primary)
     const decision = entries.find(entry => entry.id === DECISION)
     const homeActive = (activePanelId === null && !inDecisionConversation) || activePanelId === HOME || activePanelId === 'plugins' || homeEntries.some(entry => entry.id === activePanelId)
     const resourceIds = entries.map(entry => entry.id).join('|')
+    const previousPrimaryIds = useRef(new Set())
+    useEffect(() => {
+      const current = new Set(entries.filter(entry => entry.primary).map(entry => entry.id))
+      if (previousPrimaryIds.current.has(activePanelId) && !current.has(activePanelId)) ctx.layout.selectPanel(null)
+      previousPrimaryIds.current = current
+    }, [activePanelId, resourceIds])
+    // 复用市场公开注册的页面和注入能力，不复制市场实现或另外打开浮层。
+    useEffect(() => {
+      if (!market) return
+      return ctx.slots.inject('main', () => ctx.slots.register({
+        name: 'main', key: MARKET, locale: market.locale, inject: market.inject, store: market.store,
+      }, props => <div className="seal-nav-content" data-seal-nav-panel="market"><market.component {...props} /></div>))
+    }, [market])
+    useEffect(() => { if (activePanelId === MARKET && !market) ctx.layout.selectPanel(null) }, [activePanelId, market])
     useEffect(() => {
       if (activePanelId === null) resources.select(null)
       else if (entries.some(entry => entry.id === activePanelId)) resources.select(activePanelId)
@@ -90,14 +114,16 @@ export function apply(ctx) {
       return () => releases.forEach(release => release?.())
     }, [homeActive, resourceIds])
     useEffect(() => {
-      if (activePanelId !== DECISION && !inDecisionConversation && activePanelId !== SPACES && activePanelId !== NATIVE_SCHEDULES && activePanelId !== 'seal-harness-user') return
+      if (homeActive) return
       return ctx.slots.inject('sidebar.workspaces', () => ctx.slots.register({ name: 'sidebar.workspaces', priority: -100 }, EmptyMenu))
-    }, [activePanelId, inDecisionConversation])
+    }, [homeActive])
     const items = [
       { id: HOME, label: '首页', icon: 'home' },
       ...(decision ? [{ id: DECISION, label: '问问决策', icon: 'decision' }] : []),
       { id: NATIVE_SCHEDULES, label: '自动化任务', icon: 'schedules' },
+      ...entries.filter(entry => entry.primary).map(({ id, label, icon }) => ({ id, label, icon })),
       { id: SPACES, label: '空间', icon: 'spaces' },
+      ...(market ? [{ id: MARKET, label: '插件市场', icon: 'market' }] : []),
     ]
     const activateExisting = (selector, label) => {
       const button = document.querySelector(selector)

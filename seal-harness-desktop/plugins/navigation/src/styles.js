@@ -2,11 +2,17 @@ export const styles = `
 /* The public shell.overlay owns the product rail; Desktop keeps its own sidebar and main slots. */
 #root :has(> [data-shell-overlay]) { box-sizing: border-box; padding-left: 56px; }
 #root :has(> [data-shell-overlay]) > [data-side="sidebar"] { transform: translateX(56px); }
+/* 保留侧栏挂载和用户宽度偏好；主内容跨过其轨道，固定设置面板仍能打开。 */
+#root :has(> [data-shell-overlay]):has(.seal-nav-rail[data-home-active="false"]) > :has([data-slot="sidebar"]) { grid-column: 1; grid-row: 1; width: 0; min-width: 0; overflow: hidden; border: 0; }
+#root :has(> [data-shell-overlay]):has(.seal-nav-rail[data-home-active="false"]) > :has([data-slot="main"]) { grid-column: 1 / 3; }
+#root :has(> [data-shell-overlay]):not([data-desktop-mode]):has(.seal-nav-rail[data-home-active="false"]) > :has([data-slot="main"]) { grid-row: 1; }
+#root :has(> [data-shell-overlay]):has(.seal-nav-rail[data-home-active="false"]) > [data-side="sidebar"] { display: none; }
+#root .dshMarketLauncher { display: none !important; }
 #root [data-slot="sidebar"] button[aria-label="插件"], #root [data-slot="sidebar"] button[aria-label="Plugins"] { display: none !important; }
 #root [data-slot="sidebar"] button[aria-label="自动化任务"], #root [data-slot="sidebar"] button[aria-label="Automation tasks"] { display: none !important; }
 #root:has(.seal-nav-rail[data-home-active="true"]) [data-slot="sidebar"] button[aria-label="插件"], #root:has(.seal-nav-rail[data-home-active="true"]) [data-slot="sidebar"] button[aria-label="Plugins"] { display: flex !important; }
-.seal-nav-rail { position: absolute; z-index: 2; inset: 0 auto 0 0; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 56px; padding: 48px 7px 14px; box-sizing: border-box; border-right: 1px solid var(--dsw-alias-border-l1,#34363b); background: var(--dsw-alias-bg-layer-1,#1c1d20); color: var(--dsw-alias-label-secondary,#a6a8ae); pointer-events: auto; -webkit-app-region: no-drag; }
-.seal-nav-rail button { display: grid; width: 42px; height: 42px; padding: 0; place-items: center; border: 0; border-radius: 12px; background: transparent; color: inherit; cursor: pointer; }
+.seal-nav-rail { position: absolute; z-index: 2; inset: 0 auto 0 0; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 56px; padding: 48px 7px 14px; box-sizing: border-box; overflow-y: auto; scrollbar-width: none; border-right: 1px solid var(--dsw-alias-border-l1,#34363b); background: var(--dsw-alias-bg-layer-1,#1c1d20); color: var(--dsw-alias-label-secondary,#a6a8ae); pointer-events: auto; -webkit-app-region: no-drag; }
+.seal-nav-rail button { display: grid; flex: none; width: 42px; height: 42px; padding: 0; place-items: center; border: 0; border-radius: 12px; background: transparent; color: inherit; cursor: pointer; }
 .seal-nav-rail button:hover { background: var(--dsw-alias-interactive-bg-hover,#34363b); color: var(--dsw-alias-label-primary,#fff); }
 .seal-nav-rail button[aria-current="page"] { background: var(--dsw-alias-interactive-bg-hover,#34363b); color: var(--dsw-alias-label-primary,#fff); }
 .seal-nav-rail__footer { display: flex; width: 100%; flex-direction: column; align-items: center; gap: 8px; margin-top: auto; }
@@ -21,6 +27,7 @@ export const styles = `
 .seal-nav-secondary__empty { margin: 10px 12px; color: var(--dsw-alias-label-secondary,#b2b4ba); font-size: 13px; }
 .seal-nav-content { display: flex; width: 100%; height: 100%; min-width: 0; min-height: 0; flex-direction: column; overflow: hidden; }
 .seal-nav-content > :last-child { min-height: 0; flex: 1; }
+.seal-nav-content[data-seal-nav-panel="market"] { box-sizing: border-box; padding: 24px; }
 .seal-nav-content .resource-page-nav__back { display: none; }
 .seal-nav-compact-tabs, .seal-nav-plugin-tabs { display: none; box-sizing: border-box; align-items: center; gap: 4px; height: 52px; min-height: 52px; padding: 8px 16px; overflow-x: auto; border-bottom: 1px solid var(--dsw-alias-border-l1,#34363b); background: var(--dsw-alias-bg-layer-1,#1c1d20); }
 .seal-nav-compact-tabs button, .seal-nav-plugin-tabs button { flex: none; padding: 7px 11px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary,#b2b4ba); font: inherit; cursor: pointer; }
