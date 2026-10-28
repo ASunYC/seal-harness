@@ -83,18 +83,22 @@ Stable/Beta 均测试配置验证及模式优先级，再运行双变体、产�
 6. **必需测试**：两变体的 `product-config.spec.ts` 验证传递/默认/非法值，`renderer-health.spec.ts` 用虚拟计时验证慢启动、插件失败和耗尽；`electron-runtime.spec.ts` 保留主进程失败链路。产品构建/检查及原 Profile、默认 Host 模式的 Windows GUI 验收须核对 `rendererStatus: healthy`。
 7. **错误与正确实现**：错误：只修改忽略目录的已编译 JS 计时后声称永久修复，或仅因进程存活而判定就绪。正确：产品配置经构建边界验证并进入实际产物，仍由原 Loader 报告和原生挂载共同提交健康证据。
 
-产品发布版本的唯一来源为 `seal-harness-desktop/package.json`。构建入口在忽略目录生成带 `version` 的 Desktop 产品配置；定制构建的原生 Host、标题栏与 electron-builder `extraMetadata.version` 使用这个值。无定制产品配置时 Stable/Beta 仍使用各自 Desktop 包版本。只改变产品包版本即可同步下一次构建的显示与打包版本；不得用 DSH Desktop 社区更新渠道更新 Seal Harness。
+产品发布版本的唯一来源为 `seal-harness-desktop/package.json`。构建入口在忽略目录生成带 `version` 的 Desktop 产品配置；定制构建的原生 Host 与 electron-builder `extraMetadata.version` 使用这个值。Seal Harness 的标题栏及其版本悬浮面板改用 `displayVersion`，由产品构建从选定 Desktop 实际安装的 `@deepseek-ai/dsh/package.json` 自动读取内核版本，不手工维护副本。两变体的配置边界校验该可选版本，兼容、扩展和高级模式共用同一个标题栏组件；未指定时仍显示 Host 的 Desktop 版本。显示版本不改变产品发布版本、Profile 检查点或更新身份；不得用 DSH Desktop 社区更新渠道更新 Seal Harness。
 
 原生远程控制确认弹窗由 Desktop Host 显示，不能通过网页品牌 slot 改写。其文案在 `remote-control-offer.ts` 从自定义 `DESKTOP_PRODUCT.name` 读取产品名；无自定义产品配置时保留上游 DeepSeek Harness 文案。此共享接缝必须同步 Stable/Beta，并分别验证中英文。
 
 ## 当前插件组合
 
-构建顺序由 `seal-harness-desktop/scripts/build.mjs` 的 `productPlugins` 和 `cordis.patch.yml` 对齐。`local-data` 在 `identity` 之前加载，之后装配账号界面、组织架构、能力插件和会话选择。项目、知识库和产品智能体插件不装配；保留 DSH 原生工作区、会话与 Agent 供普通对话和专家使用。删除插件时还需从已装配目录清理旧包，防止旧构建残留进入安装包。
+Seal Harness 在产品 `cordis.patch.yml` 禁用 `ui-message-feedback`、`command-feedback` 和 `session-telemetry-otel`：不提供点赞/点踩、反馈弹窗或 `/feedback` 命令，也不通过该反馈 OTel 通道向上游上传会话日志。保留历史反馈记录，不修改上游子模块。产品 `verify.mjs` 在未传遥测禁用开关的 Profile 组合中核对三项禁用；这不代替独立的官方模型 API Session Log 设置。
+
+构建顺序由 `seal-harness-desktop/scripts/build.mjs` 的 `productPlugins` 和 `cordis.patch.yml` 对齐。`local-data` 在 `identity` 之前加载，之后装配账号界面、组织架构、能力插件和会话选择。项目及旧产品智能体插件不装配；知识库通过新的 WeKnora 管理插件提供，四个工作台插件的接入见 [工作台插件契约](workbench-plugins.md)。保留 DSH 原生工作区、会话与 Agent 供普通对话和专家使用。删除插件时还需从已装配目录清理旧包，防止旧构建残留进入安装包。
 
 `packages/dsh-plugin-ask-jev/` 是可单独打包并通过 `dsh plugin add` 安装的 DSH bundle。它使用公开的 Connection RPC、credentials、tools 和 Client slots，Host 固定 TypeSafe/阿里百炼端点并注册 `ask_jev_decide` 工具。原生 `settings.section` 承载决策模型与凭据设置；Client 在普通 DSH 中保留侧栏表单，在 Seal Harness 中借可选 `sealHarnessNavigation` 将一级入口接到原生会话。结构化决策工具只返回真实模型结果，自然语言解释由普通会话模型承担。产品构建先生成该包，再复制到 Beta 装配目录；安装包必须包含同一包的 Host、Client、patch、许可证。不要让此可复用包依赖 Seal Harness 身份或导航服务。
 此独立包不加入根 Yarn workspaces，也不创建第二份锁文件；其构建复用已安装的 Beta Desktop 工具链。普通 DSH 安装后的 Host 不依赖 Seal Harness 私有服务或额外运行包，Client 仅依赖 DSH 提供的 React 模块。
 
-`@seal-harness/navigation` 在专家/技能/连接器 Client 之前加载，提供 `sealHarnessNavigation` 注册服务。一级窄栏依次显示首页、问问决策、自动化任务、空间；问问决策复用 DSH Session/Workspace 服务打开原生对话，重进时复用该会话，切换普通会话或点击首页则退出决策导航状态。首页侧栏同时显示专家、技能、连接器、插件等功能入口与 DSH 原生工作区及会话列表，不提供概览页或重复的会话菜单。顶部“新会话”按钮进入 DSH 对话，点击一级首页可返回当前对话。资源插件在自身 Client 生命周期内通过导航服务注册，导航插件用公开 `sidebar.panellist` 和 keyed `main` slot 组成入口与页面；问问决策不进入首页资源列表，改由一级 rail 进入。一级“自动化任务”直接选中上游 keyed `main` 的 `schedules` 页面；上游同名侧栏行在产品中隐藏，上游页面、会话提醒工具和任务记录保留。产品 `seal-harness-schedules` 页面当前不作为可见导航入口，已有 SQLite 任务数据与服务不删除。首页不覆盖 `sidebar.workspaces`；决策会话、空间和自动化任务页隐藏工作区列表。插件管理仍复用 DSH 原生 `plugins` 主面板，其侧栏行在首页由产品同 ID 注册覆盖，在其他一级菜单隐藏。产品样式在 Desktop frame 左侧预留窄栏宽度并补偿侧栏拖拽线；兼容/扩展/高级模式、窄窗口和三平台标题栏是回归重点。
+`@seal-harness/navigation` 在专家/技能/连接器 Client 之前加载，提供 `sealHarnessNavigation` 注册服务。一级窄栏依次显示首页、问问决策、自动化任务、Token 统计、知识库、远程桌面、ACP、空间、插件市场；问问决策复用 DSH Session/Workspace 服务打开原生对话，重进时复用该会话，切换普通会话或点击首页则退出决策导航状态。首页侧栏同时显示专家、技能、连接器、插件等功能入口与 DSH 原生工作区及会话列表，不提供概览页或重复的会话菜单。顶部“新会话”按钮进入 DSH 对话，点击一级首页可返回当前对话。资源插件在自身 Client 生命周期内通过导航服务注册，导航插件用公开 `sidebar.panellist` 和 keyed `main` slot 组成入口与页面；问问决策不进入首页资源列表，改由一级 rail 进入。一级“自动化任务”直接选中上游 keyed `main` 的 `schedules` 页面；上游同名侧栏行在产品中隐藏，上游页面、会话提醒工具和任务记录保留。产品 `seal-harness-schedules` 页面当前不作为可见导航入口，已有 SQLite 任务数据与服务不删除。宽侧栏仅首页（含首页资源页）显示，其他一级页面和账号页将该列裁为零宽，主内容跨过侧栏轨道并隐藏左侧拖拽线；保留侧栏挂载，使固定设置面板与账号入口仍能工作，不通过 toggle 改写用户的宽度/收起偏好，右栏轨道保持原样。首页不覆盖 `sidebar.workspaces`，非首页覆盖为空列表。插件管理仍复用 DSH 原生 `plugins` 主面板，其侧栏行在首页由产品同 ID 注册覆盖，在其他一级菜单隐藏。产品样式在 Desktop frame 左侧预留窄栏宽度并补偿侧栏拖拽线；兼容/扩展/高级模式、窄窗口和三平台标题栏是回归重点。
+
+插件市场通过公开 `settings.plugins.tab` 注册表取得 `community-market` 组件及其 `locale/inject/store` 元信息，投影为 `seal-harness-market` keyed `main` 页面；旧 `.dshMarketLauncher` 底部按钮在产品样式中隐藏，市场设置页仍可用。导航订阅注册变化，市场晚加载时补入一级菜单，卸载时释放主页面并在当前选中市场时返回首页；不复制市场源码或更改其安装、来源与凭据逻辑。导航 Client 测试须覆盖菜单顺序、注入复用、首页往返、设置打开与市场卸载；实际浏览器检查非首页内容区不留侧栏空隙。
 
 设置与账号图标放在一级窄栏底部。导航插件通过上游 `settings.launcher` 插槽取得设置打开回调，并触发产品 `sidebar.footer.action` 账号按钮；原按钮行在宽侧栏隐藏但保持挂载，因此设置弹窗、登录分支和用户详情页仍由各自插件管理。
 
@@ -106,7 +110,7 @@ Stable/Beta 均测试配置验证及模式优先级，再运行双变体、产�
 
 连接器页也使用默认收起的“已安装”单行摘要，显示数量、最多八个真实连接器图标及溢出数量；展开后显示原管理卡片或空态。下方为“系统 / 个人”页签；系统目录提供 cc-haha 的全部连接器配置与安装方式，具体契约见 capability-catalog.md。公开目录、被授权和同步状态不出现在连接器页，商店安装仍通过独立插件市场与现有 Host 接口执行。现有本地和商店连接器缺少 `installed` 字段时按已安装处理，凭据继续保存在 DSH Host credentials grant record。创建连接器按钮新建原生会话并填入可编辑模板，不自动发送；Host 的 `create_connector` 工具只保存当前本机账号的无凭据个人配置。未安装的个人连接器不注册工具，也不进入会话选择器、专家能力或流程资源；用户显式安装后，再通过既有管理面板配置凭据与启用。本地 STDIO 包导入仍沿用校验和安装流程。
 
-`identity` 提供本地用户名密码认证与首次管理员创建，密码以独立 salt 和 scrypt 哈希存储。活动会话驻留 Host 内存；用户勾选记住登录时，渲染器持久分区保存随机凭证，SQLite 只保存哈希、所属账号及 30 天有效期。重启经 `resume` 换发凭证，退出、改密和到期后失效。登录页滑块仅为本地界面交互，不充当服务端验证码。企业微信、SSO 和远端密码不属于当前产品。专家、技能状态与包按用户存入 SQLite；知识库绑定和云端目录不属于默认 UI。DSH 原生工作区与会话历史由上游管理，产品不提供项目管理插件。
+`identity` 提供本地用户名密码认证与首次管理员创建，密码以独立 salt 和 scrypt 哈希存储。活动会话驻留 Host 内存；用户勾选记住登录时，渲染器持久分区保存随机凭证，SQLite 只保存哈希、所属账号及 30 天有效期。重启经 `resume` 换发凭证，退出、改密和到期后失效。登录页滑块仅为本地界面交互，不充当服务端验证码。企业微信、SSO 和远端密码不属于当前产品。专家、技能状态与包按用户存入 SQLite；旧专家知识库绑定和云端目录不属于默认 UI，独立知识库页复用当前账号的 WeKnora 授权。DSH 原生工作区与会话历史由上游管理，产品不提供项目管理插件。
 
 `@seal-harness/organization` 是独立的 Host/Client 产品插件，在首页资源侧栏注册“组织架构”。Host 依赖当前本地账号和 `sealHarnessDatabase`，提供公司名称、层级部门、人员资料的 CRUD RPC；Client 展示部门树、搜索、人数、资料和编辑操作。SQLite v6 前向迁移新增组织表，组织资料按账号隔离；部门不能移动到自己或后代下，非空部门不能删除，跨账号部门引用拒绝。人员是目录资料，不是可登录账号；消息、群聊、在线状态与跨设备同步不由此插件提供。测试覆盖旧库升级、Host RPC、权限边界和页面操作。
 
@@ -119,6 +123,16 @@ Seal Harness 不显示上游 DeepSeek Harness 的内测声明。品牌 Client �
 ## 资源页标题与决策导航
 
 资源页标题统一放在顶部导航栏：专家、技能、连接器和应用标题为 20px，内容区不重复展示大标题与介绍；原有搜索、创建、安装和分类操作保留。独立决策插件通过 `ctx.inject(['sealHarnessNavigation'], callback)` 接入晚到的产品导航服务，并释放普通 DSH 的侧栏与主面板注册；不能只在首次 `apply` 时读取一次服务，否则启动顺序变化会丢失决策一级入口。回归须用真实 Cordis 容器先加载决策 Client、后提供导航服务。
+
+## 会话专家选择器
+
+产品新增或变更 Host RPC 时，Client 重新加载不代表正在运行的进程已导入新 Host 模块。公开 Loader 模式下保留 ESM 缓存边界；应在无生成任务且草稿已保留时重启实际产品实例，并验证真实窗口的请求返回200且浮层无错误。隔离Profile冒烟通过只能证明新实例，不能作为旧窗口已更新的证据；不得用客户端假数据、重复路由或吞掉404代替Host接入。
+
+输入栏“专家”打开原位浮层，按“系统 / 个人”分组与搜索，用单选项选择唯一当前专家，另设“不使用专家”清空；不导航专家页，不改输入草稿。当前系统专家未提供种子时显示空态，个人数据来自当前账号的专家列表。
+
+`experts/sessionList({sessionId})` 返回专家列表与 `selectedIds`（零或一项）；`experts/sessionSet({sessionId,name,version?,expectedDigest?,selected})` 在选中时校验不可变版本与摘要，再替换原专家。只移除当前匹配的专家，过期的移除请求不能清掉新专家。未发布多选原型的历史记录读取时仅保留最后选择项，不同时装配多个人设。选择以现有 credentials grant 按账号/会话持久化，保存前核对账号 epoch。原生 preset 首轮后不可切换，因此通过公开 `createScope(agent.ctx, agent)` 注册 required、literal 上下文和绑定技能/MCP，保留原模型、历史与权限。变更从后续消息生效，使用 Agent `runMaintenance`，忙碌时拒绝；装配或保存失败恢复原作用域与引用，Agent 恢复时重建，账号变化/卸载时释放。已被会话引用的专家必须先从会话移除再删除，避免遗留无法恢复的版本引用。
+
+连接器内部 `setSessionExperts` 仅供 Host 服务调用，检查当前账号与连接器可用性，不生成客户端路由。会话记录的 `ids`（手动选择）与 `expertIds`（专家引用）分开保存，工具可见性取并集；切换或移除专家只变更专家引用，不能覆盖手动选择。专家指令与技能正文不经过模板变量插值，不把个人资料注入其他会话。回归须覆盖已发言会话的单专家替换与移除、跨会话/账号、持久恢复、绑定工具与失败回滚，以及构建后的浮层单选、无专家选项与无跳转交互。
 
 ## 定时任务契约
 
@@ -165,6 +179,6 @@ POST `/api/seal-harness-scheduled-tasks/{action}` 使用现有 client-request/se
 
 ## 验证
 
-每次修改产品装配后运行 `corepack yarn seal-harness:build`、`corepack yarn seal-harness:check`，并检查 `scripts/verify-profile.mjs` 的实际插件组合。数据库迁移测试须覆盖原文件保留、重启后从 SQLite 恢复、不同用户隔离。认证测试须覆盖首次创建、错误密码、会话退出与重启、改密。产品包核对 `lib` 与装配目录没有已删除的项目、知识库及产品智能体模块。构建/类型检查不等于真实 UI、模型回复、签名安装或跨平台通过；各自记录实测范围。
+每次修改产品装配后运行 `corepack yarn seal-harness:build`、`corepack yarn seal-harness:check`，并检查 `scripts/verify-profile.mjs` 的实际插件组合。数据库迁移测试须覆盖原文件保留、重启后从 SQLite 恢复、不同用户隔离。认证测试须覆盖首次创建、错误密码、会话退出与重启、改密。产品包核对 `lib` 与装配目录没有已删除的项目及旧产品智能体模块，四个工作台插件按当前 manifest 完整装配。构建/类型检查不等于真实 UI、模型回复、签名安装或跨平台通过；各自记录实测范围。
 
 只提交本任务路径。遵守根 `AGENTS.md` 的版本规则：普通迭代仅递增补丁号；中间/主版本变更先取得用户明确同意。提交、推送和发布分别按授权执行。

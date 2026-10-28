@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 27
-- **Last Active**: 2026-10-24
+- **Total Sessions**: 31
+- **Last Active**: 2026-10-28
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~748 | Active |
+| `journal-1.md` | ~828 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,10 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 31 | 2026-10-28 | 修正专家顺序及旧Host接口404并实测窗口 | - | `main` |
+| 30 | 2026-10-28 | 按确认改为会话唯一当前专家 | - | `main` |
+| 29 | 2026-10-28 | 会话专家支持系统个人分组与动态多选 | - | `main` |
+| 28 | 2026-10-28 | 标题栏自动显示DSH内核版本 | - | `main` |
 | 27 | 2026-10-24 | 提交启动与MCP修复并准备合入main | `a557be7d` | `codex/seal-harness-migration` |
 | 26 | 2026-10-24 | 完成新会话与决策入口的真实界面验收 | - | `codex/seal-harness-migration` |
 | 25 | 2026-10-24 | 修复Electron浏览器MCP导致的会话初始化失败 | - | `codex/seal-harness-migration` |

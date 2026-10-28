@@ -746,3 +746,83 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 28: 标题栏自动显示DSH内核版本
+<!-- trellis-session: v=2 fp=fab28e0e66964c30 -->
+
+**Date**: 2026-10-28
+**Task**: 标题栏自动显示DSH内核版本
+**Branch**: `main`
+
+### Summary
+
+产品构建读取实际安装的DSH版本作为displayVersion，标题栏显示0.2.1-rc.2，发布版本保持0.1.0。两变体各13项回归、全仓类型、202文件镜像、完整产品构建及安装身份检查通过。未重启图形界面，未提交推送；保留工作区其他改动。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Status
+
+[OK] **Completed**
+
+
+## Session 29: 会话专家支持系统个人分组与动态多选
+<!-- trellis-session: v=2 fp=c7654df4e3d78c82 -->
+
+**Date**: 2026-10-28
+**Task**: 会话专家支持系统个人分组与动态多选
+**Branch**: `main`
+
+### Summary
+
+智能助手改专家，原位浮层直接添加/移除，按账号与会话持久化，通过公开scope安装专家上下文和技能/MCP，保留模型和草稿。连接器手动选择与专家引用独立。定向回归、完整构建/产品检查及真实Electron Profile通过。未发送真实模型请求或重启用户窗口，未提交推送。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Status
+
+[OK] **Completed**
+
+
+## Session 30: 按确认改为会话唯一当前专家
+<!-- trellis-session: v=2 fp=289c03640d04634b -->
+
+**Date**: 2026-10-28
+**Task**: 按确认改为会话唯一当前专家
+**Branch**: `main`
+
+### Summary
+
+专家改为单选，可不选；选中新专家替换旧专家，不使用专家清空，从后续消息生效并保留历史草稿模型。单专家scope及构建后DOM共6项测试通过，插件重建装配与真实Electron Profile再次通过。未发送模型消息、未重启用户窗口、未提交推送。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Status
+
+[OK] **Completed**
+
+
+## Session 31: 修正专家顺序及旧Host接口404并实测窗口
+<!-- trellis-session: v=2 fp=78631874ed19d896 -->
+
+**Date**: 2026-10-28
+**Task**: 修正专家顺序及旧Host接口404并实测窗口
+**Branch**: `main`
+
+### Summary
+
+顺序改专家技能连接器，分组间距与技能统一并防止外边距折叠。定位旧Host未加载新RPC；确认无草稿/生成后重启，登录保留。实际专家sessionList返回200无错误，连接器分组间距及顺序实测通过，未发送消息。6项定向回归通过，记录HMR验收边界；未提交推送。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Status
+
+[OK] **Completed**

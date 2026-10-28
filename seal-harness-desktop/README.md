@@ -4,7 +4,7 @@
 
 产品发布版本以本目录 `package.json` 为唯一来源。构建时自动注入桌面原生运行时，并作为安装包版本；标题栏不再显示承载产品的 DSH Desktop Beta 包版本。当前版本为 `0.1.0`。
 
-首次启动会引导创建本地管理员账号；此后使用本地用户名和密码登录。登录状态仅保存在本次运行内，退出或重启后需要重新登录。用户、专家和技能存储在基础 Home 的 `seal-harness.sqlite`，基础 Home 中原有的本地技能与专家文件会在首次登录时复制导入，原文件保留。旧远端账号专属 Home 不会自动归属新本地账号。项目、知识库与产品智能体插件不再装配；普通对话及工作区继续使用 DSH 原生能力。图标仍为当前产品的小海豹。
+首次启动会引导创建本地管理员账号；此后使用本地用户名和密码登录。登录状态仅保存在本次运行内，退出或重启后需要重新登录。用户、专家和技能存储在基础 Home 的 `seal-harness.sqlite`，基础 Home 中原有的本地技能与专家文件会在首次登录时复制导入，原文件保留。旧远端账号专属 Home 不会自动归属新本地账号。项目与旧产品智能体插件不再装配；知识库通过独立的 WeKnora 管理插件接入，普通对话及工作区继续使用 DSH 原生能力。图标仍为当前产品的小海豹。
 
 专家页显示“系统 / 个人”两个页签；系统卡片将在后续版本装配。点击“创建专家”会进入原生会话并填入可编辑提示词，发送后模型可以通过 `create_expert` 工具将个人专家保存到同一 SQLite 数据库；导入专家也进入个人页。保存失败不会显示完成提示。
 
@@ -50,7 +50,7 @@ corepack yarn seal-harness:dev
 - `scripts/` 复用上游安装的构建工具和打包检查，没有第二套依赖或锁文件。
 - `plugins/local-data/` 负责同一个 SQLite 数据库、迁移和事务。`plugins/identity/` 负责本地账号认证；`plugins/experts/`、`plugins/skills/` 共用该库。既有项目表保留为历史数据，不再有产品项目插件读取它。
 - 根 `packages/dsh-plugin-ask-jev/` 是可独立安装的 DSH 决策插件，产品构建装配同一包；支持 TypeSafe Jev 和阿里百炼 `decision-model-preview`，不依赖 Seal Harness 本地身份服务。
-- `plugins/navigation/` 通过公开 Desktop slot 组合“首页、问问决策、空间、定时任务”一级窄栏；问问决策打开独立页面，首页并列专家、技能、连接器、插件等功能入口与 DSH 原生工作区、会话列表。顶部“新会话”按钮进入原生对话。专家、技能、连接器仍独立管理数据和生命周期；插件管理复用 DSH 原生主面板。空间暂为空态。
+- `plugins/navigation/` 通过公开 Desktop slot 组合“首页、问问决策、自动化任务、Token 统计、知识库、远程主机、ACP、空间、插件市场”一级窄栏；问问决策打开独立页面，首页并列专家、技能、连接器、插件等功能入口与 DSH 原生工作区、会话列表。顶部“新会话”按钮进入原生对话。专家、技能、连接器仍独立管理数据和生命周期；插件管理复用 DSH 原生主面板。空间暂为空态。
 - `plugins/scheduled-tasks/` 补齐定时任务内容，支持每天、每周、每隔若干分钟和指定时间一次执行，保存时区、工作区及提示词。每次运行通过公开 Session Controller 新建独立会话，使用当前默认模型与权限策略；可编辑、启停、手动运行、停止和查看最近 100 条记录。任务按本地账号保存在 SQLite。应用运行且已登录时执行；关闭、休眠、退出登录错过的计划不补跑。同一任务不重叠，30 分钟超时请求停止；重启将未确认完成的执行标记中断。删除计划不删除原生会话。
 
 构建仅在忽略目录中装配插件到 `dsh-plugin-desktop-beta/node_modules/seal-harness-desktop/`，资源到 `dsh-plugin-desktop-beta/lib/product-assets/`。安装包通过electron-builder的文件映射包含同一插件。上游源码、图标源文件及Harness子模块不会被构建脚本改写。
@@ -58,3 +58,6 @@ corepack yarn seal-harness:dev
 界面通过公开的sidebar和conversation品牌slot替换。启动身份、原生文案、图标路径及版本请求需要构建配置接缝。详见 [迁移说明](../docs/seal-harness/migration.md)。更新服务未配置，因此后台、手动检查及客户端更新按钮均禁用，不能安装社区DSH产品更新。
 
 第三方包名、DSH Terminal、协议标识和许可证保留其原始名称。今后的业务功能按实际职责增加插件，使用服务、事件、slot和bundle组合，避免深度引用上游源码。
+
+
+工作台新增四个独立插件，具体依赖和使用方式见 [Token 统计](plugins/token-stats/README.md)、[知识库](plugins/knowledge/README.md)、[远程主机](plugins/remote-desktop/README.md) 和 [ACP Runner](plugins/acp/README.md)。四项位于自动化任务之后、空间之前，非首页不保留宽侧栏；插件市场也是一级内容页。Token、Runner 和远程主机配置共用产品 SQLite，知识库数据留在所配置的 WeKnora；远程主机不再读取本机屏幕，连接使用独立原生客户端窗口。
