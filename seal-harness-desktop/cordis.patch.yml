@@ -3,6 +3,13 @@
   disabled: true
 - id: desktop-updates
   disabled: true
+# 产品不提供上游反馈，也不通过反馈遥测向上游发送会话日志。
+- id: ui-message-feedback
+  disabled: true
+- id: command-feedback
+  disabled: true
+- id: session-telemetry-otel
+  disabled: true
 - id: ui-sidebar-browser
   disabled: false
 - id: ui-settings-models

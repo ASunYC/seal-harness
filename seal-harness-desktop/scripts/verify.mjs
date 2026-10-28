@@ -20,8 +20,12 @@ assert.equal(requests, 0)
 
 const home = mkdtempSync(join(tmpdir(), 'seal-harness-product-check-'))
 try {
-  const first = prepareDesktopProfile('1', home)
+  // 不靠进程的遥测禁用开关，验证产品本身关闭反馈及上传通道。
+  const first = prepareDesktopProfile('', home)
   const rows = composeEntries([first.patches])
+  for (const id of ['ui-message-feedback', 'command-feedback', 'session-telemetry-otel']) {
+    assert.equal(rows.find(row => row.id === id)?.disabled, true, `${id} 必须由产品配置禁用`)
+  }
   assert.equal(rows.find(row => row.id === 'seal-harness-brand')?.name, 'seal-harness-desktop')
   assert.equal(rows.find(row => row.id === 'desktop-product-telemetry')?.disabled, true)
   assert.equal(rows.find(row => row.id === 'product-analytics')?.disabled, true)
@@ -47,7 +51,7 @@ try {
   assert.equal(rows.find(row => row.id === 'ui-sidebar-browser')?.disabled, false)
   const profileManifest = join(first.profile.dir, 'package.json')
   const before = readFileSync(profileManifest, 'utf8')
-  const second = prepareDesktopProfile('1', home)
+  const second = prepareDesktopProfile('', home)
   assert.equal(readFileSync(profileManifest, 'utf8'), before)
   assert.equal(composeEntries([second.patches]).filter(row => row.id === 'seal-harness-brand').length, 1)
   assert.equal(JSON.parse(before).dsh.profile.bundles.includes('seal-harness-desktop'), false)
