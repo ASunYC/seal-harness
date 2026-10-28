@@ -1,0 +1,12 @@
+{
+  "name": "@seal-harness/remote-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Seal Harness 多服务器 SSH、RDP、VNC 连接管理",
+  "main": "lib/index.js",
+  "exports": { ".": "./lib/index.js", "./client": "./lib/client.js", "./package.json": "./package.json" },
+  "dsh": { "client": { "platform": "web", "inject": ["@deepseek-ai/dsh-client-ui-renderer", "@deepseek-ai/dsh-client-connection", "@seal-harness/identity"] } },
+  "peerDependencies": { "@deepseek-ai/dsh-client-connection": "0.2.1-rc.2", "@seal-harness/identity": "0.1.0", "@seal-harness/local-data": "0.1.0", "react": "18.3.1", "zod": "4.4.3" }
+}

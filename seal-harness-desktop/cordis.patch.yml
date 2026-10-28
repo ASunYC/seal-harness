@@ -64,6 +64,8 @@
       name: '@seal-harness/token-stats'
     - id: seal-harness-knowledge
       name: '@seal-harness/knowledge'
+    - id: seal-harness-remote-desktop
+      name: '@seal-harness/remote-desktop'
 
 # cc-haha 功能对齐：官方 Host 能力按需装配。这些包已随 Beta Desktop 安装，
 # 但活动 web profile 模板（dsh-base + dsh-web-app）未包含对应行。
