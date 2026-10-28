@@ -1,3 +1,5 @@
+import { pageStyles } from './page-styles.js'
+
 export const styles = `
 /* The public shell.overlay owns the product rail; Desktop keeps its own sidebar and main slots. */
 #root :has(> [data-shell-overlay]) { box-sizing: border-box; padding-left: 56px; }
@@ -58,4 +60,5 @@ export const styles = `
 @media (max-width: 800px) { #root [data-sidebar-collapsed] .seal-nav-plugin-tabs { left: 104px; } }
 #root [data-desktop-mode="advanced"][data-desktop-platform="win32"][data-sidebar-collapsed] .seal-nav-plugin-tabs { top: 32px; }
 #root [data-desktop-mode="advanced"][data-desktop-platform="darwin"][data-sidebar-collapsed] .seal-nav-plugin-tabs { top: 32px; }
+${pageStyles}
 `
