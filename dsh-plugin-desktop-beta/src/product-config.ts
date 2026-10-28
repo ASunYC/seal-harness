@@ -2,6 +2,8 @@
 export interface DesktopProductConfig {
   readonly name: string
   readonly version?: string
+  /** 标题栏可显示内核版本，独立于安装包的发布版本。 */
+  readonly displayVersion?: string
   readonly appId: string
   readonly homeDirectoryName: string
   readonly assetDirectory: string

@@ -12,6 +12,7 @@ export const desktopRequire = createRequire(join(desktop, 'package.json'))
 export const product = {
   ...JSON.parse(readFileSync(join(productRoot, 'product.json'), 'utf8')),
   version: JSON.parse(readFileSync(join(productRoot, 'package.json'), 'utf8')).version,
+  displayVersion: desktopRequire('@deepseek-ai/dsh/package.json').version,
 }
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
 export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop', 'acp']

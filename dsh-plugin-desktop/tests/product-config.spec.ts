@@ -27,8 +27,10 @@ it('validates the build file and rejects unsafe identity and resource paths', ()
   expect(readDesktopProduct(path)).toEqual(product)
   writeFileSync(path, JSON.stringify({ ...product, version: '0.1.0' }))
   expect(readDesktopProduct(path)?.version).toBe('0.1.0')
+  writeFileSync(path, JSON.stringify({ ...product, version: '0.1.0', displayVersion: '0.2.1-rc.2' }))
+  expect(readDesktopProduct(path)).toMatchObject({ version: '0.1.0', displayVersion: '0.2.1-rc.2' })
   for (const invalid of [
-    { name: '' }, { version: 'invalid' }, { appId: 'invalid/id' }, { homeDirectoryName: '..' },
+    { name: '' }, { version: 'invalid' }, { displayVersion: 'invalid' }, { displayVersion: 123 }, { appId: 'invalid/id' }, { homeDirectoryName: '..' },
     { homeDirectoryName: '.data/other' }, { assetDirectory: 'https://example.com/' },
     { bundle: '../another-package' }, { updatesEnabled: 'false' }, { setupWizardEnabled: 'false' }, { isolatedHost: 'false' },
     ...[0, -1, 1.5, '90000', 2_147_483_648].map(rendererBootTimeoutMs => ({ rendererBootTimeoutMs })),

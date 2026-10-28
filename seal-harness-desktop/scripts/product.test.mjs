@@ -47,6 +47,7 @@ test('产品安装身份和品牌资源来源一致，分发配置不连接社�
   assert.equal(configuration.productName, product.name)
   assert.equal(product.version, JSON.parse(readFileSync(join(productRoot, 'package.json'), 'utf8')).version)
   assert.equal(configuration.extraMetadata.version, product.version)
+  assert.equal(product.displayVersion, desktopRequire('@deepseek-ai/dsh/package.json').version)
   assert.deepEqual(configuration.protocols, [{ name: product.name, schemes: ['seal-harness'] }])
   assert.equal(configuration.nsis.shortcutName, product.name)
   assert.equal(configuration.extraMetadata.desktopName, `${product.appId}.desktop`)
