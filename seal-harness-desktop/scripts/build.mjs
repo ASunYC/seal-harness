@@ -14,7 +14,7 @@ export const product = {
   version: JSON.parse(readFileSync(join(productRoot, 'package.json'), 'utf8')).version,
 }
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
-export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop']
+export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop', 'acp']
 
 export function linkProductDependencies() {
   const link = join(productRoot, 'node_modules')
@@ -55,7 +55,7 @@ export async function buildProductPlugins() {
     const common = { config: false, cwd, outDir: join(cwd, 'lib'), clean: false, dts: false, sourcemap: true }
     if (folder === 'weknora') cpSync(join(cwd, 'upstream'), join(cwd, 'lib/upstream'), { recursive: true })
     await build({ ...common, entry: { index: 'src/index.js', ...(folder === 'experts' ? { runtime: 'src/runtime.js' } : {}) }, format: 'esm', platform: 'node', fixedExtension: false,
-      deps: { neverBundle: [/^@deepseek-ai\//, /^@seal-harness\//, 'zod', 'yaml', 'adm-zip', 'unzipper', 'pdfjs-dist', '@silurus/ooxml', 'ssf', 'ssh2'] } })
+      deps: { neverBundle: [/^@deepseek-ai\//, /^@seal-harness\//, '@agentclientprotocol/sdk', 'zod', 'yaml', 'adm-zip', 'unzipper', 'pdfjs-dist', '@silurus/ooxml', 'ssf', 'ssh2', 'koffi'] } })
     if (['connectors', 'skills'].includes(folder)) {
       const notices = join(cwd, 'lib/third-party/cc-haha')
       mkdirSync(notices, { recursive: true })
