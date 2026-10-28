@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { ExpertError, MANIFEST, decodeZip, draftFiles, encodeZip, manifestSchema, nameSchema, portablePackage, readDirectory, validatePackage, versionSchema } from './package.js'
 import { capabilityOptions, materializeSkills, materializeConnectors, resolveCapabilities } from './capabilities.js'
 import { changeVisibility, downloadExpert, uploadExpert } from './remote.js'
+import { createSessionExperts } from './session.js'
 
 const selectedSchema = z.object({ name: nameSchema, version: versionSchema.optional() })
 const mutationSchema = selectedSchema.extend({ expectedDigest: z.string().regex(/^[a-f0-9]{64}$/) })
@@ -151,8 +152,11 @@ export async function createModule(ctx, { home, backend }) {
     }
     return { items, runtime: !!service('agentPresets'), note: migrationError ?? '专家使用独立 DSH Agent 模式，按绑定能力提供技能与连接器。' }
   }
+  const sessionExperts = createSessionExperts(ctx, { home, owner, load, list })
   const actions = {
     list,
+    sessionList: input => sessionExperts.sessionList(input),
+    sessionSet: input => sessionExperts.sessionSet(input),
     capabilities: () => capabilityOptions(ctx),
     models: async () => {
       const llm = service('llm')
@@ -214,6 +218,7 @@ export async function createModule(ctx, { home, backend }) {
     },
     remove: async input => {
       const loaded = await checked(input)
+      await sessionExperts.assertRemovable(loaded.name)
       await unmount(loaded.name)
       storage.transaction(db => {
         db.prepare('DELETE FROM experts WHERE user_id = ? AND name = ?').run(owner(), loaded.name)
@@ -315,6 +320,7 @@ export async function createModule(ctx, { home, backend }) {
     disposed = true
     unsubscribe?.()
     await queue
+    await sessionExperts.dispose()
     const results = await Promise.allSettled([...mounted.keys()].map(unmount))
     if (results.some(result => result.status === 'rejected')) throw new ExpertError('部分专家预设无法卸载，请查看插件日志。')
   } }

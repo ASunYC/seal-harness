@@ -58,7 +58,7 @@ export async function materializeSkills(pkg, directory) {
   return definitions
 }
 
-export async function materializeConnectors(pkg, directory, ctx, accountId) {
+export async function materializeConnectors(pkg, directory, ctx, accountId, onConnector) {
   const { mkdir, readFile, writeFile, chmod } = await import('node:fs/promises')
   const { dirname, join } = await import('node:path')
   const { safePath } = await import('./package.js')
@@ -73,6 +73,7 @@ export async function materializeConnectors(pkg, directory, ctx, accountId) {
     if (service) {
       const item = await service.call('ensurePackage', { sourceId: dependency.sourceId, version: dependency.version, descriptor, accountId, files: [...pkg.files].filter(([path]) => path.startsWith(prefix)).map(([path, bytes]) => ({ path: path.slice(prefix.length), bytes })) })
       if (item.status !== 'active') throw new ExpertError(`请在连接器页完成“${item.name}”的配置：${item.issue ?? '连接尚未就绪'}`)
+      onConnector?.(item.id)
       continue
     }
 

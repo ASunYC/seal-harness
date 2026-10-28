@@ -4,7 +4,6 @@ import {
   Button,
   MenuItemButton,
   Modal,
-  IconAgentPresetOutlineRegular,
   IconChevronDownOutlineRegular,
   IconCordisPluginOutlineRegular,
   IconSkillOutlineRegular,
@@ -14,18 +13,10 @@ import { createPanelSelector, createResourceActions } from './actions.js'
 import { styles } from './styles.js'
 import { capabilityApi } from '../../capability-shared/src/client.jsx'
 import { composerPopoverWidth, connectorPopoverPosition } from './position.js'
+import { connectorDirectory, directoryGroups, sessionSkillDirectory } from '../../capability-shared/src/directory.js'
+import { ExpertSelector } from './expert-selector.jsx'
 
 export const inject = ['slots', 'layout', 'connection', 'remote', 'remote.skills', 'workspaces', 'sealHarnessNavigation']
-
-const controls = [
-  { id: 'skill', label: '技能', ariaLabel: '选择技能', Icon: IconSkillOutlineRegular },
-  { id: 'connector', label: '连接器', ariaLabel: '选择连接器', Icon: IconCordisPluginOutlineRegular },
-  { id: 'expert', label: '智能助手', ariaLabel: '选择智能助手', Icon: IconAgentPresetOutlineRegular },
-]
-
-function skillSource(skill, managedByName) {
-  return managedByName.get(skill.name)?.origin?.kind === 'store' ? 'platform' : 'local'
-}
 
 function SkillSelector({ api, inputActions, remoteSkills, selectPanel, sessionId }) {
   const rootRef = useRef(null)
@@ -47,10 +38,12 @@ function SkillSelector({ api, inputActions, remoteSkills, selectPanel, sessionId
     Promise.all([
       remoteSkills.list({ sessionId }, controller.signal),
       api('skills/list', {}, controller.signal).catch(() => ({ skills: [] })),
-    ]).then(([catalog, managed]) => {
+      api('skills/sessionSources', { sessionId }, controller.signal),
+    ]).then(([catalog, managed, sources]) => {
       if (!catalog.ok) throw new Error(catalog.error?.message ?? '技能目录加载失败')
       const managedByName = new Map((managed.skills ?? []).filter(skill => skill.enabled && skill.active).map(skill => [skill.name, skill]))
-      setItems(catalog.value.skills.map(skill => ({ ...skill, source: skillSource(skill, managedByName) })))
+      const byKey = new Map(sources.items.map(skill => [`${skill.name}\0${skill.path ?? ''}`, skill]))
+      setItems(catalog.value.skills.map(skill => ({ ...skill, directory: sessionSkillDirectory({ ...skill, source: byKey.get(`${skill.name}\0${skill.path ?? ''}`)?.source ?? skill.source }, managedByName) })))
     }).catch(cause => {
       if (!controller.signal.aborted) setError(cause?.message ?? '技能目录加载失败，请重试。')
     }).finally(() => {
@@ -104,10 +97,7 @@ function SkillSelector({ api, inputActions, remoteSkills, selectPanel, sessionId
 
   const needle = query.trim().toLocaleLowerCase()
   const visible = items.filter(skill => `${skill.name} ${skill.description ?? ''} ${skill.whenToUse ?? ''}`.toLocaleLowerCase().includes(needle))
-  const groups = [
-    { id: 'platform', title: '平台 Skill', items: visible.filter(skill => skill.source === 'platform') },
-    { id: 'local', title: '本地 Skill', items: visible.filter(skill => skill.source === 'local') },
-  ]
+  const groups = directoryGroups.map(group => ({ ...group, items: visible.filter(skill => skill.directory === group.id) }))
   const choose = skill => {
     if (actions.skill(skill.name)) setOpen(false)
   }
@@ -152,6 +142,7 @@ function SkillSelector({ api, inputActions, remoteSkills, selectPanel, sessionId
             className="seal-harness-session-skill-row"
             data-skill-candidate
             data-skill-name={skill.name}
+            data-skill-directory={group.id}
             onClick={() => choose(skill)}
           >
             <IconSkillOutlineRegular size={17} aria-hidden="true" />
@@ -162,7 +153,7 @@ function SkillSelector({ api, inputActions, remoteSkills, selectPanel, sessionId
             <span className="seal-harness-session-skill-add" aria-hidden="true">＋</span>
           </button>)}
         </React.Fragment>)}
-        {!loading && !error && !visible.length ? <div className="seal-harness-session-skill-state">{needle ? '没有找到匹配的 Skill。' : '你还没有安装任何可运行的技能。去技能页安装后即可在会话中选用。'}</div> : null}
+        {!loading && !error && !visible.length ? <div className="seal-harness-session-skill-state">{needle ? '没有找到匹配的技能。' : '你还没有安装任何可运行的技能。去技能页安装后即可在会话中选用。'}</div> : null}
       </div>
       <div className="seal-harness-session-skill-divider" />
       <button type="button" className="seal-harness-session-skill-manage" onClick={() => { setOpen(false); selectPanel('seal-harness-skills') }}>打开技能页</button>
@@ -237,6 +228,7 @@ function ConnectorSelector({ api, selectPanel, sessionId }) {
 
   const selected = new Set(snapshot.selectedIds)
   const items = snapshot.items.filter(item => `${item.name} ${item.summary ?? ''}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()))
+  const groups = directoryGroups.map(group => ({ ...group, items: items.filter(item => connectorDirectory(item) === group.id) }))
   const toggle = async item => {
     setBusyId(item.id)
     setError('')
@@ -279,30 +271,32 @@ function ConnectorSelector({ api, selectPanel, sessionId }) {
         value={query}
         onChange={event => setQuery(event.target.value)}
       />
-      <div className="seal-harness-session-connector-section-title">连接器</div>
       <div className="seal-harness-session-connector-list">
         {loading ? <div className="seal-harness-session-connector-empty">正在加载连接器…</div> : null}
+        {!loading && groups.map(group => <section key={group.id} data-connector-directory={group.id} aria-label={group.title}>
+          <div className="seal-harness-session-connector-section-title">{group.title}</div>
+          {group.items.map(item => {
+            const checked = selected.has(item.id)
+            const status = item.status === 'active' ? '已就绪' : item.status === 'error' ? '连接失败' : item.status === 'unconfigured' ? '待配置' : '待初始化'
+            return <label className="seal-harness-session-connector-row" key={item.id}>
+              <IconCordisPluginOutlineRegular size={17} />
+              <span className="seal-harness-session-connector-copy">
+                <strong>{item.name}</strong>
+                {item.summary ? <span>{item.summary}</span> : null}
+              </span>
+              <span className="seal-harness-session-connector-meta">{status} · {item.tools?.length ?? 0} 个工具</span>
+              <input
+                type="checkbox"
+                role="switch"
+                aria-label={`在当前会话使用 ${item.name}`}
+                checked={checked}
+                disabled={busyId === item.id}
+                onChange={() => void toggle(item)}
+              />
+            </label>
+          })}
+        </section>)}
         {!loading && !items.length ? <div className="seal-harness-session-connector-empty">{query ? '没有匹配的连接器' : '还没有安装连接器'}</div> : null}
-        {!loading && items.map(item => {
-          const checked = selected.has(item.id)
-          const status = item.status === 'active' ? '已就绪' : item.status === 'error' ? '连接失败' : item.status === 'unconfigured' ? '待配置' : '待初始化'
-          return <label className="seal-harness-session-connector-row" key={item.id}>
-            <IconCordisPluginOutlineRegular size={17} />
-            <span className="seal-harness-session-connector-copy">
-              <strong>{item.name}</strong>
-              {item.summary ? <span>{item.summary}</span> : null}
-            </span>
-            <span className="seal-harness-session-connector-meta">{status} · {item.tools?.length ?? 0} 个工具</span>
-            <input
-              type="checkbox"
-              role="switch"
-              aria-label={`在当前会话使用 ${item.name}`}
-              checked={checked}
-              disabled={busyId === item.id}
-              onChange={() => void toggle(item)}
-            />
-          </label>
-        })}
       </div>
       {error ? <div className="seal-harness-session-connector-error" role="alert">{error}</div> : null}
       <button type="button" className="seal-harness-session-connector-manage" onClick={() => { setOpen(false); selectPanel('seal-harness-connectors') }}>管理连接器</button>
@@ -311,27 +305,10 @@ function ConnectorSelector({ api, selectPanel, sessionId }) {
 }
 
 function SelectorGroup({ api, inputActions, remoteSkills, selectPanel, sessionId }) {
-  const actions = useMemo(() => createResourceActions({ inputActions, selectPanel }), [inputActions, selectPanel])
   return <div className="seal-harness-session-context-selectors" aria-label="会话资源选择器">
-    {controls.map(({ id, label, ariaLabel, Icon }) => id === 'skill'
-      ? <SkillSelector key={id} api={api} inputActions={inputActions} remoteSkills={remoteSkills} selectPanel={selectPanel} sessionId={sessionId} />
-      : id === 'connector'
-        ? <ConnectorSelector key={id} api={api} selectPanel={selectPanel} sessionId={sessionId} />
-      : <Button
-      key={id}
-      type="button"
-      variant="toolbar"
-      size="sm"
-      className="seal-harness-session-context-selector-trigger"
-      aria-label={ariaLabel}
-      aria-haspopup="dialog"
-      title={ariaLabel}
-      icon={<Icon size={15} />}
-      onClick={() => actions[id]()}
-    >
-      <span>{label}</span>
-      <IconChevronDownOutlineRegular size={13} aria-hidden="true" />
-    </Button>)}
+    <ExpertSelector api={api} sessionId={sessionId} />
+    <SkillSelector api={api} inputActions={inputActions} remoteSkills={remoteSkills} selectPanel={selectPanel} sessionId={sessionId} />
+    <ConnectorSelector api={api} selectPanel={selectPanel} sessionId={sessionId} />
   </div>
 }
 

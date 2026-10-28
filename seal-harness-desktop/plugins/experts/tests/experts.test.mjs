@@ -29,7 +29,9 @@ async function databaseContext(t, base = {}) {
     .run(id, 'expert-user', 'Expert User', Buffer.alloc(16), Buffer.alloc(64), 'admin', 'active', now, now)
   t.after(async () => { storage.close(); await rm(dbHome, { recursive: true, force: true }) })
   const identity = { getSession: () => ({ accountId: id, subject: id, epoch: 1, accessToken: 'local-test-token' }), subscribe: () => () => {} }
-  return { get: name => name === 'sealHarnessDatabase' ? storage : name === 'sealHarnessIdentity' ? identity : base.get?.(name), sealHarnessDatabase: storage, sealHarnessIdentity: identity }
+  const records = new Map()
+  const credentials = { readRecord: async key => records.get(key), modifyRecord: async (key, update) => { const value = await update(records.get(key)); records.set(key, value); return value } }
+  return { get: name => name === 'sealHarnessDatabase' ? storage : name === 'sealHarnessIdentity' ? identity : name === 'credentials' ? credentials : base.get?.(name), sealHarnessDatabase: storage, sealHarnessIdentity: identity }
 }
 
 test('Stratex manifest and agent documents round-trip without changing content or credentials', () => {

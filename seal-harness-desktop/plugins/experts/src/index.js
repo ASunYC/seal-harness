@@ -4,7 +4,7 @@ import { registerExpertCreationTools } from './create-tool.js'
 
 export { Config } from '../../capability-shared/src/host.js'
 export const name = 'seal-harness-experts'
-export const inject = ['connection', 'tools', 'sealHarnessIdentity', 'sealHarnessServices', 'sealHarnessDatabase']
+export const inject = ['connection', 'tools', 'credentials', 'systemPrompt', 'sealHarnessIdentity', 'sealHarnessServices', 'sealHarnessDatabase']
 
 export async function apply(ctx) {
   await mountCapability(ctx, 'experts', createModule)

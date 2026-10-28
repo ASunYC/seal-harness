@@ -63,6 +63,7 @@ test('构建后的客户端注册会话资源入口并复用现有动作', async
   const resources = []
   const rpcCalls = []
   let selectedIds = []
+  let expertIds = [], rejectExpert = false
   plugin.apply({
     effect(callback) { disposers.push(callback()) },
     slots: {
@@ -79,16 +80,33 @@ test('构建后的客户端注册会话资源入口并复用现有动作', async
       return { ok: true, value: { skills: [
         { name: 'codegraph-explore', description: '按符号和调用链理解当前工程', path: 'C:/Users/Lenovo/.seal-harness/capabilities/skills/packages/a/SKILL.md', modelInvocable: true },
         { name: 'local-review', description: '本地代码审查流程', path: 'C:/repo/.agents/skills/local-review/SKILL.md', modelInvocable: true },
+        { name: 'native-diagnostic', description: '内置诊断', modelInvocable: true },
       ] } }
     } } },
     connection: { rpc: { async call(channel, endpoint, payload) {
       rpcCalls.push({ channel, endpoint, payload })
+      if (endpoint.includes('/experts/session')) {
+        if (endpoint.endsWith('/sessionSet')) {
+          if (rejectExpert) return { ok: false, error: { message: '请等待当前回复完成后再调整专家。' } }
+          expertIds = payload.selected ? [payload.name] : expertIds.filter(name => name !== payload.name)
+        }
+        return { ok: true, value: { selectedIds: expertIds, items: [
+          { name: 'writer', displayName: '写作专家', description: '整理文稿', version: '1.0.0', digest: 'a'.repeat(64) },
+          { name: 'reader', displayName: '阅读专家', description: '分析资料', version: '1.0.0', digest: 'b'.repeat(64) },
+        ] } }
+      }
+      if (endpoint.endsWith('/skills/sessionSources')) return { ok: true, value: { items: [
+        { name: 'native-diagnostic', source: 'bundled' },
+        { name: 'codegraph-explore', path: 'C:/Users/Lenovo/.seal-harness/capabilities/skills/packages/a/SKILL.md', source: 'custom' },
+        { name: 'local-review', path: 'C:/repo/.agents/skills/local-review/SKILL.md', source: 'project-agents' },
+      ] } }
       if (endpoint.endsWith('/skills/list')) return { ok: true, value: { skills: [
         { id: 'skill-a', name: 'codegraph-explore', description: '按符号和调用链理解当前工程', enabled: true, active: true, origin: { kind: 'store' } },
       ] } }
       const item = { id: 'codegraph-mcp', name: 'CodeGraph MCP', summary: '本地代码知识图谱 MCP，用于按符号、调用链和影响范围理解工程。', status: 'active', enabled: true, revision: 2, tools: [{ name: 'explore' }] }
+      const system = { id: 'system-docs', name: '系统文档', catalogId: 'system-docs', status: 'active', enabled: true, revision: 1, tools: [] }
       if (endpoint.endsWith('/sessionSet')) selectedIds = payload.selected ? [payload.id] : []
-      return { ok: true, value: { items: [item], selectedIds } }
+      return { ok: true, value: { items: [item, system], selectedIds } }
     } } },
     workspaces: { list: { getSnapshot: () => ({ archivedSessionIds: ['session-a'] }) } },
   })
@@ -132,17 +150,20 @@ test('构建后的客户端注册会话资源入口并复用现有动作', async
 
   await act(async () => root.render(React.createElement(registered[0].component, { inputActions, sessionId: 'session-a' })))
   const labels = [...document.querySelectorAll('button')].map(button => button.textContent)
-  assert.deepEqual(labels, ['skill-icon技能chevron-icon', 'connector-icon连接器chevron-icon', 'assistant-icon智能助手chevron-icon'])
+  assert.deepEqual(labels, ['assistant-icon专家chevron-icon', 'skill-icon技能chevron-icon', 'connector-icon连接器chevron-icon'])
   assert.equal(document.querySelector('button[aria-label="会话资源"]'), null)
   await act(async () => document.querySelector('button[aria-label="选择技能"]').click())
   const skillDialog = document.querySelector('[role="dialog"][aria-label="技能选择器"]')
   assert(skillDialog)
   assert.equal(skillDialog.parentElement, document.body)
-  assert.match(skillDialog.textContent, /平台 Skill/)
-  assert.match(skillDialog.textContent, /本地 Skill/)
+  assert.deepEqual([...skillDialog.querySelectorAll('.seal-harness-session-skill-group')].map(item => item.textContent), ['系统', '个人'])
+  assert.doesNotMatch(skillDialog.textContent, /平台 Skill|本地 Skill/)
+  assert.equal(skillDialog.querySelector('[data-skill-name="native-diagnostic"]').dataset.skillDirectory, 'system')
+  assert.equal(skillDialog.querySelector('[data-skill-name="codegraph-explore"]').dataset.skillDirectory, 'system')
+  assert.equal(skillDialog.querySelector('[data-skill-name="local-review"]').dataset.skillDirectory, 'personal')
   assert.match(skillDialog.textContent, /codegraph-explore/)
   assert.match(skillDialog.textContent, /local-review/)
-  assert.equal(skillDialog.querySelectorAll('[data-skill-candidate]').length, 2)
+  assert.equal(skillDialog.querySelectorAll('[data-skill-candidate]').length, 3)
   await act(async () => skillDialog.querySelector('[data-skill-name="codegraph-explore"]').click())
   await act(async () => document.querySelector('button[aria-label="选择技能"]').click())
   await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === '打开技能页').click())
@@ -151,17 +172,60 @@ test('构建后的客户端注册会话资源入口并复用现有动作', async
   assert(connectorDialog)
   assert.equal(connectorDialog.parentElement, document.body)
   assert.equal(dom.window.getComputedStyle(connectorDialog).position, 'fixed')
+  assert.deepEqual([...connectorDialog.querySelectorAll('.seal-harness-session-connector-section-title')].map(item => item.textContent), ['系统', '个人'])
+  const skillGroupStyle = dom.window.getComputedStyle(skillDialog.querySelector('.seal-harness-session-skill-group'))
+  const connectorGroupStyle = dom.window.getComputedStyle(connectorDialog.querySelector('.seal-harness-session-connector-section-title'))
+  for (const property of ['marginTop', 'marginBottom', 'marginLeft', 'fontSize', 'fontWeight', 'letterSpacing']) {
+    assert.equal(connectorGroupStyle[property], skillGroupStyle[property], `连接器分组 ${property} 与技能保持一致`)
+  }
+  assert.equal(dom.window.getComputedStyle(connectorDialog.querySelector('.seal-harness-session-connector-list')).display, 'flex')
+  assert.equal(dom.window.getComputedStyle(connectorDialog.querySelector('section')).display, 'flow-root', '阻止分组标题的上下外边距折叠')
+  assert.match(connectorDialog.querySelector('[data-connector-directory="system"]').textContent, /系统文档/)
+  assert.doesNotMatch(connectorDialog.querySelector('[data-connector-directory="system"]').textContent, /CodeGraph MCP/)
+  assert.match(connectorDialog.querySelector('[data-connector-directory="personal"]').textContent, /CodeGraph MCP/)
   assert.match(document.querySelector('[role="dialog"]').textContent, /CodeGraph MCP/)
   assert.deepEqual(panels, ['seal-harness-home'], '打开连接器选择器不得额外跳转管理页')
   await act(async () => document.querySelector('input[aria-label="在当前会话使用 CodeGraph MCP"]').click())
   assert.deepEqual(selectedIds, ['codegraph-mcp'])
   assert.match(document.querySelector('button[aria-label="选择连接器"]').textContent, /1/)
   await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === '管理连接器').click())
-  await act(async () => document.querySelector('button[aria-label="选择智能助手"]').click())
+  await act(async () => document.querySelector('button[aria-label="选择专家"]').click())
+  let expertDialog = document.querySelector('[role="dialog"][aria-label="专家选择器"]')
+  assert(expertDialog)
+  assert.equal(expertDialog.parentElement, document.body)
+  assert.match(expertDialog.querySelector('[data-expert-directory="system"]').textContent, /暂无系统专家/)
+  assert.match(expertDialog.querySelector('[data-expert-directory="personal"]').textContent, /写作专家/)
+  assert.equal(expertDialog.querySelector('[aria-label="不使用专家"]').checked, true)
+  const { Simulate } = require('react-dom/test-utils')
+  await act(async () => Simulate.change(expertDialog.querySelector('[aria-label="搜索专家"]'), { target: { value: '阅读' } }))
+  assert.equal(expertDialog.querySelector('[aria-label="在当前会话使用 写作专家"]'), null)
+  assert(expertDialog.querySelector('[aria-label="在当前会话使用 阅读专家"]'))
+  await act(async () => Simulate.change(expertDialog.querySelector('[aria-label="搜索专家"]'), { target: { value: '' } }))
+  await act(async () => expertDialog.querySelector('[aria-label="在当前会话使用 写作专家"]').click())
+  await act(async () => expertDialog.querySelector('[aria-label="在当前会话使用 阅读专家"]').click())
+  assert.deepEqual(expertIds, ['reader'])
+  assert.equal(expertDialog.querySelector('[aria-label="在当前会话使用 写作专家"]').checked, false)
+  assert.equal(expertDialog.querySelectorAll('input[type="radio"]:checked').length, 1)
+  assert.match(document.querySelector('[aria-label="选择专家"]').title, /阅读专家/)
+  await act(async () => document.querySelector('[aria-label="选择专家"]').click())
+  await act(async () => document.querySelector('[aria-label="选择专家"]').click())
+  expertDialog = document.querySelector('[aria-label="专家选择器"]')
+  assert.equal(expertDialog.querySelector('[aria-label="在当前会话使用 阅读专家"]').checked, true)
+  await act(async () => expertDialog.querySelector('[aria-label="不使用专家"]').click())
+  assert.deepEqual(expertIds, [])
+  assert.equal(expertDialog.querySelector('[aria-label="不使用专家"]').checked, true)
+  await act(async () => expertDialog.querySelector('[aria-label="在当前会话使用 阅读专家"]').click())
+  assert.deepEqual(expertIds, ['reader'])
+  rejectExpert = true
+  await act(async () => expertDialog.querySelector('[aria-label="在当前会话使用 写作专家"]').click())
+  assert.match(expertDialog.querySelector('[role="alert"]').textContent, /等待当前回复/)
+  assert.deepEqual(expertIds, ['reader'])
+  await act(async () => document.querySelector('[aria-label="选择专家"]').click())
 
   assert.deepEqual(inserted, ['/codegraph-explore '])
-  assert.deepEqual(panels, ['seal-harness-home', 'seal-harness-home', 'seal-harness-home'])
-  assert.deepEqual(resources, ['skills', 'connectors', 'experts'])
+  assert.deepEqual(panels, ['seal-harness-home', 'seal-harness-home'])
+  assert.deepEqual(resources, ['skills', 'connectors'])
+  assert(rpcCalls.some(call => call.endpoint.endsWith('/experts/sessionSet') && call.payload.sessionId === 'session-a' && call.payload.expectedDigest === 'a'.repeat(64)))
   assert(rpcCalls.some(call => call.endpoint.endsWith('/sessionList') && call.payload.sessionId === 'session-a'))
   assert(rpcCalls.some(call => call.endpoint.endsWith('/sessionSet') && call.payload.selected === true))
 

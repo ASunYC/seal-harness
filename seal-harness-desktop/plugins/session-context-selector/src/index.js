@@ -4,9 +4,10 @@ import { z } from 'zod'
 import { clientRequestSchema } from '@deepseek-ai/dsh-client-connection'
 import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 import { createSessionDeletion } from './deletion.js'
+import { registerSkillSources } from './skill-sources.js'
 
 export const Config = z.object({}).default({})
-export const inject = ['connection', 'sessionPersistence', 'workspaceRegistry']
+export const inject = ['connection', 'sessionPersistence', 'workspaceRegistry', 'sealHarnessIdentity', 'agents', 'agentPresets', 'workingDirectory', 'sessionQuery', 'skills']
 
 const endpoint = 'seal-harness-capabilities/sessions/delete'
 
@@ -17,6 +18,7 @@ function failure(error) {
 }
 
 export function apply(ctx) {
+  registerSkillSources(ctx)
   const home = resolveDshHome(process.env.DSH_HOME || join(homedir(), '.seal-harness'))
   const deletion = createSessionDeletion({
     home,

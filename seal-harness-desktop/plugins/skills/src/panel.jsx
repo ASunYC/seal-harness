@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { skillDirectory } from '../../capability-shared/src/directory.js'
 import { Icon } from '../../capability-shared/src/icons.jsx'
 import { downloadZip, readZip } from '../../capability-shared/src/files.js'
 import { styles as storeStyles } from '../../store/src/styles.js'
@@ -47,7 +48,7 @@ export function SkillsPanel({ api, onBack, startSkillCreation }) {
   const matches = item => `${item.name} ${item.description}`.toLowerCase().includes(search.toLowerCase())
   const installed = snapshot.skills.filter(item => item.installed !== false && matches(item))
   const installedIcons = installed.map(item => ({ key: item.id, label: item.name, icon: <Icon name="skill-folder" size={18} /> }))
-  const personal = snapshot.skills.filter(item => !['store', 'system'].includes(item.origin?.kind) && matches(item))
+  const personal = snapshot.skills.filter(item => skillDirectory(item) === 'personal' && matches(item))
   const feedback = <>{error && <div role="alert" className="state-banner is-error"><strong>操作未完成</strong><span>{error}</span></div>}{notice && <p role="status" className="state-banner">{notice}</p>}</>
   const row = (item, context) => <article className="local-skill-row" key={item.id}>
     <div className="local-skill-row__main"><span className="local-skill-row__icon" aria-hidden="true"><Icon name="folder" size={17} /></span><button className="local-skill-row__copy" onClick={() => setWorkbench({ id: item.id })}><strong>{item.name}</strong><small>{item.description || '未提供描述'}</small></button></div>

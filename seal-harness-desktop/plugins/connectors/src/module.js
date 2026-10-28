@@ -27,6 +27,7 @@ const sessionSelectionSchema = z.strictObject({
     accountId: z.string().min(1).max(512),
     sessionId: z.string().min(1).max(256),
     ids: z.array(idSchema).max(8).refine(ids => new Set(ids).size === ids.length),
+    expertIds: z.array(idSchema).max(8).default([]),
   })).max(1_000).refine(rows => new Set(rows.map(row => `${row.accountId}\0${row.sessionId}`)).size === rows.length),
 })
 const emptySessionSelections = () => ({ version: 1, rows: [] })
@@ -90,7 +91,8 @@ export async function createModule(ctx, { home, backend }) {
   }
 
   function selectedIds(account, sessionId) {
-    return sessionSelections.rows.find(row => row.accountId === account && row.sessionId === sessionId)?.ids ?? []
+    const row = sessionSelections.rows.find(row => row.accountId === account && row.sessionId === sessionId)
+    return [...new Set([...(row?.ids ?? []), ...(row?.expertIds ?? [])])]
   }
 
   function liveAgent(sessionId) {
@@ -449,6 +451,33 @@ export async function createModule(ctx, { home, backend }) {
 
   return {
     hostHandlers: {
+      // 专家只管理自己的引用，不能覆盖用户在连接器选择器中的手动选择。
+      setSessionExperts: (input, signal) => serial(async () => {
+        assertActive(signal)
+        requireStorage()
+        const payload = parse(z.strictObject({ sessionId: z.string().min(1).max(256), ids: z.array(idSchema).max(8), expectedAccountId: z.string().min(1) }), input)
+        liveAgent(payload.sessionId)
+        const session = await currentSession()
+        if (session?.accountId !== payload.expectedAccountId) throw new ConnectorError('专家账号已变化，请重新选择。')
+        const account = accountId(session)
+        for (const id of payload.ids) {
+          const entry = entries.find(item => item.id === id && visible(item, session))
+          if (!entry?.enabled || entry.installed === false || view(entry).status !== 'active') throw new ConnectorError('请先配置并启用专家绑定的连接器。')
+        }
+        const saved = await credentials.modifyRecord(sessionSelectionKey, record => {
+          const state = readSessionSelections(record)
+          const previous = state.rows.find(row => row.accountId === account && row.sessionId === payload.sessionId)
+          if (new Set([...(previous?.ids ?? []), ...payload.ids]).size > 8) throw new ConnectorError('每个会话最多选择 8 个连接器。')
+          return { kind: 'grant', payload: parse(sessionSelectionSchema, { version: 1, rows: [
+            ...state.rows.filter(row => row.accountId !== account || row.sessionId !== payload.sessionId),
+            { accountId: account, sessionId: payload.sessionId, ids: previous?.ids ?? [], expertIds: [...new Set(payload.ids)] },
+          ] }) }
+        })
+        sessionSelections = readSessionSelections(saved)
+        knownSessions.set(payload.sessionId, account)
+        applySessionRestriction(account, payload.sessionId)
+        return { selectedIds: selectedIds(account, payload.sessionId) }
+      }),
       registerApplication: (input, signal) => serial(async () => {
         const value = parse(z.strictObject({ appId: z.literal('dbx'), expectedAccountId: z.string().min(1), command: z.string().min(1), cwd: z.string().min(1), dataDir: z.string().min(1) }), input)
         const account = await currentSession()
@@ -687,12 +716,12 @@ export async function createModule(ctx, { home, backend }) {
           const ids = new Set(previous?.ids ?? [])
           if (payload.selected) ids.add(payload.id)
           else ids.delete(payload.id)
-          if (ids.size > 8) throw new ConnectorError('每个会话最多选择 8 个连接器。')
+          if (new Set([...ids, ...(previous?.expertIds ?? [])]).size > 8) throw new ConnectorError('每个会话最多选择 8 个连接器。')
           return { kind: 'grant', payload: parse(sessionSelectionSchema, {
             version: 1,
             rows: [
               ...state.rows.filter(row => row.accountId !== account || row.sessionId !== payload.sessionId),
-              ...(ids.size ? [{ accountId: account, sessionId: payload.sessionId, ids: [...ids] }] : []),
+              ...(ids.size || previous?.expertIds?.length ? [{ accountId: account, sessionId: payload.sessionId, ids: [...ids], expertIds: previous?.expertIds ?? [] }] : []),
             ],
           }) }
         })

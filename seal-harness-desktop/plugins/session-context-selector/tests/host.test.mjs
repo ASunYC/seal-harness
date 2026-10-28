@@ -12,6 +12,7 @@ const sessionId = 'session-3d0f3552-b5d3-4c33-b04c-994d23fc0dac'
 test('Host 注册永久删除 RPC，并在边界拒绝未归档会话', async () => {
   let route
   apply({
+    effect(callback) { callback() },
     connection: { fetch: { register(value) { route = value } } },
     sessionPersistence: { stat: async () => undefined },
     workspaceRegistry: { archivedSessionIds: [], list: () => [] },
@@ -69,6 +70,7 @@ test('真实 RPC 完成归档记录、工作区引用、会话日志和投影缓
   const emitted = []
   apply({
     connection: { fetch: { register(value) { route = value } } },
+    effect(callback) { callback() },
     sessionPersistence: { stat: async () => ({ header: { id: sessionId, cwd } }) },
     workspaceRegistry,
     waterfall: async () => [],

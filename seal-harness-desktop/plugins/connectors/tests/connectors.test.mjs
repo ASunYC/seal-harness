@@ -93,6 +93,27 @@ test('session selection isolates connector schemas and execution between agents'
   assert.equal(ctx.tools.schemas(first).some(schema => schema.name === tool), false)
 })
 
+test('专家连接器引用与手动选择独立，释放专家不清除手动选择且拒绝跨账号授权', async t => {
+  const fixture = await httpFixture(t), agents = new Map()
+  const { handlers, module } = await host(t, {}, ctx => {
+    ctx.provide('agents', { get: id => agents.get(id) })
+    ctx.provide('sealHarnessIdentity', { getSession: () => ({ accountId: 'expert-owner', epoch: 1 }) })
+    const agent = { id: 'expert-session' }
+    agent.ctx = createScope(ctx, agent).ctx; agents.set(agent.id, agent)
+  })
+  const saved = await handlers.save({ id: 'expert-http', name: 'Expert HTTP', transport: 'streamable-http', url: fixture.url, enabled: true })
+  const input = { sessionId: 'expert-session', expectedAccountId: 'expert-owner' }
+  assert.equal(handlers.setSessionExperts, undefined, '专家引用入口不能成为客户端RPC')
+  await module.hostHandlers.setSessionExperts({ ...input, ids: ['expert-http'] })
+  assert.deepEqual((await handlers.sessionList({ sessionId: input.sessionId })).selectedIds, ['expert-http'])
+  await handlers.sessionSet({ sessionId: input.sessionId, id: 'expert-http', revision: saved.items[0].revision, selected: true })
+  await module.hostHandlers.setSessionExperts({ ...input, ids: [] })
+  assert.deepEqual((await handlers.sessionList({ sessionId: input.sessionId })).selectedIds, ['expert-http'])
+  await handlers.sessionSet({ sessionId: input.sessionId, id: 'expert-http', revision: saved.items[0].revision, selected: false })
+  assert.deepEqual((await handlers.sessionList({ sessionId: input.sessionId })).selectedIds, [])
+  await assert.rejects(module.hostHandlers.setSessionExperts({ ...input, ids: ['expert-http'], expectedAccountId: 'other' }), /账号已变化/)
+})
+
 async function httpFixture(t) {
   const headers = []
   const requestUrls = []

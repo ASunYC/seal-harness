@@ -1,6 +1,3 @@
-const PANEL = {
-  expert: 'seal-harness-experts',
-}
 const RESOURCE_PANEL = {
   'seal-harness-experts': 'experts',
   'seal-harness-skills': 'skills',
@@ -16,10 +13,9 @@ export function createPanelSelector(layout, navigation) {
   }
 }
 
-export function createResourceActions({ inputActions, selectPanel }) {
+export function createResourceActions({ inputActions }) {
   const insert = text => inputActions.insertText(text, inputActions.captureInsertion())
   return {
     skill: name => /^[a-z0-9][a-z0-9-]*$/.test(name) ? insert(`/${name} `) : false,
-    expert: () => selectPanel(PANEL.expert),
   }
 }

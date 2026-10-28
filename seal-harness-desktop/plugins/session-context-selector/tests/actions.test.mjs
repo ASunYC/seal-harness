@@ -19,16 +19,16 @@ test('能力选择器插入精确技能命令并保留当前选择位置', () =>
   ])
 })
 
-test('专家进入现有管理面板，连接器由会话选择器独立处理', () => {
+test('专家和连接器由会话选择器独立处理，不保留跳转管理页动作', () => {
   const panels = []
   const actions = createResourceActions({
     inputActions: { captureInsertion: () => assert.fail('不应写输入框') },
     selectPanel: panel => panels.push(panel),
   })
 
-  actions.expert()
+  assert.equal(actions.expert, undefined)
   assert.equal(actions.connector, undefined)
-  assert.deepEqual(panels, ['seal-harness-experts'])
+  assert.deepEqual(panels, [])
 })
 
 test('会话资源快捷入口打开首页内对应的二级页面', () => {

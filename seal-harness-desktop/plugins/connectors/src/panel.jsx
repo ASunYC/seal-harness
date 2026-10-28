@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { connectorDirectory } from '../../capability-shared/src/directory.js'
 import { Icon } from '../../capability-shared/src/icons.jsx'
 import { ConnectorEditor } from './editor.jsx'
 import { ConnectorRuntime, ConnectorCredentials, ConnectorWorkspace, ConnectorTools, statusLabels, statusTone } from './details.jsx'
@@ -59,7 +60,7 @@ export function ConnectorsPanel({ api, onBack, workspaces = [], startConnectorCr
   const matches = item => `${item.name} ${item.summary ?? ''} ${item.url ?? ''} ${item.command ?? ''}`.toLowerCase().includes(query.trim().toLowerCase())
   const installed = snapshot.items.filter(item => item.installed !== false)
   const installedIcons = installed.map(item => ({ key: item.id, label: item.name, icon: item.catalogIcon ? <img src={item.catalogIcon} alt="" /> : item.source?.centerId ? <CatalogIcon api={api} connectorId={item.source.centerId} size={20} /> : item.name.slice(0, 1) }))
-  const personal = snapshot.items.filter(item => !item.source && !item.catalogId && matches(item))
+  const personal = snapshot.items.filter(item => connectorDirectory(item) === 'personal' && matches(item))
   const selected = snapshot.items.find(item => item.id === modal?.id)
   const install = item => run('installPersonal', { id: item.id, revision: item.revision })
   return <section className="zz-resource-page zz-connectors capability-page resource-page-shell" aria-label="连接器" aria-busy={busy || loading}>
