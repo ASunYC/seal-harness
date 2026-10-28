@@ -57,7 +57,7 @@ test('organization Host persists a scoped hierarchy and rejects cycles and cross
   const reopened = openProductDatabase(home)
   try {
     assert.equal(reopened.db.prepare('SELECT company_name FROM organization_settings WHERE user_id = ?').get('alice').company_name, '示例公司')
-    assert.equal(reopened.db.prepare('PRAGMA user_version').get().user_version, 6)
+    assert.equal(reopened.db.prepare('PRAGMA user_version').get().user_version, 8)
   } finally { reopened.close() }
 })
 
@@ -70,13 +70,13 @@ test('v5 database upgrades without changing existing account and remembered logi
     .run('owner', 'owner', 'Owner', Buffer.alloc(16), Buffer.alloc(64), 'admin', 'active', now, now)
   old.db.prepare('INSERT INTO remembered_logins VALUES (?, ?, ?, ?)')
     .run('owner', Buffer.alloc(32), Date.now() + 60000, Date.now())
-  old.db.exec('DROP TABLE organization_people; DROP TABLE organization_departments; DROP TABLE organization_settings; PRAGMA user_version = 5')
+  old.db.exec('DROP TABLE remote_hosts; DROP TABLE token_usage_turns; DROP TABLE acp_runners; DROP TABLE organization_people; DROP TABLE organization_departments; DROP TABLE organization_settings; PRAGMA user_version = 5')
   old.close()
   const upgraded = openProductDatabase(home)
   try {
     assert.equal(upgraded.db.prepare('SELECT display_name FROM users WHERE id = ?').get('owner').display_name, 'Owner')
     assert.equal(upgraded.db.prepare('SELECT count(*) AS n FROM remembered_logins').get().n, 1)
     assert.equal(upgraded.db.prepare('SELECT count(*) AS n FROM organization_departments').get().n, 0)
-    assert.equal(upgraded.db.prepare('PRAGMA user_version').get().user_version, 6)
+    assert.equal(upgraded.db.prepare('PRAGMA user_version').get().user_version, 8)
   } finally { upgraded.close() }
 })
