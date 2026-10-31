@@ -89,5 +89,10 @@ export function apply(ctx) {
     const status = useSyncExternalStore(ctx.sealHarnessAuthClient.subscribe, ctx.sealHarnessAuthClient.getStatus)
     return status?.user ? <TokenStatsPanel key={`${status.accountId}:${status.epoch}`} api={api} /> : <main className="seal-token-page"><h1>Token 统计</h1><p>请先登录本机账号。</p></main>
   }
-  ctx.inject(['sealHarnessNavigation'], inner => inner.effect(() => inner.sealHarnessNavigation.register({ id: 'token-stats', label: 'Token 统计', icon: 'usage', order: 100, primary: true, Panel }), 'token-stats: primary navigation'))
+  ctx.slots.inject('settings.section', () => ctx.slots.register({
+    name: 'settings.section',
+    id: 'token-stats',
+    order: 57,
+    label: () => 'Token 统计',
+  }, Panel))
 }

@@ -67,21 +67,25 @@ test('token page switches dimensions and filters, exports Excel and handles real
   assert.equal(document.querySelector('.seal-token-cards'), null)
 })
 
-test('Client registers one primary menu when navigation arrives late and cleans it on disposal', async t => {
+test('Client registers Token 统计 in Settings instead of primary navigation', async t => {
   const { loaded } = browser(t)
   const ctx = new Context(), registrations = []
   t.after(() => ctx.fiber.dispose())
-  ctx.provide('slots', {})
+  ctx.provide('slots', {
+    inject(name, callback) { assert.equal(name, 'settings.section'); ctx.effect(callback) },
+    register(options, component) {
+      registrations.push({ options, component })
+      return () => registrations.splice(registrations.findIndex(entry => entry.options === options), 1)
+    },
+  })
   ctx.provide('connection', {})
   ctx.provide('sealHarnessAuthClient', { getStatus: () => ({ user: null }), subscribe: () => () => {} })
   const fiber = await ctx.plugin(loaded)
-  assert.equal(registrations.length, 0)
-  ctx.provide('sealHarnessNavigation', { register(entry) { registrations.push(entry); return () => registrations.splice(registrations.indexOf(entry), 1) } })
   await new Promise(resolve => setTimeout(resolve, 0))
   assert.equal(registrations.length, 1)
-  assert.equal(registrations[0].id, 'token-stats')
-  assert.equal(registrations[0].primary, true)
-  assert.equal(registrations[0].order, 100)
+  assert.equal(registrations[0].options.id, 'token-stats')
+  assert.equal(registrations[0].options.name, 'settings.section')
+  assert.equal(registrations[0].options.order, 57)
+  assert.equal(registrations[0].options.label(), 'Token 统计')
   await fiber.dispose()
-  assert.equal(registrations.length, 0)
 })

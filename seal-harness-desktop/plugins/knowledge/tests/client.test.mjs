@@ -60,6 +60,8 @@ test('knowledge page performs library/text/search/preview/delete through control
   let connectionClicks = 0
   await act(async () => root.render(React.createElement(loaded.KnowledgePanel, { api, openConnection: () => connectionClicks++ })))
   await waitFor(() => document.body.textContent.includes('当前 Key 可见范围内还没有知识库'))
+  assert.equal(document.querySelector('.seal-kb-page > .seal-kb-sidebar h2')?.textContent, '知识库')
+  assert.equal(document.querySelector('.seal-kb-page > .seal-kb-content .seal-kb-empty h2')?.textContent, '开始积累知识')
   for (const label of ['刷新', '知识库设置']) {
     const button = document.querySelector(`.seal-kb-header button[aria-label="${label}"]`)
     assert.equal(button.title, label)
@@ -71,6 +73,7 @@ test('knowledge page performs library/text/search/preview/delete through control
   await change(document.querySelector('.seal-kb-editor input[list]'), 'embed-1')
   await submit('.seal-kb-editor')
   await waitFor(() => document.querySelector('.seal-kb-workspace h2')?.textContent === '研发指南')
+  assert.equal(document.querySelector('.seal-kb-bases button[aria-current="page"]')?.textContent.includes('研发指南'), true)
   await click('导入文本')
   await change(document.querySelector('.seal-kb-editor input'), '星图说明')
   await change(document.querySelector('.seal-kb-editor textarea'), '海豹在这里查找星图')
@@ -137,6 +140,27 @@ test('knowledge Client registers a primary panel through late navigation and cle
   assert.equal(disposed, true)
   assert.equal(dom.window.document.querySelector('style'), null)
   dom.window.close()
+})
+
+test('left library navigation switches the right workspace without losing selection', async t => {
+  const dom = new JSDOM('<!doctype html><div id="root"></div>')
+  const previous = { window: globalThis.window, document: globalThis.document }
+  globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true
+  const root = createRoot(document.getElementById('root'))
+  t.after(async () => { await act(async () => root.unmount()); dom.window.close(); Object.assign(globalThis, previous); delete globalThis.IS_REACT_ACT_ENVIRONMENT })
+  const loaded = loadClient(document)
+  const api = async action => {
+    if (action === 'status') return { configured: true }
+    if (action === 'bases') return { items: [{ id: 'one', name: '研发指南' }, { id: 'two', name: '操作手册' }] }
+    if (action === 'documents') return { items: [], total: 0 }
+    assert.fail(`unexpected ${action}`)
+  }
+  await act(async () => root.render(React.createElement(loaded.KnowledgePanel, { api })))
+  assert.equal(document.querySelector('.seal-kb-workspace h2')?.textContent, '研发指南')
+  assert.equal(document.querySelector('.seal-kb-bases button[aria-current="page"]')?.textContent.includes('研发指南'), true)
+  await act(async () => [...document.querySelectorAll('.seal-kb-bases button')].find(button => button.textContent.includes('操作手册')).click())
+  assert.equal(document.querySelector('.seal-kb-workspace h2')?.textContent, '操作手册')
+  assert.equal(document.querySelector('.seal-kb-bases button[aria-current="page"]')?.textContent.includes('操作手册'), true)
 })
 
 test('unconfigured or unreachable service is not presented as an empty connected library; late account results are discarded', async t => {

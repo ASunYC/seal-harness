@@ -83,7 +83,7 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   assert.equal(dom.window.getComputedStyle(document.querySelector('[data-slot="sidebar"] button[aria-label="自动化任务"]')).display, 'none')
   assert.equal(dom.window.getComputedStyle(document.querySelector('.dshMarketLauncher')).display, 'none')
   assert.equal(document.querySelector('button[aria-label="对话"]'), null)
-  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '自动化任务', '空间'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '能力', '自动化任务', '空间'])
   assert.deepEqual([...document.querySelectorAll('.seal-nav-rail__footer button')].map(button => button.getAttribute('aria-label')), ['设置', '账户'])
   assert.equal(document.querySelector('[data-slot="sidebar.settings"] button[aria-haspopup="dialog"]'), null)
   await act(async () => document.querySelector('.seal-nav-rail__footer button[aria-label="设置"]').click())
@@ -102,14 +102,14 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   assert.equal(registrations('sidebar.workspaces').length, 1)
   const navigation = provided.get('sealHarnessNavigation')
   assert.deepEqual(Array.from(navigation.getSnapshot().entries, entry => entry.id), ['plugins'])
-  assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id), ['plugins'])
-  assert.equal(registrations('sidebar.panellist')[0].options.priority, -100)
+  assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id), [])
   let release
   await act(async () => { release = navigation.register({ id: 'experts', label: '专家', order: 20, icon: 'experts', Panel: () => React.createElement('span', null, '专家内容') }) })
   let releaseDecision
   await act(async () => { releaseDecision = navigation.register({ id: 'ask-jev', label: '问问决策', order: 45, icon: 'plugins', Panel: () => React.createElement('span', null, '独立决策页面') }) })
-  assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id).sort(), ['experts', 'plugins'])
-  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '问问决策', '自动化任务', '空间'])
+  assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id).sort(), ['experts'])
+  assert.equal(registrations('sidebar.panellist')[0].options.priority, -100)
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '能力', '自动化任务', '问问决策', '空间'])
   const expertMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'experts')?.component
   const decisionMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'ask-jev')?.component
   assert(expertMain)
@@ -148,15 +148,34 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   await click('首页')
   assert.equal(navigation.getSnapshot().decisionActive, false)
   assert.equal(registrations('sidebar.workspaces').length, 1)
-  assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id).sort(), ['experts', 'plugins'])
+  assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id).sort(), ['experts'])
   await act(async () => ctx.layout.selectPanel('experts'))
   assert.equal(registrations('sidebar.workspaces').length, 1)
   assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), 'page')
   await act(async () => ctx.layout.selectPanel('plugins'))
   assert.equal(activePanelId, 'plugins')
   assert.equal(navigation.getSnapshot().selectedId, 'plugins')
-  assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), 'page')
-  assert.equal(registrations('sidebar.workspaces').length, 1)
+  assert.equal(document.querySelector('button[aria-label="能力"]')?.getAttribute('aria-current'), 'page')
+  assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), null)
+  assert.equal(registrations('sidebar.workspaces').length, 2)
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-secondary button')].map(button => button.textContent), ['插件'])
+  const capabilityDisposers = []
+  await act(async () => {
+    for (const [id, label] of [['skills', '技能'], ['connectors', '连接器'], ['apps', '应用']]) capabilityDisposers.push(navigation.register({
+      id, label, order: 30, icon: id, Panel: () => React.createElement('span', null, `${label}内容`),
+    }))
+  })
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-secondary button')].map(button => button.textContent), ['插件', '技能', '连接器', '应用'])
+  assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id), [])
+  for (const [id, label] of [['skills', '技能'], ['connectors', '连接器'], ['apps', '应用']]) {
+    await act(async () => document.querySelector('.seal-nav-secondary button:nth-of-type(' + (['skills', 'connectors', 'apps'].indexOf(id) + 2) + ')').click())
+    assert.equal(activePanelId, id)
+    assert.equal(document.querySelector('button[aria-label="能力"]')?.getAttribute('aria-current'), 'page')
+    assert.equal(document.querySelector('.seal-nav-secondary button[aria-current="page"]')?.textContent, label)
+    assert(registrations('main').some(entry => entry.options.key === id))
+  }
+  await click('能力')
+  assert.equal(activePanelId, 'plugins')
   await click('首页')
   assert.equal(activePanelId, null)
   assert.equal(navigation.getSnapshot().selectedId, null)
@@ -185,16 +204,15 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   assert.equal(registrations('sidebar.panellist').some(entry => entry.options.id === 'seal-harness-schedules'), false)
   await act(async () => releaseSchedules())
   const primaryEntries = [
-    ['token-stats', 'Token 统计', 'usage'], ['knowledge', '知识库', 'knowledge'],
-    ['remote-desktop', '远程主机', 'desktop'], ['acp', 'ACP', 'acp'],
+    ['knowledge', '知识库', 'knowledge'], ['remote-desktop', '远程主机', 'desktop'], ['acp', 'ACP', 'acp'],
   ]
   const primaryDisposers = []
   await act(async () => {
     for (const [index, [id, label, icon]] of primaryEntries.entries()) primaryDisposers.push(navigation.register({
-      id, label, icon, order: 100 + index * 10, primary: true, Panel: () => React.createElement('span', null, label),
+      id, label, icon, order: 110 + index * 10, primary: true, Panel: () => React.createElement('span', null, label),
     }))
   })
-  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '问问决策', '自动化任务', 'Token 统计', '知识库', '远程主机', 'ACP', '空间'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '能力', '知识库', '自动化任务', '问问决策', '远程主机', 'ACP', '空间'])
   assert.equal(registrations('sidebar.panellist').some(entry => primaryEntries.some(([id]) => id === entry.options.id)), false)
   for (const [id, label] of primaryEntries) {
     await click(label)
@@ -216,15 +234,18 @@ test('home resources share the sidebar with native workspaces and sessions', asy
     entries.push(marketEntry)
     for (const listener of slotListeners) listener()
   })
-  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '问问决策', '自动化任务', '空间', '插件市场'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '能力', '自动化任务', '问问决策', '空间'])
   const marketMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'seal-harness-market')
   assert(marketMain)
   assert.equal(marketMain.locale, marketEntry.locale)
   assert.equal(marketMain.inject, marketEntry.inject)
-  await act(async () => document.querySelector('.seal-nav-rail button[aria-label="插件市场"]').click())
+  await click('能力')
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-secondary button')].map(button => button.textContent), ['插件', '插件市场', '技能', '连接器', '应用'])
+  await act(async () => [...document.querySelectorAll('.seal-nav-secondary button')].find(button => button.textContent === '插件市场').click())
   assert.equal(activePanelId, 'seal-harness-market')
   assert.equal(document.querySelector('.seal-nav-rail').dataset.homeActive, 'false')
-  assert.equal(document.querySelector('button[aria-label="插件市场"]').getAttribute('aria-current'), 'page')
+  assert.equal(document.querySelector('button[aria-label="能力"]').getAttribute('aria-current'), 'page')
+  assert.equal(document.querySelector('.seal-nav-secondary button[aria-current="page"]').textContent, '插件市场')
   assert.equal(registrations('sidebar.workspaces').length, 2)
   await act(async () => root.render(React.createElement(React.Fragment, null,
     React.createElement(rail, { usePanelInfo }), React.createElement(marketMain.component, marketMain.inject()),
@@ -236,14 +257,16 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   await click('首页')
   assert.equal(document.querySelector('.seal-nav-rail').dataset.homeActive, 'true')
   assert.equal(registrations('sidebar.workspaces').length, 1)
-  await act(async () => document.querySelector('.seal-nav-rail button[aria-label="插件市场"]').click())
+  await click('能力')
+  await act(async () => [...document.querySelectorAll('.seal-nav-secondary button')].find(button => button.textContent === '插件市场').click())
   await act(async () => {
     entries.splice(entries.indexOf(marketEntry), 1)
     for (const listener of slotListeners) listener()
   })
   assert.equal(activePanelId, null, '市场卸载后回到首页')
   assert.equal(entries.some(entry => entry.options.key === 'seal-harness-market'), false)
-  assert.equal(document.querySelector('button[aria-label="插件市场"]'), null)
+  assert.equal(document.querySelector('.seal-nav-secondary button')?.textContent, undefined)
+  await act(async () => capabilityDisposers.forEach(dispose => dispose()))
   await act(async () => release())
   await act(async () => releaseDecision())
 })

@@ -10,6 +10,8 @@ const SPACES = 'seal-harness-spaces'
 const SCHEDULES = 'seal-harness-schedules'
 const NATIVE_SCHEDULES = 'schedules'
 const MARKET = 'seal-harness-market'
+const CAPABILITIES = 'seal-harness-capabilities'
+const CAPABILITY_IDS = ['plugins', 'skills', 'connectors', 'apps']
 
 function NavGlyph({ name, size = 20 }) {
   const paths = {
@@ -72,9 +74,10 @@ export function apply(ctx) {
     const sessions = useSyncExternalStore(ctx.sessions.list.subscribe, ctx.sessions.list.getSnapshot)
     const mainSessionId = Object.values(sessions.byId).find(session => (session.retainedBy?.mainView ?? 0) > 0)?.id
     const inDecisionConversation = activePanelId === null && decisionActive && mainSessionId === decisionSessionId
-    const homeEntries = entries.filter(entry => entry.id !== DECISION && entry.id !== SCHEDULES && !entry.primary)
+    const homeEntries = entries.filter(entry => entry.id !== DECISION && entry.id !== SCHEDULES && !entry.primary && !CAPABILITY_IDS.includes(entry.id))
     const decision = entries.find(entry => entry.id === DECISION)
-    const homeActive = (activePanelId === null && !inDecisionConversation) || activePanelId === HOME || activePanelId === 'plugins' || homeEntries.some(entry => entry.id === activePanelId)
+    const capabilitiesActive = CAPABILITY_IDS.includes(activePanelId) || activePanelId === MARKET
+    const homeActive = (activePanelId === null && !inDecisionConversation) || activePanelId === HOME || homeEntries.some(entry => entry.id === activePanelId)
     const resourceIds = entries.map(entry => entry.id).join('|')
     const previousPrimaryIds = useRef(new Set())
     useEffect(() => {
@@ -119,24 +122,34 @@ export function apply(ctx) {
     }, [homeActive])
     const items = [
       { id: HOME, label: '首页', icon: 'home' },
-      ...(decision ? [{ id: DECISION, label: '问问决策', icon: 'decision' }] : []),
+      { id: CAPABILITIES, label: '能力', icon: 'apps' },
+      ...entries.filter(entry => entry.primary && entry.id === 'knowledge').map(({ id, label, icon }) => ({ id, label, icon })),
       { id: NATIVE_SCHEDULES, label: '自动化任务', icon: 'schedules' },
-      ...entries.filter(entry => entry.primary).map(({ id, label, icon }) => ({ id, label, icon })),
+      ...(decision ? [{ id: DECISION, label: '问问决策', icon: 'decision' }] : []),
+      ...entries.filter(entry => entry.primary && entry.id !== 'knowledge').map(({ id, label, icon }) => ({ id, label, icon })),
       { id: SPACES, label: '空间', icon: 'spaces' },
-      ...(market ? [{ id: MARKET, label: '插件市场', icon: 'market' }] : []),
     ]
     const activateExisting = (selector, label) => {
       const button = document.querySelector(selector)
       if (!button) throw new Error(`${label}入口未加载。`)
       button.click()
     }
-    return <nav className="seal-nav-rail" aria-label="一级导航" data-home-active={homeActive}>
-      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : activePanelId === item.id || (item.id === DECISION && inDecisionConversation) ? 'page' : undefined} onClick={() => { if (item.id !== DECISION) resources.leaveDecision(); if (item.id === HOME) resources.select(null); else if (item.id === DECISION) resources.select(DECISION); ctx.layout.selectPanel(item.id === HOME ? null : item.id) }}><NavGlyph name={item.icon} /></button>)}
+    return <><nav className="seal-nav-rail" aria-label="一级导航" data-home-active={homeActive} data-capabilities-active={capabilitiesActive}>
+      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : item.id === CAPABILITIES ? capabilitiesActive ? 'page' : undefined : activePanelId === item.id || (item.id === DECISION && inDecisionConversation) ? 'page' : undefined} onClick={() => { if (item.id !== DECISION) resources.leaveDecision(); if (item.id === HOME) resources.select(null); else if (item.id === DECISION) resources.select(DECISION); ctx.layout.selectPanel(item.id === HOME ? null : item.id === CAPABILITIES ? 'plugins' : item.id) }}><NavGlyph name={item.icon} /></button>)}
       <div className="seal-nav-rail__footer">
         <button type="button" title="设置" aria-label="设置" onClick={() => { if (!openSettings) throw new Error('设置入口未加载。'); openSettings() }}><NavGlyph name="settings" /></button>
         <button type="button" title="账户" aria-label="账户" aria-current={activePanelId === 'seal-harness-user' ? 'page' : undefined} onClick={() => activateExisting('.seal-harness-user-footer', '账户')}><NavGlyph name="account" /></button>
       </div>
-    </nav>
+    </nav>{capabilitiesActive && <aside className="seal-nav-secondary" aria-label="能力菜单">
+      <header><h2>能力</h2></header>
+      {CAPABILITY_IDS.map(id => {
+        const entry = entries.find(item => item.id === id)
+        if (!entry) return null
+        return <React.Fragment key={id}><button type="button" aria-current={activePanelId === id ? 'page' : undefined} onClick={() => ctx.layout.selectPanel(id)}><NavGlyph name={id} size={18} />{entry.label}</button>
+          {id === 'plugins' && market && <button className="seal-nav-secondary__nested" type="button" aria-current={activePanelId === MARKET ? 'page' : undefined} onClick={() => ctx.layout.selectPanel(MARKET)}><NavGlyph name="market" size={18} />插件市场</button>}
+        </React.Fragment>
+      })}
+    </aside>}</>
   }
 
   function HomePanel() {

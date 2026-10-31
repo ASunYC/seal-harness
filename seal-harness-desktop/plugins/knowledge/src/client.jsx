@@ -19,7 +19,7 @@ export function apply(ctx) {
   function Panel() {
     const status = useSyncExternalStore(ctx.sealHarnessAuthClient.subscribe, ctx.sealHarnessAuthClient.getStatus)
     return status?.user ? <KnowledgePanel key={`${status.accountId}:${status.epoch}`} api={api} openConnection={openConnection} />
-      : <main className="seal-kb-page"><h1>知识库</h1><p>请先登录本地账号。</p></main>
+      : <main className="seal-kb-page seal-kb-page--login"><section className="seal-kb-content"><h1>知识库</h1><p>请先登录本地账号。</p></section></main>
   }
   ctx.effect(() => {
     const element = document.createElement('style')

@@ -2,11 +2,11 @@
 
 ## 1. 范围与触发
 
-`token-stats`、`knowledge`、`remote-desktop`、`acp` 均为 `seal-harness-desktop/plugins/` 下独立 Host/Client 包，不并入根 Yarn workspaces。产品构建、Profile 和 check 同时登记。旧反馈禁用与市场一级导航保持。
+`token-stats`、`knowledge`、`remote-desktop`、`acp` 均为 `seal-harness-desktop/plugins/` 下独立 Host/Client 包，不并入根 Yarn workspaces。产品构建、Profile 和 check 同时登记。旧反馈入口保持禁用。
 
-Client 通过 `ctx.inject(['sealHarnessNavigation'], callback)` 注册 `{ id, label, icon, order, primary: true, Panel }`；四项顺序为 100/110/120/130。一级导航顺序：首页、问问决策、自动化任务、Token 统计、知识库、远程主机、ACP、空间、插件市场。primary 不进入首页资源列表，卸载当前 primary 后回首页；非首页宽侧栏为零宽且不改写持久偏好。短窗口允许滚动一级导航，不压缩按钮尺寸。
+知识库、远程主机、ACP Client 通过 `ctx.inject(['sealHarnessNavigation'], callback)` 注册 `{ id, label, icon, order, primary: true, Panel }`，顺序为 110/120/130。Token 统计注册为 `settings.section`，不再占一级导航。一级导航顺序：首页、能力、知识库、自动化任务、问问决策、远程主机、ACP、空间。问问决策仅在插件加载时出现。能力二级菜单包含插件、技能、连接器、应用，并在市场可用时提供插件市场；保留原有 DSH 插件管理页和市场组件。能力四项不再进入首页资源列表。primary 不进入首页资源列表，卸载当前 primary 后回首页；非首页宽侧栏为零宽且不改写持久偏好。短窗口允许滚动一级导航，不压缩按钮尺寸。
 
-除首页和决策外，七个一级内容页的排版由 navigation 的 `page-styles.js` 统一覆盖：页内边距32px，视口不超过800px时20px；滚动槽9px并在两边对称保留。主标题24px/32px、字重600，已有副标题14px/22px、字重400，间距8px，字体共用产品栈。上游自动化页保留原生单标题及操作，解除原960px居中上限。市场沿统一外层滚动，避免嵌套滚动条再次挤偏。不得用全局h1/p选择器影响首页、决策、弹窗或内部卡片标题；验证需逐页测量真实宽窄视口下的计算样式与左右间距。
+除首页和决策外，独立内容页的排版由 navigation 的 `page-styles.js` 统一覆盖：一般页内边距32px，视口不超过800px时20px；知识库外层无留白，右侧内容区使用该内边距，左栏直接贴一级图标轨道。其他页滚动槽9px并在两边对称保留。主标题24px/32px、字重600，已有副标题14px/22px、字重400，间距8px，字体共用产品栈。上游自动化页保留原生单标题及操作，解除原960px居中上限。市场沿统一外层滚动，避免嵌套滚动条再次挤偏。不得用全局h1/p选择器影响首页、决策、弹窗或内部卡片标题；验证需逐页测量真实宽窄视口下的计算样式与左右间距。
 
 ## 2. 接口与存储签名
 
@@ -25,6 +25,7 @@ local-data v7 统一创建用量及 Runner 表，不允许插件另建数据库�
 
 - **Token**：turn/start 持久绑定当前账号，turn/end 使用公开 Session Projection 及 `deriveTurnTokenUsage` 折叠真实事件；不扫描已弃用 Session 同步历史接口。重复/重放不重复计数，账号不能重绑定他人的历史轮次。total 采用上游计算结果，不再额外累加缓存；缺失缓存/推理等字段显示未提供。历史未归属、辅助请求和不完整用量不估算。时间范围最长 367 天，按用户选定 IANA 时区分组；真实 `.xlsx` 含汇总/每日/专家/模型四表，只导出当前账号筛选范围，不含对话内容或虚构费用。
 - **知识库**：既有 weknora Host 提供内部 `sealHarnessWeknora.status/request`，每次获取当前账号凭据并核对 epoch。页面不接收 Key；管理请求拒绝重定向，响应上限 8MiB，文件上限 16MiB。服务端承担模型、OCR、索引与存储，不复制第二套 ONNX。retrieve/ingest/manage_kbs 分别控制读取/文档写/库管理；模型列表权限失败不能阻止只读浏览和检索。上传成功不等于解析完成，以服务端 parse_status 为准。
+- 知识库一级页使用与能力相同宽度的左侧二级栏展示当前 Key 可见的知识库，右侧展示当前库的文档、检索和管理操作。空库、连接失败和未配置状态不得伪装为已有库；切换库时左侧选中态与右侧内容同步。左栏不写入持久侧栏偏好。
 - **远程主机**：保留remote-desktop包名/id，入口为远程主机，移除本机截图/输入驱动。v8的remote_hosts按(user_id,id)保存主机名及SSH/RDP/VNC参数，不保存密码、私钥正文或口令。严格校验地址、端口和绝对文件路径；不接受附加命令。snapshot仅发现客户端，不发起远端网络连接；check显式进行有超时/可取消TCP探测，明确可达不等于协议认证成功；connect调用成熟原生客户端，不自写桌面协议。SSH为OpenSSH终端，Windows RDP为mstsc，其余RDP为FreeRDP，VNC为TigerVNC；缺失程序或交互终端给安装/指定路径说明。参数独立传递、不关闭主机或证书验证、不转发环境秘密。Windows交互终端以静态PowerShell broker和独立序列化数据启动；macOS以静态AppleScript和POSIX参数引用启动Terminal。仅显式连接打开可见窗口；已启动不报告为远端已登录。账号切换、配置编辑/删除、卸载或请求取消丢弃旧结果并中止探测；已交给用户的原生窗口不随Seal页面/账号关闭。
 - **ACP**：复用公开 `ctx.subprocess` 与现有 `@agentclientprotocol/sdk@1.4.0` ACP v1 transport；`@deepseek-ai/dsh-acp` 是 Agent 服务端，不等于外部 Runner 客户端。区分发现程序、握手成功与执行完成；预设不自动安装/登录。模型工具为 `list_acp_runners`/`acp_runner`。工作目录明确且有效，进程剥离环境秘密；默认拒绝权限，显式策略才能允许 once 请求。停止、账号变化、禁用/删除与卸载均须取消并确认进程清理。Windows cmd/bat/ps1 若公共进程 seam 不支持，明确指导 node.exe + 实际 JS 入口，不能用未转义 shell 拼接绕过。
 

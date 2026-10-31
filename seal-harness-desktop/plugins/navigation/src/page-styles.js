@@ -4,7 +4,7 @@ export const pageStyles = `
 #root :is(.seal-token-page, .seal-kb-page, .seal-remote-page, .seal-acp-page, .seal-nav-page[data-seal-nav-panel="spaces"], .seal-nav-content[data-seal-nav-panel="market"], [data-testid="task-manager-page"]) {
   font-family: var(--seal-page-font); font-size: 14px; line-height: 1.6; --dsh-scrollbar-width: 9px; --dsh-scrollbar-thumb-border: 2px;
 }
-#root :is(.seal-token-page, .seal-kb-page, .seal-remote-page, .seal-acp-page, .seal-nav-page[data-seal-nav-panel="spaces"], .seal-nav-content[data-seal-nav-panel="market"]) {
+#root :is(.seal-token-page, .seal-remote-page, .seal-acp-page, .seal-nav-page[data-seal-nav-panel="spaces"], .seal-nav-content[data-seal-nav-panel="market"]) {
   box-sizing: border-box; padding: var(--seal-page-inset); scrollbar-gutter: stable both-edges;
 }
 #root :is(.seal-token-page > header h1, .seal-kb-header h1, .seal-remote-header h1, .seal-acp-header h1, .seal-nav-page[data-seal-nav-panel="spaces"] > h1, [data-seal-nav-panel="market"] .dshMarketHeaderTitle h2, [data-testid="task-manager-page"] h1) {
