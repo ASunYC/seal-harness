@@ -53,7 +53,7 @@ function CheckResult({ result }) {
 
 export function RemoteDesktopPanel({ api }) {
   const [snapshot, setSnapshot] = useState(null), [busy, setBusy] = useState('snapshot')
-  const [error, setError] = useState(''), [notice, setNotice] = useState(''), [query, setQuery] = useState(''), [protocol, setProtocol] = useState('all')
+  const [error, setError] = useState(''), [notice, setNotice] = useState(''), [query, setQuery] = useState(''), [protocol, setProtocol] = useState('all'), [selectedId, setSelectedId] = useState(null)
   const [draft, setDraft] = useState(null), [deleting, setDeleting] = useState(null), [checks, setChecks] = useState({})
   const lifetime = useRef(null), inFlight = useRef(false)
   const request = async (action, payload = {}) => {
@@ -82,6 +82,7 @@ export function RemoteDesktopPanel({ api }) {
     const payload = { ...(draft.id ? { id: draft.id } : {}), name: draft.name, config: { ...draft.config, port: Number(draft.config.port), ...(snapshot.platform === 'win32' && draft.config.protocol === 'rdp' ? { username: '' } : {}) } }
     const { host } = await request('save', payload)
     setSnapshot(previous => ({ ...previous, hosts: [...previous.hosts.filter(item => item.id !== host.id), host] }))
+    setSelectedId(host.id)
     setChecks(previous => { const next = { ...previous }; delete next[host.id]; return next })
     setDraft(null); setNotice('主机配置已保存。')
   })
@@ -101,22 +102,29 @@ export function RemoteDesktopPanel({ api }) {
   })
   const needle = query.trim().toLocaleLowerCase()
   const visible = (snapshot?.hosts ?? []).filter(host => (protocol === 'all' || host.config.protocol === protocol) && `${host.name} ${host.config.host} ${host.config.username}`.toLocaleLowerCase().includes(needle))
+  const selected = visible.find(host => host.id === selectedId) ?? visible[0]
   return <main className="seal-remote-page" data-seal-remote-desktop>
-    <header className="seal-remote-header"><div><h1>远程主机</h1><p>管理服务器，通过 SSH、RDP 或 VNC 打开远程连接。</p></div><div className="seal-remote-actions"><button type="button" disabled={Boolean(busy)} onClick={() => void refresh()} aria-label="刷新主机列表">刷新</button><button type="button" className="seal-remote-primary" disabled={Boolean(busy) || !snapshot} onClick={() => { setError(''); setDraft(blankHost()) }}>添加主机</button></div></header>
-    {!draft && !deleting && error && <p role="alert" className="seal-remote-error">{error}</p>}
-    {notice && <p role="status" className="seal-remote-notice">{notice}</p>}
-    <section className="seal-remote-clients" aria-label="本机连接客户端">{Object.entries(protocols).map(([id, item]) => {
-      const client = snapshot?.clients[id]
-      return <div key={id}><strong>{item.name}</strong><span data-available={Boolean(client?.available)}>{!snapshot ? (busy ? '正在检查…' : '未检查') : client?.available ? '客户端可用' : '未找到客户端'}</span>{client && !client.available && <p>{client.reason || '请安装客户端，或在主机配置中指定程序路径。'}</p>}</div>
-    })}</section>
-    <div className="seal-remote-toolbar"><input aria-label="搜索主机" placeholder="搜索名称、地址或用户名" value={query} onChange={event => setQuery(event.target.value)} /><select aria-label="筛选协议" value={protocol} onChange={event => setProtocol(event.target.value)}><option value="all">全部协议</option>{Object.entries(protocols).map(([id, item]) => <option key={id} value={id}>{item.name}</option>)}</select><span>{visible.length} 台主机</span></div>
-    {!snapshot && !error ? <p role="status">正在读取主机配置…</p> : visible.length ? <div className="seal-remote-hosts">{visible.map(host => <article className="seal-remote-host" key={host.id} data-host-id={host.id}>
-      <div className="seal-remote-host-heading"><h2>{host.name}</h2><span className="seal-remote-protocol">{protocols[host.config.protocol].name}</span></div><p className="seal-remote-address">{endpoint(host.config)}</p>{host.config.username && <p>用户：{host.config.username}</p>}
-      {host.config.clientPath && <p className="seal-remote-client-path" title={host.config.clientPath}>指定客户端：{host.config.clientPath}</p>}
-      <CheckResult result={checks[host.id]} />
-      <div className="seal-remote-actions"><button type="button" aria-label={`连接 ${host.name}`} className="seal-remote-primary" disabled={Boolean(busy)} onClick={() => void connect(host)}>{busy === `connect:${host.id}` ? '正在启动…' : '连接'}</button><button type="button" aria-label={`检查 ${host.name}`} disabled={Boolean(busy)} onClick={() => void check(host)}>{busy === `check:${host.id}` ? '正在检查…' : '检查'}</button><button type="button" aria-label={`编辑 ${host.name}`} disabled={Boolean(busy)} onClick={() => { setError(''); setDraft({ id: host.id, name: host.name, config: { ...host.config } }) }}>编辑</button><button type="button" aria-label={`删除 ${host.name}`} disabled={Boolean(busy)} onClick={() => { setError(''); setDeleting(host) }}>删除</button></div>
-    </article>)}</div> : snapshot && <section className="seal-remote-empty"><strong>{snapshot.hosts.length ? '没有匹配的主机' : '添加第一台远程主机'}</strong><p>{snapshot.hosts.length ? '试试其他关键词或协议。' : '保存服务器地址和连接方式，随后使用客户端登录。'}</p></section>}
-    <p className="seal-remote-note">连接会打开独立客户端窗口；登录、证书和主机身份确认在客户端完成。Seal 只报告客户端已启动，不判断远程登录状态。关闭此页面不会断开已打开的客户端。</p>
+    <aside className="seal-remote-sidebar" aria-label="主机导航">
+      <h2>远程主机</h2>
+      <div className="seal-remote-toolbar"><input aria-label="搜索主机" placeholder="搜索主机" value={query} onChange={event => setQuery(event.target.value)} /><select aria-label="筛选协议" value={protocol} onChange={event => setProtocol(event.target.value)}><option value="all">全部协议</option>{Object.entries(protocols).map(([id, item]) => <option key={id} value={id}>{item.name}</option>)}</select><span>{visible.length} 台主机</span></div>
+      <div className="seal-remote-hosts" aria-label="主机列表">{visible.map(host => <button key={host.id} type="button" data-host-id={host.id} aria-label={`选择 ${host.name}`} aria-current={host.id === selected?.id ? 'page' : undefined} onClick={() => setSelectedId(host.id)}><strong>{host.name}</strong><small>{protocols[host.config.protocol].name} · {endpoint(host.config)}</small></button>)}{!visible.length && <p>{!snapshot ? '正在读取主机配置…' : snapshot.hosts.length ? '没有匹配的主机。' : '还没有远程主机。'}</p>}</div>
+    </aside>
+    <section className="seal-remote-content" aria-label="主机详情">
+      <header className="seal-remote-header"><div><h1>远程主机</h1><p>管理服务器，通过 SSH、RDP 或 VNC 打开远程连接。</p></div><div className="seal-remote-actions"><button type="button" disabled={Boolean(busy)} onClick={() => void refresh()} aria-label="刷新主机列表">刷新</button><button type="button" className="seal-remote-primary" disabled={Boolean(busy) || !snapshot} onClick={() => { setError(''); setDraft(blankHost()) }}>添加主机</button></div></header>
+      {!draft && !deleting && error && <p role="alert" className="seal-remote-error">{error}</p>}
+      {notice && <p role="status" className="seal-remote-notice">{notice}</p>}
+      <section className="seal-remote-clients" aria-label="本机连接客户端">{Object.entries(protocols).map(([id, item]) => {
+        const client = snapshot?.clients[id]
+        return <div key={id}><strong>{item.name}</strong><span data-available={Boolean(client?.available)}>{!snapshot ? (busy ? '正在检查…' : '未检查') : client?.available ? '客户端可用' : '未找到客户端'}</span>{client && !client.available && <p>{client.reason || '请安装客户端，或在主机配置中指定程序路径。'}</p>}</div>
+      })}</section>
+      {!snapshot && !error ? <p role="status">正在读取主机配置…</p> : selected ? <article className="seal-remote-host">
+        <div className="seal-remote-host-heading"><h2>{selected.name}</h2><span className="seal-remote-protocol">{protocols[selected.config.protocol].name}</span></div><p className="seal-remote-address">{endpoint(selected.config)}</p>{selected.config.username && <p>用户：{selected.config.username}</p>}
+        {selected.config.clientPath && <p className="seal-remote-client-path" title={selected.config.clientPath}>指定客户端：{selected.config.clientPath}</p>}
+        <CheckResult result={checks[selected.id]} />
+        <div className="seal-remote-actions"><button type="button" aria-label={`连接 ${selected.name}`} className="seal-remote-primary" disabled={Boolean(busy)} onClick={() => void connect(selected)}>{busy === `connect:${selected.id}` ? '正在启动…' : '连接'}</button><button type="button" aria-label={`检查 ${selected.name}`} disabled={Boolean(busy)} onClick={() => void check(selected)}>{busy === `check:${selected.id}` ? '正在检查…' : '检查'}</button><button type="button" aria-label={`编辑 ${selected.name}`} disabled={Boolean(busy)} onClick={() => { setError(''); setDraft({ id: selected.id, name: selected.name, config: { ...selected.config } }) }}>编辑</button><button type="button" aria-label={`删除 ${selected.name}`} disabled={Boolean(busy)} onClick={() => { setError(''); setDeleting(selected) }}>删除</button></div>
+      </article> : snapshot && <section className="seal-remote-empty"><strong>{snapshot.hosts.length ? '没有匹配的主机' : '添加第一台远程主机'}</strong><p>{snapshot.hosts.length ? '试试其他关键词或协议。' : '保存服务器地址和连接方式，随后使用客户端登录。'}</p></section>}
+      <p className="seal-remote-note">连接会打开独立客户端窗口；登录、证书和主机身份确认在客户端完成。Seal 只报告客户端已启动，不判断远程登录状态。关闭此页面不会断开已打开的客户端。</p>
+    </section>
     {draft && <HostForm draft={draft} setDraft={setDraft} busy={Boolean(busy)} save={save} platform={snapshot.platform} close={() => { setDraft(null); setError('') }} error={error} />}
     {deleting && <Dialog title="删除主机配置" busy={Boolean(busy)} onClose={() => { setDeleting(null); setError('') }}><p>删除“{deleting.name}”的连接配置？已打开的客户端窗口不会关闭。</p>{error && <p role="alert" className="seal-remote-error">{error}</p>}<footer className="seal-remote-actions"><button type="button" disabled={Boolean(busy)} onClick={() => { setDeleting(null); setError('') }}>取消</button><button type="button" disabled={Boolean(busy)} onClick={() => void remove()}>{busy ? '正在删除…' : '确认删除'}</button></footer></Dialog>}
   </main>
@@ -134,7 +142,7 @@ export function apply(ctx) {
   }, 'seal-harness remote host styles')
   function Panel() {
     const auth = useSyncExternalStore(ctx.sealHarnessAuthClient.subscribe, ctx.sealHarnessAuthClient.getStatus)
-    return auth?.user ? <RemoteDesktopPanel key={`${auth.accountId}:${auth.epoch}`} api={api} /> : <main className="seal-remote-page"><header className="seal-remote-header"><div><h1>远程主机</h1><p>请先登录本地账号。</p></div></header></main>
+    return auth?.user ? <RemoteDesktopPanel key={`${auth.accountId}:${auth.epoch}`} api={api} /> : <main className="seal-remote-page seal-remote-page--login"><header className="seal-remote-header"><div><h1>远程主机</h1><p>请先登录本地账号。</p></div></header></main>
   }
   ctx.inject(['sealHarnessNavigation'], inner => inner.effect(() => inner.sealHarnessNavigation.register({ id: 'remote-desktop', label: '远程主机', icon: 'desktop', order: 120, primary: true, Panel }), 'seal-harness remote host navigation'))
 }

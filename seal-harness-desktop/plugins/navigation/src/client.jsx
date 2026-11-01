@@ -17,7 +17,6 @@ function NavGlyph({ name, size = 20 }) {
   const paths = {
     apps: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>,
     home: <><path d="m3 10 9-7 9 7v10H3V10Z" /><path d="M9 20v-7h6v7" /></>,
-    decision: <><path d="M12 20V5a3 3 0 0 0-5.8-1A4 4 0 0 0 4 11a4 4 0 0 0 2 7c1 2 4 2 6 1" /><path d="M12 20V5a3 3 0 0 1 5.8-1A4 4 0 0 1 20 11a4 4 0 0 1-2 7c-1 2-4 2-6 1" /><path d="M7 9c2 0 3 1 3 3m-4 3c2 0 3-1 3-3m8-3c-2 0-3 1-3 3m4 3c-2 0-3-1-3-3" /></>,
     spaces: <><path d="M3 7V5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /></>,
     market: <><path d="M3 10v10h18V10M2 9l2-6h16l2 6a3 3 0 0 1-5 2 3 3 0 0 1-5 0 3 3 0 0 1-5 0 3 3 0 0 1-5-2Z" /><path d="M9 20v-6h6v6" /></>,
     schedules: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
@@ -73,11 +72,10 @@ export function apply(ctx) {
     )
     const sessions = useSyncExternalStore(ctx.sessions.list.subscribe, ctx.sessions.list.getSnapshot)
     const mainSessionId = Object.values(sessions.byId).find(session => (session.retainedBy?.mainView ?? 0) > 0)?.id
-    const inDecisionConversation = activePanelId === null && decisionActive && mainSessionId === decisionSessionId
     const homeEntries = entries.filter(entry => entry.id !== DECISION && entry.id !== SCHEDULES && !entry.primary && !CAPABILITY_IDS.includes(entry.id))
     const decision = entries.find(entry => entry.id === DECISION)
     const capabilitiesActive = CAPABILITY_IDS.includes(activePanelId) || activePanelId === MARKET
-    const homeActive = (activePanelId === null && !inDecisionConversation) || activePanelId === HOME || homeEntries.some(entry => entry.id === activePanelId)
+    const homeActive = activePanelId === null || activePanelId === HOME || homeEntries.some(entry => entry.id === activePanelId)
     const resourceIds = entries.map(entry => entry.id).join('|')
     const previousPrimaryIds = useRef(new Set())
     useEffect(() => {
@@ -125,7 +123,6 @@ export function apply(ctx) {
       { id: CAPABILITIES, label: '能力', icon: 'apps' },
       ...entries.filter(entry => entry.primary && entry.id === 'knowledge').map(({ id, label, icon }) => ({ id, label, icon })),
       { id: NATIVE_SCHEDULES, label: '自动化任务', icon: 'schedules' },
-      ...(decision ? [{ id: DECISION, label: '问问决策', icon: 'decision' }] : []),
       ...entries.filter(entry => entry.primary && entry.id !== 'knowledge').map(({ id, label, icon }) => ({ id, label, icon })),
       { id: SPACES, label: '空间', icon: 'spaces' },
     ]
@@ -135,7 +132,7 @@ export function apply(ctx) {
       button.click()
     }
     return <><nav className="seal-nav-rail" aria-label="一级导航" data-home-active={homeActive} data-capabilities-active={capabilitiesActive}>
-      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : item.id === CAPABILITIES ? capabilitiesActive ? 'page' : undefined : activePanelId === item.id || (item.id === DECISION && inDecisionConversation) ? 'page' : undefined} onClick={() => { if (item.id !== DECISION) resources.leaveDecision(); if (item.id === HOME) resources.select(null); else if (item.id === DECISION) resources.select(DECISION); ctx.layout.selectPanel(item.id === HOME ? null : item.id === CAPABILITIES ? 'plugins' : item.id) }}><NavGlyph name={item.icon} /></button>)}
+      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : item.id === CAPABILITIES ? capabilitiesActive ? 'page' : undefined : activePanelId === item.id ? 'page' : undefined} onClick={() => { resources.leaveDecision(); if (item.id === HOME) resources.select(null); ctx.layout.selectPanel(item.id === HOME ? null : item.id === CAPABILITIES ? 'plugins' : item.id) }}><NavGlyph name={item.icon} /></button>)}
       <div className="seal-nav-rail__footer">
         <button type="button" title="设置" aria-label="设置" onClick={() => { if (!openSettings) throw new Error('设置入口未加载。'); openSettings() }}><NavGlyph name="settings" /></button>
         <button type="button" title="账户" aria-label="账户" aria-current={activePanelId === 'seal-harness-user' ? 'page' : undefined} onClick={() => activateExisting('.seal-harness-user-footer', '账户')}><NavGlyph name="account" /></button>

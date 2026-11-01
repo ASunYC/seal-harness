@@ -1,5 +1,9 @@
 export const styles = `
-.seal-remote-page { box-sizing:border-box; height:100%; min-height:0; overflow:auto; padding:32px; color:var(--dsw-alias-label-primary,#eee); background:var(--dsw-alias-bg-base,#151618); font:14px/1.6 "Segoe UI","Microsoft YaHei UI",sans-serif; }
+.seal-remote-page { box-sizing:border-box; height:100%; min-height:0; overflow:hidden; display:grid; grid-template-columns:260px minmax(0,1fr); color:var(--dsw-alias-label-primary,#eee); background:var(--dsw-alias-bg-base,#151618); font:14px/1.6 "Segoe UI","Microsoft YaHei UI",sans-serif; }
+.seal-remote-page--login { display:block; padding:var(--seal-page-inset,32px); }
+.seal-remote-sidebar { box-sizing:border-box; display:flex; flex-direction:column; min-height:0; padding:28px 12px 18px; border-right:1px solid var(--dsw-alias-border-l1,#34363b); background:var(--dsw-alias-bg-layer-1,#1c1d20); }
+.seal-remote-sidebar h2 { margin:5px 8px 20px; font-size:19px; line-height:1.3; font-weight:600; }
+.seal-remote-content { box-sizing:border-box; min-width:0; min-height:0; overflow:auto; padding:var(--seal-page-inset,32px); }
 .seal-remote-header,.seal-remote-actions,.seal-remote-toolbar,.seal-remote-host-heading { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .seal-remote-header { justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
 .seal-remote-page h1 { margin:0; font-size:24px; line-height:32px; font-weight:600; }
@@ -11,8 +15,10 @@ export const styles = `
 .seal-remote-clients { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:24px; }
 .seal-remote-clients > div { border:1px solid var(--dsw-alias-border-l2,#41434a); border-radius:10px; padding:14px 16px; min-width:0; }
 .seal-remote-clients strong { margin-right:12px; }.seal-remote-clients span { font-size:12px; color:var(--dsw-alias-label-secondary,#aaa); }.seal-remote-clients span[data-available="true"] { color:#8fcb9b; }.seal-remote-clients p { font-size:12px; margin-bottom:0; }
-.seal-remote-toolbar { margin:0 0 18px; }.seal-remote-toolbar input { flex:1; min-width:180px; }.seal-remote-toolbar > span { color:var(--dsw-alias-label-secondary,#aaa); white-space:nowrap; }
-.seal-remote-hosts { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr)); gap:16px; }
+.seal-remote-toolbar { display:grid; gap:8px; margin:0 0 16px; }.seal-remote-toolbar input { width:100%; min-width:0; }.seal-remote-toolbar > span { color:var(--dsw-alias-label-secondary,#aaa); white-space:nowrap; font-size:12px; }
+.seal-remote-hosts { min-height:0; overflow:auto; }.seal-remote-hosts > p { margin:10px 12px; font-size:13px; }
+.seal-remote-page .seal-remote-hosts > button { width:100%; margin-bottom:3px; padding:8px 12px; display:flex; flex-direction:column; align-items:flex-start; gap:2px; text-align:left; border:0; border-radius:9px; background:transparent; }
+.seal-remote-hosts > button:hover,.seal-remote-hosts > button[aria-current="page"] { background:var(--dsw-alias-interactive-bg-hover,#303137); }.seal-remote-hosts small { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--dsw-alias-label-secondary,#aaa); }
 .seal-remote-host { border:1px solid var(--dsw-alias-border-l2,#41434a); background:var(--dsw-alias-bg-layer-1,#22242a); border-radius:12px; padding:20px; min-width:0; display:flex; flex-direction:column; align-items:stretch; }
 .seal-remote-host-heading { justify-content:space-between; flex-wrap:nowrap; }.seal-remote-host-heading h2 { margin:0; font-size:17px; font-weight:600; overflow-wrap:anywhere; min-width:0; }
 .seal-remote-protocol { border-radius:5px; padding:2px 7px; background:var(--dsw-alias-bg-base,#151618); font-size:12px; flex:none; }
@@ -25,6 +31,7 @@ export const styles = `
 .seal-remote-backdrop { position:fixed; inset:0; z-index:1100; display:flex; align-items:center; justify-content:center; background:var(--dsw-alias-bg-mask-2,#0009); padding:20px; }
 .seal-remote-dialog { box-sizing:border-box; width:560px; max-width:100%; max-height:calc(100vh - 40px); overflow:auto; padding:24px; border:1px solid var(--dsw-alias-border-l2,#41434a); border-radius:14px; background:var(--dsw-alias-bg-layer-1,#22242a); box-shadow:0 16px 60px #0005; }
 .seal-remote-dialog h2 { margin:0 0 20px; font-size:20px; font-weight:600; }.seal-remote-form { display:grid; gap:14px; }.seal-remote-form label { display:flex; flex-wrap:wrap; gap:5px 8px; align-items:baseline; }.seal-remote-form label > input,.seal-remote-form label > select { width:100%; min-width:0; }.seal-remote-optional { font-size:12px; color:var(--dsw-alias-label-secondary,#aaa); }.seal-remote-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }.seal-remote-form details { border-top:1px solid var(--dsw-alias-border-l2,#41434a); padding-top:10px; }.seal-remote-form summary { cursor:pointer; margin-bottom:10px; }.seal-remote-form details p { font-size:12px; }.seal-remote-form .seal-remote-note { margin:0!important; }.seal-remote-dialog footer { justify-content:flex-end; margin-top:8px; }
-@media(max-width:800px) { .seal-remote-page { padding:20px; }.seal-remote-clients { grid-template-columns:1fr; gap:8px; }.seal-remote-clients > div { padding:10px 14px; }.seal-remote-host { padding:16px; } }
+@media(max-width:800px) { .seal-remote-page { grid-template-columns:210px minmax(0,1fr); }.seal-remote-content { padding:20px; }.seal-remote-clients { grid-template-columns:1fr; gap:8px; }.seal-remote-clients > div { padding:10px 14px; }.seal-remote-host { padding:16px; } }
+@media(max-width:620px) { .seal-remote-page { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(160px,35vh) minmax(0,1fr); }.seal-remote-sidebar { border-right:0; border-bottom:1px solid var(--dsw-alias-border-l1,#34363b); padding:14px 12px; }.seal-remote-sidebar h2 { margin:0 8px 10px; }.seal-remote-toolbar { grid-template-columns:minmax(0,1fr) auto; }.seal-remote-toolbar > span { grid-column:1 / -1; }.seal-remote-content { padding:20px; } }
 @media(max-width:420px) { .seal-remote-form-grid { grid-template-columns:1fr; }.seal-remote-backdrop { padding:12px; }.seal-remote-dialog { padding:18px; max-height:calc(100vh - 24px); } }
 `

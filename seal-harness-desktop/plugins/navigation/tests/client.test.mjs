@@ -109,7 +109,7 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   await act(async () => { releaseDecision = navigation.register({ id: 'ask-jev', label: '问问决策', order: 45, icon: 'plugins', Panel: () => React.createElement('span', null, '独立决策页面') }) })
   assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id).sort(), ['experts'])
   assert.equal(registrations('sidebar.panellist')[0].options.priority, -100)
-  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '能力', '自动化任务', '问问决策', '空间'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '能力', '自动化任务', '空间'])
   const expertMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'experts')?.component
   const decisionMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'ask-jev')?.component
   assert(expertMain)
@@ -121,9 +121,9 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   )))
   assert.match(document.querySelector('aside').textContent, /原生工作区与会话/)
   assert.match(document.querySelector('article').textContent, /专家内容/)
-  await click('问问决策')
+  await act(async () => ctx.layout.selectPanel('ask-jev'))
   assert.equal(activePanelId, 'ask-jev')
-  assert.equal(document.querySelector('button[aria-label="问问决策"]')?.getAttribute('aria-current'), 'page')
+  assert.equal(document.querySelector('button[aria-label="问问决策"]'), null)
   assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), null)
   assert.equal(registrations('sidebar.panellist').length, 0)
   assert.equal(registrations('sidebar.workspaces').length, 2)
@@ -136,9 +136,9 @@ test('home resources share the sidebar with native workspaces and sessions', asy
     for (const listener of sessionListeners) listener()
     ctx.layout.selectPanel(null)
   })
-  assert.equal(document.querySelector('button[aria-label="问问决策"]')?.getAttribute('aria-current'), 'page')
-  assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), null)
-  assert.equal(registrations('sidebar.workspaces').length, 2)
+  assert.equal(document.querySelector('button[aria-label="问问决策"]'), null)
+  assert.equal(document.querySelector('button[aria-label="首页"]')?.getAttribute('aria-current'), 'page')
+  assert.equal(registrations('sidebar.workspaces').length, 1)
   await act(async () => {
     sessionSnapshot = { byId: { other: { id: 'other', retainedBy: { mainView: 1 } } } }
     for (const listener of sessionListeners) listener()
@@ -212,7 +212,7 @@ test('home resources share the sidebar with native workspaces and sessions', asy
       id, label, icon, order: 110 + index * 10, primary: true, Panel: () => React.createElement('span', null, label),
     }))
   })
-  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '能力', '知识库', '自动化任务', '问问决策', '远程主机', 'ACP', '空间'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '能力', '知识库', '自动化任务', '远程主机', 'ACP', '空间'])
   assert.equal(registrations('sidebar.panellist').some(entry => primaryEntries.some(([id]) => id === entry.options.id)), false)
   for (const [id, label] of primaryEntries) {
     await click(label)
@@ -234,7 +234,7 @@ test('home resources share the sidebar with native workspaces and sessions', asy
     entries.push(marketEntry)
     for (const listener of slotListeners) listener()
   })
-  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '能力', '自动化任务', '问问决策', '空间'])
+  assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['首页', '能力', '自动化任务', '空间'])
   const marketMain = entries.find(entry => entry.options.name === 'main' && entry.options.key === 'seal-harness-market')
   assert(marketMain)
   assert.equal(marketMain.locale, marketEntry.locale)
