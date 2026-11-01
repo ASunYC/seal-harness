@@ -15,7 +15,7 @@ export const product = {
   displayVersion: desktopRequire('@deepseek-ai/dsh/package.json').version,
 }
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
-export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop', 'acp']
+export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop', 'acp', 'superagent']
 
 export function linkProductDependencies() {
   const link = join(productRoot, 'node_modules')

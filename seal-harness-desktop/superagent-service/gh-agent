@@ -1,0 +1,3 @@
+#!/bin/sh
+export GH_CONFIG_DIR=/home/node/.dsh/gh-agent
+exec gh "$@"

@@ -24,6 +24,7 @@ function NavGlyph({ name, size = 20 }) {
     knowledge: <><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0" /></>,
     desktop: <><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 22h8m-4-5v5" /></>,
     acp: <><circle cx="5" cy="12" r="3" /><circle cx="18" cy="5" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8 10 7-4M8 14l7 4" /></>,
+    superagent: <><path d="M6 3.5h9l3.5 1.75v2.5L15 9.5H6a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z" /><path d="M10 9.5v10.25a1.75 1.75 0 0 0 3.5 0V9.5M10 15.5h3.5" /></>,
     experts: <><rect x="4" y="7" width="16" height="13" rx="2" /><path d="M9 7V4h6v3M9 12h.01M15 12h.01M9 16h6" /></>,
     organization: <><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M8 7V3h8v4M8 12h2m4 0h2M8 16h2m4 0h2M11 21v-4h2v4" /></>,
     skills: <><path d="m12 2 9 5v10l-9 5-9-5V7l9-5Z" /><path d="m3 7 9 5 9-5M12 12v10" /></>,

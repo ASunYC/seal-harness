@@ -1,0 +1,15 @@
+services:
+  superagent:
+    build: .
+    image: seal-harness/superagent:prototype-6337fc8
+    container_name: seal-superagent
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3082:3083"
+    volumes:
+      - superagent-home:/home/node/.dsh
+      - superagent-work:/home/node/work
+
+volumes:
+  superagent-home:
+  superagent-work:
