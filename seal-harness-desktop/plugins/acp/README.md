@@ -1,6 +1,8 @@
 # Seal Harness ACP Runner
 
-`@seal-harness/acp` 将外部 ACP v1 编程 Runner 接到 Seal Harness，提供独立一级页面及 `list_acp_runners` / `acp_runner` 模型工具。界面语义参考 Octop Enterprise 的 Runner 目录，代码独立实现，不复制其 Python 运行时或品牌资产。
+`@seal-harness/acp` 将外部 ACP v1 编程 Runner 接到 Seal Harness，提供独立一级页面及 `list_acp_runners` / `acp_runner` 模型工具。界面参考 Octop Enterprise 的 Runner 目录，代码独立实现，不复制其 Python 运行时。
+
+Runner 图标取自本地 `Octop-Enterprise/dashboard/src/assets/acp` 与 `dashboard/src/assets/providers`，随 Client 构建内嵌，仅用于识别各第三方工具；来源项目的 MIT 许可证见 `assets/OCTOP-LICENSE.txt`，各工具名称及标识归其权利人所有。
 
 ## 使用
 

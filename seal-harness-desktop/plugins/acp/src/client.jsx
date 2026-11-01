@@ -4,6 +4,16 @@ import { styles } from './styles.js'
 export const inject = ['slots', 'connection', 'sealHarnessAuthClient']
 const running = item => ['starting', 'checking', 'running', 'stopping'].includes(item.status)
 const statuses = { starting: '正在启动', checking: '检查协议', running: '执行中', stopping: '正在清理', completed: '已完成', cancelled: '已取消', failed: '失败', timeout: '超时', blocked: '进程停止状态未知' }
+const runnerIntros = {
+  opencode: '开源 AI 编程专家，通过 stdio ACP 与 Seal Harness 协作。',
+  codebuddy: '腾讯云代码助手 CodeBuddy Code，使用 codebuddy --acp 启动。',
+  claude: 'Anthropic Claude Code 终端编程助手。',
+  codex: 'OpenAI Codex CLI，通过 ACP adapter 接入。',
+  kimi: '月之暗面 Kimi Code CLI，先登录后使用 kimi acp 启动。',
+  cursor: 'Cursor CLI agent，先登录或设置 CURSOR_API_KEY 后启动。',
+  pi: 'Pi 编程专家，通过 pi-acp 桥接接入 ACP。',
+}
+const runnerStatus = item => !item.configured ? '已禁用' : item.check?.ready ? 'ACP 检查通过' : item.check ? 'ACP 检查失败' : item.enabled ? '已启用 · 待检查' : '已禁用'
 
 export function AcpPanel({ api }) {
   const [data, setData] = useState(null), [busy, setBusy] = useState(false), [error, setError] = useState('')
@@ -41,16 +51,16 @@ export function AcpPanel({ api }) {
     if (value) setEditor(null)
   }
   return <main className="seal-acp-page" data-seal-acp>
-    <header className="seal-acp-header"><div><h1>ACP</h1><p>连接支持 Agent Client Protocol 的外部编程 Runner。</p></div><div className="seal-acp-actions"><button type="button" disabled={busy} onClick={() => void load()}>刷新</button><button type="button" className="seal-acp-primary" onClick={() => edit(null)}>添加 Runner</button></div></header>
+    <header className="seal-acp-header"><h1>ACP</h1><p>配置外部编程专家 Runner（OpenCode、Claude Code 等）</p></header>
+    <div className="seal-acp-divider" aria-hidden="true" />
     {error && <p role="alert" className="seal-acp-error">{error}</p>}
-    <p className="seal-acp-note">{data?.note ?? '正在读取本机账号的 Runner 配置…'}</p>
-    <section className="seal-acp-grid" aria-label="Runner 列表">{data?.items.map(item => <article className="seal-acp-card" key={item.id}>
-      <div className="seal-acp-row"><h2>{item.name}</h2><label><input type="checkbox" role="switch" aria-label={`启用 ${item.name}`} checked={item.enabled} disabled={busy || active} onChange={event => item.configured ? void mutate('toggle', { id: item.id, enabled: event.target.checked }) : edit(item, true)} />启用</label></div>
-      <p>{item.note}</p><span className="seal-acp-badge" data-ready={item.check?.ready === true}>{!item.configured ? '待配置工作目录' : item.check?.ready ? 'ACP 检查通过' : item.check ? 'ACP 检查失败' : item.discovery.found ? '程序已发现 · 待检查' : '程序未安装'}</span>
-      <code>{item.config.command} {item.config.args.join(' ')}</code><p>{item.discovery.message}</p>{item.config.cwd && <code>工作目录：{item.config.cwd}</code>}
-      <div className="seal-acp-actions"><button type="button" disabled={busy || active} onClick={() => edit(item)}>配置</button><button type="button" disabled={busy || active || !item.configured} onClick={() => void mutate('check', { id: item.id })}>检查 {item.name}</button><button type="button" disabled={busy || active || !item.enabled} onClick={() => { setTask(item); setPrompt(''); setError('') }}>运行 {item.name}</button>{item.configured && <button type="button" disabled={busy || active} onClick={() => setDeleting(item)}>删除配置</button>}</div>
-    </article>)}</section>
-    <section aria-label="最近 ACP 操作"><h2>本次运行记录</h2>{data && data.runs.length === 0 && <p>暂无操作记录。检查不会发送模型提示词；运行结果仅保留在当前 Host 内存中。</p>}{data?.runs.map(run => <article className="seal-acp-run" key={run.id}>
+    <div className="seal-acp-surface"><div className="seal-acp-toolbar"><div><p>连接支持 ACP 协议的外部编程专家。Runner 配置对该账号下所有专家共享。</p><p>以下 Runner 配置对该账号下所有专家生效。</p></div><button type="button" className="seal-acp-primary" onClick={() => edit(null)}>添加 Runner</button></div>
+    <section className="seal-acp-grid" aria-label="Runner 列表">{data?.items.map(item => <article className="seal-acp-card" data-runner={item.id} key={item.id}>
+      <div className="seal-acp-card-top"><button type="button" className="seal-acp-card-open" onClick={() => edit(item)} aria-label={`配置 ${item.name}`}><img className="seal-acp-icon" src={__SEAL_ACP_ICONS__[item.id] ?? __SEAL_ACP_ICONS__.custom} alt="" /><h2>{item.name}</h2></button><input type="checkbox" role="switch" aria-label={`启用 ${item.name}`} checked={item.enabled} disabled={busy || active} onChange={event => item.configured ? void mutate('toggle', { id: item.id, enabled: event.target.checked }) : edit(item, true)} /></div>
+      <button type="button" className="seal-acp-card-detail" onClick={() => edit(item)} aria-label={`配置 ${item.name}`}><span>{runnerIntros[item.id] ?? item.note}</span></button>
+      <div className="seal-acp-card-bottom"><span className="seal-acp-badge" data-ready={item.check?.ready === true} data-enabled={item.enabled}>{runnerStatus(item)}</span></div>
+    </article>)}</section></div>
+    <section className="seal-acp-history" aria-label="最近 ACP 操作"><h2>本次运行记录</h2>{data && data.runs.length === 0 && <p>暂无操作记录。检查不会发送模型提示词；运行结果仅保留在当前 Host 内存中。</p>}{data?.runs.map(run => <article className="seal-acp-run" key={run.id}>
       <div className="seal-acp-row"><strong>{run.kind === 'check' ? '协议检查' : '编程任务'} · {run.runnerName} · {statuses[run.status] ?? run.status}</strong>{running(run) && <button type="button" disabled={busy} onClick={() => void mutate('cancel', { id: run.id })}>停止任务</button>}</div><time>{new Date(run.startedAt).toLocaleString()}</time>
       {run.output && <pre>{run.output}</pre>}{run.truncated && <p>输出已达到本页保留上限，后续内容未保留。</p>}{run.permissionDecision && <p>最近权限请求：{run.permissionDecision === 'rejected' ? '已拒绝' : '单次允许'}</p>}{run.error && <p role="status" className="seal-acp-error">{run.error}</p>}{run.stopReason && <small>停止原因：{run.stopReason}</small>}
     </article>)}</section>
@@ -65,7 +75,9 @@ export function AcpPanel({ api }) {
       <label>工具权限策略<select aria-label="权限策略" value={editor.permission} onChange={event => setEditor({ ...editor, permission: event.target.value })}><option value="reject">拒绝所有权限请求（默认）</option><option value="allow-once">自动选择每次请求的单次允许项</option></select></label>
       <label>环境变量（JSON 对象）<textarea aria-label="环境变量" autoComplete="off" value={editor.environment} onChange={event => setEditor({ ...editor, environment: event.target.value })} placeholder={'{"PROVIDER_API_KEY":"新密钥"}'} /><small>已配置变量：{editor.environmentNames.join('、') || '无'}。旧值不会显示。留空保留，填写对象替换全部，填写 {`{}`} 清空。</small></label>
       <label><input type="checkbox" checked={editor.enabled} onChange={event => setEditor({ ...editor, enabled: event.target.checked })} />保存后启用</label>
-      {error && <p role="alert" className="seal-acp-error">{error}</p>}<footer><button type="button" disabled={busy} onClick={() => setEditor(null)}>取消</button><button type="submit" className="seal-acp-primary" disabled={busy}>保存 Runner</button></footer>
+      {error && <p role="alert" className="seal-acp-error">{error}</p>}
+      {editor.id && <div className="seal-acp-dialog-actions"><button type="button" disabled={busy || active} onClick={() => void mutate('check', { id: editor.id })}>检查 {editor.name}</button><button type="button" disabled={busy || active || !data?.items.find(item => item.id === editor.id)?.enabled} onClick={() => { setTask(data.items.find(item => item.id === editor.id)); setEditor(null); setPrompt(''); setError('') }}>运行 {editor.name}</button><button type="button" disabled={busy || active} onClick={() => { setDeleting(data.items.find(item => item.id === editor.id)); setEditor(null) }}>删除配置</button></div>}
+      <footer><button type="button" disabled={busy} onClick={() => setEditor(null)}>取消</button><button type="submit" className="seal-acp-primary" disabled={busy}>保存 Runner</button></footer>
     </form></div>}
     {task && <div className="seal-acp-modal"><form role="dialog" aria-modal="true" aria-label="运行 ACP 任务" className="seal-acp-dialog" onSubmit={async event => { event.preventDefault(); const value = await mutate('run', { id: task.id, prompt }); if (value) setTask(null) }}>
       <h2>运行 {task.name}</h2><code>{task.config.cwd}</code><p>任务会发送给此 Runner 自己配置的模型服务，可能产生费用。</p><label>任务<textarea aria-label="ACP 任务" maxLength="30000" required value={prompt} onChange={event => setPrompt(event.target.value)} /></label>{error && <p role="alert">{error}</p>}<footer><button type="button" disabled={busy} onClick={() => setTask(null)}>取消</button><button type="submit" className="seal-acp-primary" disabled={busy || !prompt.trim()}>启动任务</button></footer>

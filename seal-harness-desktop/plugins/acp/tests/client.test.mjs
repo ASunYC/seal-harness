@@ -53,10 +53,10 @@ test('ACP page configures, checks, starts, stops and explicitly deletes a runner
     await input('环境变量', '{"API_KEY":"new-key"}')
     await act(async () => document.querySelector('form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })))
     assert.equal(calls.find(item => item.action === 'save').payload.environment.API_KEY, 'new-key')
-    await click('配置')
+    await act(async () => document.querySelector('[aria-label="配置 Test"]').click())
     assert.equal(document.querySelector('[aria-label="环境变量"]').value, '')
     assert.match(document.querySelector('[role="dialog"]').textContent, /API_KEY/)
-    await click('取消')
+    assert.equal(document.querySelectorAll('.seal-acp-card-actions').length, 0)
     await click('检查 Test')
     assert.match(document.body.textContent, /ACP 检查通过/)
     await click('运行 Test')
@@ -65,10 +65,35 @@ test('ACP page configures, checks, starts, stops and explicitly deletes a runner
     assert.match(document.body.textContent, /partial/)
     await click('停止任务')
     assert.match(document.body.textContent, /已取消/)
+    await act(async () => document.querySelector('[aria-label="配置 Test"]').click())
     await click('删除配置')
     assert.equal(calls.some(item => item.action === 'delete'), false)
     await click('确认删除')
     assert.equal(calls.filter(item => item.action === 'delete').length, 1)
+  } finally {
+    await act(async () => root.unmount()); dom.window.close()
+    globalThis.window = previous.window; globalThis.document = previous.document; delete globalThis.IS_REACT_ACT_ENVIRONMENT
+  }
+})
+
+test('ACP runner directory keeps the seven Octop cards compact and opens preset configuration from its switch', async () => {
+  const dom = new JSDOM('<html><head></head><body><div id="app"></div></body></html>')
+  const previous = { window: globalThis.window, document: globalThis.document }
+  globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true
+  const names = ['OpenCode', 'CodeBuddy', 'Claude Code', 'Codex', 'Kimi Code', 'Cursor CLI', 'Pi']
+  const ids = ['opencode', 'codebuddy', 'claude', 'codex', 'kimi', 'cursor', 'pi']
+  const items = ids.map((id, index) => ({ id, name: names[index], note: '', configured: false, enabled: false,
+    config: { command: id, args: [], cwd: '', timeoutSeconds: 300, permission: 'reject' }, discovery: { found: false, message: '未找到程序' }, check: null }))
+  const loaded = await load(document), root = createRoot(document.querySelector('#app'))
+  try {
+    await act(async () => root.render(React.createElement(loaded.AcpPanel, { api: async () => ({ items, runs: [] }) })))
+    assert.deepEqual([...document.querySelectorAll('.seal-acp-card h2')].map(node => node.textContent), names)
+    assert.equal(document.querySelectorAll('.seal-acp-dialog-actions').length, 0)
+    assert([...document.querySelectorAll('.seal-acp-icon')].every(image => image.src.startsWith('data:image/')))
+    assert.equal(document.querySelectorAll('.seal-acp-badge').length, 7)
+    await act(async () => document.querySelector('[aria-label="启用 OpenCode"]').click())
+    assert.equal(document.querySelector('[role="dialog"] [aria-label="Runner 名称"]').value, 'OpenCode')
+    assert.equal(document.querySelector('[role="dialog"] input[type="checkbox"]').checked, true)
   } finally {
     await act(async () => root.unmount()); dom.window.close()
     globalThis.window = previous.window; globalThis.document = previous.document; delete globalThis.IS_REACT_ACT_ENVIRONMENT
