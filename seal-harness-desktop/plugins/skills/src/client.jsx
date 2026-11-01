@@ -1,7 +1,7 @@
 import React, { useSyncExternalStore } from 'react'
 import { SkillsPanel } from './panel.jsx'
 import { conversationServices, createSkillDraftConversation } from './conversation.js'
-import { capabilityApi, leaveResource, registerPanel } from '../../capability-shared/src/client.jsx'
+import { capabilityApi, registerPanel } from '../../capability-shared/src/client.jsx'
 
 export const inject = ['slots', 'connection', 'layout', 'sealHarnessAuthClient', 'sealHarnessNavigation', ...conversationServices]
 
@@ -10,7 +10,7 @@ export function apply(ctx) {
   const auth = ctx.sealHarnessAuthClient
   function Panel() {
     const status = useSyncExternalStore(auth.subscribe, auth.getStatus)
-    return <SkillsPanel key={JSON.stringify([status?.accountId, status?.epoch])} api={api} onBack={() => leaveResource(ctx)} startSkillCreation={() => createSkillDraftConversation(ctx)} />
+    return <SkillsPanel key={JSON.stringify([status?.accountId, status?.epoch])} api={api} startSkillCreation={() => createSkillDraftConversation(ctx)} />
   }
   registerPanel(ctx, { id: 'skills', label: '技能', order: 30, icon: 'store', description: '管理本地技能与指令' }, Panel)
 }

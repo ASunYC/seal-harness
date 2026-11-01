@@ -259,4 +259,20 @@ export const styles = dialogStyles + `
 .zz-connectors .mcp-runtime-tools-summary__list {display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;font:12px var(--font-mono)}
 .zz-connectors .mcp-installed-card__identity {text-align:left}
 @media(max-width:700px){.zz-connectors .resource-page-nav {height:auto;min-height:54px;flex-wrap:wrap;padding:10px}.zz-connectors .zz-tools-layout {grid-template-columns:1fr}.zz-connectors .zz-tools-list {max-height:180px;border-right:0;border-bottom:1px solid var(--line)}}
+
+.zz-resource-page.zz-connectors.resource-page-shell { display:flex; flex-direction:column; align-items:center; gap:32px; max-width:none; padding:28px clamp(24px,4vw,48px) 48px; }
+[data-platform=darwin] .zz-resource-page.zz-connectors.resource-page-shell { padding-top:calc(28px + var(--dsh-frame-top-clearance,0px)); }
+.zz-resource-page.zz-connectors .resource-page-nav { position:static; z-index:auto; width:100%; max-width:960px; height:auto; min-height:32px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px; padding:0; border:0; background:transparent; backdrop-filter:none; }
+.zz-resource-page.zz-connectors .connector-page-heading { display:block; }
+.zz-resource-page.zz-connectors .connector-page-heading h1 { margin:0; font-size:20px; font-weight:500; line-height:28px; }
+.zz-resource-page.zz-connectors .connector-page-heading p { margin:4px 0 0; color:var(--dsw-alias-label-secondary,var(--muted2)); font-size:13px; line-height:20px; }
+.zz-resource-page.zz-connectors .header-actions { gap:8px; margin-left:0; }
+.zz-resource-page.zz-connectors .header-actions .btn { height:32px; min-height:32px; padding:0 12px; border-radius:8px; font-size:13px; font-weight:500; line-height:20px; }
+.zz-connectors .capability-page__content { width:100%; max-width:960px; margin:0; padding:0; }
+.zz-connectors .connector-library { margin:0; padding:0; border:0; }
+.zz-connectors .connector-library .connector-directory-tabs { margin:0 0 16px; }
+.zz-connectors .connector-library .connector-installed-section { margin:0; }
+.zz-resource-page.zz-connectors .resource-installed .resource-installed__summary { min-height:32px; padding:0; }
+.zz-resource-page.zz-connectors .resource-installed .resource-installed__summary h2 { margin:0; font-size:14px; font-weight:500; line-height:22px; }
+.zz-connectors .connector-library .zz-directory-search { margin:18px 0; }
 `

@@ -566,4 +566,89 @@ export const styles = `.zz-resource-page.zz-skills {
 .zz-skills .skills-detail-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-bottom:1px solid var(--line);position:sticky;top:0;z-index:1;background:var(--panel)}.zz-skills .skills-detail-tabs button{border:0;border-radius:0;padding:9px 0;background:transparent;color:var(--muted2)}.zz-skills .skills-detail-tabs button[aria-pressed=true]{border-bottom:2px solid var(--ink);color:var(--ink);font-weight:650}
 .zz-skills .skills-description{color:var(--muted2)}
 @media(max-width:700px){.zz-skills .skills-page-content{padding:24px 16px}.zz-skills .skills-dialog.is-drawer{inset:12px;width:calc(100vw - 24px);height:calc(100dvh - 24px);max-height:calc(100dvh - 24px)}.zz-skills .skills-dialog-body,.zz-skills .skills-workbench-content{padding:16px}.zz-skills .skills-batch{flex-wrap:wrap}}
+
+/* 对齐 DSH 插件管理页的留白和控件尺寸。 */
+.zz-resource-page.zz-skills.resource-page-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  max-width: none;
+  padding: 28px clamp(24px, 4vw, 48px) 48px;
+}
+[data-platform=darwin] .zz-resource-page.zz-skills.resource-page-shell {
+  padding-top: calc(28px + var(--dsh-frame-top-clearance, 0px));
+}
+.zz-skills .resource-page-nav {
+  position: static;
+  z-index: auto;
+  width: 100%;
+  max-width: 960px;
+  height: auto;
+  min-height: 32px;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+.zz-skills .skills-page-heading { display: block; min-width: 0; }
+.zz-skills .skills-page-heading h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+}
+.zz-skills .skills-page-heading p {
+  margin: 4px 0 0;
+  color: var(--dsw-alias-label-secondary, var(--muted2));
+  font-size: 13px;
+  line-height: 20px;
+}
+.zz-skills .resource-page-nav > .skills-actions { gap: 8px; }
+.zz-skills .resource-page-nav .skills-actions button {
+  height: 32px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--dsw-alias-border-l3, var(--line));
+  border-radius: var(--dsw-radius-md, 8px);
+  background: var(--dsw-alias-bg-layer-2, var(--panel));
+  color: var(--dsw-alias-label-primary, var(--ink));
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.zz-skills .resource-page-nav .skills-actions button:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover, var(--raised));
+}
+.zz-skills .resource-page-nav .skills-actions button.primary {
+  border-color: var(--dsw-alias-button-primary-fill, var(--accent));
+  background: var(--dsw-alias-button-primary-fill, var(--accent));
+  color: var(--dsw-alias-label-primary-foreground, #fff);
+}
+.zz-skills .resource-page-nav .skills-actions button.primary:hover:not(:disabled) {
+  border-color: var(--dsw-alias-button-primary-hover, var(--accent-hover));
+  background: var(--dsw-alias-button-primary-hover, var(--accent-hover));
+}
+.zz-skills .skills-page-content {
+  display: grid;
+  gap: 32px;
+  width: 100%;
+  max-width: 960px;
+  padding: 0;
+}
+.zz-skills .local-skill-catalog { margin-top: 0; }
+.zz-skills .skills-library { padding-top: 0; border-top: 0; }
+.zz-skills .resource-installed .resource-installed__summary { min-height: 32px; padding: 0; }
+.zz-skills .resource-installed .resource-installed__summary h2 {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+}
+.zz-skills .skills-library .skills-primary-tabs { margin: 0 0 16px; }
+.zz-skills .skills-library > [aria-label="已安装技能"] + .local-skill-toolbar { margin-top: 18px; }
 ` + fileStyles

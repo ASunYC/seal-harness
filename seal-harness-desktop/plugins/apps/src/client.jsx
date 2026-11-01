@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from 'react'
-import { registerPanel, leaveResource } from '../../capability-shared/src/client.jsx'
+import { registerPanel } from '../../capability-shared/src/client.jsx'
+import { InstalledSection } from '../../capability-shared/src/installed-section.jsx'
 import { styles } from './styles.js'
 
 export const inject = ['slots', 'layout', 'connection', 'sealHarnessNavigation']
 
-export function ApplicationsPage({ api, onBack }) {
+export function ApplicationsPage({ api }) {
   const [items, setItems] = useState([]), [error, setError] = useState(''), [busy, setBusy] = useState(false), [confirm, setConfirm] = useState(false)
   const [loadError, setLoadError] = useState('')
+  const [tab, setTab] = useState('system')
+  const [loading, setLoading] = useState(true)
   useEffect(() => {
     const controller = new AbortController()
     let timer
     const refresh = async () => {
       try {
         const value = await api('list', {}, controller.signal)
-        if (!controller.signal.aborted) { setItems(value.items); setLoadError('') }
-      } catch (cause) { if (!controller.signal.aborted) setLoadError(cause.message) }
+        if (!controller.signal.aborted) { setItems(value.items); setLoadError(''); setLoading(false) }
+      } catch (cause) { if (!controller.signal.aborted) { setLoadError(cause.message); setLoading(false) } }
       if (!controller.signal.aborted) timer = setTimeout(refresh, 1500)
     }
     void refresh()
@@ -28,11 +31,16 @@ export function ApplicationsPage({ api, onBack }) {
     } catch (cause) { setError(cause.message) }
     finally { setBusy(false) }
   }
-  return <main className="seal-apps-page">
-    <header className="seal-apps-nav"><button type="button" aria-label="返回会话" onClick={onBack}>←</button><strong>应用</strong><span>APPS</span></header>
+  const installed = tab === 'system' ? items.filter(item => item.installed) : []
+  const installedIcons = installed.map(item => ({ key: item.id, label: item.name, icon: item.name.slice(0, 1) }))
+  return <main className="zz-resource-page seal-apps-page resource-page-shell">
+    <header className="seal-apps-nav"><div className="seal-apps-heading"><h1>应用</h1><p>浏览、安装和管理本机应用。</p></div></header>
     <div className="seal-apps-content">
       {(error || loadError) && <p role="alert" className="seal-apps-error">{error || loadError}</p>}
-      {!items.length && !error && !loadError && <p role="status">正在读取应用…</p>}
+      <nav className="seal-apps-tabs" aria-label="应用分类"><button aria-pressed={tab === 'system'} onClick={() => setTab('system')}>系统</button><button aria-pressed={tab === 'personal'} onClick={() => setTab('personal')}>个人</button></nav>
+      <div aria-label="已安装应用"><InstalledSection key={tab} label="应用" icons={installedIcons} loading={loading}>{loading ? <p role="status">正在读取应用…</p> : installed.length ? <div className="seal-apps-installed-list">{installed.map(item => <article className="seal-apps-installed-card" key={item.id}><div><strong>{item.name}</strong><p>{item.description}</p></div><button disabled={busy || ['install', 'uninstall', 'connect'].includes(item.state)} onClick={() => void act('open')}>打开</button></article>)}</div> : <div className="seal-apps-empty"><strong>还没有安装应用</strong><p>{tab === 'system' ? '点击应用卡片上的安装按钮开始安装。' : '暂无个人应用。'}</p></div>}</InstalledSection></div>
+      {tab === 'system' ? <>
+      {!items.length && loading && <p role="status">正在读取应用…</p>}
       <div className="seal-apps-grid">{items.map(item => {
         const processing = ['install', 'uninstall', 'connect'].includes(item.state)
         const disabled = busy || processing
@@ -49,6 +57,7 @@ export function ApplicationsPage({ api, onBack }) {
         </article>
       })}</div>
       <p className="seal-apps-help">安装后打开 DBX，添加数据库连接，并在「设置 → MCP」中选择允许访问的连接。随后在会话输入框的「连接器」中选中 DBX，即可让助手查询数据。</p>
+      </> : <div className="seal-apps-empty"><strong>暂无个人应用</strong><p>当前应用目录仅提供系统应用。</p></div>}
     </div>
     {confirm && <div className="seal-app-dialog-backdrop"><section className="seal-app-dialog" role="dialog" aria-modal="true" aria-labelledby="seal-app-uninstall-title"><h2 id="seal-app-uninstall-title">卸载 DBX？</h2><p>将移除应用程序及关联的 MCP 连接器，保留 DBX 的连接配置。请先退出 DBX（包括托盘）。</p><footer><button autoFocus onClick={() => setConfirm(false)}>取消</button><button className="seal-app-primary" onClick={() => void act('uninstall')}>确认卸载</button></footer></section></div>}
   </main>
@@ -61,6 +70,6 @@ export function apply(ctx) {
     return result.value
   }
   ctx.effect(() => { const element = document.createElement('style'); element.textContent = styles; document.head.append(element); return () => element.remove() }, 'seal-harness apps styles')
-  function Panel() { return <ApplicationsPage api={api} onBack={() => leaveResource(ctx)} /> }
+  function Panel() { return <ApplicationsPage api={api} /> }
   registerPanel(ctx, { id: 'apps', label: '应用', order: 55, icon: 'apps', description: '安装和使用本机应用' }, Panel)
 }
