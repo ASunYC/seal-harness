@@ -129,7 +129,7 @@ describe('published package surface', () => {
   })
 
   it('keeps Beta Safe Mode out of the normal DSH home and Desktop state', () => {
-    expect(main).toContain('const profileUserDataDir = safeModePaths?.userDataDir ?? desktopUserDataDir')
+    expect(main).toContain('let profileUserDataDir = safeModePaths?.userDataDir ?? desktopUserDataDir')
     expect(main).toContain('if (safeModePaths !== undefined) {\n      homeDir = safeModePaths.homeDir')
     expect(main).toContain('process.env.DSH_HOME = homeDir')
     expect(main).toContain('const desktopLaunchEnvironment = withDesktopDshHome(environment, homeDir)')
@@ -150,7 +150,7 @@ describe('published package surface', () => {
     expect(main).toContain('notifyDesktopSafeModeActive(runtime, electronLogger)')
     expect(main).toContain('safeModePaths !== undefined && DESKTOP_SAFE_MODE_DEFAULTS.settings.notifications.enabled')
     expect(main).toContain('const setupWizardState = safeModePaths === undefined')
-    expect(main).toContain('if (safeModePaths === undefined && desktopSetupWizardRequired(')
+    expect(main).toContain('if (safeModePaths === undefined && DESKTOP_PRODUCT.setupWizardEnabled !== false && desktopSetupWizardRequired(')
     expect(main).toContain('const safeModeDefaults = DESKTOP_SAFE_MODE_DEFAULTS')
     expect(main).toContain('updateDesktopSetupWizardSettings(prepared.settingsDocument, safeModeDefaults.settings)')
     expect(main).toContain('selectDesktopMarketProvider(marketUserDataDir, safeModeDefaults.market)')
@@ -246,13 +246,13 @@ describe('published package surface', () => {
       'const openDirectory = (path) => {',
       'if (path !== null) openDirectory(path);',
       'if (targetPath !== null) openDirectory(targetPath);',
-      'IconFolderOpen16',
       'browser.nativePicker',
       'const parentInert = busy || folderDraft !== null || nativePicking || validatingDirectory;',
     ]) {
       expect(patch).toContain(marker)
       expect(installedClient).toContain(marker)
     }
+    expect(installedClient).toContain('IconFolderOpenRegular')
   })
 
   it('patches the browse backend to skip unreadable directory-looking entries', () => {
@@ -333,8 +333,12 @@ describe('published package surface', () => {
 
     expect(stableResolutions.length).toBeGreaterThan(0)
     expect(betaResolutions.length).toBeGreaterThan(0)
-    expect(new Set([...stableResolutions, ...betaResolutions].map(([selector]) => selector)).size)
+    const nextVersion = String(JSON.parse(readFileSync(new URL('dsh-desktop-next/package.json', workspaceRoot), 'utf8')).dependencies['@deepseek-ai/dsh'])
+    const nextResolutions = dshResolutions.filter(([selector]) => selector.endsWith(`@npm:${nextVersion}`) || selector.endsWith(`@npm:^${nextVersion}`))
+    expect(nextResolutions.length).toBeGreaterThan(0)
+    expect(new Set([...stableResolutions, ...betaResolutions, ...nextResolutions].map(([selector]) => selector)).size)
       .toBe(dshResolutions.length)
+    for (const [, resolution] of nextResolutions) expect(String(resolution)).toContain(nextVersion)
     for (const [selector, resolution] of stableResolutions) {
       expect([stableRuntimeVersion, `^${stableRuntimeVersion}`]).toContain(selector.split('@npm:')[1])
       expect(String(resolution)).toContain(stableRuntimeVersion)
@@ -363,12 +367,14 @@ describe('published package surface', () => {
 
   it('keeps the canonical web profile configurable while Desktop disables browser opening', () => {
     const patchPath = `./patches/dsh-web-app@${runtimeVersion}.patch`
-    const openPatchPath = './patches/open@11.0.1.patch'
-    const openPatchResolution = `patch:open@npm%3A11.0.1#${openPatchPath}`
+    const openVersion = String(JSON.parse(readFileSync(new URL('node_modules/open/package.json', packageRoot), 'utf8')).version)
+    const openRange = String(JSON.parse(readFileSync(new URL('node_modules/@deepseek-ai/dsh-web-app/package.json', packageRoot), 'utf8')).dependencies.open)
+    const openPatchPath = `./patches/open@${openVersion}.patch`
+    const openPatchResolution = `patch:open@npm%3A${openVersion}#${openPatchPath}`
     expect(dshResolution('@deepseek-ai/dsh-web-app')).toContain(patchPath)
     expect(workspaceManifest.resolutions).toMatchObject({
-      'open@npm:11.0.1': openPatchResolution,
-      'open@npm:^11.0.0': openPatchResolution,
+      [`open@npm:${openVersion}`]: openPatchResolution,
+      [`open@npm:${openRange}`]: openPatchResolution,
     })
     const patch = readFileSync(new URL(patchPath, workspaceRoot), 'utf8')
     const openPatch = readFileSync(new URL(openPatchPath, workspaceRoot), 'utf8')
@@ -394,7 +400,7 @@ describe('published package surface', () => {
     expect(installedWebApp).toMatch(
       /function spawnBrowserLauncher\(url\) \{\s+return spawn\(process\.execPath, \[[\s\S]*?\], \{\s+windowsHide: true,\s+env:/u,
     )
-    expect(lockfile).toContain('open@patch:open@npm%3A11.0.1#./patches/open@11.0.1.patch')
+    expect(lockfile).toContain(`open@patch:open@npm%3A${openVersion}#./patches/open@${openVersion}.patch`)
     expect(openPatch).toContain('+\t\t\tchildProcessOptions.windowsHide = true;')
     expect(installedOpen).toMatch(
       /if \(!isWsl\) \{\s+childProcessOptions\.windowsVerbatimArguments = true;\s+childProcessOptions\.windowsHide = true;\s+\}/u,

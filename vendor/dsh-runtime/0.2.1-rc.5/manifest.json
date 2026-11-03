@@ -1,0 +1,2762 @@
+{
+  "formatVersion": 1,
+  "repository": "https://github.com/deepseek-ai/deepseek-harness.git",
+  "commit": "b830ec950faba0a46dda564be3e2d854afed94f1",
+  "version": "0.2.1-rc.5",
+  "buildProfile": "official",
+  "distributionSource": "https://registry.npmjs.org",
+  "packages": [
+    {
+      "name": "@deepseek-ai/dsh",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-0.2.1-rc.5.tgz",
+      "size": 25131,
+      "sha256": "60987566f19e0ded1f7918c00a65c19c56ea25f5977ee0bfd5697c5c113ec4e1",
+      "npmIntegrity": "sha512-WkyJZv4zl9sCAxSzRctGm58m0rilGqwR6pniBiLOz5CPDfHfDuAUicg0AAazXI7oj/Cph6/cjNTncA/rpLTXpw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-acp",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-acp-0.2.1-rc.5.tgz",
+      "size": 32923,
+      "sha256": "56b16c988b8cd6502e62ac19c75eb94b28c820f2a5251dc647271abb9b711b2d",
+      "npmIntegrity": "sha512-dABnzXuQtVfYtSGgoq2uANb/mzIBg3bA9bHCaLwjbJYZYfza4ZeYqqpk7CHU3/YAf+WQO4+nSegInACX64rTzg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-acp-app",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-acp-app-0.2.1-rc.5.tgz",
+      "size": 7426,
+      "sha256": "925c5e451aafdc5647fda25b577804dcf8e62f9fc6cde799d6a5b0db968025e5",
+      "npmIntegrity": "sha512-Zk6DtmRlas87fnqSfKG69UYBOXArVuxet9Deci9XGbLKTBCtKcqt5anZpKXpwZtXmSlPX5du8RHdo4xlPXsHKQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-agent-0.2.1-rc.5.tgz",
+      "size": 46870,
+      "sha256": "2d9b3f2df391f030b7848a4294e8f80009c448e2225d3c7ac67004e9ff4d1142",
+      "npmIntegrity": "sha512-mHNbxag0rZVNHaXZvr4OhiveaTTGMNPEpzO4nS8ohOQiQL0MWqA7brwtjBbaAlB3aMZ13tbHGHINpFlXdu8J3Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent-default-model",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-agent-default-model-0.2.1-rc.5.tgz",
+      "size": 7803,
+      "sha256": "e368c700cf430478880bc3f2510366da6c8bb821ba97689db88a6d5801552741",
+      "npmIntegrity": "sha512-FXaSVijTKKc6+hHnD96q4V4Fq5AgN/cim0risjVP16Jf3Mw3ruARXLs/6aMez6WNPCo8EsiJ0iVNFX6FEw+/AQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent-instructions",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-agent-instructions-0.2.1-rc.5.tgz",
+      "size": 35455,
+      "sha256": "41d05b2f2348d3317d885bbf64776cf359a348b9c35b985eca7e5be54ece3663",
+      "npmIntegrity": "sha512-gZ8qwJ+h/+7WjjNTtWjCLV2bn+JrTlM7jnTtsAJ5JlIE6JncI4ny6Hup3yrc39rEuRd51C6PGhO2gB1Aq8099g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent-loop",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-agent-loop-0.2.1-rc.5.tgz",
+      "size": 48507,
+      "sha256": "4250f6f2f9806e5a6cc04c4673328f6253d9c018b3d9668d8d9957cae1228f84",
+      "npmIntegrity": "sha512-fWDnhe4md8D0D18puVuNQIg5EklenitiqtyL4p1sbCUytraGn11naUqiUJ77O0Mpit4qJTvCozsgEzyBpbsXuA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent-loop-testkit",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-agent-loop-testkit-0.2.1-rc.5.tgz",
+      "size": 10056,
+      "sha256": "bdce7b1d2d22026493067aa632a100464f27740cfaf93a66a1998a6e8077fe0c",
+      "npmIntegrity": "sha512-2PUoXtMp12lFxg0iy9C9WRuwNC6s3QZBh7an4iMc+IVI/FbEv4kfazsyZSeDGXUz6gTHqRI4jbcbvkLWjwhy/A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent-preset",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-agent-preset-0.2.1-rc.5.tgz",
+      "size": 32724,
+      "sha256": "93173a7dc8a0b419f88cec7a74d7d28708ad1d1540378663aceac9bbff2d23d2",
+      "npmIntegrity": "sha512-pke2MOy2ae6K85aEvic0nHyZToWlUMchbUMOzcVP6JZT6iGTQcWBhVeQ0+obKCPW0492Sld2a0cv5ZOGirMHhQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent-preset-registry",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-agent-preset-registry-0.2.1-rc.5.tgz",
+      "size": 42578,
+      "sha256": "e1c8e8787391154fcc0d84c3bb9665f86dafcb8b4fbeda8cde51fd99fcf68cda",
+      "npmIntegrity": "sha512-esA0qBU7Jt1VYhl7jpr6iK48byQeTajqP6mfz7JvJJuu+hzQzxFVTZMzn/DIRC+cOXvdguSFhJVP4PnKUYmDHg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent-tool-presentation",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-agent-tool-presentation-0.2.1-rc.5.tgz",
+      "size": 8469,
+      "sha256": "bf3da88ba90a7e38d372d4843eebae627ee09aa08246e2ab54e78cfb185656ba",
+      "npmIntegrity": "sha512-tyVpv0OerqD7ihAaRjTmkeWu2RUUs7q7o3wkqz4+mt3+ijm58R3sWUsbrCbur7+25GUYcdszYZMRGxFAaFKOMA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-anonymous-user-id",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-anonymous-user-id-0.2.1-rc.5.tgz",
+      "size": 10640,
+      "sha256": "b50c9f3895de83ec88b80d043cab9fe8f4ce623503f757d798acf6dc5c809fc2",
+      "npmIntegrity": "sha512-9T12VT/JvrZNJC4hfSKSUv0hv/j3iaEIWZkxjZyL4u51mN3P/c985AomjQblajsWeL602tSR9xT8V6tD/nTUgQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-api-account-controller",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-api-account-controller-0.2.1-rc.5.tgz",
+      "size": 16694,
+      "sha256": "9f3c0e7c6590d80c2fb10b67cae2ff49db94d0db6b08dc572a8e66779a304b9c",
+      "npmIntegrity": "sha512-d3zvv1GpzZtkcyG0Xl169Qwh+XMx9cpysjLBhqUYhnGBsi90W1295wMdor8P+7k7M/iqSqaZG0C6nbpr2bVrjw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-api-gateway",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-api-gateway-0.2.1-rc.5.tgz",
+      "size": 131981,
+      "sha256": "d0c5e415b45668fc7677a94cabe595dee93959aef85e2d94bf5bf9616525f6a9",
+      "npmIntegrity": "sha512-W5+xTDaFL7nK633TNpSy8Suxg16zMk0kWH6xZj0ADDCEdw8KtCb3bZ7tN3i+rSMXgHaGc/jstmjjkEYzqUGFCA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-api-job-controller",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-api-job-controller-0.2.1-rc.5.tgz",
+      "size": 31793,
+      "sha256": "a97cd9b6c7d7b4a995ae5737bf42125ff4dddd5821d549ccbb4a14c00cf578a9",
+      "npmIntegrity": "sha512-nezO1kfTQyVyKYITCJzU9gpO9LpJl8dj2OXo2Linxo+UyqgD1dYybOk4IzEfWgBOFZX9uNvx/oMW9fo3T4NYAQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-api-remote-access",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-api-remote-access-0.2.1-rc.5.tgz",
+      "size": 35378,
+      "sha256": "c004ab4f1701fd3332b8ab4fd056848f766bfccca57108f5a87026b4f10cfcd4",
+      "npmIntegrity": "sha512-JNZlYUwhzar34RU1rk6bbiM7/Da8El6rL+MDsb+TYYJ2PtGRe8hkpmJX7NU4TYVkZV+2pdKQDPP3KRdLJ5Jyrg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-api-remotes",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-api-remotes-0.2.1-rc.5.tgz",
+      "size": 122548,
+      "sha256": "0e9565b3c99c7a0b9fd938b0e7880c16abb8849211d0f78a822f1ee197925948",
+      "npmIntegrity": "sha512-ijkip7k9Xl5e3MmBPNdJh4TM0wcnNg5UxJq0bqEdyrRcv2NwRiy+ZFYMe2HW2Y1U/LCh1QQNGi90oQ7UuC9Zzw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-api-session-controller",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-api-session-controller-0.2.1-rc.5.tgz",
+      "size": 272968,
+      "sha256": "538be90f901b4725483f77d45da3e2af97be542a49259052dd9f3e291214e6f5",
+      "npmIntegrity": "sha512-9kcolv2E00fuMMXWDbMn4K2JRMdAf8Ql5wME1CaGxgManvLjPM2Ymc46o2TJnwH4kO2gUtVKUrP9hcreHd148g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-api-settings-controller",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-api-settings-controller-0.2.1-rc.5.tgz",
+      "size": 23502,
+      "sha256": "48af793f28d8685a24d837dbc03d9432804824ade52f5371404bf7b2197bad3e",
+      "npmIntegrity": "sha512-a+KS+7gtnXkxfneo6rMbbD0KYoQUiXmdgnjSTALlFP06Ud3HepbJK36civBq1dnqvDi7PLcIqxCe+tPur9GQvQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-api-terminal-controller",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-api-terminal-controller-0.2.1-rc.5.tgz",
+      "size": 75817,
+      "sha256": "c1aa9fe8f55d57fbf3b88c30584042914af94abcd9a7eed34411497be3c1c3d2",
+      "npmIntegrity": "sha512-tyfASRIfgk9O6uRb8LnjTfuei3vsrX5e5oxjEZ/RQBDD37PuHSC9eCgvZmNqBCYXJcKJrItmTL/v8WLdlLPupg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-api-workspace-controller",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-api-workspace-controller-0.2.1-rc.5.tgz",
+      "size": 54085,
+      "sha256": "1dc62f0605ef60d4ff1ed41284417abb881ed785c3ad1551c98ff77c9b62319a",
+      "npmIntegrity": "sha512-9ZJORMRQQ4+bvlMPJ0gyRjaPZbuW1sMasHijWs+JqgqCXLK3VU6oJ+XGcz4IShxHZJUmapIN1tUvfjdLMx4AjA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-api-workspace-files",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-api-workspace-files-0.2.1-rc.5.tgz",
+      "size": 49312,
+      "sha256": "456a05c0a2e2ce4cd183c4c61034d0371b4a965b4327ac2fe1ed7fa0376de6b6",
+      "npmIntegrity": "sha512-QdovfwBXdTgELEHYpUBcA60hxivfB2t6BZrYB+gJesji0MgHuVrn9YflsclokCo2CCSWUT7KZuZzoNtdP0ajlQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-app-boot",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-app-boot-0.2.1-rc.5.tgz",
+      "size": 117797,
+      "sha256": "162843e7b18a63a7bbb64dfacfef0a530320bc3e708f10fbe76f70584a797b15",
+      "npmIntegrity": "sha512-8dBUah1r9W86/iXL6IRiluluJecNfyR0FEPR09EAcvqbqGASVM7gDqF/0eUYfPyc1MPN5StOqvaE12qnzWC1jg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-atomic-write",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-atomic-write-0.2.1-rc.5.tgz",
+      "size": 13838,
+      "sha256": "5c5db0e5a2a9eabd66d4dcc4191c40464acbbb53462ffddb21bbcd5e0db1fbe3",
+      "npmIntegrity": "sha512-XFN8WAUsBbnfbO+pvL2qgM6Gy1kOqCL0Df01J8Bb7qjL0zSEx7N5IToqOU/tlrryNxp1b+6fxGv+Jvauk9TT8w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-attachment",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-attachment-0.2.1-rc.5.tgz",
+      "size": 22980,
+      "sha256": "feb6fdb7cd21dc10848144b2596a8d8e407734e85014d3c81589b03c4263ecb7",
+      "npmIntegrity": "sha512-9jPIVpB+B6ipKz3lXrvR4gxe1XU2pl8U9vIEpKTiWHKW4vG3GF7j6vVQge7gtd3mkkBj65hc8pIvedS/ird0FA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-attachment-local",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-attachment-local-0.2.1-rc.5.tgz",
+      "size": 30744,
+      "sha256": "61378c04217cb1cb92fae411de1d4ce4cd25fbd6f3386c43a6552ff4ca245100",
+      "npmIntegrity": "sha512-CLh7qhvOhTQ9LMURx+MZEyCiuuYKFfAYbMeB1Unhihs1YBUJQI5VT+uUGrx/XLaR6lmLHam5QMltovJ2Dwzulw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-authorization",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-authorization-0.2.1-rc.5.tgz",
+      "size": 21713,
+      "sha256": "df4585dec2b4b5817b1aefa9e18b183ea4b77251eaed7c0d9af976191e60e2ac",
+      "npmIntegrity": "sha512-kcg87CvAmLsdAyxd6gbZ+HhQVCAltD4fynFn/k/zCy6Hp6U+jSi+i9VZmo4e3foTZt6xnWk3ZRjhy00KYUkvIQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-base",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-base-0.2.1-rc.5.tgz",
+      "size": 17778,
+      "sha256": "49e2e850dd4c16d54c47caa00e657cd2ed7397369971e5b98a5a8dfa6da97c47",
+      "npmIntegrity": "sha512-VgXPT834zvsXBzt5x2AshlPicFJ2RTE8YqJYWqS/vAhP2sUvD020+F8pWN+KInzYgDE14d3tCbcltFkH3JeHJg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-bash-local",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-bash-local-0.2.1-rc.5.tgz",
+      "size": 16387,
+      "sha256": "83e7f1e6c9d7e72ae6b4efdba9b51968083017da6a43c8315072e9f77f8e6c48",
+      "npmIntegrity": "sha512-d2G4LqyZD3fLm92Ol80fF4adOZ4jc5uDXP9xC6sPaTZU0HGgIRiZ5M/3LT1Qwtgsrh4etGUs4bARbHkSGWzEYg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-bash-sandbox",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-bash-sandbox-0.2.1-rc.5.tgz",
+      "size": 15066,
+      "sha256": "15bb24ac3a24c49633b4f9492ccd112f4fb4bdeb9e5a6897ff984e8d7f556532",
+      "npmIntegrity": "sha512-vjNhFxH9CCsL1+XVEWhPX4m6my7AThu3GLuc5VAd22VVzFsIKbDzUmIG/cIGMMU9Z6gQ/kblk1Z2euet00lJ9w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-brand",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-brand-0.2.1-rc.5.tgz",
+      "size": 6410,
+      "sha256": "9a0d30b3466783f7b0e52a636602630ab62f39598df9568600ddfaad97b389ca",
+      "npmIntegrity": "sha512-7lUfWjWWAkrb/CFtMbXgjXLYQnL3KJwv+GLMTgY5EZ/4sOH0ufZUX8xlBWyMpdV2LqdvJ1yPKQ+mopH71/wbMQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-browser-use",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-browser-use-0.2.1-rc.5.tgz",
+      "size": 5630,
+      "sha256": "1cbe6f9e064a73616a53626c492dfb3762fd02bc83118b91926ffc602a6c701b",
+      "npmIntegrity": "sha512-lmDtU9S8f6zkviGkLrUFqxBAdTZStiFI/dKNx4wLNwiRjHAc4SS01MJGxV6/dxbF4tai7vXQpgpgYvl8ZprdgQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-chunked-list",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-chunked-list-0.2.1-rc.5.tgz",
+      "size": 5948,
+      "sha256": "01270db3394bb7bcd220388771c4bd09be5f4ee83318ed8742127a5ad692970f",
+      "npmIntegrity": "sha512-W6FoVQx4d/CqQAUe6KTEwM/kd2NbwBQU7SPTjfSgSBq+ehNKfrD6xxshQX5Y1b2H8QPaIr6o/5zmLLHonjkgMA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-connection",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-connection-0.2.1-rc.5.tgz",
+      "size": 58708,
+      "sha256": "534fa454ee7e1d8da4684216ed7b0fe074d1c373ad663dbba9acb296b49aa96e",
+      "npmIntegrity": "sha512-X/VUlrtACszgH2HS89MX1olAn7L62JghCit/wBVWK89C0NMSxVaqsyxwJ2OkkAhr6yf0sY9ED7erYT8G26njVw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-file-upload",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-file-upload-0.2.1-rc.5.tgz",
+      "size": 32892,
+      "sha256": "accdc37478f280e2f358be299f8fca5bfc44281688c539fb8d86d2911e824a29",
+      "npmIntegrity": "sha512-DKDaLvz1cUKTzFVgWeZC66tc5qeVPJ/5+FFUZB4gFoGMkY/SNtxf36wHO7IUGCyDn752CgjqZdWLKEvoIJJRhg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-hmr",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-hmr-0.2.1-rc.5.tgz",
+      "size": 15140,
+      "sha256": "a024b6a9f641daab3b3b6424145ea8840ef56fd0ffc6d5906ff2055a0637d330",
+      "npmIntegrity": "sha512-JPXve6frNtuna0GyNVQUBUFqWsp5AU5BYpplpJOmr2gmRU/CxgcbCL/Y+1wakJT4HQyN1mzOkLeU8kIauX13hg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-locale",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-locale-0.2.1-rc.5.tgz",
+      "size": 33633,
+      "sha256": "2cf412ca4562849e97988a01c6afd8c4d970bbacaf7b18b31b0e41de0b13f92c",
+      "npmIntegrity": "sha512-8o/b921yIq1Y93b2xFcHIyfpBitgZEkwLkA1uE8ZakQwEotU5FvLTnC3JUb4KhsZhSKeO979V5yJo622cwclHQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-modules",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-modules-0.2.1-rc.5.tgz",
+      "size": 53506,
+      "sha256": "d0f6632887a8b979efea867d579c3f45e6e4b41b2096d6ac835e597dcd1413a3",
+      "npmIntegrity": "sha512-V1w+5w/C3ikf0yMj0b5O4vb73KQBeXq/Zz/2JNgjriYcoGuXgSRbjPgKVLTH15I0zkIAL5trxCznogvv9xTBqQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-product-analytics",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-product-analytics-0.2.1-rc.5.tgz",
+      "size": 24874,
+      "sha256": "d739576e522f698b83f8441ac7ba7b907231f0da20b2e0fd1ea2d04d92f1c5fa",
+      "npmIntegrity": "sha512-zIaOEI++2IEy0kM1B0RMsRA3aiMa/gFxXmYF/DBvx9pS2lzR7MmHotIs48bNAd30m1fC3ytHT9WTdsaWLwCkzQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-resources",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-resources-0.2.1-rc.5.tgz",
+      "size": 11271,
+      "sha256": "bd1a2cb425bc32a5a7546e86234ab2bc94c86b66c2f43ed6c314bd0ed4341319",
+      "npmIntegrity": "sha512-BfIWNxbJoUZMvFs1bBRCjmEjvWvclP02+ycZ4H7fkSEjkusj1JwC0h/fYolHcRjOwzhaq+onFeFdcY6relOiPA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-shortcuts",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-shortcuts-0.2.1-rc.5.tgz",
+      "size": 49718,
+      "sha256": "5a2d5d69c1d684dad077838af4d30792dceb0f00315b1ac9c3ce1ac30c17819e",
+      "npmIntegrity": "sha512-KSY+nNHSJaSasmEcPUkruEUGPClYvMCYp/jqNxiLy9W/3GPFvAQoxROtaoLx4f3hZPwr3tUraog4ymwtIKY3Rw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-store",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-store-0.2.1-rc.5.tgz",
+      "size": 8998,
+      "sha256": "55a436de5bf0759de18c70f7b6019224d6eedb996eae18d7fcf693afa8ed9ec9",
+      "npmIntegrity": "sha512-CDi+x1DSXVVrSNflGjDa1dovyWbcQ4Gmyz200sk2TYL69X74LyfPrAWkGA66z4v10o4VlRQxFz6hJ5YDFhoi/w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-test-runtime",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-test-runtime-0.2.1-rc.5.tgz",
+      "size": 49312,
+      "sha256": "9129221ff792207be0080891cf070925c09c68f1e8e4790b65646dcd324ee1d6",
+      "npmIntegrity": "sha512-yb6S22g6FY0gDU0AHyhQZTkugYyOoafNgV5S+jaY77QMrAflWOFeghP3KDx5FOGDJTOKOLBgbjVTUf3bKf5/Yw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-agent-preset",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-agent-preset-0.2.1-rc.5.tgz",
+      "size": 48237,
+      "sha256": "2058f953ada0ceba6c1e3b44d6e3f9b79e6ce8f33dfcd711e2917192fefc5238",
+      "npmIntegrity": "sha512-j7ze/kl1qwA1dpFTNUniIHoaXLMCSEbVjHWpoOIDYbLaR9kEJgCLm/v7TnxPdU8eadrT+AuGxaMryvu4edbOIA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-approval",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-approval-0.2.1-rc.5.tgz",
+      "size": 10278,
+      "sha256": "25bc472aa2e815a31ed1d51ba078d7a89d6b0dbf3875ac83e468ead54b84258a",
+      "npmIntegrity": "sha512-iPaSX12dG3FEFW+V9UeWtjokDtSzMfQ3pxG/tWu9DRuntSR+9sEtJlcC0MXY65vDDGwzhzsgTvszs3BqVW1d5Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-attachment",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-attachment-0.2.1-rc.5.tgz",
+      "size": 23871,
+      "sha256": "ac5a5acfe69850fcb9bf5f52cf7367dc55f79d7002295fed6e4d3f3fd89dce6f",
+      "npmIntegrity": "sha512-YKxkCuNhsjixm3ni32eCb1n3TNWOjf9wT9It0Kp/kE5Wz33vvZRbEtQquMfMNLoemvPElnzFt6jmphZgJR7mrQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-brand-official",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-brand-official-0.2.1-rc.5.tgz",
+      "size": 6974,
+      "sha256": "f70048886a9cac22e804241aa2608662de0475ef49a59598942c3c3217079a3e",
+      "npmIntegrity": "sha512-owN3pmc/ct+0ccIX6uWE7xpTURTIakFG+4z779YgE1uRwX0rj+V4S0053efRGSjW83oPkfo3sYSqJWwVBBhwPw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-chat",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-chat-0.2.1-rc.5.tgz",
+      "size": 232292,
+      "sha256": "f43404aca1e3cafc6df656c67aadc614f799a13afe5e6ab881d2cc5b46f158c5",
+      "npmIntegrity": "sha512-/UzmkMvOW94RtwHNbnU36+U5syK3QBRoDYzX9n6iyb+w9PrlKjUIckGqZNZnAoEG374htpvUrrT0YPSp4BDJ+A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-commands",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-commands-0.2.1-rc.5.tgz",
+      "size": 43453,
+      "sha256": "b6d069c341135cd5eaac20d63a37f9d4452c725096eafda45327376a9b84d12e",
+      "npmIntegrity": "sha512-WF4ybhDU0+dt6N4YzUq23v2jUWIkANpIdfwkXsoO2ivIkPUD9+ce2r2iPt1wXTkmSBPNs5DHdncc2yqYKhYjqA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-conversation",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-conversation-0.2.1-rc.5.tgz",
+      "size": 296367,
+      "sha256": "d2447f0ff9761c6373885778c352b111d2c4e3bab1aace865b67063b158d9ffb",
+      "npmIntegrity": "sha512-9vlIdui/1HLr8ni/834KejulzBicjqRVxSoQwP7WuBWLLvzskL2dXrF7g6S+8vTfqeblPiUWDxFVbcw774F/eA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-cordis",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-cordis-0.2.1-rc.5.tgz",
+      "size": 31168,
+      "sha256": "5ad623a838932f603762b0eb35bd9e1ad5674a4a076315b9dd5528777d6b8081",
+      "npmIntegrity": "sha512-3SJVbVPqTsuyeR1Huq+eqz+3YVg+MMfBK6jOblL92vXQGmDlLsJTNivrlSjjDMTVgM+bjojQANp194glAZfBKw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-deepseek-model-label-1017",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-deepseek-model-label-1017-0.2.1-rc.5.tgz",
+      "size": 6790,
+      "sha256": "b074ebb1bb98c80d2d1346ade7d28782e08de96ffff5e87b8051ef6c887af77d",
+      "npmIntegrity": "sha512-aI8rUVnXGK6kOFosz6xoM2cRhazeW/77SL3/nYfq8CYOm3gQNGzvFq3T6OLt+UnRyifYnuAAUYj+IsV9GgnEIA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-deliverables",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-deliverables-0.2.1-rc.5.tgz",
+      "size": 57153,
+      "sha256": "23b284e876425110eb1b49bbd029f569a97d86656e255c3822485008e941de11",
+      "npmIntegrity": "sha512-5PQI2DyPmUjRGsNZDiJc+ABt9VxIBHALnWfTXpXG6exoDR8UO0HK6GMpRo8VqqGl/epNEbHrlnn7BV1lVPDYOQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-directory-picker-browse",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-directory-picker-browse-0.2.1-rc.5.tgz",
+      "size": 20963,
+      "sha256": "0f28165c1a4df612998736632200ddfbfca08be7c25b9a521b4d1c61d8b47610",
+      "npmIntegrity": "sha512-2AwlRRDiWSlF6QFlGAf0WxatkyvBdYjvyRl0t+S2KjgRcCPq32r8fYo1PEUBqkXG89yJxW6VkFAYTSxbcvp2Vg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-directory-picker-native",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-directory-picker-native-0.2.1-rc.5.tgz",
+      "size": 8214,
+      "sha256": "ffe747d2602c055e53cf6d5c7ff6b161a2eaf0ddb873ac81bf18e782642d8c8b",
+      "npmIntegrity": "sha512-56y3MujAIRAtS6senLpcGJhINJ9/vuf6Vx30O0rNyIYReTFVyAANgifhthBermhDpnifPGE1QPANVfRikCVMPw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-dockkit",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-dockkit-0.2.1-rc.5.tgz",
+      "size": 77835,
+      "sha256": "7285f8198e044f1e5341dab022767ec49fa402d36f35a5f0bd96d0030d6215e3",
+      "npmIntegrity": "sha512-5UuS6N9pzjWBcy1zXAR3u7ZG5qDrYrsyRWLkawp9c3bjp4evLed07Azz43/0Ip1axHFEPbgj56gFSnnAPMPreg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-entry-customization",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-entry-customization-0.2.1-rc.5.tgz",
+      "size": 9332,
+      "sha256": "b3efd9c6f2e83bd6ba94f7d125c3252977f061c8c59049461549cbbf7546a44c",
+      "npmIntegrity": "sha512-gari9PK9xL5zUP8N+Wf4ai6+wj73+PzK6CAADLFHrRl77SrSAij2M+GH/NbOLO7ldVTqiXtShWpRKG20Sra/7w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-goal",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-goal-0.2.1-rc.5.tgz",
+      "size": 18536,
+      "sha256": "3208ea9f4563b0c5dc3e335b390cb58a68badae026dd48bc9be11c566afcff85",
+      "npmIntegrity": "sha512-akGOHEkQZUVnTLfB17CUF3XYTQUBMnDXtZOmcPc7yf9KYgXwTtVMyST66FhYXyiuRrl1oJIOLNPHA73PLzNKxQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-input-trigger",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-input-trigger-0.2.1-rc.5.tgz",
+      "size": 41896,
+      "sha256": "116b194f4377c81af40033d294336d46e9b3e9cb3e0f0c754ce4a95b6643d1d1",
+      "npmIntegrity": "sha512-DLWzUQbL5ZlEMhB+wGofOG/rrQ88kMzSAiElyJ4nKXu92noduWdDrziZkOb9iuUGe+wpVfVQiqddAxAKr3J0SQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-jobs",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-jobs-0.2.1-rc.5.tgz",
+      "size": 17411,
+      "sha256": "bd2f1aca0d36eded60d4a4ac34db3cd860c7918b7d5fef22ddbfa67fca70b124",
+      "npmIntegrity": "sha512-5cj1OkL/TW/uK++3Du4zAwiQx+y9JAxicE6ULXbOgGM+LSH+Ps1pvsUq2FSxd9XJsI+0mgNaE7h3Otf6rKuvcQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-layout",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-layout-0.2.1-rc.5.tgz",
+      "size": 26680,
+      "sha256": "532a37b9a5ca184605b0efa78ecbb97e65f3dfded63f406cc6670e0511b39988",
+      "npmIntegrity": "sha512-9NTZKbSb7b2cqbX+VzHxSItAym11wYODCzG9qsA7XvWH3k8EK7qNOBMQ8nJOwCcenOGAs8x7DQgPBXf9wHwBjQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-message-feedback",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-message-feedback-0.2.1-rc.5.tgz",
+      "size": 22927,
+      "sha256": "109ddf7af5d711f0520e1596d98b3cc93419d3d887f1f2a15b2d7cafd6b1293b",
+      "npmIntegrity": "sha512-Ew814FhKCV7U7gCHHngC9VEyAA+3EsLAdTeBYDJEAPfOz1DEm6ECcXf3rBAouvvXq/6ZVO3KTeB60je0f7DYgw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-model-selection",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-model-selection-0.2.1-rc.5.tgz",
+      "size": 36714,
+      "sha256": "0489aecef4d146a7148216e440a708cf50f616b7ddd9b254df1ccb33636998e1",
+      "npmIntegrity": "sha512-aL/NDqqDZqLrdWgW80cq33auuaqTF7BOUKaJplP4S1LLAl8DsfKGsiuCNwagjmtoZOxE+3y3FPlg9LrsKgUY7w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-open-in-app",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-open-in-app-0.2.1-rc.5.tgz",
+      "size": 25162,
+      "sha256": "cbfec604cc46aa7960f81679be5e8a9bf0eb6a548a8b95fbc003f3f24cdc2ce9",
+      "npmIntegrity": "sha512-yxJ2zUihGLzlxZeiiHdPuvLIT4ABT1fcV1QKJfQxrihd5ihucrN4GdmS2dEr3joKVQlgVjA4E/WKK4hfScq7uw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-permission-presets",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-permission-presets-0.2.1-rc.5.tgz",
+      "size": 22287,
+      "sha256": "1375433c2fd0d866ac4f4c836dd4fa4f298cf0d00c35796dc1dffe21ac21c65f",
+      "npmIntegrity": "sha512-8P6F1TDMHIyaZcemgSmz4UMVwaHLZbSPn5SeDVTz6s8Ol79tRPJ5OF4oyeYXnS5OjBI/OlqzwdELGwJ5GxVw0A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-plan",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-plan-0.2.1-rc.5.tgz",
+      "size": 22375,
+      "sha256": "7de4dbb107bcb37ae9959d6d66e16083722a5011bae12775ad5f606e2c4b8f69",
+      "npmIntegrity": "sha512-MaVlt16/qtB/KqK63JGDYdYNblpS5Wnadoh4OwX87wPwBT/Ls1MIe6iFXklr1pWwWXfqP6QA5g+ME3pfE8rm+g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-plugin-manager",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-plugin-manager-0.2.1-rc.5.tgz",
+      "size": 277031,
+      "sha256": "902906290e903745ff28950441256195d6b27992824c3781e16572323331e892",
+      "npmIntegrity": "sha512-wfVKxT0ico6Q2NhNJ1gOeVQNNW08gzVDPy7jMjOrVcWt/0XGyYsPjeHZ84dEAGexroJRgFugR6UykJN4dz2Drg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-plugin-market",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-plugin-market-0.2.1-rc.5.tgz",
+      "size": 28167,
+      "sha256": "235f99f120f249c5bb4575acf032271b80ff80e52eaa889b77e318725ef7b2ff",
+      "npmIntegrity": "sha512-fekTkY+RvSaPNAOwORBD0cimIQmG5U1U0U2JKM9F+9qrjveZzrZXExaheXiHpBlLtwXolef3iIDohtdfZPw3bQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-primitives",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-primitives-0.2.1-rc.5.tgz",
+      "size": 289385,
+      "sha256": "5ee37f94c51fde5fed8276415f93747305c2875a5f42445a14f315023d914add",
+      "npmIntegrity": "sha512-qSsRaEOURuFu4hDtPGcDO1bKiyPbFV68fvzm9Kxp9SG5c5SOzE4b6P33p1Hmml4nocXb7ktA6ay4jH3HEl1LQw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-reference",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-reference-0.2.1-rc.5.tgz",
+      "size": 16566,
+      "sha256": "048894613be8f400cb2ec392f41addca37df1bf4dd8138aa50c0a6ddd4420f86",
+      "npmIntegrity": "sha512-ZjJhJi4+4RJS48U2PlV5X51k1k+Yc9tm1IshZD3Kw5vNAb+UDXap/VKq1A1kNG/7O/OQBECIxgCaLD4OXh2GxA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-renderer",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-renderer-0.2.1-rc.5.tgz",
+      "size": 32021,
+      "sha256": "72421c0542cc31fc73803446dad3239c51b1897891c101858b55103c3c774477",
+      "npmIntegrity": "sha512-WJ3Rwg6f/5XPJwmqoDtYYC7DZZt6z9piQR1sOq1UwGrdY71l5QbwITnKPvVRZ5/WiHIdqmVdkAtCl19bwNcbKQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-schedule",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-schedule-0.2.1-rc.5.tgz",
+      "size": 129751,
+      "sha256": "b5dd71576886e9f75698e5cf98e3c9403a610a56b2173f3f18c8d1290bb00457",
+      "npmIntegrity": "sha512-Sl53ElWGGxmH8mqOcmSXAjIVR+D5Is2jzXhjPK2RUQxJOD3/jeUNsgVk6BRytnzR031O4kOhfTsbuJGkmdi5MA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-secret-mask",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-secret-mask-0.2.1-rc.5.tgz",
+      "size": 21747,
+      "sha256": "46454b40f8dfd579a1c61800be997ae3a80d0527c337870605da7799cac01834",
+      "npmIntegrity": "sha512-utHZpH+w+0+kOLhu3sNrcxNNLrfEAwY8gtjf/JoatyZE3SKNvR15Z2sTMZHBYj0zPKQMQ/5I3Cscqxzk1UjhNA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-session",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-session-0.2.1-rc.5.tgz",
+      "size": 17586,
+      "sha256": "3a87f7b38092a8804746b60aced22f2b8a16d639e295d91f779da06c3e6893a0",
+      "npmIntegrity": "sha512-KLyAGl2NorWRRoCPe8uU6YSk013WOhbMFzm6k9pDS9eEBqEVCTJj6KhEerhPJkgQ1fHB4kgfdv0yLAOdF6zv6g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-settings",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-settings-0.2.1-rc.5.tgz",
+      "size": 32886,
+      "sha256": "9cc9831516fd813c3eed3f54e0d7482ad29c0c887781b289e87e3d8e5d46f8ae",
+      "npmIntegrity": "sha512-RJH+l4oP0eo+eHYHttRxnU1CHirtwnXMyXpFmI9zRcp9HqBW2j3VbN12yR+HMCxEB5pb/yHRL5vqUMMEOsEL5Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-settings-account",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-settings-account-0.2.1-rc.5.tgz",
+      "size": 2504178,
+      "sha256": "aebe9f95f4439b7fe7a5b20ba13d5176354715725e328dccd76ee1181cd04d60",
+      "npmIntegrity": "sha512-AR2EV2wdmf2oNku22WqUws/qbj0/aTls4TaMqUPvr/DJfA0RVcVjj+NZRZA8thwaNt23C5mAc82U9M6LkB5eaQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-settings-agent-loop",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-settings-agent-loop-0.2.1-rc.5.tgz",
+      "size": 8577,
+      "sha256": "93a9d455cc7c0759ddaf0756d2bfca7d777497f1c239942379c2e34d333b8c98",
+      "npmIntegrity": "sha512-BK7WGb8hW8jDizrG7SCvbYPaNnRp4C82D3JIxEULD5XvMrTeR7NnEvuDjvhAP2cIMoAPGRUBx6N4/212pM8HsQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-settings-general",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-settings-general-0.2.1-rc.5.tgz",
+      "size": 34528,
+      "sha256": "b639fe72fc9e866b3409e62dcd5ecb360533ab5306baae31d625b7ad1f1d4d63",
+      "npmIntegrity": "sha512-QTl3ywqE561CIIgJStbm0qPlnKJrbS69vXFNgp5VCsv7wXKO+3Ovd3ucS3H2Mec+TLx1U8oP3XJL6gechrbxcg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-settings-models",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-settings-models-0.2.1-rc.5.tgz",
+      "size": 91002,
+      "sha256": "3d4c383ed21d14595650ff21b003afd3ece0113943fdb17cb1a842456e70c000",
+      "npmIntegrity": "sha512-KlgiQvPohimvBNOCvsJ8pjY2Cd4E4BveteaxKUmiwgqt8JQRrGkhTym5J7guihdtgxDEV+PnW8eZ5H8bNJTglQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-settings-plugin-inventory",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-settings-plugin-inventory-0.2.1-rc.5.tgz",
+      "size": 20679,
+      "sha256": "4ac453d8574afc1dc9a55b6488d5245b54e6f0893e2bb6299e5d20c1e5c7f724",
+      "npmIntegrity": "sha512-E1SO4aMBhvOkOvQoMB2PL5/bsnoKC/D++gRhqmnYXsGQgdYcescG8PVWP9Hs5202GaL8hzkmBcKbc0fmpHxKSA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-settings-plugins",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-settings-plugins-0.2.1-rc.5.tgz",
+      "size": 9161,
+      "sha256": "7456433cdde8cfaaa0e92dd4eccae597c4debf22372754bea3aad9f634ff5ce1",
+      "npmIntegrity": "sha512-9YpDVPtHwMS/q8QrynmbqZHajHIchR6+eHWw06d92NmrR2ltdF8LpD6cdmjPm8i2zKZNdwlR8fOjrWwWgDvEbQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-settings-session-log",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-settings-session-log-0.2.1-rc.5.tgz",
+      "size": 7591,
+      "sha256": "42d880140b1fd447c4a4161ead070f500d8ea446a12ad80691d1189609eab5ac",
+      "npmIntegrity": "sha512-LI7CLIh6OVAM8qy48mnQrqREUK8ZuIA/Ir8bW5VgnvwOyYmd8I1ULb0ZPGTGu2q0VgDsWk9yEQZr8oT3XOvALA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-settings-shell",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-settings-shell-0.2.1-rc.5.tgz",
+      "size": 9315,
+      "sha256": "5ef7b3ba867c3ed4543a84354c228e898028cdf67d3fc4f06cc37c0b05b357eb",
+      "npmIntegrity": "sha512-S56fbTsS7vmwbMll5CgQZRz0KwixKAsrNGs+XQdqaush0IGrwOH1nXoIwDwYGk0ArYznhMOCoJ/dUKr8rfejrA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-settings-subagent",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-settings-subagent-0.2.1-rc.5.tgz",
+      "size": 20042,
+      "sha256": "eeeff88b019b21bc804c065ac94f10457579b1babe6d9371d3c8907b1f8a8331",
+      "npmIntegrity": "sha512-/53Ky0z66xJ0KMx35dKDBs7m4rH6psWCnClk+WG/gmSi11U1kqUSISLDG/Qp8zYQSNXdUs1+EVJ4EoWgD8+JzA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-settings-web-search",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-settings-web-search-0.2.1-rc.5.tgz",
+      "size": 16965,
+      "sha256": "918a1276d404f4e64bf1e1f1675f8d4a7a2bb85abe8d499ac991bad362dd12f5",
+      "npmIntegrity": "sha512-JhXZrjENxQTbGhWiHk4rjIuZO8M61hyYTl/aasiW3VLSuW24moj5eFD1VAdssbwO4bfiMkMN23cLV3SlkoPoVg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-shortcuts",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-shortcuts-0.2.1-rc.5.tgz",
+      "size": 26957,
+      "sha256": "89820a134c1b782a27212bf0eddd9bb09550671b848587fde73e99c1c461813f",
+      "npmIntegrity": "sha512-OsiuJZGykIYy05SrJFBeuOzUZnl9JwfF2yUslJV6DFnVSJWvOzGOgDMvAXE/XBn271AmZ+Bp4jBSr7pSUwQMBw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-sidebar",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-sidebar-0.2.1-rc.5.tgz",
+      "size": 25015,
+      "sha256": "e99bebd1e8b4f1fd320a767deb73252410fdd1a43d81067cf1e385794a1d9388",
+      "npmIntegrity": "sha512-GX7AK4OH+FBRW6JrVEZwU7JFzKEj5aM07vMF3fdpTh233mNSRBlyx/yKOc/ZPaj+FAYRVGzU7pejtYhxwJsrEg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-sidebar-browser",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-sidebar-browser-0.2.1-rc.5.tgz",
+      "size": 33925,
+      "sha256": "6509f785ff5315409c39e24cc770a495e1fb61fbc2d4d0fa522a6d143121e31e",
+      "npmIntegrity": "sha512-FLKnqMp7aczPmxJrmCtBBYlinMTefHCtSu6H9/auXefTNKHCr7W6A1VEdubzgeiqX2XDsxMOIFVVMU/NdRq4Yw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-sidebar-documentpreview-0.2.1-rc.5.tgz",
+      "size": 4663957,
+      "sha256": "6d22c917e8904623539cb54cd142779b53abb5030debc439ce3a1b4586b8f106",
+      "npmIntegrity": "sha512-rzoeD9dENAl9QY9fT/qQywowxHaoY5RNkj5A9fqFU1xr6VXN6RCWCdwdpvzngK/soNw3LZwAVhdDVk70ccA3wg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-sidebar-files",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-sidebar-files-0.2.1-rc.5.tgz",
+      "size": 24866,
+      "sha256": "7c3cf83dfcbf17e7e0802d4f673ac9a9b8351221a8ad697a1f6352fae10a12c6",
+      "npmIntegrity": "sha512-63/4WclANtZETOKfnUJxNozPMaTIZ/i6498iG/bJ5/t/0lB/bpSY6N74AsIgwnK6N+L6DC+cbA3gJMavCmzvZg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-sidebar-right",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-sidebar-right-0.2.1-rc.5.tgz",
+      "size": 99046,
+      "sha256": "7d8574fffc1412eaec6dead66c680766496a47936ca05880648fe7f512712dd4",
+      "npmIntegrity": "sha512-0URJ44ly3cdxS7Lniydx161/G2FtIuJCNWUdNiHDGJtE4nK8tmFZc38MAuFjo6BtrEkz5UpOXPrsHFpckOrItg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-sidebar-terminal",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-sidebar-terminal-0.2.1-rc.5.tgz",
+      "size": 159748,
+      "sha256": "c6cece02cec644a77d6649e1fa231a01581c370e0194e7c9c78d4fa257ed14ba",
+      "npmIntegrity": "sha512-PpJgRZ22VVU9vgXVQrzPkX3Ku5K/OUexTUq0t1vpOOqiHTHEHc7qK1/avQoa5h4wC2FuDQ9f/UoC7yzmQ9aDaw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-skill",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-skill-0.2.1-rc.5.tgz",
+      "size": 19615,
+      "sha256": "49a66bca2d64cddd7194e70657acfd4550ba855932138e678bdb0fa9da45e659",
+      "npmIntegrity": "sha512-e9q0z/BJzEpnTa8fLl5dU4eDp0NNPEWga3D8EIhPO0C96sIMsP7aAvOeAAeuCayTA6H1Se03H10rw1ZAfbLtJQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-slots",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-slots-0.2.1-rc.5.tgz",
+      "size": 31964,
+      "sha256": "efb0485d955b104af95f0d02479366a3f09248fe9b1e661a2afa38d23ad2e42b",
+      "npmIntegrity": "sha512-CPqLPr1wYZAjxjwahcrud+Wf4sb5nKWqkukZOX3T/MLZ2lLJCOdDDlB5ji9ozLNCKwQw8nlcQPTiWzXMriNmMA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-subagent",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-subagent-0.2.1-rc.5.tgz",
+      "size": 26621,
+      "sha256": "4656257226ae227ea0f5c7a764b8bbae0c62668595348ccf1bbfbfd10fa415a2",
+      "npmIntegrity": "sha512-YT8NcDLbW/zRD76ix6yv6FvNoDKjXoTAYbpRiZnkYytUirDrvl8YvFZe2NKKBVJPaSJ1WV0zpccBfbt5a2ws7A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-theme",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-theme-0.2.1-rc.5.tgz",
+      "size": 244038,
+      "sha256": "24030040af9cf39b702ebd9e468a3c719a82f3f30fe1afc448d61d10a9e3d8c2",
+      "npmIntegrity": "sha512-D7cCGd+q9Y76rNUsRzV3Ak2VFW5sZVYuKZfh+Xf2oY/sDo5F/ukjoSU1aQ7bJvKrguuW6JDFt5iU21kLUtuBLQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-tool",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-tool-0.2.1-rc.5.tgz",
+      "size": 79188,
+      "sha256": "7b619a7e1b4d788f312b2ea134632936b17ef0ce91bff0d8ef061073f91900ea",
+      "npmIntegrity": "sha512-1HGELETSYWN13YkIhxFu1+hKP4bO9FvezMkcjxQBvBCK7UlmaSX/vHC0B1IVsQ4O8aJlt3c0N1BXw4A60PShgw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-trajectory",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-trajectory-0.2.1-rc.5.tgz",
+      "size": 108032,
+      "sha256": "742fac030bff4537ff87ac31a1f0ca728c0f42e73da6bb23cc926fb3e4cdd343",
+      "npmIntegrity": "sha512-1GmcganvOiakqTR2Mc3KABCDM3bHu4eBIeocOQJproW59+IHVXxbQ2Cbxcx+3gOB9NekJMwzK5gDJU6VUcYIyQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-user-questions",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-user-questions-0.2.1-rc.5.tgz",
+      "size": 43849,
+      "sha256": "f0cdddf86334f52d32957ad0ef0c7010cfbcab83ad00db4bc1a973ea3fe3d152",
+      "npmIntegrity": "sha512-+whliNdXrZdECC3G35yZ0GYpYjmPCOAsobfTF/ZhRUxPHE5ka80eGxonNjEYBsd5Ad1p7N/owlxIoA6GlImtrg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-workflow-run",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-workflow-run-0.2.1-rc.5.tgz",
+      "size": 16410,
+      "sha256": "a65efb51de876d05d0f83dd3725d0805e8a4c4cdfeff96b560aaae22ba59041b",
+      "npmIntegrity": "sha512-4j4qfmYxTt+XjakjXUt4lMngObLNjByIC92k7sGBfMrBe1aHIe98RlpPvoQ9Q51wHRrP+XAtg9OXphNIawe7kg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-workspace",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-ui-workspace-0.2.1-rc.5.tgz",
+      "size": 106330,
+      "sha256": "fe2a292f446c807c7d6f8d6210526846d1225f2d893d760c4e43739e2179e30a",
+      "npmIntegrity": "sha512-T3hHWUsrOsmjhV4VIfKTNwN2UrieMxnv5W26e6aiHr7YIy9Y98xfLINe7MpSk+kb2kBKRYyup8vDRW8X435J1w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-web",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-client-web-0.2.1-rc.5.tgz",
+      "size": 26004,
+      "sha256": "2de0a9c57f2e5403645affe9c2b1dee15ef57d9263f6a826c2bd226bd258f78d",
+      "npmIntegrity": "sha512-1WK81ytQdJhER3+z+Hi9ADdOWz8L7T9NONzI/gmA9/7bBXnfkKobz1TLjNcOKe+XNtT0aPqmOVVxfCgYP+zhLg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-cmdline",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-cmdline-0.2.1-rc.5.tgz",
+      "size": 12998,
+      "sha256": "4df53d11c00fc593cc166814e861b29e4ac34b270581afe0e07f830498be9940",
+      "npmIntegrity": "sha512-2AtmDUP1jeV61d9p7CiGPspiN5IgWrXLIt9t/W56b5lBCcwTTnw31+bUw7kWOjQzJxwNLSVGl9fXqalSens83Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-command-compact",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-command-compact-0.2.1-rc.5.tgz",
+      "size": 10953,
+      "sha256": "7f68b7939a9c8226bdfe1b1bdd9dcba803d2ca5db1805e9d5556a79e7e21702c",
+      "npmIntegrity": "sha512-s26qA+9SOHl3TzJxK9lo7UaSqoz+XL1k98o4FS6D4k7KlXj3WnSh+h3V1YMGUc8860Rm7/GEhvU+pDM/MPgWRQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-command-feedback",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-command-feedback-0.2.1-rc.5.tgz",
+      "size": 17411,
+      "sha256": "999c0ba9be64d062fb7e080d19542bfdc5951ffb88d87317a5c42ab7de17650f",
+      "npmIntegrity": "sha512-gjvUkhMwr3llBZW7RcMvKIFE4+yAsaT4aMr3wcSFZmiXxB5N5OrbymcchVzl1jemw6mv1zkOig9BDFVP4LzJ0g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-command-goal",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-command-goal-0.2.1-rc.5.tgz",
+      "size": 11776,
+      "sha256": "2c8b4abdc67d84527889e37b84f3f493c0d1d592b6b0b2ead0c8d08659c61986",
+      "npmIntegrity": "sha512-HaiQw4O2Z+oDuBwWpYpqT0nC80dTDhaR/GrNBJ5JJsBJmJzmGM1Cn6MEmEYZPB1iScovXFbdseUt58ojFdIX6A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-commands",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-commands-0.2.1-rc.5.tgz",
+      "size": 36973,
+      "sha256": "faf263118322086fb994e3a3777fcd0deceec8856f7d1f36c2348c583c16139a",
+      "npmIntegrity": "sha512-6jzjcag7rj4Ljk5si0RogCykv/fuwXpSysbgqzwPffYPDIZbupW0wTdngLKFVRkSUCSTDQTfjMSoku6xowkINA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-compaction",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-compaction-0.2.1-rc.5.tgz",
+      "size": 22449,
+      "sha256": "5ced97b65baad12ce724f116193966ac246ac6f771b9301abd24b49894cb9052",
+      "npmIntegrity": "sha512-eEUbn1QqqyxqN3TS/RP53IxIys5ojlYArbGL5iVEACiR6vrkRv6krc6R2pJXc2zHSJItqGhkTWmekbtpxH9vqg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-compaction-basic",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-compaction-basic-0.2.1-rc.5.tgz",
+      "size": 37042,
+      "sha256": "a9d4a8e209aa64bea1b406096e8f2470da8751f51c3c2e6ef7c85114e0d5698c",
+      "npmIntegrity": "sha512-sIsk3y1hZi3HJEIxb72FBMk+xy9T1eMmeK1mmMcRZTVpQDmEAR8j7H32dTz09nWGxvc0uUj0oWzTBuFechBvcQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-compaction-image-offload",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-compaction-image-offload-0.2.1-rc.5.tgz",
+      "size": 12504,
+      "sha256": "84b9c1a3ee04f248cdd4e30fb65dbc98b7941249b7c46ec24d6f72bd8822d721",
+      "npmIntegrity": "sha512-IBRwx8fdUdrm9JQJxUZz8bh0XXxEezM9gUjxTI9IYayjk5pSDnqjnyvL8pmLT+NQVJVigdnoCcgbEcJ/ZqpTRA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-compaction-tool-result-pruner",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-compaction-tool-result-pruner-0.2.1-rc.5.tgz",
+      "size": 13228,
+      "sha256": "af254c620e39b83df6c04f19d08a7ae5ea81bfa2e618aa37de9814b8fa9941b7",
+      "npmIntegrity": "sha512-VS6oVfsgRXaMGnLPm3KYcCYeabelo/BUtyHHIseM1XVkq0nGgcPdtqjeYtP9nUrPTsnqC78hpSzQyG4DLhCabA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-computer-use",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-computer-use-0.2.1-rc.5.tgz",
+      "size": 5566,
+      "sha256": "0e3324e6b05fe3b8ebbbdd61e70d695cbbf2eb00e6927dd7f5efafdf29ac03b5",
+      "npmIntegrity": "sha512-+u7LzKhhl7YjVGMh2whqAQepfwRfCJ8ni/Mee9Dp+yfIjxLEqKXf9tool4ojKBtUZg5NbIlZBnFOqCnPVxfBdg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-config-editor",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-config-editor-0.2.1-rc.5.tgz",
+      "size": 7609,
+      "sha256": "506eb3fc492c00b42a32dcde59f868abb9a3568e9d56365ed0aeb31cdd3917a9",
+      "npmIntegrity": "sha512-seSmBfULOLRm/HrXYoS4djj5Mii2btYl8eyoLlMRFCeOwKPvRvFHZXNVJHwbfNmdtFIskdF0Ep4T8a2pkB95Bg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-cordis-client-runner",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-cordis-client-runner-0.2.1-rc.5.tgz",
+      "size": 89269,
+      "sha256": "3a7461779ea2ef6e375b7511c5bd0fb88add4890fd81668707894a6171ad85b3",
+      "npmIntegrity": "sha512-foZJl6tVknyLN/bPzYZZrLzGsGK15I5JheWjX5RS7vCyW8ZQWu2sIA9mjsZEHO2tCq+rGObkg7Lm9k6S/vDuOg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-cordis-host-runner",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-cordis-host-runner-0.2.1-rc.5.tgz",
+      "size": 112754,
+      "sha256": "5ceba7d9f06ac7d6eb606ac554c8a2af0e152cb675b3abc4691b3849672bc062",
+      "npmIntegrity": "sha512-eMGns7W8Pdx49aKi3s7l6ntLV7L+ZCZTWqkX1thmYJvY1xyrR8TxWg0zXikKWBOmhc1+MRs+8QK/ukbb7oukMA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-credentials",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-credentials-0.2.1-rc.5.tgz",
+      "size": 19418,
+      "sha256": "664aa697aa6e75bb46da9957ba44c2a0e5e51a5dbbccae32e42ece19fda8bddd",
+      "npmIntegrity": "sha512-acO5+ytVNCqiej/5QI2Xy36gjiOrsf2X59rllNbVfA+IpanLeVBMsBQaSB+bKpgU3r4MVwvrz5EvcJuk4FeONw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-credentials-local",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-credentials-local-0.2.1-rc.5.tgz",
+      "size": 27366,
+      "sha256": "a9e4fefca104f5a09509e5c593daf92963e9f2172324b3bdaf5de58a61d5d30d",
+      "npmIntegrity": "sha512-RHhO5J4WZgCQt7w7l0tCcYUoleAJKUsyWglUDPNWO7hjBAIlboJq8qXepZkluenk18+iMOEqjNEj9zSh2rLXZA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-cua",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-cua-0.2.1-rc.5.tgz",
+      "size": 40475,
+      "sha256": "c68fd885f21a0c4003da0e495da8ef09cc8bccb1cc4defca93e24b495b90b659",
+      "npmIntegrity": "sha512-KhMMeDjIHACuRUdD6hhIp1ghDg29L7pwAWZs82lF4qIX2TokQyhn9xdYOH04z9OuGd+qEjsw63veGujCjwojbw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-deepseek-account",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-deepseek-account-0.2.1-rc.5.tgz",
+      "size": 12856,
+      "sha256": "cd4d3743aeb0e6fb61da29c894573c05569a4a7114ce38962b68be95ec696090",
+      "npmIntegrity": "sha512-BP9StAeelaMm2Zj/GlvewXW1swqcNFHFMlcK66qj++35cw9sl+6NPJNj+RudawI1+wqIRttkTw1mFJzQvAKJag=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-deepseek-account-platform",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-deepseek-account-platform-0.2.1-rc.5.tgz",
+      "size": 38662,
+      "sha256": "80ac80fcf81c0d9db5051979dc099d87b63270d7ea5e0e24d36de54d3c5c61fd",
+      "npmIntegrity": "sha512-Z5/IB1bu5zM6FLEaNZwNgq0J/2eM0Qt6TxNuO8a4XjPRgpU6CYXksR9ztr0iCu0TSIcpKnYPDfZ39uBI/DlXPw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-deepseek-llm-api-extensions",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-deepseek-llm-api-extensions-0.2.1-rc.5.tgz",
+      "size": 8402,
+      "sha256": "57df2946a376ee43fd06c003a92a36855454f07950a2222f6ac4fea3fd9355e5",
+      "npmIntegrity": "sha512-w8rJqPHDdV8OoanfrofrTaWRtnd4VRRmPUm8PsLxILe/AJeaZjso2d2gsgUIMCtFkTjueamZZfRiZKn3jTKSDg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-deque",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-deque-0.2.1-rc.5.tgz",
+      "size": 6337,
+      "sha256": "e8a319f98663534d4264776b55ca143d4c34cfa531f0912b9c4189d0880237c2",
+      "npmIntegrity": "sha512-8GgJ2lhDPQ7vtEGTTtZv0wXwEcxXz8yZc2p77iJJXbywOvEtEVZlIhLw1tt4jXNAUDph2RHCP0cx6UFMzmIW8w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-agent-team",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-agent-team-0.2.1-rc.5.tgz",
+      "size": 56590,
+      "sha256": "c81ad74d86111002797a080175269db5deaaec9ea50e83bfd02ab42f4a76a03a",
+      "npmIntegrity": "sha512-LOzztrBeCcbq/4YGFdPucIlT9eCGL0xE6zEcsyA+/HUSbncH/+gQX86KxbquHPK5HhYqiSt8pyRr97TDHlWdnw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-agent-team-profile",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-agent-team-profile-0.2.1-rc.5.tgz",
+      "size": 8050,
+      "sha256": "4f0b0dca749eb1756f09bd0a97ce70966bdf9b54211da1d56082203e156d00a6",
+      "npmIntegrity": "sha512-BccfgbowzPrKxzZhtC36tzTd05e8jjkKTUzNdL/3FGVTn5zIEC4JDLdwy0hRqkPz169zvCHYZ0FEE+ULtFc24w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-api-speech-to-text",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-api-speech-to-text-0.2.1-rc.5.tgz",
+      "size": 15241,
+      "sha256": "3cc35311397c9cde629d062f4a59396626790966aca3306f3e38086f837a5f65",
+      "npmIntegrity": "sha512-ytQJx7lg91oBp7AZpI5DWfXXsIsdxnpignZD0Lx2pw/iV5aQFJFTlc0kI0Fr0f1YB2ARUJyO25MUIjKfoJd8bQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-auto-review",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-auto-review-0.2.1-rc.5.tgz",
+      "size": 18814,
+      "sha256": "14b1e18cfc2ab76ff6ac6afab84819082cd0ab4ae373aee3a2e2615037b3b2fd",
+      "npmIntegrity": "sha512-mHt6QKBZcdMCEvpsukjXWrhxM0wLVEptFLrF/EzoqcccUmNtdPRmta3qU65fYmhhNVHEgihhsoGnxPzXA6CHUQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-badge-skill-bundle",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-badge-skill-bundle-0.2.1-rc.5.tgz",
+      "size": 4551,
+      "sha256": "974026fac41eb2b13bf806d56e40a72456cfcbd7171cedcdcfa68215da435652",
+      "npmIntegrity": "sha512-04mCXJzOXfNcsa128OBowEOGoRUQU0I3hsbsTi/tN0aWDYQn26YDnGN15d1ePVmc3kZXaxrngSdbk9l+pp4ENw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-browser-use-chrome-devtools-mcp",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-browser-use-chrome-devtools-mcp-0.2.1-rc.5.tgz",
+      "size": 8665,
+      "sha256": "9f9602eaad33eda28365a2745791137c64f4abe645873a13647562ed237cfe8a",
+      "npmIntegrity": "sha512-y1cyvfkpzUCviR/1eTY5zji/6mMOi6iRGFXqUoPpA74pg2ow3ljB+wrou4PEGkEwxcO8BAWCJAJ0wHqRZtf0NQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-browser-use-playwright-mcp",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-browser-use-playwright-mcp-0.2.1-rc.5.tgz",
+      "size": 8729,
+      "sha256": "9fb9c5ee1279d9067388d6eb723cd02820039525473fb3cc2f1d9e13c0eb3b86",
+      "npmIntegrity": "sha512-SGhZbWM1y8ng4K1HN5GZ1FybT2sl/gfm7ruTkt8k09YQ2xb2Q3jKN+BmHI3pBQnFTDf4UFVxYJUT3Mwg33PqPA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-browser-use-runtime",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-browser-use-runtime-0.2.1-rc.5.tgz",
+      "size": 14438,
+      "sha256": "980d4061430d265163ceb951941f1bbf96ed70f7fd5d65de0925bbbfa62ee101",
+      "npmIntegrity": "sha512-AuOGB7OgzFELDz4+IsbIxiY31AUdisA7AYBosuYfxVt230KTjDI7bg3nJ7oB22zHus+wILnRZSUkwvQeg8WGow=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-browser-use-stagehand-native",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-browser-use-stagehand-native-0.2.1-rc.5.tgz",
+      "size": 19848,
+      "sha256": "34d119abcc9528a6d1ee42d21466a872c37c7ad04fe457d7d1d0d81dd10e02cd",
+      "npmIntegrity": "sha512-ESy+27SzrYgegUO0eTUYBHQH5rbS4opvXuFyy+5p7GXZvDZC4hb7yO9+5yUzASl0kp5vcvCE/kK16MFJHgGYxg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-claude-code-mods",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-claude-code-mods-0.2.1-rc.5.tgz",
+      "size": 107520,
+      "sha256": "4737f8482d7d34f325e2d26dd8f3859a82286facb837c6b3fefd6e7339b25c83",
+      "npmIntegrity": "sha512-MEVt83zVGU2Xs/l8UJIGD71cLpitDYnsLQHPD7RABvP5sdZgIIXbZq1Ii5mmcYutBdrct+k9rWpXwsLGb+fx0w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-client-ui-agent-team",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-client-ui-agent-team-0.2.1-rc.5.tgz",
+      "size": 15419,
+      "sha256": "b98a895bac5d30e9abf03816da97dc89d107dc7dfa9176b1b7475ef5841dd356",
+      "npmIntegrity": "sha512-FV3efuxjtD+ntZUD9XSRzperKIDhn4hY80kYW4OeuaA8a0AuQXpqHNg+eefeH5tVd1JNu/e+A9FsE5XSQa7/Bw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-client-ui-claude-code-mods",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-client-ui-claude-code-mods-0.2.1-rc.5.tgz",
+      "size": 13397,
+      "sha256": "5401a599a5bd6e342e3c51636ef64f51bb9de3e551b3e6acfb169fd84cc1e5b4",
+      "npmIntegrity": "sha512-sW75oVNF/2j0gH4pq9Dtu48CQxvMA199sOtnyySwkAJuCFS6/5jkvoJwnoxg2Gddc61xOOMNrriT2BVgvmWhSQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-client-ui-cot-translation",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-client-ui-cot-translation-0.2.1-rc.5.tgz",
+      "size": 27087,
+      "sha256": "bcbc3be4bee4aedaf235d442806c3209c55ebebf09f9199345b078b519e72f2e",
+      "npmIntegrity": "sha512-l1s6Kpx17YqGe5jui1naC1w60zozZ6MAq906ggmEW0egbUcA65hNW6HgSyHn7iA/wFT4hHZ6g+wt08QtDy1VDQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-client-ui-voice-input",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-client-ui-voice-input-0.2.1-rc.5.tgz",
+      "size": 36438,
+      "sha256": "7256024509c7fcfac0adc96361077f0c1b1db082e6ba2c542463c1ce426c0a01",
+      "npmIntegrity": "sha512-iFEEfcK6zsA6CHVqDgCEP7Wb0lx1jh3m8p5MQmsX4VT9hJ0FIPTX4j1wWJHV/L7b6jRwQG3RUFa0BD3mWM/eOw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-computer-use-cua-driver-mcp",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-computer-use-cua-driver-mcp-0.2.1-rc.5.tgz",
+      "size": 8813,
+      "sha256": "87624b9a49a5e6645f876514916fb332a824903529acea52e57457b87142dacc",
+      "npmIntegrity": "sha512-hr7HOPEetgTVdK/q1BVJKGi86v+UUquvwuNo9DoN6K1B9geRW5fgGPEiaj2y+w+oPOYasgqrFg34K6acl78Cbg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-computer-use-cua-driver-native",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-computer-use-cua-driver-native-0.2.1-rc.5.tgz",
+      "size": 10792,
+      "sha256": "683a39b9e15270f747b0f047cbb77958fa1fc0338264526c8137ba9e2696adc6",
+      "npmIntegrity": "sha512-GKkNA+y4rPoQealSot/4k2ksGcaQCqDHbt8Ddb5OIYHF0zFlSzXbt1XKWTW9qHaj3tWvP7iPrriDsoHOBpNkHw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-cot-translation-bundle",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-cot-translation-bundle-0.2.1-rc.5.tgz",
+      "size": 7116,
+      "sha256": "e8de966db42854c07f1ae6c921a1f6fc596171d2cc47c3a9127f5993ad6cb03d",
+      "npmIntegrity": "sha512-emBmgewHA4Yc3hRsDrui5OOQ39Q/Sa/CXJlxeJU0XPHa1cy6vVFI9qwjW2TLeS1Rz0slEogX67ZpkYIpAauJnQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-cua-macos",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-cua-macos-0.2.1-rc.5.tgz",
+      "size": 128815,
+      "sha256": "febd46630fd1fc3940e32f8e5b928d73e8725bf9dd617470f1f5d82b4bb7df02",
+      "npmIntegrity": "sha512-ZN4yDw+l1StAE5/op4Qg80ichEO+71ySxuSudYi7KKPed6xKVhJj8LTlK6NDm2DK6wZLlOPtP9rMZeBxom2KBA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-inspector",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-inspector-0.2.1-rc.5.tgz",
+      "size": 4954793,
+      "sha256": "fbcc10c87e8e13046cc1f846b154b3ca89ea32bbeca6301b0cb4ecd282bf9a5c",
+      "npmIntegrity": "sha512-Dds795N/Y6qZ9bgPNobmofGSlHMobvRz2ORE14xu6q9TxN3bO6uGdan0p59JH/fx4RGEiHv/LGQFa/Mt4wK96g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-inspector-profile",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-inspector-profile-0.2.1-rc.5.tgz",
+      "size": 5158,
+      "sha256": "3dc42e8ee0097524d433d2887eea076cd706ee0d54d3daaed21652b13ae6263e",
+      "npmIntegrity": "sha512-krcxIDr0D8AMV5pD7LmRZJElCMlcp3hw+36EE12NFhCw6k7W1/CWDvsI1h9cIi+j4EKWFaU4Ok7bOwQgkkRZeg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-plugin-market-bundle",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-plugin-market-bundle-0.2.1-rc.5.tgz",
+      "size": 5104,
+      "sha256": "3291e4d0d328fd92ac5da2383da0ab3f2b32616f9d844463ef53b131c2881dc9",
+      "npmIntegrity": "sha512-uw0K1YQI4pM/pLa0GBNeKeYewaEeqcoZHNOiZXkjbpDn5Vg3OUviqsC3n3PYG2LEin763BQTDFyZc9ifpALvSw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-ptc-runtime-python",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-ptc-runtime-python-0.2.1-rc.5.tgz",
+      "size": 97590,
+      "sha256": "238c9e0921b732626d9915673a4a62f1ab18162622820f21d29e6dbaa0ecfdc3",
+      "npmIntegrity": "sha512-EJs6jp9nWPtRtmdE7JnV9Z3Dconu1Gvw0ZrKQ07VdUIZaKkTXJDNJCVeywpmrJsv8RMu4Qxyl6Bh8xRkhau2+w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-ralph-bundle",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-ralph-bundle-0.2.1-rc.5.tgz",
+      "size": 5000,
+      "sha256": "46d8c3b6e394cb5fa40f0736f0590ee8d75a0fc35af165208eb01e9aff6c9469",
+      "npmIntegrity": "sha512-LMLnkR1U+wP0G4EYUkpRo/9cAZSQvLyo9ZVo1Vyo2Qyp/kvcyea0hxz0c6YzvdVMpMByypdO6XDnKMx5OnN/+Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-session-inspector",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-session-inspector-0.2.1-rc.5.tgz",
+      "size": 69603,
+      "sha256": "a2c1d5d22762c72a5acb95dc285d143d8f15417e81f2ddfd52b0aa43a43c2049",
+      "npmIntegrity": "sha512-gs5u1PLmGM7TakAKTcMR4J5se4AL6/uCUdnGqDzhUhUeO3rQEwmvBLwkfxnHGgt543jV2TKbw5R3sFIMb74XWg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-session-search",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-session-search-0.2.1-rc.5.tgz",
+      "size": 5154,
+      "sha256": "f84c800b526b0dca935b8da2fe7e277f9c3cc90ec4aa93c0011884df89110dce",
+      "npmIntegrity": "sha512-youELxDtBPuQvFb7Jr/KgOeNp5Uxw+9zZD+MGidsGLFPf5aC6PQvWeAdQPyL+h+/GJklV+Mgpny+Yv+rdJ+zWA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-session-titles-bundle",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-session-titles-bundle-0.2.1-rc.5.tgz",
+      "size": 5123,
+      "sha256": "f1f2b2b3728b1d587e89215164245c9d20600afacf1372d5c4291bf37312de78",
+      "npmIntegrity": "sha512-OlrzgrYkIon4KSQ7qHdAoZAAUqFJnR5FYXNU9T1kWw3+kSkCE7Nanw105NaVa2gsAx5HYzJig1+p0y4VpwAJHA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-speech-to-text",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-speech-to-text-0.2.1-rc.5.tgz",
+      "size": 11418,
+      "sha256": "a1b363343618762674260e51a047c56d7567209ee8c78a092c9d9d3852736ef0",
+      "npmIntegrity": "sha512-xoZRwEyKJDt1uKG9Hgi6idnPKyFlMkdVjTqKYJlb69F27PwgM+3jrHEiQSjXslHvgt62sHj1bw72XW7lI2pyhA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-speech-to-text-sensevoice",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-speech-to-text-sensevoice-0.2.1-rc.5.tgz",
+      "size": 24737,
+      "sha256": "5ece37ba199271fe6aa1ea1a06b07956d8e2bacfe23a91c39f3b75139fa22f7d",
+      "npmIntegrity": "sha512-CJabySTTJJEcfpc8DAc1cHeZTyhNVTcgOFjLyS8MAdhttJojNPxWRUTiPQpSHF9DEZCbFI9HPGwJPO+QJKGd+Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-terminal-bundle",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-terminal-bundle-0.2.1-rc.5.tgz",
+      "size": 4758,
+      "sha256": "84faf93330c7e56900e7e6634be486962f1661a3c1e54978a31370e081bf0eba",
+      "npmIntegrity": "sha512-4fRdtTSlM8gUI//t8V/ewNDv4IIB90nq/PM8S746mZc016G1tJv8usD4XtfqkXxxO67Y6ONEP2fCZLOEqTjyiQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-tool-agent-team",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-tool-agent-team-0.2.1-rc.5.tgz",
+      "size": 16247,
+      "sha256": "48eeb83df9492144bf859043ca1c33bc07b3c9bd8227e8ce3947c8d0de4a7720",
+      "npmIntegrity": "sha512-38VBv/fI44j8h6PsAdY4tetrFlbv79StUKHV68/Ip7z70rgLBN306ClbXlget/iVXz+OVCGceoIs4IY2YiUtzQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-tool-worktree",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-tool-worktree-0.2.1-rc.5.tgz",
+      "size": 7337,
+      "sha256": "aab0dddf1674afd2df28bc60d2b0c8f86bea86253894b2ac2d42f08b092b628b",
+      "npmIntegrity": "sha512-Wi9mMdHrJVKyiZ9hnjFW98J5iFMzL4xpFmXOYlJIFf5+S5Nmf9dCwJr4yJ5nXfu9WfqSCxch3oAjfeCyxk5tMg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-translator",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-translator-0.2.1-rc.5.tgz",
+      "size": 31798,
+      "sha256": "25f6516053ec4da144d1154b2b3e2ac40f11950e50ab025edc836dfa86eee2a8",
+      "npmIntegrity": "sha512-6NmqYM8K7dR+vFKoT+fDiFaijfS5austrZg3i9HQQFo6Z9/2xvwiEQevAXiL/aDz1c/S0Y73sAEPLEKdKFsDiw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-voice-input-bundle",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-voice-input-bundle-0.2.1-rc.5.tgz",
+      "size": 5893,
+      "sha256": "80009286ba3b3771c6ba9bc4c6e647f5ecd2cac28d4e88f9b98a20a6ea93ece9",
+      "npmIntegrity": "sha512-WsUtc4DUseUwrie9HXOiwY+JmkXuGZvoYfBoAN/zwZFh+QYvao7fWMeodajwRXuWPfOIQqDYaSGAFqokesphEQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-webworker-packer",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-webworker-packer-0.2.1-rc.5.tgz",
+      "size": 30338,
+      "sha256": "713fb586083969a449c174beff522a164bc215410fe5ebdcea80ae777523f6e9",
+      "npmIntegrity": "sha512-4t2PLARuKm85/BrLc7zr3vaagDavPoz0ARYF06P9VyAjOvPeAeorTSHAymh11nvMMlae1Cp6dA4sC8vRQhl4ZA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-webworker-runtime",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-webworker-runtime-0.2.1-rc.5.tgz",
+      "size": 304798,
+      "sha256": "26b505f92f430a8f8858b943d256a655b872ee0af912d36d35982deb0f00d63e",
+      "npmIntegrity": "sha512-x5i6WTkIPv7ZTpIQbsNwws89REs4mcpWARm1m9oaqVKWiY9NVOWIPY1MDmNpDuPsTDStscsGpc6bs//dgtTISg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-worktree",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-experimental-worktree-0.2.1-rc.5.tgz",
+      "size": 13722,
+      "sha256": "82dbe81da6b68fe101c7755413d0d0ec9545e37355978541f3d0cee12a6c6e11",
+      "npmIntegrity": "sha512-ZgsPZro4wLrnl89v1MiDGfTUzn6wVsjHCU+Yy5/k+Gr6faXLxJD0kJ4GGGyfUMZRixU1YFvrIbh/l3qIipQ+aw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-file-reference",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-file-reference-0.2.1-rc.5.tgz",
+      "size": 9392,
+      "sha256": "f6bda8301da70720a816f0b9fc2b1812b0b1f60b8e738b53243fba70da462866",
+      "npmIntegrity": "sha512-sFQ9yxYb/dVzfNCSYAJSDnu8BAlqX0ASuOKip86XnNdbMfaFV9kxFipI9eMkN733j4ZeLWG8HfxjOY8JhGU4vA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-file-reference-local",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-file-reference-local-0.2.1-rc.5.tgz",
+      "size": 18120,
+      "sha256": "3b6edd292a8cd758d7b21fe0edf5ac7caca00fa98549be3ef82f2ec683c84886",
+      "npmIntegrity": "sha512-aWx+W076S2PpDT0iYRPsEvNQwaEkyN5zxrn5cIHUIbbNYX3eAoc3CMb0w8wG0ZI2kDPuejBxk9hvL4x6/qA0Vw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-fs",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-fs-0.2.1-rc.5.tgz",
+      "size": 16827,
+      "sha256": "6bbfe3bb413ee1f2cd62f34603680752344da27297dd751304a0714fe07cc62b",
+      "npmIntegrity": "sha512-guYuqh8VP0yXRgY0ZhF1kjPykCVNV4FvIQgn5qs6NZsOY1eSnKYGfG4fjlKM7ld0mSB0cAF6qx6Bs2nKD5pUFw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-fs-local",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-fs-local-0.2.1-rc.5.tgz",
+      "size": 27435,
+      "sha256": "7429a5735e8a491cae62d36ab6f55ae79753ab3b461003ad857da5badf6f15ff",
+      "npmIntegrity": "sha512-jtbkK6ohsCZrr6Lh8w/XO67dMBNZhXkIVTbwLN5ZS4g91kw8SrZt6WtNyeNf2/ah3TX9Fv4LegTV5YQEgmzR/A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-fs-observation-policy",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-fs-observation-policy-0.2.1-rc.5.tgz",
+      "size": 11607,
+      "sha256": "86fea8a6d030f6f182750727107bd3cd34c3c032e2b38305b6aaecd056ccb4e2",
+      "npmIntegrity": "sha512-CxMsA2pcmfFjWITrTk2FzjL5i0k8F+jBaC5lZljwpUTUK8Oy9LM/Kp+ZiOtJEX5KRr1IWatMt5fWOtZfTGX98g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-fs-sandbox",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-fs-sandbox-0.2.1-rc.5.tgz",
+      "size": 12501,
+      "sha256": "2607b8c67c357e7660617e3c06019df4f797dec44480827d8f25f317ff0b4f31",
+      "npmIntegrity": "sha512-BGXoq20Ea5GVlShOhLlv8sTy14zVZ202sxoLuSXwgeox0k5j6AdyCJmjzDrmltJ2wDne4pwVAu+mR55ag7cCng=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-fs-ssh",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-fs-ssh-0.2.1-rc.5.tgz",
+      "size": 7316,
+      "sha256": "ff9c0dcc8249c6b17b80ec96b214048950fa98f6a31cdc87b2f398284f51fcfb",
+      "npmIntegrity": "sha512-qYSevRPpGjSfJ9opC2cc/QKLJcYy5VV54QT5dqyVIpyhrROx1A7PscI91HyKE1cRApnaiSrhj+eVQ2wpI8Yfkw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-goal",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-goal-0.2.1-rc.5.tgz",
+      "size": 47353,
+      "sha256": "77dd2884288992f2f4e5022d610f71bc5c64da9d9186c48f7eca60de78b43e5b",
+      "npmIntegrity": "sha512-+J4+2Bi+4NtAhMqPIXj65bsKmZNcQuqsUyFN7xr3yPzOe4X+U8zuTm0rq+qtwWW2sPRnf59Ue3W36rlMW28fsQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-goal-round-driver",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-goal-round-driver-0.2.1-rc.5.tgz",
+      "size": 14221,
+      "sha256": "4b3fb21f580d57558897ad59ce61e8cbd709b8887c295a4dec3045d2bcca5557",
+      "npmIntegrity": "sha512-qTmbQChDXtRXJukA6a3r4VIwqcYAaeOK6gwewn/v3ygQXTZHq/U4ssWbZOjllBtW1XIgxgjyofY0VKPeJZ3Vhw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-harness-dev-context",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-harness-dev-context-0.2.1-rc.5.tgz",
+      "size": 10739,
+      "sha256": "b964e2860b35edf7d97641421d6efc78959c7fe782d1a2f23242215f32d7b1e1",
+      "npmIntegrity": "sha512-ciBGcP7IESJGB51ER/9+9w6gJae8PRZHTBIsGxFYapfc38WFwQ7/vk8Ml3uXVxsRueyAB1RuA1qXboZYuN3Lbg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-headless",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-headless-0.2.1-rc.5.tgz",
+      "size": 27091,
+      "sha256": "3e118ce65eda07cb1e94b0065151935e5a1372e4c077faa0502f58b96c5dfc77",
+      "npmIntegrity": "sha512-Ek13UD7Xr8zdBMTr8MeO9nmIe6zGEoNLLT1eZTLF3N71fnGTrohCeFizGblP4F7+/VX7biNmMqA/VMM1XGswfA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-hmr",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-hmr-0.2.1-rc.5.tgz",
+      "size": 37043,
+      "sha256": "f92370eeee62f43f978a11ca8d17443d5b000b2789b139849b2590b9b2079943",
+      "npmIntegrity": "sha512-K+Vea+jAvaMZEEkedOkWumqu3E3EQbmu1x2D5zQxofej7KT5bbYX/X9+BUDcf2VHet0OGfEkbtPQxTvjWJeX3A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-home-paths",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-home-paths-0.2.1-rc.5.tgz",
+      "size": 10055,
+      "sha256": "bc4962801a276f58f67dcc8f9362d9ea891680d566bb9aae0ac2230f5e70ace5",
+      "npmIntegrity": "sha512-yEGBsUON7xynPYAQKHxvRJ5kywht2ByHfEh20j9FkPluopNRtEnlF0f0/mRL1eC9UMVzDUqUArnAY6dWdb2NDw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-hook-protocol",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-hook-protocol-0.2.1-rc.5.tgz",
+      "size": 23251,
+      "sha256": "8407d62ec16ea68e1c856816cc807c8e5e2b3ae346ee2d4908e229ca19481c39",
+      "npmIntegrity": "sha512-I84YqcYUxA6qyjfhJLsCv8Xel9I9zAxgU/FTYgh3kXL951D7+m0NR6453q1tufUqHzXQfdS+sSmN8WZ9jhB7Wg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-hooks-claude-code",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-hooks-claude-code-0.2.1-rc.5.tgz",
+      "size": 21460,
+      "sha256": "d076dcb29985ddd3cb28160e84c8e16921116cba7bcc830c083db61db6685b56",
+      "npmIntegrity": "sha512-B2UlYf0YwfieGUEgEWFuEUm7kR88LNyruWZUfOjvE2YDS5jqww2FtGeUug8TFAlzl1oVOZAKhrjxUXIVc1wvLQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-hooks-codex",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-hooks-codex-0.2.1-rc.5.tgz",
+      "size": 18507,
+      "sha256": "8b89ab72d9b8fc3c017b1fddf3ec387057886d55a2190488e1684569e6b6b4ef",
+      "npmIntegrity": "sha512-NdpwsKYgzw4GUZav/H7n3zjkUgbS+1TIoEYn3kMbh2WWbFrgOW+reWaOO0xtn0cSikxeSIA5pzRb8FH25nIkcg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-host-directory-picker",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-host-directory-picker-0.2.1-rc.5.tgz",
+      "size": 9983,
+      "sha256": "2aa21ac5de21fdb04e9c8849f2f8dc5c153836d79b36caa845444f31b65bbaa0",
+      "npmIntegrity": "sha512-5kHDDms/2JHQ3gB0Unq4A+PBpYb8Ok77e+tByc3HpoFRRYd/Mh/cpsFOKaUl1+YnfEN6EbnR0dCJD8TSDksRHA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-host-directory-picker-auto",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-host-directory-picker-auto-0.2.1-rc.5.tgz",
+      "size": 12655,
+      "sha256": "d2814c3cb6c24c0f7873dc2fab6188c52ce3f7cc3272377ef46e703615b29d0a",
+      "npmIntegrity": "sha512-fwPycD2sr3H027/aOUrixRcYJu/wEesQ9yvsHRV3q9dztBCD+3cLg/KiW+r5iFzblC2W/DhYa89QSpgfrBAEIA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-host-directory-picker-browse",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-host-directory-picker-browse-0.2.1-rc.5.tgz",
+      "size": 12674,
+      "sha256": "a5abbb3e97c7cf2204e9201fce25eee245a0ef0b44e94a336b7b1f1bc596eed1",
+      "npmIntegrity": "sha512-5oLKGkdTgPodilC5X2kOFlSAlO10qSKH1dJJ+DEpvVuuazYEvdjRBozLUn8YY5eXC+2XYATjIuLkVflO9JGKsA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-host-directory-picker-native",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-host-directory-picker-native-0.2.1-rc.5.tgz",
+      "size": 20047,
+      "sha256": "c61efda0c93010e0ae6059745df767e892ace2bd9260f04cebcaefc957c5271b",
+      "npmIntegrity": "sha512-fxMwzTlQWMR3EO44uOHUoLBmE0W2U8Nuo2I3jO0HZfgABJyij8PbEZn4nyDvUSs0DW45+ixyVMxhgjb/viaN7A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-host-frontend-static",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-host-frontend-static-0.2.1-rc.5.tgz",
+      "size": 9930,
+      "sha256": "5a4336cbb0679a2a3a581f3f324324981f1242a5ab5a4d35437cd5a53dbc79d4",
+      "npmIntegrity": "sha512-ql0MZtmzKO3gXjcQ0EB2/5X+lzM3CyRT5dxVtsZvpCNWbdEvWPioTTgYcIuxZDBxPm5kqn4QcrKeREkL6tK0Sg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-host-open-in-app",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-host-open-in-app-0.2.1-rc.5.tgz",
+      "size": 45721,
+      "sha256": "88b27902a5f4bbbb1a740e886c3cad4edd32a8cbcd5db4aac9ed00c7472c72b3",
+      "npmIntegrity": "sha512-5fnYf/yc494IsqBLosJ2BlDd6isK/wMNI/PcBlvFJelpWo8Ncioh5LZUT+6q3C02gYzZS4cRJSOuA65V5YG45g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-host-plugin-inventory",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-host-plugin-inventory-0.2.1-rc.5.tgz",
+      "size": 14615,
+      "sha256": "ad796734ee255cfb609711fef256fd759f731c8a4af222d1df6d4c0c43b719e3",
+      "npmIntegrity": "sha512-bRZYfziLeGCEKfZNg8DxzCKZeeHqVg/AT1vL9o9qtYDOv+XZDEpyjjAGEymcY5l4KmBmHmTdKRQJQqRML+Gi3g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-host-product-telemetry-otel",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-host-product-telemetry-otel-0.2.1-rc.5.tgz",
+      "size": 9206,
+      "sha256": "772adaeeac6af7e7172186ab9de8966dea6a780f3dd11d737b8f98e17e29b43d",
+      "npmIntegrity": "sha512-P4ThIhrnD2ENZ9FmVPHbgInJr8NjYmHfY++isQNc/6dZc/Ohr3FUD5b8cOcqWYZkcp4AX2n+3oF6pwveBQMmJw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-host-webserver",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-host-webserver-0.2.1-rc.5.tgz",
+      "size": 23031,
+      "sha256": "df73ccfa18d79dc283e238554c3d37af2405c51f1009f73c13e800c712b8cdac",
+      "npmIntegrity": "sha512-4Fha0a+HOhCKbUkEjVV7gpdUzZ9OLzuN20KM7v1xyUPfGUbH8FoW2DxpiRTQHEFVsM8Ae63iD8fzSXA5PbXVMg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-http-proxy",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-http-proxy-0.2.1-rc.5.tgz",
+      "size": 23036,
+      "sha256": "243697e46ea4e3c618f476a08cb05afe56d50df8ba2b5c9f945ef3e3c4c06ab3",
+      "npmIntegrity": "sha512-Q0AHX81VQ+ZMS33zAILRRpUKNKSu+K0b1W9OI5LEGuMqAMydkSeeFEzntAR3i25jmbG5Hyks/rJlyw4whc2XlQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-jobs",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-jobs-0.2.1-rc.5.tgz",
+      "size": 22792,
+      "sha256": "1b424580f4924d0e8d3ff999ffdab674dc48bb7ac5bde5c02ba4f19d960fa175",
+      "npmIntegrity": "sha512-uqiqDUQolG4Lt/QgRVMG5u/PBkZBle5ayndkordiWJvxxhYltpPHePrmDWSMCRQ0VG8sMDwlsInKz4O8neJCLQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-jobs-local",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-jobs-local-0.2.1-rc.5.tgz",
+      "size": 26671,
+      "sha256": "d69710b6a0dc0ab46b0f1270f9319f135b1a1e07123ebbb7cd1ec361256e756b",
+      "npmIntegrity": "sha512-S+OYkDIAY6Y48WCaFSybX382TtLY4rXW0ZHJzdSurqrZ1R4dFf7BRBBz6uZqIukM4424XbE988YTGw4YzcOEjw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-launch-environment",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-launch-environment-0.2.1-rc.5.tgz",
+      "size": 9117,
+      "sha256": "e085007ad567e49a529450f40b452fd0f34f96ccf6feb4769d194a04d60c30f3",
+      "npmIntegrity": "sha512-5LdbNaDl5EjoPCwys13AJrT/kq6y8Yl0o/KBEETnLIV6o4PPeimANgmjG7TXF6UjmAaY4dV5jeBBI64+naqNwg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-lazy-require",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-lazy-require-0.2.1-rc.5.tgz",
+      "size": 4673,
+      "sha256": "be5f19358be28981b4457df26e78676a2ebfd09ebd1630129188f26572f0b011",
+      "npmIntegrity": "sha512-ICzTytY2UN6fhqDEdPgDY+NOU3hqb85RYqzZUfOaKhd1MrHgqrIlpRs2R6mGbyAdmxqWRAXxT+t4h7vSGBGIXw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-llm-0.2.1-rc.5.tgz",
+      "size": 115785,
+      "sha256": "6b422d70aee363dcce81be0481dda9d801c2ae03a4f314497e407d184df2313c",
+      "npmIntegrity": "sha512-g9mSILkqY7wByl0tpLBhXxWxQ3MoNzXokuJq86R/snPL3v1OonXv1b46wtvldEgyr88aK1gBBlifMsRnXjMWTA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm-deepseek",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-llm-deepseek-0.2.1-rc.5.tgz",
+      "size": 75515,
+      "sha256": "d64de30e7e5fd040d09ce32c4b5cb3c0dd9fe8304c79f633d287cae24f66e181",
+      "npmIntegrity": "sha512-y7pqe4z36e4JHqgU52hprH0WZfhcYZT26YBAbTUSiymkAAQZlsVI35I6eFuLtrwk5Dxge372A3+tJ7WeNhiKhg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm-deepseek-account",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-llm-deepseek-account-0.2.1-rc.5.tgz",
+      "size": 13476,
+      "sha256": "48725bbc257e067f6a8ad0b265addf37b941cf0bb06b280723dc04cfbddde688",
+      "npmIntegrity": "sha512-srD/oLIq5W9KbEZbY3nXY4OLHCG9Z8DCmJYR+LA4G9Knjx1dctUSZI75/7Vpks9HIjf4gAjLsfUixO4L/DJ5tA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm-deepseek-api-key",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-llm-deepseek-api-key-0.2.1-rc.5.tgz",
+      "size": 11529,
+      "sha256": "8a77908ca27f2015806a498dc92f5e80642e1f73ab37bf7832833d56e2e450f9",
+      "npmIntegrity": "sha512-7a7SgBURHmUI82XWTFSoQBSEResq1XfTxzX2sR8ad405SbrMjJ/2kaWW2z18v5eyndy1AWbxzJ/Sg5Bpn1n6XQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm-mock-server",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-llm-mock-server-0.2.1-rc.5.tgz",
+      "size": 18018,
+      "sha256": "3caee9ea213861e42109932957c46f4df61ffaeb7a18a8dd7e666c1c5d24fb2f",
+      "npmIntegrity": "sha512-p4Yw0Oe0meUEiEOgKVGwPvLY0jQRTHpUOcuXdG5Neqzz0yhP7IQtz2QkvVDIfHAL4lJuWo0YXSv3UEQuzC8ZGA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm-pi-ai",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-llm-pi-ai-0.2.1-rc.5.tgz",
+      "size": 81737,
+      "sha256": "e3356b562b196081ab44fa48528e8fc26ad4e62f846cfe44e2f873ca5f3c0917",
+      "npmIntegrity": "sha512-zpFGj+Wuy737v7IkJYpnRdKCWV6NxACqDOoeO3zjZMd0zMA9KCN68W65/GPg/upXNINkChWCE7mTdVp8REMI/Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm-replay",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-llm-replay-0.2.1-rc.5.tgz",
+      "size": 27966,
+      "sha256": "cc3f8d5a6d97e4d1ac0c6fb1aa4ab4f1d1ae8fd1bf0a734f75a4614e5f05a90c",
+      "npmIntegrity": "sha512-GCNsd9vfAvvPsVD1qXpDmtCD/q/GuJNgQwogiGVH0+tStBGbN6/tyeKk0XgxP5mVVHh25WH5PPPNhM6w7yonPQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm-retry",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-llm-retry-0.2.1-rc.5.tgz",
+      "size": 14985,
+      "sha256": "d629f84243637cd8daaa3b16ff78dcb4469d1c5ed57a0d737e1de5cc1f7f7071",
+      "npmIntegrity": "sha512-wju5t0hmEV/voT52sHV32UDez2KMtlEJ8iN0wolG7tbgKHAvsBlSUY70cxwOzDGVH3Mym9+AKoWlv7MSVgmJtg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-loader-smoke",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-loader-smoke-0.2.1-rc.5.tgz",
+      "size": 14186,
+      "sha256": "aeb416b37c900fb26c8505e4ce212dbd85f875c4b603faa052ef53ef2d7b4afa",
+      "npmIntegrity": "sha512-8LP2lFJoRRdszaXFh0dwNubj5R2jGpzaM4zhkpAFlVeiXFmIC9lbIREOwbpQHdvrNg4nFmRnJOTcJ3QJvlj2Eg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-lsp",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-lsp-0.2.1-rc.5.tgz",
+      "size": 13595,
+      "sha256": "21547513cd509b93d83c1e9afda67d82108184238ca15f7c7325173ddd796a44",
+      "npmIntegrity": "sha512-9bUUYjBiivelU87qlUnBPPzyQfp+qDRWjbLrSVt/wLf4ZyQX4aUdNRMUCsfkijtTQKWWtxsoHpHcpxSp/dINDw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-lsp-stdio",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-lsp-stdio-0.2.1-rc.5.tgz",
+      "size": 32869,
+      "sha256": "938f6fd9f78ba473b281dc404c8615fb46bcc6e9cc0f145ab2c2a48a6d269e27",
+      "npmIntegrity": "sha512-PxmxBSFKNJqD2Sxy9SFsVXTtne13KLi6XdG+YdHPjmUkJyFtQmqFWwcYtqCSgVlqxu2QZ8ticzXkO82BOox7xw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-mcp-client",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-mcp-client-0.2.1-rc.5.tgz",
+      "size": 33165,
+      "sha256": "127ac209cb16ca1790940ac357aa4cd7514ce530d413b6cb1cd6a7513373741f",
+      "npmIntegrity": "sha512-E4ZsTZ0MPpT2njtl8dh7lTKyvsDoGG97FxmXzuVolcDPU0OqTxe0I/NXH58Z17/b+Saq7G0cGe1H/vVlEsR1rQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-mcp-resources",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-mcp-resources-0.2.1-rc.5.tgz",
+      "size": 11485,
+      "sha256": "678e36c5785bab9c410cb08be8b1643a0c6c3fecbeaeb63f1c13dda937500ff0",
+      "npmIntegrity": "sha512-NCwhs8JMoEaiDYXY9w4j+HJYQuysOSxB5XaCyPr3bX1JbXlTgjTdOidcFEPRiN9Dm3dLuwrJG9+D6UwuZqZN4g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-message-feedback",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-message-feedback-0.2.1-rc.5.tgz",
+      "size": 22519,
+      "sha256": "481430148b5ece576efee1d7795deecee71894f2700e48282b207377ada5e9d5",
+      "npmIntegrity": "sha512-HnzGaIvJTfntWgsv1V9K8IBNuqVMFV6pxfup38RA8NEuX8+fn0cY/rgCaFh5165eEi9GA1pcjbP2d64lQtF6lQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-native-command",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-native-command-0.2.1-rc.5.tgz",
+      "size": 37178,
+      "sha256": "3e3c7c1cefabdc1c5d95c177644e2af21fb0e630c82d4b58fc372c99b31959f7",
+      "npmIntegrity": "sha512-DB+CI4Z9iwEjhPyT5WOIQimEQeSlU19RuELwyTyx5gGfWxFjR/HY8KxE5Fo4bvpzhK6yKQaUDjyj55hLNYSJjA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-office-to-pdf",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-office-to-pdf-0.2.1-rc.5.tgz",
+      "size": 29187,
+      "sha256": "73d4faea1afeb8c3cdc0e8eb6f3c7a92abb5ed4abb74eef956d64dcb40de4bbc",
+      "npmIntegrity": "sha512-/i53UEbx7ca+3hvgxM7GJkzQSpd2+IfuwCQ5RRypE5AMS0MNhrpxuFRqfHXvCSDVCiAL+95u5nYk0PWiWMU8qQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-otel",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-otel-0.2.1-rc.5.tgz",
+      "size": 13248,
+      "sha256": "997c81d4d2ce024521075ceed3fb68d5228b9499f6343ff63e92d56e8364ec2f",
+      "npmIntegrity": "sha512-bNCDlwGX77klBcMIHL2Eb7u/rIHKtx027g+O1KxRJrjaSgfUihLH8fJMo0+EeUhMUFMD/87mpvC/Qs0Gy+Cksg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-output-retention",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-output-retention-0.2.1-rc.5.tgz",
+      "size": 15168,
+      "sha256": "aab59fe382030f3863c721c5e8ffab858074a2130af92e12b1bfb5c2059c1b67",
+      "npmIntegrity": "sha512-73wW3vBJhtDu7YCf9XW9bIOlSS+4wc2gw1FB5ZiDZk7VgQwSs7wNZj0fSINhJHR1Cdyg+EIGu+gbkNNs1BvMMg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-package-manifest",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-package-manifest-0.2.1-rc.5.tgz",
+      "size": 7178,
+      "sha256": "e549c1ced9b87e9b23095aebb3afc08c437430462373ff4425fb0ec2600781cc",
+      "npmIntegrity": "sha512-YrlR7mmN3SL5NTM+ls5B3KgYXLP0I+K/7z8khR+vt8VaOArvSe/CuJOIVHoTyJMQX8Cq46s2qGL+5UUQnPP7cw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-permission-presets",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-permission-presets-0.2.1-rc.5.tgz",
+      "size": 32038,
+      "sha256": "c87dbf8664eb835fd5479b0f4dc3af877ece95a16d42446b25d7d963e3c7a4a1",
+      "npmIntegrity": "sha512-D3om2TP4YOi+5FkiNtmqtk4PQ4ESZEe/vVLvWmSVZmTGF5TGVbIHtnHMOf3wzu6/0iqY2/vDDW/9RfhwPVYPQA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-persona",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-persona-0.2.1-rc.5.tgz",
+      "size": 9196,
+      "sha256": "7c97fa88ee0b2028e43cabf21e3b28a1ec3696c91b3765c4447674f1a46bfdfb",
+      "npmIntegrity": "sha512-kmnf89/j/a1JlOj2OU5aeyt2stz3RqzM8n6pmptYYB45mMqzrHtFYDaDIxocZYHOJcRckQ7f0X1CrzrgPjU5Tg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-plan-mode",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-plan-mode-0.2.1-rc.5.tgz",
+      "size": 24552,
+      "sha256": "2f4549c4614a0928224fdb03163dd81d5572c0311f5bb4e6aad13f77fcf4f44a",
+      "npmIntegrity": "sha512-N87WuHBE9T8jgYmGMGXXrsmHMjacSkqGYS5P6QKrY3/+rpuYsVsiu3WpT7wrseWiwI4Lp928qkXRMFnreSIhyA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-plugin-manager",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-plugin-manager-0.2.1-rc.5.tgz",
+      "size": 120074,
+      "sha256": "8c3056d14832e1e5fecd2571e1be0a4552cd2f400865f38a00580b3d62dc2331",
+      "npmIntegrity": "sha512-VRfuEhPcZLh+ASO8WLEulShvNKZ0GvZquiO8/AzfFNnublSiEGKdZZU7j7R4+on16IbJtoUthYz1Re6QpoBepw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-plugin-market",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-plugin-market-0.2.1-rc.5.tgz",
+      "size": 53035,
+      "sha256": "1eabff5aea66fd4eec73d3ccad03883c9b63bf72dce7110fae61b5e51a2f50e9",
+      "npmIntegrity": "sha512-q6Q7IrMvSU1Mo5pSG7MPvWq5y6elJJDtdWbrFpSdgPnwJb/QSk7u3zbVBVMZaOEOnRCrQgh72RYSYgKxepHoKw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-plugin-market-index",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-plugin-market-index-0.2.1-rc.5.tgz",
+      "size": 10468,
+      "sha256": "25b190bc5a65380157281e48e50bf9868119a6b3b592b2206e6039f1ae9edcfb",
+      "npmIntegrity": "sha512-UTHxKa3aTl7NOX6OC8DV9R9XjgETNGChqiWRJfQu4goMLxs71QAxwnty2HSAk3EbZOs6a3g9RikGtC8BMc0vQQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-plugin-package-inventory-deepseek",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-plugin-package-inventory-deepseek-0.2.1-rc.5.tgz",
+      "size": 10593,
+      "sha256": "924608ca84cd6b84889565dccba91668ce661c5700f43d2182906f29535e32ff",
+      "npmIntegrity": "sha512-LJJH81K2SPgasipXZYxYM5FIFKXDDP7/UwqfP6W0uX55QaYfW48ulDapfUCoh9RALIG+8Mp+JSVMz82XxIay0Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-ptc-runtime",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-ptc-runtime-0.2.1-rc.5.tgz",
+      "size": 16681,
+      "sha256": "ae7e0b0a7d8dd3bd0552704cca53d874a37241a724200d8faf9567e32b7d76a6",
+      "npmIntegrity": "sha512-NwGIE3niS/7U90OLEGCtELNovWnmVWgvCVvTTm0eCvqSAUUtLUMochGgrK1o051M6YoTfew1XS+VTCq+Y67ngg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-ptc-runtime-node",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-ptc-runtime-node-0.2.1-rc.5.tgz",
+      "size": 64949,
+      "sha256": "ef7826b7dccd6f2c7fd159e48f03b7988054f1f3962c796f8e4dd04a02069e7a",
+      "npmIntegrity": "sha512-d/aBHSuriC9pxNbKKgvXenTdxFeFf5avQ7uSaUfAcwf7wYgQwO2PdtkGSh8Iz2wgopP/SdaVL5LXB6o2yiK7wg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-pwsh-local",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-pwsh-local-0.2.1-rc.5.tgz",
+      "size": 20078,
+      "sha256": "030bba1ac835af894b30aa1bdbe7a1e92b3b925355546005d82e9ca1d76c133d",
+      "npmIntegrity": "sha512-WThYI9zbvnyRKBZyrkBMlHtYIoPbMHne7IRtMZJMSTJoJduXb+pO6PFcDzrjH1L3yZNKdXw3Mg1CiSVbrCqLxw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-pwsh-sandbox",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-pwsh-sandbox-0.2.1-rc.5.tgz",
+      "size": 15307,
+      "sha256": "5710c0521ef8c98457a986de8ec38afb06cebbfe80a700dea69e9a883cd9490d",
+      "npmIntegrity": "sha512-QTqjX14+ILaSF7CMF6EN5Y1qzewQYeoWFPuVlfyDZ4Bn9hqn0VBZFLJvDWqR7HQVrCx92iM9y3A15DYhs9AgvA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-remote-mock",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-remote-mock-0.2.1-rc.5.tgz",
+      "size": 24410,
+      "sha256": "1891b64c1063fe22a9f7874a6eec9ad3f7a41bb160cbf52bee7c5a1e96eb0ab9",
+      "npmIntegrity": "sha512-Odf2qO7bX3pcASaJFsXwJoX5jlXTtBeBY6JtMI4ASgKLG9HzCVi/ilBwkzm7Sk6UPNemiVwgh99EbvEYWVXaHg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-repeat-tool-reminder",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-repeat-tool-reminder-0.2.1-rc.5.tgz",
+      "size": 38221,
+      "sha256": "63e1e53c0610aaf7eb5a724fab998058a589c69e6dcb14be0b77ba33311bdce6",
+      "npmIntegrity": "sha512-VAjMftiQhMDDsi6Avwyf2kX+WmxUeJBGcB17AWOHrpplPtKd9VOEgLXNTE82w5Fck6ghDEPmjcA5wBUe08rHsg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-sandbox",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-sandbox-0.2.1-rc.5.tgz",
+      "size": 22961,
+      "sha256": "7c033bd900f6935d11bb3077da96a80942f9ef233595c1c8a447b19d1206b1af",
+      "npmIntegrity": "sha512-QokCxazz+xB9jaSVog6flKQwaNZF9iPak86k9wgeB5m7cki5XFkcKyf3+36G/y3rjGVAMqbmxL86WoP4gLp6xw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-sandbox-local",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-sandbox-local-0.2.1-rc.5.tgz",
+      "size": 22133,
+      "sha256": "9c7b60fa7291999fb23381d8f95ceb0abacb356d8634ff01f1aa68e2f3fc0cdb",
+      "npmIntegrity": "sha512-8LQa8REsIBtxNGgWdl80EbKe3aGOr/K/1rb/y28UwGQXtNm1kdnUoqwBOsEgkwNvGoSjeQ2rFh+hEZCum9DXOw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-sandbox-policy",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-sandbox-policy-0.2.1-rc.5.tgz",
+      "size": 13841,
+      "sha256": "98a9dffbe30d169c5cc1b5fc49f1198fad0cf31c041c38269a7359b065532ef3",
+      "npmIntegrity": "sha512-DUEe4ld/OMlpMWLshQc2HDgWQhd7i+3+l+/5cx2vtoy/M4cFdMp1l6Foi+VfGQMaBDr9ZBCGVjaOLW8StSoyYw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-sandbox-ssh",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-sandbox-ssh-0.2.1-rc.5.tgz",
+      "size": 5506,
+      "sha256": "541d59f34abcabcf6e961fd34bb737927e65217a0892caaea4f53a8f2f19b60e",
+      "npmIntegrity": "sha512-8S+tclRlBFvli1mhSVBMwo7gqCTOdx8ayXsLTZcR9yBEPxNqKsa7wxK7V9KN+A8s1oTax+bBBbR6wpzJS+Hkpg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-sandbox-windows-acl",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-sandbox-windows-acl-0.2.1-rc.5.tgz",
+      "size": 73511,
+      "sha256": "6a52fa99c7c96e30ebf173f536dc367493cd52bcb4e94c57ae6c9c2fa1257478",
+      "npmIntegrity": "sha512-CCI9mHimW2rGJMNEfq26Mdte9fk/CGfSW40b4fks8eYp+Ta3hgTonzAm3Iut309+kjnjFKlCeagdh7fCz1w/LA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-schedule",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-schedule-0.2.1-rc.5.tgz",
+      "size": 96949,
+      "sha256": "604b11d8e6dbd2f2b177ec1c6b98579bd4dcf39bfc607167295ba7b38ec76f34",
+      "npmIntegrity": "sha512-crqv2FtrKAVNCj70h2zp60H6v6lyHiVkQseKPtg2+LABpeIndMRfjzT4EsqRzQ+3CwmG/uoVhKsZsNwh7uc/Ng=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-scope",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-scope-0.2.1-rc.5.tgz",
+      "size": 13883,
+      "sha256": "fd661bb9abf25ffbd2b82bbf1823c3c197bd107b85e3315821231bccf7456373",
+      "npmIntegrity": "sha512-KrYnnJwPuHXPRayueGCWqn7Uy5CWph/5Kt2CcubBxMTFqC7bHaHiDNeTQW9HmECczmKLD2U5dFSCTe569s4YeQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-sdk-app",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-sdk-app-0.2.1-rc.5.tgz",
+      "size": 8165,
+      "sha256": "16d5313ef2cfbceeb6e63ccf59603c17a30b5fb81f4d42694cc0fc95233be856",
+      "npmIntegrity": "sha512-H4jxjvAlb+fqwlVIg5JIFFbAlVlkYEL8F+Akg49T+dDshtxHQClToNttzoQf2Qh+r4YHxEeB6dpDjXZ911kYAQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-sdk-client",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-sdk-client-0.2.1-rc.5.tgz",
+      "size": 28102,
+      "sha256": "c434cf93c4bdf10dd509e496ba0fcb6a96cdca545cf6d9bf4796b32d76e5a800",
+      "npmIntegrity": "sha512-kDMYeV0Ar1F6cfg6FlZJrfV8LASZGdqr+BLnXxLdaMFeFFiPEdf02XzTKCOxeALTvLPCDmWg3buV2k5kkrVL1Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-sdk-jsonrpc-server",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-sdk-jsonrpc-server-0.2.1-rc.5.tgz",
+      "size": 18262,
+      "sha256": "3999989b6c517b6e353fdacfe4f938bd4d0aa73a07fc46543bc0148c79f315c8",
+      "npmIntegrity": "sha512-sNE9NqKXHpjVpZWr+ytlxrINqsURdKt4rY88Itgj6CBol1dEChr7j1B1LksK+yF6ffDcuYxkgw8KcwTVOSfjBQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-sdk-minimal",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-sdk-minimal-0.2.1-rc.5.tgz",
+      "size": 9617,
+      "sha256": "933a3916a46c6c6ee84611bc44bd422798705b31a41751a1c2ad4a2a2c940898",
+      "npmIntegrity": "sha512-0ZSthAUTnDZLxzrep5Pi4yAj6yId4XuJd7neeUmQB3DdbRgluDV7QLzG8zvG9OrWOS8Qdmb3ipVuX9ruzbE9rw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-sdk-protocol",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-sdk-protocol-0.2.1-rc.5.tgz",
+      "size": 15152,
+      "sha256": "0beb98b45154e5410554ef4c6137c15379844b1c4033505541189636eae8eb86",
+      "npmIntegrity": "sha512-r0xIb+aIGNc+OySnW4UZmhOotCWu81QL8RNz6L99ajNwMPThEN2SaJToYFwL5UqcBrZLaKlBbRJXU7iLX3xj1g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-0.2.1-rc.5.tgz",
+      "size": 98627,
+      "sha256": "8571710817dbf5172079168861bfaef581efc26a4b83a4c003f2d1ef632ae7b4",
+      "npmIntegrity": "sha512-A5NdQFgeY4qi29+lBzgZiOloiFe+E1iBbIRjJTplee79rswYGUUmUZYmOvAcdmk4tERkY2S9htuc+V+jNifqRw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-checkpoint-policy",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-checkpoint-policy-0.2.1-rc.5.tgz",
+      "size": 9447,
+      "sha256": "b36391e96c16a5eb2a56381e0241121efe5225a8b4d4657921364e69651d6fe0",
+      "npmIntegrity": "sha512-bQxIIHBYg+CdU6ep65/LH5aLnazjnxqZ4c36i58HwaXBzw381dWGGr0joEiYtOSoUYFCf+b/rRQTeegkFnXdJg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-format",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-format-0.2.1-rc.5.tgz",
+      "size": 14904,
+      "sha256": "c95506fd656c7827d1c17d18b1f0ac0ced7618243a91d16246ab82de6d1031d3",
+      "npmIntegrity": "sha512-xHpwMrfRt/3gYBEMiJrhD1YEpTBrvBfh+QIq0gbMBZ8fHIu80MEcDzXEpCB6TNTesiNGZcNLQEwcjvfHekAimQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-format-catalog",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-format-catalog-0.2.1-rc.5.tgz",
+      "size": 9732,
+      "sha256": "a358a76f2c22b1fcaa09693063a621640853324fc52f8b139bc513dcaaa692f4",
+      "npmIntegrity": "sha512-KYuSWIxCldCAZHXXZx2haNLBpsXzsxNUPaIjqaY8P1pZMccDGisXYOG6FYUzk+aY74EtDDyux9gZHtfkfuvLlg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-format-v0-to-v1",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-format-v0-to-v1-0.2.1-rc.5.tgz",
+      "size": 31997,
+      "sha256": "db6321d2dadab11a98c5f48e80359ce8ed2ffa9d6edf4349a622c6c6beb9b79f",
+      "npmIntegrity": "sha512-69WozHF7Vyf9Kkw0Y+CIl2jwGq3S2pe+VlUoKYTijVtNAoHdhV6fFKnKugSAXadaxJm0C8vBIQiw8jaZgtlK3Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-format-v1-to-v2",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-format-v1-to-v2-0.2.1-rc.5.tgz",
+      "size": 16967,
+      "sha256": "3f08bae660e37e34ce6abbfaecc59695ced76be52851a336b1b0e41b7f6a8290",
+      "npmIntegrity": "sha512-e6Zl1o/w/ZgUTYaAIBHTUbEW+43GfNMG9ZPZjY8enZ0gZzMAy77lOJ0p6vy5mJGLYFvx3PTHMoPEaEqARmCyug=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-format-v2-to-v3",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-format-v2-to-v3-0.2.1-rc.5.tgz",
+      "size": 27807,
+      "sha256": "d061c9018bd5602a45ee597161fe3aae6b0a2e87e2a3feadc5a5e6b894b41aa3",
+      "npmIntegrity": "sha512-4u5qMCJoqQV1pzRyVnunPxC9fhhaW8sUYggcrFeotKCXsHuxC1FphmGWl2x26Zem4Q/UHmX4uyrsMOkhAZ7G3w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-format-v3-to-v4",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-format-v3-to-v4-0.2.1-rc.5.tgz",
+      "size": 49410,
+      "sha256": "a18c827a47b92e89b146a5e22d42b622949f5d9926572f9bca9b917ac00f5719",
+      "npmIntegrity": "sha512-BQl8d/80IM10r4HZcs0F+/vGQSc6CYoDYX7N2i9biy+nXObK/SNCVYVF0p3/oIinfKobnt/DfA/YnBZlyxkqiQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-log-deepseek",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-log-deepseek-0.2.1-rc.5.tgz",
+      "size": 13238,
+      "sha256": "ff75344a38b0cdb283a435c8e8f75bebd429c7830adeb1cdcc88d4f3d3383229",
+      "npmIntegrity": "sha512-oWyhTdLH1PR2XYiu8zm4L4P0MUFvhkCgu7lIzYAmmbeCsdc4CyMe9pSbjeBHzAQfx7Ph0HZCkUPK36XWuQIukw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-log-export",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-log-export-0.2.1-rc.5.tgz",
+      "size": 25686,
+      "sha256": "13c496b2bc76e4e2472883a2b36a3b2242526c7b785dcc37d26a01e93dd73f7a",
+      "npmIntegrity": "sha512-KIv2pVDBR58M+1F5aGsf4hunM3KXA0NG0ubaRMo4EKEesJVz4pT6LnZbqjttuY8QHk3kX836appGCsyNEUHTrg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-persistence",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-persistence-0.2.1-rc.5.tgz",
+      "size": 24915,
+      "sha256": "61d83485a529d4574cfe50e4793831c1567cebd55f4f26a9876e579135365300",
+      "npmIntegrity": "sha512-MkQcIeRqZujXrnFMRagtbMUhiv/xaxW1WXj8t+Q087hb0379kdgr/eKpwk9LMnzX0lFFAr+qHUXl6yyfR++EwA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-persistence-jsonl",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-persistence-jsonl-0.2.1-rc.5.tgz",
+      "size": 204364,
+      "sha256": "0df5ce77626ee7f337cbc41675bdc3a87c0e664662880c5ead9b94d24a1a28ad",
+      "npmIntegrity": "sha512-1APyllUwtDCoEa2572NVZMdv6xO+RX6ZBHJNfE8ukXTkPoOfXue/EMZN5oyp5PdAoYAdPN3RWm30DT8+/a5/GQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-projection",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-projection-0.2.1-rc.5.tgz",
+      "size": 23877,
+      "sha256": "518e4422893f10f9f86d4b5b765b6c5353d453427fcfdbd15c43c0062b51bb3f",
+      "npmIntegrity": "sha512-YGrTGZXqPVPc1lF3jeCITgrgTovr5JZyKC6vHeKpb6Wlyoyu60Yfeerd36wuGNLcs9ydJsUKP6pV5B/zpNv74g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-projection-cache",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-projection-cache-0.2.1-rc.5.tgz",
+      "size": 22358,
+      "sha256": "a038aebdc8a302e76c9ad24c0df561aa9390e07b189d0bfcbe8e35c0849df3bc",
+      "npmIntegrity": "sha512-/Mv5zzw3GC8VxgD2Qd37p9kqtME+OWCQsa+Nnk6sje6PRgxMd6c2ncVv7P5ieBNI2DGRKIGE8Vw6Onx/OqqggA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-query",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-query-0.2.1-rc.5.tgz",
+      "size": 33259,
+      "sha256": "726c884d50b736c93b57a7f32b146c0e290bdf42c25c034799e6e8845d1b3ff0",
+      "npmIntegrity": "sha512-TVi+qlqmozbND1WdOstyKtws/e7JOQzl0kcuWZhGRyaYy5f8H7XW2GbsINcR7Q23cDESk+0gzcay3G/iWi79ig=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-query-sqlite",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-query-sqlite-0.2.1-rc.5.tgz",
+      "size": 27535,
+      "sha256": "8c1e0eab32b2d9042ac7e2548fcb638b5e0e4eb9c030ec9f40807aece0bb446a",
+      "npmIntegrity": "sha512-7zsepPyMNBrnj/jx1qBVw/OL2M/vEE9ySVmNZ4QTxv+Polb2JrbldGrptCY3llTmCcZxP2/klHwTYmvz/pXiqg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-reference",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-reference-0.2.1-rc.5.tgz",
+      "size": 45806,
+      "sha256": "c1a9b26f10b33bd8b6054563accce234271a86f5ec3c2fa9dec6445775e1a32e",
+      "npmIntegrity": "sha512-G4Un5bzGqTIQ6i03Jlsaju5JyINA95OjV9iK1fT5yw3a9ODkSHO56sKhe3rClTlkaXuRKqiEo2CVtuAbxtR+1Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-snapshot",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-snapshot-0.2.1-rc.5.tgz",
+      "size": 72266,
+      "sha256": "bf0b38b711464a8cce34bdbc7b2994ecb29db650af00e4b4c58b0da7cd463a98",
+      "npmIntegrity": "sha512-vRrxeaDLSVizMM7ndEA00BQ6zDliXkjcOY2BJICbMMaHPueT1HIGNAIMzzskwH5yBV3BXmHRCRGrBKi6QXwDWw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-stats",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-stats-0.2.1-rc.5.tgz",
+      "size": 13478,
+      "sha256": "0fbd34e5473df6433192ff335d2f841662fc76650ef2c4891cc9d2eff8533e90",
+      "npmIntegrity": "sha512-pPj/RmWp2peGLoBWz/vO2RKVZNTbAd+oQ8QR6w/L0uKTCAfINiaSJQCnbw6OajzVgt/aJKpKQNCJfNHRN5I85Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-telemetry",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-telemetry-0.2.1-rc.5.tgz",
+      "size": 16748,
+      "sha256": "991599066d2ef681a2f9efdf7370d2cc27b5c796b90086bbd173e7bda867c15a",
+      "npmIntegrity": "sha512-V1/M1JqJgMXTiOYkd4dosYrY9jvJajs+zlKY01vrneNyEf9T0l79e+hW8cINrEsJuWzNNzd06Oa93Whwo6LynA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-telemetry-otel",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-telemetry-otel-0.2.1-rc.5.tgz",
+      "size": 15329,
+      "sha256": "fd13a080f32c327379435bece5b11a1964f61a58397e1d98999eca76cecee8e1",
+      "npmIntegrity": "sha512-sOaPjMtS+pYhNV/w4ssUxs9MNsU6JNmqmWpDbG1dsS6an/6JdLHo6grn6V3GeQ9FuCN8VRoHbJ8a9FlVSVykiQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-title",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-title-0.2.1-rc.5.tgz",
+      "size": 26871,
+      "sha256": "26beee5847984b85e9219f3e28af716627714973b513add1abe58270dae70260",
+      "npmIntegrity": "sha512-o/nfDkGWjlVt0HrcHdrlWeWxqBmUZx3sQlJ3zrU8jdjuAduHUHHWsygJz3c9uK8fFwhlHQdL5vdMbdDxiF2nSw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-title-all-prompts-llm",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-title-all-prompts-llm-0.2.1-rc.5.tgz",
+      "size": 10946,
+      "sha256": "1c75fb17e0dbc9fd5e20e39213b1b4815d66d1d888f1580fb9a57f821d6e9979",
+      "npmIntegrity": "sha512-I9P6EmVMMFGtxON8Ojs6JinYqwpotRLR7hJ8VXQSmAURu8W8oIDvfRu+ZmO73QJ1Dm/dPrGil7nkZQ9FBI1YGA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-title-first-prompt-llm",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-title-first-prompt-llm-0.2.1-rc.5.tgz",
+      "size": 9955,
+      "sha256": "fc32b6b281647ca7127fa1eccb497651e1851ba5dcff43ef372c383bc2ffaa68",
+      "npmIntegrity": "sha512-DRp6sUemfadn2qbu3ICsK+fMCzGU3ILw0xJfoWoUe0hlrIZNMkJ6xaF1i3GRWgxEwhMnn/fBEWHNx9XXhHHX0w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-title-llm",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-title-llm-0.2.1-rc.5.tgz",
+      "size": 13118,
+      "sha256": "3b909daf2e86f249e603a327ed12d534d9a923772f07528bcfbcb3edd1892192",
+      "npmIntegrity": "sha512-2eKlP/iLuUxfl7Bf90PkMHLWqiQK4umTu34BHTLkIyiobNG4P5QXTZ63NaCg5pgBjx4dkhyyxFVcuo4nDoPGJQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-turn-outline",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-session-turn-outline-0.2.1-rc.5.tgz",
+      "size": 12833,
+      "sha256": "376fd53c4c60c3612fb2bbaef0d286a1a76dd582380cf4c4e23c78eb7c3730b9",
+      "npmIntegrity": "sha512-M+iRh90h0J3bsUbkeW73gq3noma21M3D8KHhY2uQUdS3GT8RlkJz0jdr7wXmbMRSOMH2Prb085mzY5uWYOS0VQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-settings",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-settings-0.2.1-rc.5.tgz",
+      "size": 19843,
+      "sha256": "e8f4e6a78597afc9cd4fc59c92a42edf1681af2456fa7b05e4e03b47992db8a2",
+      "npmIntegrity": "sha512-MKNaTE5Xi9StBeFZ2M2pKWFxC7bGt6rWEPVYeDslKJdDdfUbD5O7C+bN4QvcCjqDBbkdN5xweDZHxj6K0w7XIg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-shell",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-shell-0.2.1-rc.5.tgz",
+      "size": 17234,
+      "sha256": "da1e430d757ee5e7da81464aabad9da42e10c5c865523ef7221e209075687e01",
+      "npmIntegrity": "sha512-jAJB31kwNJb5SMrKQW/NV9Yx8nsaEfmnDTqPuu9+WKF7SuPyuFrjmG0l9XRl24pPxlZqKTwORur7MVyLCss4Ug=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-shell-env",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-shell-env-0.2.1-rc.5.tgz",
+      "size": 11046,
+      "sha256": "a421218a76c22f6b4ad5f842552f00d1ea2f8a1678e4009cd2a41e5e2712df61",
+      "npmIntegrity": "sha512-kkvRyWfoVFH/cmZccDV8Va1tgffAzC4ConZi4OH27vaPJQCDYV8+FJhPrEweYHZWKv3xlgh7cX6dN6X7XTJ3gg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-skill",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-skill-0.2.1-rc.5.tgz",
+      "size": 21998,
+      "sha256": "7f87544f532950563cccb0ba90091a38c2b95977cf329108118bb403d0a1e5f1",
+      "npmIntegrity": "sha512-IjZf4EoaiU8CBIJaaE02DbnY5QYcTcqJkUCIJVbQyc722ztoDDsti7jqs/8CYp/8l6Oi5bEIlFI5XDc7ea+jhg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-skill-badge",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-skill-badge-0.2.1-rc.5.tgz",
+      "size": 21293,
+      "sha256": "634295efc7a1bc0777c12c7cb2adf437a08267876fba75599daa7cea8d24cf13",
+      "npmIntegrity": "sha512-prgOWeDgu+Ml1lGcMZBUUYyWyOiwv3YyGTcYEjHKJb41yP4d010eKY41KHqP3SMOXooqL86pLljU4Xgpq2W8jg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-skill-filesystem",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-skill-filesystem-0.2.1-rc.5.tgz",
+      "size": 20915,
+      "sha256": "d0a04d0f79a18303d1c353fae6893911f6418d13c9da7a273237af4fae1a81b6",
+      "npmIntegrity": "sha512-KrCbl/NZXtTuO5MrzJWZkCj5jWZ9lZRMJQ9F2W/8POpQKG7TsZTYmdrC4X1oBGXqwjVeMWl/a6MBNP4TmR2BIg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-skill-office",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-skill-office-0.2.1-rc.5.tgz",
+      "size": 17242,
+      "sha256": "e9d3bba4e7a22861d65ab412c12c7076cb964edc2b922999352deb0b6b44a662",
+      "npmIntegrity": "sha512-1V7AzwV3wx8TaxJiewSnr349FluRgDbf79qH/NG8j8obz/9JZWIuwnqMjwg6Nx/hnYOKuHaHqfAF5noruoDhgA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-spill",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-spill-0.2.1-rc.5.tgz",
+      "size": 11590,
+      "sha256": "fcb841dc2e61a5aec18ea374cf3b043254f8ece0374ada68dd69f7d88d4aa252",
+      "npmIntegrity": "sha512-tw5UAZ7ZdG7FbqEtZTeN7c6CMLYAaxKoR5S9Lq+FMksoldKmpInTNztjlrvBAA2Sh1LbZm02Hl/QNQrAa/SjAg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-spill-local",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-spill-local-0.2.1-rc.5.tgz",
+      "size": 19388,
+      "sha256": "21d5dcb5b96361c39644feaccf5139c552d49600215f0821ad0f5fb9c646f03a",
+      "npmIntegrity": "sha512-/zxJN3xsi/InhSYAcgODNM7Id2w0QdT6ihBoa9tY7PnZaBKmQuuRH1+zK0EaUckV6wRjMUeGOWIQuGS1r5pKKQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-spill-policy",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-spill-policy-0.2.1-rc.5.tgz",
+      "size": 16970,
+      "sha256": "d31a9ed74c9d934231e44658fb08666efbb1aa59e0599625a12cd05216dd3556",
+      "npmIntegrity": "sha512-rdJazRLAfIR+Q3GqWi/qLwCDWpScEf8RfyngsmVNtks8gFDY6EknnCuJI9Z/O1bnYJKaawjSOiPZs1HAGszZ8g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-ssh",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-ssh-0.2.1-rc.5.tgz",
+      "size": 29814,
+      "sha256": "a3601f802655ae6bf7904259055e16fd1c1966e06de8f6bff945543c2f518cc6",
+      "npmIntegrity": "sha512-V88JXExQOKqXZEVHJrFq7qpwRh0FEbLqXxviF8q4JY5JuOIPjbJJu954D1UZnZqhpyUIESvt3uVgMAWl0BSk9A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-storage",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-storage-0.2.1-rc.5.tgz",
+      "size": 13888,
+      "sha256": "ca6f2abb0f948469740fc0033a15bd9424af7e6b30d0a30e9cab7e31608433f7",
+      "npmIntegrity": "sha512-WagoL0nV2rjUjopMN7grFMJ1nuOYwZDMV9JzM9C8bWtfmLUOUlj/MfDdwgBMywACsa41yW4rBTRJ61+FkoQCew=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-storage-domain",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-storage-domain-0.2.1-rc.5.tgz",
+      "size": 21862,
+      "sha256": "ebfa587b3f816309cb50eb66e9f6030e75ffa3b495543972ba5f814b6541e5a7",
+      "npmIntegrity": "sha512-WDLoNrJqD+UTZ4jZTs0XmsvaHmHplMgOfLAUfZFLhw5Tbrwx/yXG6cKgwZez66dn/6Wl7uCaHxAZZ+Mk7O+LEw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-storage-json",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-storage-json-0.2.1-rc.5.tgz",
+      "size": 19034,
+      "sha256": "c34350e663538a562161952f8c182f8a2280f021c77fa1df3c6ef53fb42446f3",
+      "npmIntegrity": "sha512-VkbKUpFQWYh3iYfw6sNz4Hv0ZvBSILkMYf2PzfPuLWK9CJf9efMpxQ0/jVC/4Ehdg0EYI9zK1yXVjK55gqDGKg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-storage-sqlite",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-storage-sqlite-0.2.1-rc.5.tgz",
+      "size": 14486,
+      "sha256": "4a96337ec963ba7432f1a4ebae0754ab15dac451a8ba3795bc7401000452a5d2",
+      "npmIntegrity": "sha512-aRF+IzNNALf/ylnP0t52HV7mDXFJTv50Wy9i/2oEzIQ0/tThH27ylk4s36zkac0UIQlxkGXettSm3mKNrwNO/A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-subagent",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-subagent-0.2.1-rc.5.tgz",
+      "size": 144694,
+      "sha256": "e6b4db0740db9d119678955674b1664c4d2de5ad04189708362d9711609b02ce",
+      "npmIntegrity": "sha512-+zm0C8oyH8qH1mEZp7xO1uTLRhrHykJiuDUuPtxHw4trtbqMVCsVd+Dc/SXWFKY/65QhOh7HCZU90PCALGmFQA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-subagent-acp",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-subagent-acp-0.2.1-rc.5.tgz",
+      "size": 20596,
+      "sha256": "b122b5e94858acfbf72cee892570c56d9b8b4d926335e9888913c56c6b4b846e",
+      "npmIntegrity": "sha512-4JUPoIoD5vfaNC9ajtZKQDNaSTG29M3V8y8prQQYUCnzOuxbt3qrONfSZh8hktJLXSUmcav2eEC8WksDIdE7AQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-subagent-claude-code",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-subagent-claude-code-0.2.1-rc.5.tgz",
+      "size": 23367,
+      "sha256": "a0804cb78552b59938ca705864471b21288568abcf727126c4bcc13219d51901",
+      "npmIntegrity": "sha512-BwgNC3H0pEtl7SQNvsqGAxmKwi34pOc037y9gLvkYQtjiVP1z+ii/0JT0GNjk+B9wjXuAks8Mu6RC/0xS4wpwQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-subagent-codex",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-subagent-codex-0.2.1-rc.5.tgz",
+      "size": 25985,
+      "sha256": "0036d24e665e4c5d47a51b136c6505478f0f96ed997eb06d2eba019d09df2edd",
+      "npmIntegrity": "sha512-RtJOoYO1IYJuQmRYJ0kj6rmAsffuQlBGTek/tdq1/3RJKPH2vx3eBn4sCAOiQci23BpPQGPn0U98NW5ZxR6apQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-subagent-dsh-sdk",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-subagent-dsh-sdk-0.2.1-rc.5.tgz",
+      "size": 20182,
+      "sha256": "b9ea3e1786935b36331a071a8a00dd5df784775d2918455ed200ed561d075d4a",
+      "npmIntegrity": "sha512-LbeEf4R2T7Cl5usuwtRRAxeunFSgO16rA7L717zpyBQuB5bL26U4Tq5xRJZBVAaIAyILUIQsecnRfXvtorsodg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-subagent-fork-in-process",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-subagent-fork-in-process-0.2.1-rc.5.tgz",
+      "size": 10489,
+      "sha256": "3dc2677a1470a1d367a0ae4eb7364d86057e47be095ab56494bd312afaae1b77",
+      "npmIntegrity": "sha512-ywTLhc3KGa90G/wdouw3yleQsmeN+oHCd5mpXuGnatYIZ+/4vniMhbce53MBSEnc3qpwKGowFU7Slx20jH1H+A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-subagent-spawn-in-process",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-subagent-spawn-in-process-0.2.1-rc.5.tgz",
+      "size": 9543,
+      "sha256": "fd2b066dde825fba43ff8a1103659c95b0415ad2395aad22bfa0845c9599e6a0",
+      "npmIntegrity": "sha512-aFfptP/oCuVBybf6DlVSRA5qaP9aV9FFt58YpMaI/x/uxZq6KFvcVkKuJZlXnfn/tqVGgI649XVvvAX9124PFA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-subprocess",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-subprocess-0.2.1-rc.5.tgz",
+      "size": 21592,
+      "sha256": "1ec4da94c23f70ab4d0333dc80233eeb22adeb7e4adb10dd602bab161d539dc3",
+      "npmIntegrity": "sha512-qwexyhc7qoxuFrjujnSXKoI7dLKuS8T1UgsAwNd41priFGiAxKZ3vUkLaE7VALW0SS9YeQV85RtqPSpAP3WarQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-subprocess-local",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-subprocess-local-0.2.1-rc.5.tgz",
+      "size": 76814,
+      "sha256": "821437f6b3f6168f73245ae30888f48a1e02121e8725d6682e913e37a538a601",
+      "npmIntegrity": "sha512-odoGPqKzsrSfpz0IQmNkEqwyAxsxrsv5a/gFr3kfKFAQEnEaUbpW4r98ClBFKzWcCjj6CHDdJOe59mmx4qpwsQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-subprocess-ssh",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-subprocess-ssh-0.2.1-rc.5.tgz",
+      "size": 10794,
+      "sha256": "ad411181b9e8ef26ee38e05b966c7da964c033177852af0793690666e24d19a2",
+      "npmIntegrity": "sha512-VuQ599lRSmJ3NTE+5ySYXX6szwGfh+CdRrm5Ulv13gHwSe/JIZPfDXoLSaKPW1rCMi2DeN49D8B9ewv6UzDhkw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-system-prompt",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-system-prompt-0.2.1-rc.5.tgz",
+      "size": 23275,
+      "sha256": "f223700954221de8cce2feaf6d6fbf526aa2ea5fd261fc0791edf1f858c31a02",
+      "npmIntegrity": "sha512-HWW0k4Ug4XjRbCghLZYFMpLh8Ywcuh/bS7DAnjWfq4HbwwB+hV0XXJRF3iCf5600uYArfbuv4Ttz+4PHKu7k9w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-terminal",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-terminal-0.2.1-rc.5.tgz",
+      "size": 17363,
+      "sha256": "24fac679a5226f1e2c9c0f1a724fa5e9dc368ce0aa5de0b3fd1e86544e14de51",
+      "npmIntegrity": "sha512-TDbDtOFht5Hi1X5MMjU/XhrWIjxEpdxGmr+cu0qIcQutW82eWTWhBkLs1b3301I6tKA0rh/07ewjTYsXJdO25w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-terminal-bash",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-terminal-bash-0.2.1-rc.5.tgz",
+      "size": 25829,
+      "sha256": "30485a02c0bd39c9c213145758d4dc3d3d3b84063a5ca390ede7c0dfae331c2a",
+      "npmIntegrity": "sha512-wx/fDDNPiCmS3zLxO0e+txdmIFc3Kqn9AoH3nDr+20zXmRsHHBxy4YJIiDY5vCuFWM0dcrN9FfWhCaokTWZk1w=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-time-context",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-time-context-0.2.1-rc.5.tgz",
+      "size": 13686,
+      "sha256": "42b8113fb340b42c7918f2518e6a9fb4d33c90176fc9fbb22808c8c01f92c006",
+      "npmIntegrity": "sha512-h1kR1pE3x1OgbFau8rUkmwXGCy/gjiL6aZBXeuFkvshrWY74PTcs1HEzpgBsdDiUmYFY6V2gl0MhPVn8l2Cl4A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-timeout",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-timeout-0.2.1-rc.5.tgz",
+      "size": 11531,
+      "sha256": "f28bb83ca39afb8d8cc20b12ce9c2c4090c8c8513794c3aee536903f2107114d",
+      "npmIntegrity": "sha512-tQR1A6sQGG7XruB5zeobk+SUhvrxGYf+62WnMOcgdhrr9wCD4MCojZKBtubbm5BhozwEHAyTeESbk9l2+B/Uyg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tmux-context",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tmux-context-0.2.1-rc.5.tgz",
+      "size": 34935,
+      "sha256": "aa4e8feced7a975cdf1bf4ff17cba67e0994d26ac156cb076ced40077ab4ee9c",
+      "npmIntegrity": "sha512-kv1qQCJwctLb86Zqq/3GlI5YAbrEb65Ctt0POQroml21+g7Mb+U3mYYcbwtTtJk9FfVPu5kFBr4KiDDh+k5ZMw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-token-meter",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-token-meter-0.2.1-rc.5.tgz",
+      "size": 41886,
+      "sha256": "321c26e1d3d0013811dbe9077b5c61732710e45e8163b46a0a8782fd4bd12ed4",
+      "npmIntegrity": "sha512-0ZGxirvDR4iqCa1+QPcRZjLLar6ByyaGUTBHx3lvPF5FBEs9Dok7wIrBYx3m5JYYKvrfCg4KMu61t1z606ynog=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-ask-user",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-ask-user-0.2.1-rc.5.tgz",
+      "size": 13092,
+      "sha256": "bdabbbb862c3b2c32976ec806f6df800d90bd86cbbdcf9a72e4c7362edcd7749",
+      "npmIntegrity": "sha512-tXRgNRIJsH0TJaLwIzju3kdU2C+Qi74r/+uHVCaEj5IOuFygG/PTRevLycAsIs51TDhgv6bOkkthd80jx7NIpg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-bash",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-bash-0.2.1-rc.5.tgz",
+      "size": 26902,
+      "sha256": "dba454dedaa0c3f69588e21f89ecf477f3b95013a2fd8377268b5964b9c997c2",
+      "npmIntegrity": "sha512-qkS+DdxPa8xLx8KGVwPHeyzCfwTZLZKSXZeBMAYeOy98x4A3PdjeRVRKc/3ppzwJH6Vcs2ImbT47gaRTkeMpyQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-bash-persistent",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-bash-persistent-0.2.1-rc.5.tgz",
+      "size": 15776,
+      "sha256": "1674856294f24c1a1338299563c42ff839beb10ef0f071ad92e36d57a69261ff",
+      "npmIntegrity": "sha512-gURKTvg10omVsI9igMoJmuVRXXUJ06IyM7zkCFsmICscZn0PeiFwV29X1njaCkrWEZ8JwInh0K95Ltia/Zzckg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-call-timeout-policy",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-call-timeout-policy-0.2.1-rc.5.tgz",
+      "size": 11494,
+      "sha256": "c4bdfa1e4d06e9215cf148b165179269d463c21836e2abfd194e4aad06d82c4f",
+      "npmIntegrity": "sha512-HEcAwj4ohJEiIC64TsdtIk/IPnbUFYe2rrniWr9M4sqZa5x2CtrgWnmHz/CXA0oOOUFaSHKhvbNpfJypDg5Rzw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-cordis",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-cordis-0.2.1-rc.5.tgz",
+      "size": 146410,
+      "sha256": "b1200084fec4da040a4b067218a527b5472da96e4f77b13cefe10a182ed7f4cf",
+      "npmIntegrity": "sha512-x2U7vtkby+Y4Ehorgl7Mvpnyj5GQ1ZiepB1fmS/VWvZaR/6fFMlP/I9WO2lbIkP8Tp5dkre28eu1k366VE6edg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-fs",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-fs-0.2.1-rc.5.tgz",
+      "size": 39487,
+      "sha256": "06f7224294c347ec0f777dfa137ad5b78371ed563fbebf5603e3297a76f22405",
+      "npmIntegrity": "sha512-pbx61taI8p9vZEvKfiF8WFbg41omleod+SvOBR9c7rPRh3QNkRljkNxDm13FPR7GmLhN6hW2RA8Y0+tLBt5LxA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-fs-search",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-fs-search-0.2.1-rc.5.tgz",
+      "size": 39957,
+      "sha256": "0beae88426909a791a1bc5175a0f8684d608b1694e573b4674489e817499f83c",
+      "npmIntegrity": "sha512-l3nMMM8aZYQ8U2O3SIUfD/MpIep7vZq1IhdGlvJmPx6nbjN1pzg/WIjDkCiI4vyt+nxdt+nHhDLmC+V6DxmkKg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-goal",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-goal-0.2.1-rc.5.tgz",
+      "size": 16750,
+      "sha256": "d21d7a784905cfa5572307410b9afa3530c7ce127d61af02f0150df71212cf6b",
+      "npmIntegrity": "sha512-5IbjZc8tFWaBKpgZ0EdUaONxXq5GPE1XDG9RNO8exhSQVW0B/0RZgmhoioxyUBFPQG6T+LXRS+aHNoR9ZpR92g=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-jobs",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-jobs-0.2.1-rc.5.tgz",
+      "size": 20499,
+      "sha256": "45047f7eec9f1b94fe421fd55279f698260f85f12c33e550b8e6f61e2d3862ac",
+      "npmIntegrity": "sha512-KQIJEDmlTow0Xq0NKs2XTKfRjRHeind27A5E1ms6g1OFwSGa82D6jq6XXfqGbbmcwMGng3IopGXledeYlTnaAw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-lsp",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-lsp-0.2.1-rc.5.tgz",
+      "size": 16035,
+      "sha256": "799a141ed7939b2165b9d023a1014e542a0702e8c27be254337b80888c6f1941",
+      "npmIntegrity": "sha512-OUgZv+KXearMgMZ96yrC0rQj/O03yO2YXvbBl9v6JbDjrEasRvULtibNO7uwCsbvFmt+HHhBMZH0XP4WEns1LA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-present",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-present-0.2.1-rc.5.tgz",
+      "size": 9111,
+      "sha256": "10abbf156eba7a567bcf8807f342b4a0d8496ccde7df2bbe9c1adec07c181209",
+      "npmIntegrity": "sha512-2AaH6FcSxHaVJpJnw3DxIEalGzc0NeHTrbndEBbJGu37Ox0GDhJv4Py00uI6tqvAtDDVd9BLwucoH66In2dfkA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-pwsh",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-pwsh-0.2.1-rc.5.tgz",
+      "size": 26251,
+      "sha256": "48e425fac7501aaee28abeb87a30219cb73455700b56d9486c057eb344a40b84",
+      "npmIntegrity": "sha512-xndrPzeVUwYkrPEFtl9X6ap96zpwjMRQthH2PlInqX4KKxs2LzXr6cf5velkdbdnIU83yd+KJWtC0uuC4n9jDQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-pwsh-persistent",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-pwsh-persistent-0.2.1-rc.5.tgz",
+      "size": 17704,
+      "sha256": "ec04bc220684c9f82c65bfa8b3893ebbe447b8914a04aa7f364c93bfb078c324",
+      "npmIntegrity": "sha512-pJEJ7hLhrteDJ3TYOXR/c2T+5IwLaiAE1W3BPlYz/hckS54QLcemeb0Z6bbhII4L/uyohtC+S15eNiOTTW0eXw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-ralph",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-ralph-0.2.1-rc.5.tgz",
+      "size": 16759,
+      "sha256": "5375f1270b7126757cd0ea820cff510b01cb9321974f01fd566808681f77ed4d",
+      "npmIntegrity": "sha512-JdNw9Ti4oFqEqpthtx6+6mN8Z2h4bI9F0o7EMe164z0kPM6gx9l1/E4UYf2mFXjuM6ZKPVv/VBDU14cEaRgMhw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-schedule",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-schedule-0.2.1-rc.5.tgz",
+      "size": 13630,
+      "sha256": "b2833d47eceb2c150b0e8d5a8072c764bb6b550c8d374609f215d56fb6ac0d11",
+      "npmIntegrity": "sha512-8egpTHLdBZf7KCxGLmeqpJrfo8DC5Buom1N7Q5ThfBuMjmwwitR5FrCy0qQxrQMoTNbdo5qnhqdAN7AidfCe8Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-session-query",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-session-query-0.2.1-rc.5.tgz",
+      "size": 23793,
+      "sha256": "88725fb3680a2b8598c02301fd11b3d0ab7d9fe03acf3a8f2dd009c30413080c",
+      "npmIntegrity": "sha512-g2DsgSGN5hYE7E8I/VKcC8rS3CJ7r/zawVaSuog44w1aoipQzGMa0ISKwhpjj4mnpcQ7Su3PwN/AGRLYTKHM1Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-skill",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-skill-0.2.1-rc.5.tgz",
+      "size": 24387,
+      "sha256": "d38ba011db71b128ac08e3352655861a32f926db0a6afd1f9e6dc4f878605f02",
+      "npmIntegrity": "sha512-m1WVKvw8plSa8aYxcGxa1Y82iuGMD6NSFY5Nr50j9CjQx2UnQTJCVveKtgAt5iiA9fZ5QalFdUqxLeTunNsOkA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-str-replace-editor",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-str-replace-editor-0.2.1-rc.5.tgz",
+      "size": 14161,
+      "sha256": "c74b9437dfa59ecbb651ef000d1ce2b98e20e0e0fbf498856283e5f6e9961e28",
+      "npmIntegrity": "sha512-GB/F6nhyP8fbNpGmS9q6KZCtuM64mLpX6LH6CbFFB9KAMCRB9eHjft8ed0Q0QJsJxTmOERHbpSpkda8oO2Q0rg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-subagent",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-subagent-0.2.1-rc.5.tgz",
+      "size": 29008,
+      "sha256": "e75f6808a6f81805ba160168feaf01238f9d92c834b278970610b73f2f2ac8ad",
+      "npmIntegrity": "sha512-Uxuzqpv3cljih418kIMPMXlcRh08+CHH80UL+9j86SJU3e9qRICuYQl1z15ezYEyUX+QFVDM5O76vJqXT3WezA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-subagent-control",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-subagent-control-0.2.1-rc.5.tgz",
+      "size": 14875,
+      "sha256": "4f14480db44405db06aff849447d0a84ee54b8ce0d3e1fe8805a73c2ada345b6",
+      "npmIntegrity": "sha512-JQiDs2iRsIBGdsBxA5kPfIQ0N7CvG9DM2qbT+dBdX5Zq5bUUAC87etZOgIwa4mtyKU1wZ/kfeuZveq+NUCZywg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-terminal",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-terminal-0.2.1-rc.5.tgz",
+      "size": 17046,
+      "sha256": "a248a7c4a1eaabd4ddd5c721cef5c00f4ff03b7741a410eff28d580b1bd8ae5b",
+      "npmIntegrity": "sha512-9JS8N3n+7XmrRtqkPAn+UoszGz4CIYzEz/vpumfaNpKQjiMTDUftuzj9KpudAFagdnKnSu7w3sn7OzPE7Jnasw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-todo",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-todo-0.2.1-rc.5.tgz",
+      "size": 16563,
+      "sha256": "5e26d332770b979d1c4162815844bcbbc523cc460e13dd46e9c9225a06d5e743",
+      "npmIntegrity": "sha512-sQ8V3bqmaBpJNyttufSQN2oWc2sbWEwXYyniuV05EjEpBo7uLXXoGf7yXQobK7Bt8U8/EiX25DR+z1CaTw/YPg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-web",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-web-0.2.1-rc.5.tgz",
+      "size": 29673,
+      "sha256": "93beab0a5f3c957334dbcc576248434047be661d9580cbb09f69d679c27c200f",
+      "npmIntegrity": "sha512-wpBG22Iqn5TGOrhk6vuK6LlVYlLNTHoQJgG2WrbHBg2WFIsTSzl7xKyWTTALcBvl+HpUCtk7kZv82/cHcbbI4Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-workflow",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-workflow-0.2.1-rc.5.tgz",
+      "size": 23913,
+      "sha256": "83b2b6abd19492df304cab38e01db61f528ca6bb617630ec018c755b069b98d3",
+      "npmIntegrity": "sha512-yrMsmclrCNBnHGMM0lVUW1JsyNBOqM/yZyVWBCGvnavf/c610mXWTtIUeW0sXqSS89JHpZlf9CH2dXST0gnrLg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-working-directory",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-working-directory-0.2.1-rc.5.tgz",
+      "size": 5093,
+      "sha256": "627bdf2988de14aaa16329fb97c51d58c9c9eb6dcace5a4671a85c05af207ce8",
+      "npmIntegrity": "sha512-CZcfcnzgUTY4cMLHH9f1h/FU0RNk0M0JeNL/0jrYJ/3sZY3o603OwXnNQ2cHigZuGSRXNQft4Fjl+65utRQ2tg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-workspace-dependencies",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tool-workspace-dependencies-0.2.1-rc.5.tgz",
+      "size": 13086,
+      "sha256": "ba1c9a25d0c3acac0c9dd86320609cacab34fc79d0f37a725d554b3561a6ad4f",
+      "npmIntegrity": "sha512-dn1pbAA7oPDyDwEfuNzPDyROFgnQ3hhFOdqmccZJ8P2keLtMaSHHUleM+v8YBp7XVMxMfJ+7H6SzEXO+W+9XqQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-tools",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-tools-0.2.1-rc.5.tgz",
+      "size": 149899,
+      "sha256": "9614366d61214a304f937d0f3b8481d5827d2aef4529f3bff9eb49ef8ac65283",
+      "npmIntegrity": "sha512-tOEMsbG1jH4EV80xcGucfeWsKHLjnETjRLtSnyFrVl2oma95tzTHBjti5MK60IvT2ijcCWhx8CrUKcqRksfDPA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-typert-generator",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-typert-generator-0.2.1-rc.5.tgz",
+      "size": 150895,
+      "sha256": "7a256c75561f02fd1b6efbc6398ac2f2f273def612869e63e29d189bbde856f3",
+      "npmIntegrity": "sha512-m6/50OLnhOSNB6f87YxoLOvNQu1DiSI/J82qo5CWIE4tkbvEIoXcP9himY8x6aWhFiLGO//+K759Kl8xKNm6OQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-typert-loader",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-typert-loader-0.2.1-rc.5.tgz",
+      "size": 14625,
+      "sha256": "cf5cce425a3714c63b055ddc4c76b91f417c33d4a75900a4bb6e104729e03456",
+      "npmIntegrity": "sha512-ps6nyNvzVPpkiw2aT1J8brswWdXMu74c45yEdZSu7NjJtAan/JkxmE+kILYYT1iK1AitI1paPHjegdXuEmURCw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-typert-protocol",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-typert-protocol-0.2.1-rc.5.tgz",
+      "size": 40868,
+      "sha256": "13e267e33fbe0b7e93dfa02305922d074ce715dd352f5036ea9b33e32200c710",
+      "npmIntegrity": "sha512-wUkcvZ2ZOlAOeI91m4ESOdtp7m01cq0bhCHirLHBsMAa5UGYWwkyijLHvGs8aaM27gooltpEHLquUnl6zFXtkQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-typert-registry",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-typert-registry-0.2.1-rc.5.tgz",
+      "size": 23528,
+      "sha256": "fa5d5b55d5934169e923e0a0b30e8a60f23e679b22eb0b9bec3da1018cc95427",
+      "npmIntegrity": "sha512-d2bDwfj26FGPt625jFfeB3YF7HTVqxGbw8uHs97HNtCoj7j0Q8iVuvehxdQ7dgTT4yNRLgFqsATTtBqPa2HcPg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-user-approval",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-user-approval-0.2.1-rc.5.tgz",
+      "size": 18067,
+      "sha256": "adf17f1b6f6414bfc4a4041914a1a8d66308ee7ada32b8257de2cdf42b8a2150",
+      "npmIntegrity": "sha512-3lwcH3SBnBLO07qLlPXYjuerMRDcXcJFPIdqwgliC6J5SAdrbi7Vx9rCYhz2aWcrpwmxhR3yXYiaNkvSnHHCJQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-user-questions",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-user-questions-0.2.1-rc.5.tgz",
+      "size": 39707,
+      "sha256": "5a2cb8c9451b4288c26a3c132b60aac15229a33bae34ce3c7bb0050906d6a8bc",
+      "npmIntegrity": "sha512-Yz4c6YO804nvJ6DVJGPZSAF3DCJ7HJgpylBL6KfbI7Au3a6MV49mLLEv5cWs67qL/tyQMsJO9DI2N/xPlczEXA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-util-code-language",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-util-code-language-0.2.1-rc.5.tgz",
+      "size": 8052,
+      "sha256": "c199baa9355d7f39d725a0a5f59e9c760fd0072dd38e9ce725d0379e644416fb",
+      "npmIntegrity": "sha512-EC78GOIuaQqkSkH2l8x6eHH792cdU93mRAaNvdM54xE+z/Udfi9NCGM+wj7pQk9KKipbnzQAH3VtDESLR2oflg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-util-crypto",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-util-crypto-0.2.1-rc.5.tgz",
+      "size": 5082,
+      "sha256": "3d99b1120718249a52fe854b84f4bacae21464345073d560019974268e19a089",
+      "npmIntegrity": "sha512-7mGcnCH0BzIUzbnnC2Vx17Q/O3/+EfMHNt9iC2VaGr9SK010HYUpei/+6wrZsuGy77rqAUNhU6VB35wQTLM/VA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-util-time",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-util-time-0.2.1-rc.5.tgz",
+      "size": 5190,
+      "sha256": "937047eeaeff78a48985c224697cd6d08eb2b9c006d004b4e26f73f513e823c5",
+      "npmIntegrity": "sha512-U34aePuflUys224QpfoLDVux7HifRGzbhWreuMRoPzRcgArC0gExPlUz9gJM7bTHkjrEf6Z5jcHsSxPJNK1iAg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-util-values",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-util-values-0.2.1-rc.5.tgz",
+      "size": 17919,
+      "sha256": "2472d81f0dc4597bc5c4eeff493686a2b59a6b27cb6eb6654394192066d6ec05",
+      "npmIntegrity": "sha512-PL8TerJM/4jpZ2ArwgTpFbeDiAVnqkSh8Xinw2iEu8B6a+axmshzL4dCpwpf+uB8GHdXAhGz1cT+SBQwX/2TLQ=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-util-workspace-path",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-util-workspace-path-0.2.1-rc.5.tgz",
+      "size": 8867,
+      "sha256": "24c9b5943edb9ba98f296a3767a57539d649ca305ce67b09242dbb68a0d1062c",
+      "npmIntegrity": "sha512-oaRqpBe8Vwyd4yS0D5lkmfScqVFVpiICTuilei5buYZrbTFFiGPF6zyv/B5cHy3l1uz5dwuxSm3vz9fYcc+0Mg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-web",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-web-0.2.1-rc.5.tgz",
+      "size": 15952,
+      "sha256": "039cb918698db3b8007ab158188e2ce9f7e011022131e535b3f6c6ac97909c13",
+      "npmIntegrity": "sha512-P5CJsStbj+fcy1wYabWc42cvPqRaGokEIULIiYfAGKXaNjeSirDUsL9SueXFsZE6Pkz5hfmpHzBTcOYE7224wA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-web-app",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-web-app-0.2.1-rc.5.tgz",
+      "size": 34098,
+      "sha256": "476013f6b9b24de8852b404dbd1a869b4d1cd7383b407e320afc884ef90c828e",
+      "npmIntegrity": "sha512-X05vTvrF41RpkmydI3CgqwQYsDjBWWY6xEJRk9noxp/YuQuBFfN5ABC4QedRYRXK7kR7lNEx2FtehXbCREkdSg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-web-deepseek-api",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-web-deepseek-api-0.2.1-rc.5.tgz",
+      "size": 16315,
+      "sha256": "5a02447c13dbd1bd8343ac20d6002a57b2e94c1f5ae43c86ce07e2bdffd59e1e",
+      "npmIntegrity": "sha512-17yHY3Pr5kVHVToFxu3t5MfrtkX4xVHCOShztjTKXYBVPvk8DK1T45yQ1q+baCOtP5cVWUSNs99Afq7kUa/vAg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-web-fetch-http",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-web-fetch-http-0.2.1-rc.5.tgz",
+      "size": 22114,
+      "sha256": "d4b4ae37a66d6e1a2e3d3e5d62bafb11cf4b7717e4c91f9e1e389f2bcba779a1",
+      "npmIntegrity": "sha512-7z6tvp5s4+MhvU2kqo/GfYmtvw59C8XfMzs391cVeFyeRVYlF/pjcAS1+dLSzaAQ5hCehogFXJUn4Dzy5xhuMA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-web-frontend",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-web-frontend-0.2.1-rc.5.tgz",
+      "size": 1319640,
+      "sha256": "197ad448082b7076dc0ba527884831078cc09d0d1fef9f8487e59443cdf42d60",
+      "npmIntegrity": "sha512-IhTiAJ1cItWGaIFipJM004ru8ZAEEbTpBNPw43FRYGBm2IyOO80ycrZBJ2SNtpFZ9j5bVCGbjhMOuKHvYU0b9Q=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-web-search-deepseek",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-web-search-deepseek-0.2.1-rc.5.tgz",
+      "size": 21362,
+      "sha256": "3b0431d7469b95fd2cd7d78240a67de9f2008fae9192e48acfd7e43df9bc1a6a",
+      "npmIntegrity": "sha512-CnGSJ7Pku+BiPNyOW8GkG1orC6rSa/b9KpTmuwiCNDIoRX+/Xv+qtX36eHYvnVEKhhGg8bbuEa7b2lOmD8dRXA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-web-search-exa",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-web-search-exa-0.2.1-rc.5.tgz",
+      "size": 12225,
+      "sha256": "f66ba588ad6b03cd15cf83e0f45f170d8d8e22dcc6c6c35076bffcdfea7fff42",
+      "npmIntegrity": "sha512-MZcwGSuSrH73hZjQhUzhqmHfqT0XV1Vxf+qd/y3joiYajQRiSZPfMTmkoRRdBryGtI9L8200yrTVCdLWIaVvWg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-web-search-perplexity",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-web-search-perplexity-0.2.1-rc.5.tgz",
+      "size": 13205,
+      "sha256": "b750633befab27256121682d158e9d528fdac6729407eddd280d7074c091e577",
+      "npmIntegrity": "sha512-T+2JH//NpEWaTmB7YI+JEdOeeM0wPkKJ97T65N0lghsw9RPLGM0Zh7oMSuL1lbLC/LMqz7SXgNnRHwLevkkPPA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-webhook",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-webhook-0.2.1-rc.5.tgz",
+      "size": 15164,
+      "sha256": "a9f527bf5f1c61ac3916f8188ecf73148a1d74527281bcd85a4ceb5d5889b2dd",
+      "npmIntegrity": "sha512-Zt5dQIIHc31ZFM1En0+hg9w6ujfsXlUen97u9fz5PqfW5flHOheQR6vXjTpAQ5Wx7BOwtmzqTVPnkWtGSQLJgA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-webhook-github",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-webhook-github-0.2.1-rc.5.tgz",
+      "size": 11794,
+      "sha256": "73af4d0e6e9854da62ce0782eaf8151617e152914ef0852782988bd08a4d7933",
+      "npmIntegrity": "sha512-u62Rmxew17ucNCnsOqy9S10uzjZZodAB45D6h+BkpqXsYx4xNFCmbqR9kUzJkP3neJRYilEI/5Xz9dH2NeETMg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-win32-process",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-win32-process-0.2.1-rc.5.tgz",
+      "size": 21099,
+      "sha256": "1c9430635e05b305dfa73e6f702274ef62c19a6d34415d382a0fca7d0b48820c",
+      "npmIntegrity": "sha512-EzPsUV0W6g18mPpe17RTlco2xOCulyKdBghZa7bhh09bySG05ZK4JQr0+TrT831z1jusMwJZDqkUZBeuXdbH7A=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-workflow",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-workflow-0.2.1-rc.5.tgz",
+      "size": 16176,
+      "sha256": "1abaa53331fb85a585607d56350da87eb47dd3920c1a0f9b50ebfe80befae06f",
+      "npmIntegrity": "sha512-m8SBCq1ruyMFwqTqTJLZFOwjHKIdZxnnpcoVKM53F+hGTC/C+7GrA4QLYJK3RCJNjOvc4Yb0I97rNR/O+7QfBA=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-workflow-ptc",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-workflow-ptc-0.2.1-rc.5.tgz",
+      "size": 45864,
+      "sha256": "29be9e4fa7b0669562b21d82c78d3e169227013e8029bfae93fd14474d45f797",
+      "npmIntegrity": "sha512-BqwRykBWtJ++d61J3rG0D6B7MzY6weJqNAApAXE1W39uxABHrFs5Pph0VAQPV8dS0BSwlQbJ99g7rSnDDWzIlg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-working-directory",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-working-directory-0.2.1-rc.5.tgz",
+      "size": 8447,
+      "sha256": "fb3373f2468cbc06b264c4753a089279c24b1937522ca458f1007e8a223ef953",
+      "npmIntegrity": "sha512-1iHEkg+VApcpiynxjjWPjdl4COGMG/VRvRtB8aESe3CWQW1HN0tjzEw0VSizsvn3XDaZ8VjiA+g1Svufobc0yw=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-workspace",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-workspace-0.2.1-rc.5.tgz",
+      "size": 42813,
+      "sha256": "cae69df48d4394ed178d1e8670375da36fcfde2db626f7e3546d8652288a5e98",
+      "npmIntegrity": "sha512-mopPHOJz7sYbYxHVc3mw9VDe17NFm9nN/oiG1EmBPplaicMyhA7rdZ/NRST8rBDa82TkwLXMD/TGN0qp83vyZg=="
+    },
+    {
+      "name": "@deepseek-ai/dsh-workspace-changes",
+      "version": "0.2.1-rc.5",
+      "filename": "deepseek-ai-dsh-workspace-changes-0.2.1-rc.5.tgz",
+      "size": 40554,
+      "sha256": "61d6e36a27b9220f6a2e1e4f2d1b944d4d97ad509189735d5afeef1fda1eaa8c",
+      "npmIntegrity": "sha512-CKYelC35+YUdbwl/38N8NW7Ph7013GsjTg38/olJNPktUBz0vIBByvpEa26fL16ItkcdPOtFG06wZNqfb0iWJg=="
+    }
+  ]
+}

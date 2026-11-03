@@ -20,10 +20,11 @@ describe('0.1.3 alpha.2 browse directory-picker client patch', () => {
       'validateDirectory?: (path: string) => Promise<boolean>;',
       '"browser.nativePicker": "使用 Windows 选择文件夹"',
       '"browser.nativePicker": "Choose with Windows"',
-      'IconFolderOpen16',
     ]) {
       expect(patch).toContain(marker)
     }
+    const client = readFileSync(new URL('../node_modules/@deepseek-ai/dsh-client-ui-directory-picker-browse/lib/client.js', import.meta.url), 'utf8')
+    expect(client).toContain('IconFolderOpenRegular')
   })
 
   it('validates native and browser choices while keeping cancellation and busy work in the panel', () => {

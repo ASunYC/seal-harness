@@ -1,3 +1,4 @@
+import { ELECTRON_MODULE_ABI } from './electron-abi.ts'
 /** Fail-loud verification of the runtime entries sealed into Electron's app.asar. */
 
 import { spawnSync } from 'node:child_process'
@@ -205,12 +206,12 @@ export const REQUIRED_WINDOWS_X64_NODE_PTY_ENTRIES = [
 /** ABI-pinned fs-ext bindings selected by non-universal macOS and Linux packages. */
 export const REQUIRED_POSIX_FS_EXT_ENTRIES = {
   darwin: {
-    x64: 'node_modules/fs-ext/prebuilds/darwin-x64/electron.abi149.node',
-    arm64: 'node_modules/fs-ext/prebuilds/darwin-arm64/electron.abi149.node',
+    x64: `node_modules/fs-ext/prebuilds/darwin-x64/electron.abi${ELECTRON_MODULE_ABI}.node`,
+    arm64: `node_modules/fs-ext/prebuilds/darwin-arm64/electron.abi${ELECTRON_MODULE_ABI}.node`,
   },
   linux: {
-    x64: 'node_modules/fs-ext/prebuilds/linux-x64/electron.abi149.node',
-    arm64: 'node_modules/fs-ext/prebuilds/linux-arm64/electron.abi149.node',
+    x64: `node_modules/fs-ext/prebuilds/linux-x64/electron.abi${ELECTRON_MODULE_ABI}.node`,
+    arm64: `node_modules/fs-ext/prebuilds/linux-arm64/electron.abi${ELECTRON_MODULE_ABI}.node`,
   },
 } as const
 

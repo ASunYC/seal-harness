@@ -16,6 +16,7 @@ it('prepares request inventory for Desktop-owned entries and private-manifest pl
     const desktop = JSON.parse(readFileSync(process.argv[3], 'utf8'));
     const root = mkdtempSync(join(tmpdir(), 'desktop-inventory-'));
     let release;
+    const warnings = [];
     try {
       writeFileSync(join(root, 'package.json'), '{"type":"module"}');
       const baseUrl = pathToFileURL(join(root, 'package.json')).href;
@@ -24,16 +25,18 @@ it('prepares request inventory for Desktop-owned entries and private-manifest pl
         const tree = { ctx: { baseUrl }, entries: () => names.map(name => ({
           options: { name }, fiber: { state: 2 }, parent: { tree }
         })) };
-        // 0.1.6 asks the Host for the active package index. A standalone
+        // rc.5 asks the Host for the active package index. A standalone
         // Profile has none, which keeps the upstream filesystem lookup.
         apply({ baseUrl, get: () => undefined, loader: tree,
+          logger: { warn: (...args) => warnings.push(args.map(String).join(" ")) },
           deepseekLlmApiExtensions: {
           register: (key, value) => { assert.equal(key, 'dsh_plugin_packages'); provider = value; }
         } }, {});
         return (await provider.prepare({})).value.packages;
       };
-      // A standalone Profile has no physical copy of the Desktop package.
-      await assert.rejects(() => collect([desktop.name]), /cannot resolve active package/);
+      // rc.5 omits unreadable identities with a warning instead of aborting a model request.
+      assert.deepEqual(await collect([desktop.name]), []);
+      assert.match(warnings.at(-1), /cannot resolve active package/);
       release = installProfilePackageResolver(baseUrl);
       assert.deepEqual(await collect([
         desktop.name, desktop.name + '/terminal', desktop.name + '/pnpm',
@@ -47,11 +50,15 @@ it('prepares request inventory for Desktop-owned entries and private-manifest pl
       }));
       writeFileSync(join(plugin, 'index.js'), 'throw new Error("inventory evaluated plugin")');
       assert.deepEqual(await collect(['private-manifest-plugin']), [{ name: 'private-manifest-plugin', version: '1.2.3' }]);
-      await assert.rejects(() => collect(['inventory-nonexistent-package']), /cannot resolve.*package/);
+      assert.deepEqual(await collect(['inventory-nonexistent-package', 'private-manifest-plugin']), [{ name: 'private-manifest-plugin', version: '1.2.3' }]);
+      assert.match(warnings.at(-1), /cannot resolve.*package/);
       writeFileSync(join(plugin, 'package.json'), JSON.stringify({ name: 'private-manifest-plugin', exports: './index.js' }));
-      await assert.rejects(() => collect(['private-manifest-plugin']), /non-empty name and version/);
+      assert.deepEqual(await collect(['private-manifest-plugin']), [{ name: 'private-manifest-plugin' }]);
+      writeFileSync(join(plugin, 'package.json'), JSON.stringify({ name: '', version: '1.2.3', exports: './index.js' }));
+      assert.deepEqual(await collect(['private-manifest-plugin']), []);
       release(); release = undefined;
-      await assert.rejects(() => collect([desktop.name]), /cannot resolve active package/);
+      assert.deepEqual(await collect([desktop.name]), []);
+      assert.match(warnings.at(-1), /cannot resolve active package/);
       console.log('request inventory passed');
     } finally { release?.(); rmSync(root, { recursive: true, force: true }); }
   `

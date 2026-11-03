@@ -53,3 +53,29 @@ layout重跑继续验证vendored runtime（Stable318包、Beta344包）、变体
 隔离诊断重跑：Stable原失败Host测试在较小测试集合中3项通过（agent错误日志及AA开/关独立Host），日志容量/轮转测试仍在原10秒门禁超时。未提高截止、修改系统安全设置或将隔离诊断当整套通过。原始完整包统计仍按24/25失败如实保留；日志stable-timeout-isolated.log。全部已启动检查已收尾，无遗留测试进程等待。
 
 本地检查点只保存独立的默认插件/装配保护及其回归；完整产品交付、内核升级提交、跨平台及商业Office验收尚未完成，不能标注整体门禁通过。
+
+## 原内核升级门禁修复阶段进展
+
+已按授权单独提交原内核pin：Seal 53399025，AE 04a397f；子模块源码未改。正常Yarn安装及immutable均通过；两仓库完整check:layout现均退出0，验证Stable318包、Beta344包、203共享源码、图标及b830ec95来源。AE曾因子模块origin仍指本地克隆源而失败，已按.gitmodules执行git submodule sync恢复官方origin，顶层no-push配置不变。
+
+已修复但尚未提交的升级收敛项：原生清单统一读取已安装Electron的ABI149，替代Stable残留ABI148；rc5 web-app实际使用open ^11.0.2，此前未命中11.0.1补丁，新增11.0.4同版本windowsHide补丁并由正常Yarn更新锁文件；Beta库存回归按rc5真实契约校验告警省略及name-only身份，同时保留可读包和不执行插件的断言；版本集合加入实际存在的Next 0.1.7-alpha.2家族，未删除旧版本或放宽未知版本检查；修正旧测试对product setup wizard开关及Windows路径分隔符的假设。
+
+日志轮转首轮只减少重复全文件读取后仍12.86秒失败；进一步把同一次状态切换的完成/开始事件同步成批持久化，不减少事件、不延迟落盘。原10秒容量测试及新代际替换保护测试共2项已在6.29秒通过。定向升级回归Beta146通过/1既有跳过，Stable144通过/1既有跳过，覆盖库存、包表面、ABI、native清单和chrome路径。
+
+以上新修复尚待完整类型/产品重建及更广回归后再提交，不能当整体全部通过。此阶段已启动进程均已收尾。当前令牌whoami /priv未列SeCreateSymbolicLinkPrivilege，文件symlink的EPERM需要具备许可的执行环境（或由用户决定系统Developer Mode等设置）；未改设置、未反复重试。官方参考：https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsymboliclinkw 。真实Pro分发仍等待许可路线，不打包、不push。
+
+## 2026-11-03 最终升级修复与交付边界
+
+本轮实际执行结果（覆盖前文旧基线统计）：两仓不可变安装及完整 layout 通过，344 个 rc5 npm 归档与 AA 归档逐个 SHA256 匹配记录；新增 Pro/Office 依赖为零。rc5 市场所需 plugin-manager 显式运行依赖已补齐，Stable/Beta 运行闭包与许可检查通过。type-fest 的精确双许可证表达式 (MIT OR CC0-1.0) 两项均在既有允许范围，不改变商业组件检查。
+
+两产品最新 build/check 均退出 0（医院版补齐闭包后再次重建/检查也通过），实际 Electron standard 会话 24 个 browser MCP 工具、Creator/plugin-manager 和两次 Profile HMR 通过。这是基础产品和合成 Office 组合验证，不是带真实 Office 的新机器安装验收。
+
+完整单元回归：Beta 1569 通过 /16 失败 /13 跳过；Stable 1587 通过 /17 失败 /13 跳过。日志容量/轮转在原 10 秒门禁内通过，两通道仅剩的 lifecycle 失败均为文件 symlink 建立 EPERM。Beta 一项旧图标断言随后修复并针对性 2/2 通过；没有重写上述整套统计为全通过。其余失败：每通道 9 项 symlink 权限失败，Beta 5 项 /Stable 7 项 Linux 制品 fixture/执行位假设，以及每通道 1 项 Linux PATH 模拟使用 Windows 盘符。未删除/跳过这些测试；未改变 Windows 系统设置或申请安全特权。whoami /priv 无 SeCreateSymbolicLinkPrivilege，需具备该能力或按系统正式配置允许非特权 symlink 的执行环境；本任务未授权改变该设置。Linux 制品应在 Linux 环境实际复核。
+
+根完整 check 停在 Market 既有界面文案断言：285 通过 /1 失败，期望的固定句子缺少界面已有的重试提示后缀。该文件本次未改，不能声称根门禁通过。Stable/Beta 类型、构建已分别在完整 workspace check 中先行通过；独立完成被单元阶段阻断的闭包、CLI、Loader、Profile、AA、license、operations 验证并记录各自真实结果。
+
+CLI 冒烟原先隐含读取真实用户 Profile，并把 Windows 私有批处理入口当 POSIX 路径/环境。现改为自建临时 Profile、显式 DSH_HOME；标准化 bin/.. 路径，Windows 私有 Electron 后代保留 Node 模式的断言遵循现有实现。公开入口环境隔离断言仍保留，未修改运行时环境/用户数据。两通道隔离 CLI 已通过。
+
+不产出或分发含未授权 Univer Pro 的安装包，不合并或 push 主分支，不发布 Release。Office 商业授权/合法开源功能路线等待用户决定；AE 远程目标与公开性尚未确认，既有 no-push 保持。任务维持 in_progress，保留原业务/品牌源码变动，不归档。
+
+证据日志位于 C:/Users/Administrator/Documents/Codex/2026-11-03/task-3：upgrade-root-final.log、upgrade-beta-final.log、upgrade-stable-final.log、upgrade-focused-*-final.log、upgrade-*-verify-*.log、dsh-plugin-desktop*-final-*.log、dsh-plugin-desktop*-isolated-cli.log、upgrade-seal-build-final.log、upgrade-seal-product-final.log、hospital-rebuild-closure.log、hospital-recheck-closure.log、upgrade-types-final.log、hospital-types-last.log。后续最终类型/运行门禁结果以实际进程退出码和日志为准。

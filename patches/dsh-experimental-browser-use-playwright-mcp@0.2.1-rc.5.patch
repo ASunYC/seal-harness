@@ -1,0 +1,12 @@
+diff --git a/lib/index.js b/lib/index.js
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -24,6 +24,8 @@ function apply(ctx, config) {
+ 	validateBrowserMcpConfig(config);
+ 	const cli = join(dirname(fileURLToPath(import.meta.resolve("@playwright/mcp/package.json"))), "cli.js");
+ 	const env = Object.fromEntries(Object.keys(process.env).filter((key) => key.toUpperCase().startsWith("PLAYWRIGHT_MCP_")).map((key) => [key, ""]));
++	// Electron 的 execPath 仍是 GUI 可执行文件；仅让这个 npm 子进程以 Node 模式运行。
++	if (process.versions.electron !== void 0) env.ELECTRON_RUN_AS_NODE = "1";
+ 	const args = [
+ 		cli,
+ 		"--browser",

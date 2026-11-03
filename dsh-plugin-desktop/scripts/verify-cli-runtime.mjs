@@ -3,7 +3,7 @@
 import { spawnSync } from 'node:child_process'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import electronPath from 'electron'
 import { installDesktopPnpmRuntime } from '../lib/desktop-runtime-environment.js'
@@ -120,13 +120,17 @@ function verifyLifecycleEnvironment(stateRoot, installation, env) {
   verifyResult('pnpm lifecycle smoke', result, '')
   const actual = JSON.parse(readFileSync(resultPath, 'utf8'))
   const expected = {
-    runAsNode: [],
+    // Windows 私有入口是批处理，Electron 后代需保留 Node 模式；与公开启动环境隔离。
+    runAsNode: process.platform === 'win32' ? ['ELECTRON_RUN_AS_NODE'] : [],
     node: installation.nodeShimPath,
     npmNodeExecPath: installation.nodeShimPath,
     runtime: 'electron',
     target: electronVersion,
     disturl: 'https://electronjs.org/headers',
   }
+  // cmd 的 %~dp0 保留 bin/..；比较解析后的同一入口，仍校验两个生命周期路径。
+  actual.node = resolve(actual.node)
+  actual.npmNodeExecPath = resolve(actual.npmNodeExecPath)
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
     throw new Error(`pnpm lifecycle smoke returned ${JSON.stringify(actual)} instead of ${JSON.stringify(expected)}`)
   }
@@ -162,6 +166,8 @@ function runPackagedPnpmShim() {
 
 function runFlatProfileDshEntry() {
   const root = mkdtempSync(join(tmpdir(), 'dsh-desktop-flat-cli-smoke-'))
+  const home = join(root, 'home')
+  const profile = join(home, 'profiles', 'desktop')
   const desktopPackage = join(root, 'node_modules', 'dsh-plugin-desktop')
   const linkedAppBootPackage = join(root, 'node_modules', '@deepseek-ai', 'dsh-app-boot')
   const linkedAtomicWritePackage = join(root, 'node_modules', '@deepseek-ai', 'dsh-atomic-write')
@@ -170,6 +176,9 @@ function runFlatProfileDshEntry() {
   const linkedDshPackage = join(root, 'node_modules', '@deepseek-ai', 'dsh')
   const linkedSemverPackage = join(root, 'node_modules', 'semver')
   try {
+    // 自建最小已初始化 Profile，避免冒烟读取本机用户配置。
+    mkdirSync(profile, { recursive: true })
+    writeFileSync(join(profile, 'package.json'), JSON.stringify({ name: 'desktop-smoke', private: true, dependencies: {} }))
     mkdirSync(join(root, 'node_modules', '@deepseek-ai'), { recursive: true })
     cpSync(fileURLToPath(new URL('lib/', packageRoot)), join(desktopPackage, 'lib'), { recursive: true })
     cpSync(fileURLToPath(new URL('package.json', packageRoot)), join(desktopPackage, 'package.json'))
@@ -185,7 +194,7 @@ function runFlatProfileDshEntry() {
       join(desktopPackage, 'lib', 'desktop-cli.js'),
       ['plugin', '--help'],
       undefined,
-      { DSH_DESKTOP_DEFAULT_PROFILE: 'desktop' },
+      { DSH_DESKTOP_DEFAULT_PROFILE: 'desktop', DSH_HOME: home },
     )
   } finally {
     rmSync(root, { recursive: true, force: true })

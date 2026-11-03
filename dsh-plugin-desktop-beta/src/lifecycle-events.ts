@@ -9,6 +9,7 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  readSync,
   unlinkSync,
   writeSync,
 } from 'node:fs'
@@ -300,10 +301,20 @@ export class DesktopLifecycleRecorder {
 
   transitionStartupStage(stage: DesktopStartupFailureStage): void {
     if (this.startupSettled || this.currentStage === stage) return
-    this.completeCurrentStage()
-    this.currentStage = stage
-    this.currentStageStartedAt = this.monotonicNow()
-    this.recordStartupStage(stage, 'started')
+    try {
+      const events: DesktopLifecycleEvent[] = []
+      if (this.currentStage !== undefined) {
+        events.push(this.createEvent('startup.stage.completed', {}, this.durationFrom(this.currentStageStartedAt), this.currentStage))
+      }
+      this.currentStage = stage
+      this.currentStageStartedAt = this.monotonicNow()
+      events.push(this.createEvent('startup.stage.started', {}, undefined, stage))
+      // 同一状态切换的完成/开始事件一起落盘，不减少事件或延后持久化。
+      this.writeEvents(events)
+    } catch (cause) {
+      this.evidenceUnavailable = true
+      this.reportFailure(cause)
+    }
   }
 
   startRendererBoot(): void {
@@ -501,67 +512,42 @@ export class DesktopLifecycleRecorder {
   }
 
   private writeEvent(event: DesktopLifecycleEvent): void {
+    this.writeEvents([event])
+  }
+
+  private writeEvents(events: readonly DesktopLifecycleEvent[]): void {
     if (this.evidenceUnavailable) return
     const generationLine = this.requireGenerationLine()
-    const line = this.renderEvent(event)
-    const existing = this.readOwned()
-    if (existing.byteLength + line.byteLength <= MAX_DESKTOP_LIFECYCLE_EVIDENCE_BYTES) {
-      this.appendOwned(line)
-      return
-    }
-    const keepBytes = Math.max(0, MAX_DESKTOP_LIFECYCLE_EVIDENCE_BYTES - generationLine.byteLength - line.byteLength)
-    const priorEvents = existing.subarray(generationLine.byteLength)
-    const tail = keepBytes === 0 ? Buffer.alloc(0) : priorEvents.subarray(Math.max(0, priorEvents.byteLength - keepBytes))
-    const firstNewline = tail.indexOf(0x0a)
-    const retained = firstNewline === -1 ? Buffer.alloc(0) : tail.subarray(firstNewline + 1)
-    this.replaceOwned(Buffer.concat([generationLine, retained, line]))
-  }
-
-  private readOwned(): Buffer {
-    const descriptor = openSync(this.evidencePath, constants.O_RDONLY | noFollowFlag())
-    try {
-      return this.readOwnedDescriptor(descriptor)
-    } finally {
-      closeSync(descriptor)
-    }
-  }
-
-  private readOwnedDescriptor(descriptor: number): Buffer {
-    const stats = fstatSync(descriptor)
-    if (!stats.isFile() || stats.nlink > 1) throw new Error('lifecycle evidence file is invalid')
-    const content = readFileSync(descriptor)
-    const generationLine = this.requireGenerationLine()
-    if (content.byteLength < generationLine.byteLength
-      || !content.subarray(0, generationLine.byteLength).equals(generationLine)) {
-      throw new Error('lifecycle evidence belongs to another recorder')
-    }
-    return content
-  }
-
-  private appendOwned(line: Buffer): void {
+    const line = Buffer.concat(events.map(event => this.renderEvent(event)))
     const descriptor = openSync(this.evidencePath, constants.O_RDWR | constants.O_APPEND | noFollowFlag())
     try {
-      this.readOwnedDescriptor(descriptor)
-      if (writeSync(descriptor, line) !== line.byteLength) {
-        throw new Error('lifecycle evidence append was incomplete')
+      const stats = fstatSync(descriptor)
+      if (!stats.isFile() || stats.nlink > 1) throw new Error('lifecycle evidence file is invalid')
+      const prefix = Buffer.alloc(generationLine.byteLength)
+      const read = readSync(descriptor, prefix, 0, prefix.byteLength, 0)
+      if (read !== prefix.byteLength || !prefix.equals(generationLine)) {
+        throw new Error('lifecycle evidence belongs to another recorder')
+      }
+      // 同一文件句柄校验并写入；未轮转时只读代际标记，避免每条事件重复读取整份日志。
+      let content = line
+      if (stats.size + line.byteLength > MAX_DESKTOP_LIFECYCLE_EVIDENCE_BYTES) {
+        const existing = readFileSync(descriptor)
+        const keepBytes = Math.max(0, MAX_DESKTOP_LIFECYCLE_EVIDENCE_BYTES - generationLine.byteLength - line.byteLength)
+        const priorEvents = existing.subarray(generationLine.byteLength)
+        const tail = keepBytes === 0 ? Buffer.alloc(0) : priorEvents.subarray(Math.max(0, priorEvents.byteLength - keepBytes))
+        const firstNewline = tail.indexOf(0x0a)
+        const retained = firstNewline === -1 ? Buffer.alloc(0) : tail.subarray(firstNewline + 1)
+        content = Buffer.concat([generationLine, retained, line])
+        ftruncateSync(descriptor)
+      }
+      if (writeSync(descriptor, content) !== content.byteLength) {
+        throw new Error('lifecycle evidence write was incomplete')
       }
     } finally {
       closeSync(descriptor)
     }
   }
 
-  private replaceOwned(content: Buffer): void {
-    const descriptor = openSync(this.evidencePath, constants.O_RDWR | noFollowFlag())
-    try {
-      this.readOwnedDescriptor(descriptor)
-      ftruncateSync(descriptor)
-      if (writeSync(descriptor, content, 0, content.byteLength, 0) !== content.byteLength) {
-        throw new Error('lifecycle evidence replacement was incomplete')
-      }
-    } finally {
-      closeSync(descriptor)
-    }
-  }
 
   private requireGenerationLine(): Buffer {
     if (this.generationLine === undefined) throw new Error('lifecycle evidence generation is unavailable')

@@ -334,6 +334,18 @@ describe('desktop lifecycle events', () => {
     }
   }, 10_000)
 
+  it('refuses to append after another recorder replaces the generation marker', () => {
+    const userDataDir = tempUserData('dsh-lifecycle-owner-')
+    const logger = createLogger()
+    const recorder = createDesktopLifecycleRecorder({ userDataDir, appVersion: 'test', platform: 'win32', arch: 'x64', logger })
+    recorder.startStartup('electron-ready')
+    const path = desktopLifecycleEvidencePath(userDataDir)
+    writeFileSync(path, 'another recorder owns this file\n')
+    recorder.transitionStartupStage('host-boot')
+    expect(readFileSync(path, 'utf8')).toBe('another recorder owns this file\n')
+    expect(logger.error).toHaveBeenCalled()
+  })
+
   it('treats linked or unsafe evidence targets as best-effort logger-only failures', () => {
     const linkedParentDir = tempUserData('dsh-lifecycle-parent-link-')
     const linkedParentTarget = join(linkedParentDir, 'target')
