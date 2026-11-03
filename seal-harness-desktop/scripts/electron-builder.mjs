@@ -2,7 +2,6 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { desktop, product, productPlugins, productRoot } from './build.mjs'
 import verifyPackage from './verify-package.mjs'
-import { officePackage, officeVersion } from './office-bundle.mjs'
 
 const manifest = JSON.parse(readFileSync(join(desktop, 'package.json'), 'utf8'))
 const upstream = manifest.build
@@ -23,13 +22,12 @@ export default {
     description: product.description,
     author: product.publisher,
     desktopName: `${product.appId}.desktop`,
-    dependencies: { ...manifest.dependencies, [officePackage]: officeVersion, 'seal-harness-desktop': product.version, 'dsh-plugin-ask-jev': '0.1.0', ...Object.fromEntries(productPlugins.map(folder => [`@seal-harness/${folder}`, '0.1.0'])) },
+    dependencies: { ...manifest.dependencies, 'seal-harness-desktop': product.version, 'dsh-plugin-ask-jev': '0.1.0', ...Object.fromEntries(productPlugins.map(folder => [`@seal-harness/${folder}`, '0.1.0'])) },
   },
   directories: { ...upstream.directories, output: join(productRoot, 'dist', process.platform) },
   files: [
     ...upstream.files,
-    { from: join(desktop, 'node_modules', officePackage), to: `node_modules/${officePackage}`, filter: ['package.json', 'LICENSE', 'README*', 'cordis.patch.yml', 'lib/**', 'artifacts/**', 'docs/**', 'skills/**', 'scripts/**', 'node_modules/**'] },
-    { from: join(desktop, 'node_modules/seal-harness-desktop'), to: 'node_modules/seal-harness-desktop', filter: ['package.json', 'cordis.patch.yml', 'office.patch.yml', 'THIRD_PARTY_NOTICES.md', 'lib/**'] },
+    { from: join(desktop, 'node_modules/seal-harness-desktop'), to: 'node_modules/seal-harness-desktop', filter: ['package.json', 'cordis.patch.yml', 'THIRD_PARTY_NOTICES.md', 'lib/**'] },
     { from: join(desktop, 'node_modules/dsh-plugin-ask-jev'), to: 'node_modules/dsh-plugin-ask-jev', filter: ['package.json', 'cordis.patch.yml', 'README.md', 'LICENSE', 'lib/**'] },
     ...productPlugins.map(folder => ({ from: join(desktop, `node_modules/@seal-harness/${folder}`), to: `node_modules/@seal-harness/${folder}`, filter: ['package.json', 'lib/**', 'node_modules/**'] })),
   ],

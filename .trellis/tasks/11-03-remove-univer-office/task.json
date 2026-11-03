@@ -1,0 +1,12 @@
+{
+  "id": "remove-univer-office",
+  "name": "remove-univer-office",
+  "title": "Remove Univer Office integration and local plugin",
+  "status": "in_progress",
+  "creator": "codex",
+  "assignee": "codex",
+  "createdAt": "2026-11-03",
+  "completedAt": null,
+  "branch": "codex/upgrade-dsh-rc5-univer",
+  "notes": "User authorized removal, reversible local uninstall and verification; no automatic commit/push/release."
+}
