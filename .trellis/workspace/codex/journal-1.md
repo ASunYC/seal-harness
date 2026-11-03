@@ -925,3 +925,34 @@
 ### Next Steps
 
 - Office许可路线待用户决定；symlink权限和Linux fixture门禁未解决，不push、不分发Pro、不归档。
+
+
+## Session 35: Market历史断言与Linux平台复核
+<!-- trellis-session: v=2 fp=0a9714bbff1114b3 -->
+
+**Date**: 2026-11-03
+**Task**: Market历史断言与Linux平台复核
+**Branch**: `codex/upgrade-dsh-rc5-univer`
+
+### Summary
+
+修复历史过时文案断言和Stable误用Beta制品fixture，使用独立离线Linux运行器验证84个唯一用例；未声称完整根门禁通过。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `82345a49` | test: 修正 Stable Linux 制品 fixture 并记录平台回归 |
+| `3fe6456c` | test: 同步市场目录超时的完整提示断言 |
+
+### Testing
+
+- [OK] Seal Market286/286；AE Market284/286另有两项动态端口失败，独立Host routes14/14。Linux lifecycle44、artifacts14、checkpoint单worker26均通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 完整Linux依赖安装未完成，root check缺少安装状态文件；其余桌面图symlink/PATH门禁、Office许可和AE远程目标仍未完成。无push/发版/Pro包，临时容器已清理。
