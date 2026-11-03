@@ -75,6 +75,8 @@
       name: '@seal-harness/remote-desktop'
     - id: seal-harness-acp
       name: '@seal-harness/acp'
+    - id: seal-harness-computer-use
+      name: '@seal-harness/computer-use'
     - id: seal-harness-superagent
       name: '@seal-harness/superagent'
 

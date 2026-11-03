@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { desktop, desktopRequire, product, productPlugins, productRoot, root } from './build.mjs'
 
@@ -14,6 +14,16 @@ const runtimeVersion = JSON.parse(readFileSync(join(root, 'upstream.json'), 'utf
 assert.equal(JSON.parse(readFileSync(desktopRequire.resolve('@deepseek-ai/dsh-web-app/package.json'), 'utf8')).version, runtimeVersion)
 const { composeEntries } = await import(pathToFileURL(desktopRequire.resolve('@deepseek-ai/dsh-app-boot')))
 const { checkForDesktopUpdate } = await importDesktop('update-checker.js')
+const computerRoot = dirname(desktopRequire.resolve('@seal-harness/computer-use/package.json'))
+const driverRoot = join(computerRoot, 'lib/runtime', `${process.platform}-${process.arch}`)
+const driverManifest = JSON.parse(readFileSync(join(computerRoot, 'lib/runtime/driver-manifest.json'), 'utf8'))
+const driverReceipt = JSON.parse(readFileSync(join(driverRoot, 'provenance.json'), 'utf8'))
+assert.equal(driverReceipt.version, driverManifest.version)
+assert.equal(driverReceipt.sourceCommit, driverManifest.sourceCommit)
+assert.equal(driverReceipt.asset.sha256, driverManifest.assets[`${process.platform}-${process.arch}`].sha256)
+assert.equal(createHash('sha256').update(readFileSync(join(driverRoot, driverReceipt.executable))).digest('hex'), driverReceipt.executableSha256)
+for (const file of ['CUA-LICENSE.txt', 'CUA-THIRD-PARTY-NOTICES.md']) assert.ok(readFileSync(join(driverRoot, file), 'utf8').length > 0)
+if (process.platform === 'win32') assert.ok(existsSync(join(driverRoot, 'cua-driver-uia.exe')))
 let requests = 0
 await assert.rejects(checkForDesktopUpdate({ currentVersion: '1.0.0', channel: 'stable', request: async () => { requests++; throw new Error('不应发送更新请求') } }), /updates are disabled/)
 assert.equal(requests, 0)

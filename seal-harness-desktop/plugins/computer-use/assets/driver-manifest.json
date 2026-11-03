@@ -1,0 +1,53 @@
+{
+  "prerelease": true,
+  "license": "MIT",
+  "version": "0.38.0",
+  "schemaVersion": 1,
+  "sourceCommit": "85e2b1318bd77ccf3cfa88ccdf875a4bb7eaed19",
+  "repository": "https://github.com/trycua/cua",
+  "excluded": [
+    "cua-perception",
+    "Cua Spaces",
+    "Lume",
+    "cloud"
+  ],
+  "tag": "cua-driver-rs-v0.38.0",
+  "assets": {
+    "linux-arm64": {
+      "filename": "cua-driver-rs-0.38.0-linux-arm64-binary.tar.gz",
+      "sha256": "80c9ae66bc7322052dd426c6133c96086b33894bf06c972bca8215384400b33d",
+      "url": "https://github.com/trycua/cua/releases/download/cua-driver-rs-v0.38.0/cua-driver-rs-0.38.0-linux-arm64-binary.tar.gz",
+      "bytes": 36674648
+    },
+    "darwin-arm64": {
+      "filename": "cua-driver-rs-0.38.0-darwin-universal.tar.gz",
+      "sha256": "121cf20cafd2cfa69dd720e8967350c6406b22e558be6889de7a1ae3343b6d4b",
+      "url": "https://github.com/trycua/cua/releases/download/cua-driver-rs-v0.38.0/cua-driver-rs-0.38.0-darwin-universal.tar.gz",
+      "bytes": 85040507
+    },
+    "win32-x64": {
+      "filename": "cua-driver-rs-0.38.0-windows-x86_64-binary.zip",
+      "sha256": "5edaa74d0afa1b55a9668dbc4f32736507bd2bd4d75b18ca1dc8881bb12402b5",
+      "url": "https://github.com/trycua/cua/releases/download/cua-driver-rs-v0.38.0/cua-driver-rs-0.38.0-windows-x86_64-binary.zip",
+      "bytes": 35890999
+    },
+    "linux-x64": {
+      "filename": "cua-driver-rs-0.38.0-linux-x86_64-binary.tar.gz",
+      "sha256": "31ab9709dd91ce73677e49b9f3e75c6f0d3e4d9625c286c9e58262bfbea698dd",
+      "url": "https://github.com/trycua/cua/releases/download/cua-driver-rs-v0.38.0/cua-driver-rs-0.38.0-linux-x86_64-binary.tar.gz",
+      "bytes": 37183089
+    },
+    "win32-arm64": {
+      "filename": "cua-driver-rs-0.38.0-windows-arm64-binary.zip",
+      "sha256": "d25c8ebfffb34e4c095ea170baf47b87c35dc0d1116f42e46b39df2bcbff8700",
+      "url": "https://github.com/trycua/cua/releases/download/cua-driver-rs-v0.38.0/cua-driver-rs-0.38.0-windows-arm64-binary.zip",
+      "bytes": 33682556
+    },
+    "darwin-x64": {
+      "filename": "cua-driver-rs-0.38.0-darwin-universal.tar.gz",
+      "sha256": "121cf20cafd2cfa69dd720e8967350c6406b22e558be6889de7a1ae3343b6d4b",
+      "url": "https://github.com/trycua/cua/releases/download/cua-driver-rs-v0.38.0/cua-driver-rs-0.38.0-darwin-universal.tar.gz",
+      "bytes": 85040507
+    }
+  }
+}

@@ -36,6 +36,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+## Cua Driver 0.38.0
+
+电脑操作插件分发 Cua Driver 基础驱动，来源 https://github.com/trycua/cua ，发布标签 `cua-driver-rs-v0.38.0`（上游标记 prerelease），源码提交 `85e2b1318bd77ccf3cfa88ccdf875a4bb7eaed19`。MIT 许可证原文见 `plugins/computer-use/assets/CUA-LICENSE.txt`，随包也保留在驱动 runtime 目录。固定资产 SHA256、平台与构建来源记录在该插件的 driver-manifest/provenance 中。不包含 Cua Spaces、Lume、云服务或可选 AGPL 的 cua-perception 扩展。
+
 ## GenOffice Apache core
 
 Selected document engines from https://github.com/genspark-ai/genoffice, commit e1f50e90d246f3ecc6427d2a0af90f04f37810ec. Copyright 2026 Mainfunc, Inc., Apache-2.0. No ee, original desktop app, fonts, AI providers or Rust sidecar is included. Packaging and local structured editing adapter are modified by this product.

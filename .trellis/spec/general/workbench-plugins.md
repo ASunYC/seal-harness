@@ -1,5 +1,19 @@
 # 工作台插件契约
 
+## 内置电脑操作
+
+`computer-use`采用固定版本Cua Driver stdio MCP，支持默认本机与多个SSH虚拟机目标；唯一可见入口为settings.section中的“电脑操作”，不注册首页导航resource或conversation.input.left。设置页通过公开useSessions根选择器从retainedBy.mainView确定当前会话，并显示会话名称以提供原有启用/停止；没有当前会话时仅管理配置/检查，不能隐式创建或启动会话。账号配置保存在Host credentials grant，不存SSH密码或私钥正文。运行授权绑定account/epoch/session，不持久恢复；同一桌面目标不得被两个会话同时占用。退出、会话释放、目标修改/删除或卸载关闭所属连接；异步启动/挂载在取消后迟到的进程和scope仍须释放。
+
+用户要求严格后台，执行桥只暴露已打开窗口的观察及输入：每次输入强制`delivery_mode=background`，要求准确pid/window_id，前台交付、全局desktop/pointer、剪贴板写、脚本和batch、bring_to_front及launch_app均拒绝。launch_app虽上游尝试恢复焦点，应用自身启动仍可能抢前台，不能作为严格后台能力承诺。后台不支持或无效目标直接失败，不自动或经其他工具绕过升级为前台。截图保留MCP图像内容块，经原生DSH附件/模型图像投影；不接受screenshot_out_file等路径将图像转存成只读文件结果。
+
+Host credentials记录键必须通过官方credentialKey构造；账号UUID可能以数字开头，不得直接作为键段。电脑操作使用`account-`+账号SHA256段；测试须把真实数字开头UUID的保存记录交给原生parseCredentialsDocument重启解析，不能只用接受任意字符串的Map假provider验证持久化。开发期遗留的原始账号键在停机后备份并仅迁移本插件记录，保留其他refs/records和payload。
+
+虚拟机在来宾运行Driver，经OpenSSH stdio带BatchMode和严格known_hosts；不自动接受指纹、不通过HTTP裸暴露桌面、不安装Hypervisor。WindowsSSH的Session0没有桌面，必须用同账号交互desktop daemon的named pipe；Linux要图形会话socket/环境，macOS保持已签名app及TCC身份。SSH客户端可用不等于远端桌面验证成功。默认本机不会隐式切换到VM；开启后目标一直明确显示。
+
+构建按固定资产SHA256装配Driver及MIT/第三方通知到lib/runtime并随产品安装；版本/归档与exehash记录provenance，不运行上游安装器、技能安装、自更新或可选AGPL perception。当前0.38.0发布标记prerelease应诚实记录。运行依赖从productRoot解析，先复用Desktop安装图再回落仓库父级，不额外安装第二套运行时。
+
+必需检查：真实MCP握手/工具发现，Native scoped tools与图像投影、账号/会话隔离、停止/取消/迟到清理；真实OpenSSH协议夹具/临时known_hosts且不碰用户SSH文件；后台输入及应用状态回读，同时采样系统鼠标和前台窗口保持不变。后台只成功发送不代表效果已验证。另执行产品build/check/Profile、随包资源与GUI。真实VM和macOS/Linux未实测时分别保留验收项。
+
 ## 1. 范围与触发
 
 `token-stats`、`knowledge`、`remote-desktop`、`acp` 均为 `seal-harness-desktop/plugins/` 下独立 Host/Client 包，不并入根 Yarn workspaces。产品构建、Profile 和 check 同时登记。旧反馈入口保持禁用。

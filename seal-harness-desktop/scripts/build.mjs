@@ -2,6 +2,7 @@ import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, r
 import { createRequire } from 'node:module'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { prepareDriver } from '../plugins/computer-use/scripts/prepare-driver.mjs'
 
 export const productRoot = resolve(import.meta.dirname, '..')
 export const root = resolve(productRoot, '..')
@@ -15,7 +16,7 @@ export const product = {
   displayVersion: desktopRequire('@deepseek-ai/dsh/package.json').version,
 }
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
-export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop', 'acp', 'superagent', 'office']
+export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop', 'acp', 'superagent', 'office', 'computer-use']
 
 export function linkProductDependencies() {
   const link = join(productRoot, 'node_modules')
@@ -74,6 +75,7 @@ export async function buildProductPlugins() {
       mkdirSync(notices, { recursive: true })
       cpSync(join(cwd, 'assets/OCTOP-LICENSE.txt'), join(notices, 'LICENSE.txt'))
     }
+    if (folder === 'computer-use') await prepareDriver()
     if (manifest.dsh?.client) {
       const acpIcons = folder === 'acp' ? Object.fromEntries(Object.entries({
         opencode: 'opencode.svg', codebuddy: 'codebuddy.png', claude: 'anthropic.png', codex: 'openai.png',
@@ -97,7 +99,7 @@ export async function buildProductPlugins() {
 
 // 文档 worker 动态导入保留包目录及 WASM；只装配实际声明的运行依赖，不复制整份开发依赖。
 function installRuntimeDependencies(manifest, destination) {
-  const pending = Object.keys(manifest.dependencies ?? {}).map(name => ({ name, from: root }))
+  const pending = Object.keys(manifest.dependencies ?? {}).map(name => ({ name, from: productRoot }))
   const installed = new Set()
   while (pending.length) {
     const { name, from, optional } = pending.pop()
