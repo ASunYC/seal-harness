@@ -36,3 +36,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+## GenOffice Apache core
+
+Selected document engines from https://github.com/genspark-ai/genoffice, commit e1f50e90d246f3ecc6427d2a0af90f04f37810ec. Copyright 2026 Mainfunc, Inc., Apache-2.0. No ee, original desktop app, fonts, AI providers or Rust sidecar is included. Packaging and local structured editing adapter are modified by this product.
+
+The Office plugin ships original LICENSE/NOTICE and exact dependency notices under lib/third-party/genoffice. JSZip uses its MIT option; pako retains both MIT and original Zlib notices. No GenOffice affiliation or trademark grant is implied.

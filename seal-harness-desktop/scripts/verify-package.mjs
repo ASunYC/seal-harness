@@ -73,6 +73,26 @@ export default async function verifyPackage(result) {
       const item = JSON.parse(readFileSync(require.resolve(`@seal-harness/${folder}/package.json`), 'utf8'))
       if (item.dsh?.client) assert.ok(readFileSync(require.resolve(`@seal-harness/${folder}/client`), 'utf8').includes(`@seal-harness/${folder}`))
     }
+    // Office must be self-contained in the actual distribution, including worker and legal notices.
+    const officeRoot = join(appRoot, 'node_modules/@seal-harness/office')
+    const officeManifest = JSON.parse(readFileSync(join(officeRoot, 'package.json'), 'utf8'))
+    assert.equal(officeManifest.office.storageNamespace, product.homeDirectoryName.slice(1))
+    for (const entry of ['genoffice-core.cjs', 'worker.js', 'client.js']) {
+      assert.ok(readFileSync(join(officeRoot, 'lib', entry)).length > 0, `Missing Office payload: ${entry}`)
+    }
+    const officeRecord = JSON.parse(readFileSync(join(officeRoot, 'lib/genoffice-build.json'), 'utf8'))
+    assert.equal(officeRecord.commit, 'e1f50e90d246f3ecc6427d2a0af90f04f37810ec')
+    assert.ok(officeRecord.dependencies.length > 0)
+    for (const input of officeRecord.inputs) assert.doesNotMatch(input, /(?:^|\/)ee\/|@univerjs|\.(ttf|otf|woff2?)$/iu)
+    const officeLegal = join(officeRoot, 'lib/third-party/genoffice')
+    assert.match(readFileSync(join(officeLegal, 'LICENSE'), 'utf8'), /Apache License/u)
+    assert.match(readFileSync(join(officeLegal, 'NOTICE'), 'utf8'), /Mainfunc/u)
+    const officeNotices = JSON.parse(readFileSync(join(officeLegal, 'THIRD-PARTY-NOTICES.json'), 'utf8'))
+    assert.equal(officeNotices.length, officeRecord.dependencies.length)
+    for (const dependency of officeNotices) {
+      for (const file of dependency.files) assert.ok(readFileSync(join(officeLegal, 'dependencies', `${dependency.name}@${dependency.version}`.replaceAll('/', '_'), file)).length > 0)
+    }
+    assert.equal(existsSync(join(appRoot, 'node_modules/dsh-univer-office')), false)
     assert.equal(existsSync(join(appRoot, 'node_modules/@seal-harness/projects')), false)
     assert.ok(readFileSync(require.resolve('@seal-harness/experts/expert-runtime'), 'utf8').length > 0)
     const { DESKTOP_PRODUCT } = await import(pathToFileURL(join(appRoot, 'lib/product-config.js')))

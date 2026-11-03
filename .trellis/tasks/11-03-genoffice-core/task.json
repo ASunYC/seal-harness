@@ -1,0 +1,9 @@
+{
+  "id": "genoffice-core",
+  "name": "genoffice-core",
+  "title": "Integrate Apache GenOffice core locally",
+  "status": "in_progress",
+  "creator": "codex",
+  "createdAt": "2026-11-03",
+  "notes": "No ee, no restoration of Univer plugin, no automatic commit/push/release."
+}

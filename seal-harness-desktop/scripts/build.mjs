@@ -15,7 +15,7 @@ export const product = {
   displayVersion: desktopRequire('@deepseek-ai/dsh/package.json').version,
 }
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
-export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop', 'acp', 'superagent']
+export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop', 'acp', 'superagent', 'office']
 
 export function linkProductDependencies() {
   const link = join(productRoot, 'node_modules')
@@ -53,9 +53,10 @@ export async function buildProductPlugins() {
     const cwd = join(productRoot, 'plugins', folder)
     const manifest = JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8'))
     rmSync(join(cwd, 'lib'), { recursive: true, force: true })
+    if (folder === 'office') await (await import(pathToFileURL(join(cwd, 'scripts/build-core.mjs')).href)).buildCore()
     const common = { config: false, cwd, outDir: join(cwd, 'lib'), clean: false, dts: false, sourcemap: true }
     if (folder === 'weknora') cpSync(join(cwd, 'upstream'), join(cwd, 'lib/upstream'), { recursive: true })
-    await build({ ...common, entry: { index: 'src/index.js', ...(folder === 'experts' ? { runtime: 'src/runtime.js' } : {}) }, format: 'esm', platform: 'node', fixedExtension: false,
+    await build({ ...common, entry: { index: 'src/index.js', ...(folder === 'experts' ? { runtime: 'src/runtime.js' } : {}), ...(folder === 'office' ? { worker: 'src/worker.js' } : {}) }, format: 'esm', platform: 'node', fixedExtension: false,
       deps: { neverBundle: [/^@deepseek-ai\//, /^@seal-harness\//, '@agentclientprotocol/sdk', 'zod', 'yaml', 'adm-zip', 'unzipper', 'pdfjs-dist', '@silurus/ooxml', 'ssf', 'ssh2', 'koffi'] } })
     if (['connectors', 'skills'].includes(folder)) {
       const notices = join(cwd, 'lib/third-party/cc-haha')

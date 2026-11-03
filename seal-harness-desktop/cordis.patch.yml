@@ -157,3 +157,8 @@
         forkProvider: fork
     - id: ui-agent-team
       name: '@deepseek-ai/dsh-experimental-client-ui-agent-team'
+
+# 本地 Apache 文档处理，不接入企业版或外部 AI。
+- insert:
+    - id: seal-harness-office
+      name: '@seal-harness/office'
