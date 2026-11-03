@@ -79,3 +79,15 @@ CLI 冒烟原先隐含读取真实用户 Profile，并把 Windows 私有批处�
 不产出或分发含未授权 Univer Pro 的安装包，不合并或 push 主分支，不发布 Release。Office 商业授权/合法开源功能路线等待用户决定；AE 远程目标与公开性尚未确认，既有 no-push 保持。任务维持 in_progress，保留原业务/品牌源码变动，不归档。
 
 证据日志位于 C:/Users/Administrator/Documents/Codex/2026-11-03/task-3：upgrade-root-final.log、upgrade-beta-final.log、upgrade-stable-final.log、upgrade-focused-*-final.log、upgrade-*-verify-*.log、dsh-plugin-desktop*-final-*.log、dsh-plugin-desktop*-isolated-cli.log、upgrade-seal-build-final.log、upgrade-seal-product-final.log、hospital-rebuild-closure.log、hospital-recheck-closure.log、upgrade-types-final.log、hospital-types-last.log。后续最终类型/运行门禁结果以实际进程退出码和日志为准。
+
+## 2026-11-03 Market 与 Linux 平台回归补充
+
+历史证据：e75e269b 于 2026-10-07 明确扩展超时文案为重试/切换来源及已安装插件不受影响；测试仍保留迁入时旧句。现只更新完整固定文案断言，保留来源和私密错误详情不泄露的断言。Seal 完整 Market check 退出 0，286/286；AE 完整 Market check 的文案测试通过，但 Host routes 两项因动态端口 fetch bad port 失败（284/286），独立路由复核 14/14 通过，未改产品语义或删断言。文案提交：Seal 3fe6456c、AE 6294ced。
+
+本机已有 Docker Linux 引擎和 agentwork-mcp 镜像 Node22.23.3。只新建本任务临时容器、只读挂载 Seal 源码；未接触其他运行容器。Git 下载准备遇到 HTTP 长时间无进展、APT HTTPS 系统 CA 缺失；没有关闭证书校验/添加自定义信任。Node 正常 TLS + 已签名 Debian 索引 SHA256 的下载方案也达到 30 秒超时。整产品 Yarn install 下载未在有限等待内完成，终止后复用缓存、限制请求时间再试仍未完成，最终收尾，不能声称 Linux immutable 安装通过。npm 最小运行器准备也失败；最终用已缓存且锁定版本的 Vitest4.1.8、显式禁用网络的独立运行器成功，不是整产品安装。
+
+真实 Linux 文件系统验证：双通道 lifecycle 44/44（包含此前 Windows EPERM 的链接目标安全用例）；Beta Linux artifacts 7/7。Stable 首轮 artifacts 7 项实际失败，确认 fixture 误用 Beta 文件名及 executable 名，已按 Stable 正式命名修正；双通道修正后 artifacts 14/14，通过有效/错误版本、文件头、执行位及 debian-binary 负向检查。未修改产品验证实现。Checkpoint 首轮并发有 6 项原 5 秒超时，单 worker 复核 26/26，通过含 symlink 的损坏/恢复用例；没有提高超时。独立 Linux 覆盖唯一用例共 84 项最终通过，但未覆盖其余依赖完整桌面图的 symlink/PATH 回归，不能据此宣称整体门禁通过。
+
+根 check 已在 Linux 实际重跑，退出 1：Yarn 缺少 node_modules 安装状态文件，尚未进入脚本（linux-root-check-attempt.log）。没有再次触发已知 Windows symlink EPERM。现有 .github/workflows/ci.yml 有 Ubuntu check 与 desktop-linux，可验证上传后的提交；本次未上传/触发远程旧代码 CI，不把它当本地新提交的证据。
+
+证据在本轮 workspace：market-corrected-check.log、hospital-market-corrected-check.log、hospital-market-host-isolated.log、linux-offline-runner.log、linux-offline-platform-tests.log、linux-artifact-checkpoint-final.log、linux-checkpoint-serial.log、linux-root-check-attempt.log、linux-tooling-https.log、linux-git-verified-download.log、linux-yarn-bounded-install.log。临时容器/源码归档在收尾移除。无 push、Release、Pro 安装包或系统安全设置改变。Office 许可路线、AE 远程目标及完整平台门禁仍待解决。
