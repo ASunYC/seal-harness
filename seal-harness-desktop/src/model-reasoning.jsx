@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { configurableModels, reasoningLevels, reasoningUpdate } from './model-reasoning.js'
 
 const css = `
-.seal-reasoning-settings{margin:24px 0;padding:20px;border:1px solid var(--line,#454545);border-radius:14px;background:var(--panel,#242424);color:var(--ink,inherit)}
-.seal-reasoning-settings h3{margin:0 0 8px;font-size:17px}.seal-reasoning-settings p{margin:0 0 16px;color:var(--muted2,#aaa);font-size:13px;line-height:1.6}
-.seal-reasoning-settings label{display:grid;gap:7px;font-size:13px}.seal-reasoning-settings select,.seal-reasoning-settings input[type=text]{box-sizing:border-box;min-height:34px;padding:6px 9px;border:1px solid var(--line-strong,#555);border-radius:8px;background:var(--sunken,#181818);color:var(--ink,inherit);font:inherit}
+.seal-reasoning-settings{margin:24px 0;padding:20px;border:1px solid var(--dsw-alias-settings-card-stroke,currentColor);border-radius:14px;background:var(--dsw-alias-settings-card-fill,transparent);color:var(--dsw-alias-label-primary,inherit)}
+.seal-reasoning-settings h3{margin:0 0 8px;font-size:17px}.seal-reasoning-settings p{margin:0 0 16px;color:var(--dsw-alias-label-secondary,inherit);font-size:13px;line-height:1.6}
+.seal-reasoning-settings label{display:grid;gap:7px;font-size:13px}.seal-reasoning-settings select,.seal-reasoning-settings input[type=text]{box-sizing:border-box;min-height:34px;padding:6px 9px;border:1px solid var(--dsw-alias-border-l2,currentColor);border-radius:8px;background:var(--dsw-alias-bg-base,transparent);color:var(--dsw-alias-label-primary,inherit);font:inherit}
 .seal-reasoning-settings__fields{display:grid;gap:12px;max-width:660px}.seal-reasoning-settings__level{display:grid;grid-template-columns:22px 90px minmax(0,1fr);align-items:center;gap:8px}.seal-reasoning-settings__level input[type=text]{width:100%}
-.seal-reasoning-settings button{min-height:34px;margin-top:12px;padding:6px 14px;border:1px solid var(--line-strong,#555);border-radius:8px;background:var(--raised,#333);color:var(--ink,inherit);cursor:pointer}.seal-reasoning-settings button:disabled{opacity:.55;cursor:default}
-.seal-reasoning-settings [role=alert]{color:var(--danger-text,#ff8e8e)}.seal-reasoning-settings [role=status]{color:var(--ok,#78d99a)}
+.seal-reasoning-settings button{min-height:34px;margin-top:12px;padding:6px 14px;border:1px solid var(--dsw-alias-border-l2,currentColor);border-radius:8px;background:var(--dsw-alias-bg-layer-1,transparent);color:var(--dsw-alias-label-primary,inherit);cursor:pointer}.seal-reasoning-settings button:disabled{opacity:.55;cursor:default}
+.seal-reasoning-settings [role=alert]{color:var(--dsw-alias-state-error-primary,#c43)}.seal-reasoning-settings [role=status]{color:var(--dsw-alias-state-success-primary,#16803c)}
 @media(max-width:600px){.seal-reasoning-settings__level{grid-template-columns:22px 75px minmax(0,1fr)}}
 `
 

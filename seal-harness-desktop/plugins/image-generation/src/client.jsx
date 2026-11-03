@@ -3,26 +3,26 @@ import React, { useEffect, useState } from 'react'
 export const inject = ['slots', 'connection']
 
 const styles = `
-.sh-imggen-settings{padding:24px 32px;max-width:600px;color:var(--text-primary,inherit)}
+.sh-imggen-settings{padding:24px 32px;max-width:600px;color:var(--dsw-alias-label-primary,inherit)}
 .sh-imggen-settings h2{font-size:16px;font-weight:600;margin:0 0 4px}
-.sh-imggen-settings p{font-size:13px;color:var(--text-secondary,#888);margin:0 0 20px}
-.sh-imggen-settings-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 10px;border-radius:999px;margin-bottom:20px;background:var(--bg-secondary,rgba(128,128,128,.12))}
-.sh-imggen-settings-status[data-ok=true]{color:#2a9d5c}
-.sh-imggen-settings-status[data-ok=false]{color:#c43}
+.sh-imggen-settings p{font-size:13px;color:var(--dsw-alias-label-secondary,inherit);margin:0 0 20px}
+.sh-imggen-settings-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 10px;border-radius:999px;margin-bottom:20px;background:var(--dsw-alias-bg-layer-1,transparent)}
+.sh-imggen-settings-status[data-ok=true]{color:var(--dsw-alias-state-success-primary,#16803c)}
+.sh-imggen-settings-status[data-ok=false]{color:var(--dsw-alias-state-error-primary,#c43)}
 .sh-imggen-settings-form{display:flex;flex-direction:column;gap:14px}
 .sh-imggen-settings-form label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:500}
-.sh-imggen-settings-form input{height:36px;padding:0 10px;border:1px solid var(--border-color,rgba(128,128,128,.3));border-radius:8px;background:var(--bg-input,transparent);color:inherit;font:inherit;outline:none}
-.sh-imggen-settings-form input:focus{border-color:var(--color-primary,#4d89e8)}
+.sh-imggen-settings-form input{height:36px;padding:0 10px;border:1px solid var(--dsw-alias-border-l2,currentColor);border-radius:8px;background:var(--dsw-alias-bg-base,transparent);color:inherit;font:inherit;outline:none}
+.sh-imggen-settings-form input:focus{border-color:var(--dsw-alias-brand-primary,#4d6bfe)}
 .sh-imggen-settings-form input:disabled{opacity:.5;cursor:not-allowed}
 .sh-imggen-settings-row{display:flex;gap:10px}
 .sh-imggen-settings-row label{flex:1}
 .sh-imggen-settings-actions{display:flex;align-items:center;gap:12px;margin-top:4px}
-.sh-imggen-settings-save{height:36px;padding:0 18px;border:0;border-radius:8px;background:var(--color-primary,#4d89e8);color:#fff;font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.sh-imggen-settings-save{height:36px;padding:0 18px;border:0;border-radius:8px;background:var(--dsw-alias-label-primary,#202124);color:var(--dsw-alias-bg-base,#fff);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
 .sh-imggen-settings-save:disabled{opacity:.5;cursor:not-allowed}
 .sh-imggen-settings-msg{font-size:12px}
-.sh-imggen-settings-msg[data-error=true]{color:#c43}
-.sh-imggen-settings-msg[data-error=false]{color:#2a9d5c}
-.sh-imggen-settings-hint{font-size:12px;color:var(--text-secondary,#888);margin-top:16px;line-height:1.6}
+.sh-imggen-settings-msg[data-error=true]{color:var(--dsw-alias-state-error-primary,#c43)}
+.sh-imggen-settings-msg[data-error=false]{color:var(--dsw-alias-state-success-primary,#16803c)}
+.sh-imggen-settings-hint{font-size:12px;color:var(--dsw-alias-label-secondary,inherit);margin-top:16px;line-height:1.6}
 `
 
 function ImageGenSettingsSection({ api }) {
@@ -124,7 +124,7 @@ function ImageGenSettingsSection({ api }) {
         </button>
         {status?.configured && (
           <button type="button" onClick={clearKey} disabled={busy}
-            style={{ height: 36, padding: '0 14px', border: '1px solid var(--border-color,rgba(128,128,128,.3))', borderRadius: 8, background: 'transparent', color: 'inherit', font: 'inherit', fontSize: 13, cursor: 'pointer' }}>
+            style={{ height: 36, padding: '0 14px', border: '1px solid var(--dsw-alias-border-l2,currentColor)', borderRadius: 8, background: 'transparent', color: 'inherit', font: 'inherit', fontSize: 13, cursor: 'pointer' }}>
             清除 Key
           </button>
         )}

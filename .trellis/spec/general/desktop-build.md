@@ -201,6 +201,10 @@ rc5官方settings shell缺少非模态呈现出口；现有`patches/dsh-client-u
 
 验证包括真实Cordis/SlotRegistry/原生settings shell回归（store适配夹具边界明确）、原modalfallback、全页非modal、sections/actions/保存回调、离开/HMR/晚注册；逐菜单宽/1000/700视口检查、内容滚动及二级VMdialog取消；产品build/check/Profile与Desktop双变体检查。CDP合成按键不能等同硬件快捷键实测，原生shortcut回调通过原壳测试覆盖。
 
+### 设置页浅深主题
+
+产品自定义设置卡片、文字、输入/按钮及错误/成功状态统一使用DSW实际语义变量（settings-card-fill/stroke、label-primary/secondary、bg-base/layer-1、state-*）。不得复用未在当前容器定义的旧--panel/--ink/--sunken/--text-secondary变量并回退固定暗色；缺省优先inherit/transparent。主题验证必须实际切换浅色和深色，采样计算颜色并检查正常文字对比度，结束恢复用户原偏好；不能只在暗色主题扫描布局就报告所有设置适配完成。
+
 ### 内置插件清单网格
 
 设置全页不能只解除settings.section顶层宽度限制：内置plugin-inventory tab另有760px cap。产品样式以plugins作用域的公开data-slot/aria-busy/data-plugin-scope/data-plugin-module节点覆盖，不依赖CSSmodulehash，也不改业务tab的hidden/visited语义。清单使用原有inline-size container；其container-name会被CSSmodule重命名，外层适配应使用匿名container query。实际内容640/980/1320px阈值对应2/3/4列，默认单列。统一closed卡片最小高度/间距，所有卡片align-self:start使展开详情不拉高旁卡，不能沿用原仅针对两列的odd邻卡推导。

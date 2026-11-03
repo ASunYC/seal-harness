@@ -4,16 +4,16 @@ import { apiKeySettingsUrl, modelSettingsUrl } from './model-settings-url.js'
 export const inject = ['slots', 'connection']
 
 const styles = `
-.sh-weknora-settings{padding:24px 32px;max-width:620px;color:var(--text-primary,inherit)}
+.sh-weknora-settings{padding:24px 32px;max-width:620px;color:var(--dsw-alias-label-primary,inherit)}
 .sh-weknora-settings h2{font-size:16px;margin:0 0 8px}
-.sh-weknora-settings p{font-size:13px;line-height:1.65;color:var(--text-secondary,#888)}
+.sh-weknora-settings p{font-size:13px;line-height:1.65;color:var(--dsw-alias-label-secondary,inherit)}
 .sh-weknora-settings label{display:flex;flex-direction:column;gap:6px;margin:18px 0 12px;font-size:13px}
-.sh-weknora-settings input{height:36px;padding:0 10px;border:1px solid var(--border-color,rgba(128,128,128,.3));border-radius:8px;background:var(--bg-input,transparent);color:inherit;font:inherit}
-.sh-weknora-settings a{display:inline-block;padding:8px 14px;border-radius:8px;background:var(--color-primary,#4d89e8);color:#fff;text-decoration:none;font-size:13px}
-.sh-weknora-settings button{padding:8px 14px;border:1px solid var(--border-color,rgba(128,128,128,.3));border-radius:8px;background:var(--bg-secondary,transparent);color:inherit;font:inherit;cursor:pointer}
+.sh-weknora-settings input{height:36px;padding:0 10px;border:1px solid var(--dsw-alias-border-l2,currentColor);border-radius:8px;background:var(--dsw-alias-bg-base,transparent);color:inherit;font:inherit}
+.sh-weknora-settings a{display:inline-block;padding:8px 14px;border-radius:8px;background:var(--dsw-alias-label-primary,#202124);color:var(--dsw-alias-bg-base,#fff);text-decoration:none;font-size:13px}
+.sh-weknora-settings button{padding:8px 14px;border:1px solid var(--dsw-alias-border-l2,currentColor);border-radius:8px;background:var(--dsw-alias-bg-layer-1,transparent);color:inherit;font:inherit;cursor:pointer}
 .sh-weknora-settings button:disabled{opacity:.5;cursor:not-allowed}
 .sh-weknora-settings .actions{display:flex;align-items:center;gap:8px;margin:16px 0}
-.sh-weknora-settings .error{color:#c43}
+.sh-weknora-settings .error{color:var(--dsw-alias-state-error-primary,#c43)}
 `
 
 function WeKnoraSettings({ api }) {
