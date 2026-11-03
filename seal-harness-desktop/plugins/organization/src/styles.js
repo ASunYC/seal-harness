@@ -9,8 +9,8 @@ export const styles = `
 .seal-org-header button[aria-label="返回会话"] { border: 0; background: none; color: inherit; font-size: 20px; }
 .seal-org-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .seal-org-actions button { min-height: 34px; padding: 5px 12px; border: 1px solid var(--dsw-alias-border-l2,#44464b); border-radius: 8px; background: var(--dsw-alias-bg-layer-1,#242529); color: inherit; }
-.seal-org-actions .seal-org-primary { border-color: #316fae; background: #316fae; color: #fff; }
-.seal-org-actions .seal-org-primary:hover { border-color: #3f83c2; background: #3f83c2; }
+.seal-org-actions .seal-org-primary { border-color: var(--dsw-alias-button-primary-fill); background: var(--dsw-alias-button-primary-fill); color: var(--dsw-alias-label-primary-foreground); }
+.seal-org-actions .seal-org-primary:hover { border-color: var(--dsw-alias-button-primary-hover); background: var(--dsw-alias-button-primary-hover); }
 .seal-org-actions .seal-org-danger { color: var(--dsw-alias-state-error-primary,#e97878); }
 .seal-org-columns { display: grid; grid-template-columns: minmax(245px,300px) minmax(0,1fr); flex: 1; min-height: 0; }
 .seal-org-sidebar { min-width: 0; overflow: auto; border-right: 1px solid var(--dsw-alias-border-l1,#34363b); background: var(--dsw-alias-bg-layer-1,#1e1f22); }
