@@ -1263,7 +1263,7 @@ describe('MarketSettingsTab', () => {
     render(<MarketSettingsTab {...props} />)
 
     expect(await screen.findByRole('heading', { name: en.catalogError })).toBeTruthy()
-    expect(screen.getByText('Source: Fixture catalog. The catalog request timed out.')).toBeTruthy()
+    expect(screen.getByText('Source: Fixture catalog. The catalog request timed out. Retry or choose another source; installed plugins are unaffected.')).toBeTruthy()
     expect(screen.queryByText(/private upstream URL/u)).toBeNull()
   })
 
