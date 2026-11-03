@@ -182,3 +182,19 @@ POST `/api/seal-harness-scheduled-tasks/{action}` 使用现有 client-request/se
 每次修改产品装配后运行 `corepack yarn seal-harness:build`、`corepack yarn seal-harness:check`，并检查 `scripts/verify-profile.mjs` 的实际插件组合。数据库迁移测试须覆盖原文件保留、重启后从 SQLite 恢复、不同用户隔离。认证测试须覆盖首次创建、错误密码、会话退出与重启、改密。产品包核对 `lib` 与装配目录没有已删除的项目及旧产品智能体模块，四个工作台插件按当前 manifest 完整装配。构建/类型检查不等于真实 UI、模型回复、签名安装或跨平台通过；各自记录实测范围。
 
 只提交本任务路径。遵守根 `AGENTS.md` 的版本规则：普通迭代仅递增补丁号；中间/主版本变更先取得用户明确同意。提交、推送和发布分别按授权执行。
+
+## 产品默认插件与用户 Profile
+
+1. **范围与触发**：产品 bundle 的 insert 是新安装的默认值；每次启动和 Profile HMR 都按用户当前声明重新组合。Stable/Beta 的 product-bundle-defaults.ts 保持镜像。
+
+2. **签名**：`selectProductBundleDefaults(patches, profile, disabledBundles): PatchOptions[]` 过滤默认 insert；`stageOfficeBundle(root, desktop, productDirectory)` 仅由产品分发入口调用；普通产品 build 不代表已经装配 Office。
+
+3. **组合契约**：若 Profile 已声明同名 bundle、手工插入同名插件或在当前有效的插件状态中停用该包，则不再插入产品副本。保留用户 entry ID、配置和显式禁用选择，不改写用户 Profile。后续用户 config patch 仍沿框架的整段替换语义；默认遥测设置不得覆盖用户显式选择。
+
+4. **验证与错误**：Office 必须来自工程内部根 Yarn 固定版本依赖，并匹配根锁文件、包版本和来源提交；不能复制用户 Profile。缺失或未锁定依赖明确阻止分发，不生成 Office 可用配置。发布 payload 及运行依赖先在暂存目录验证，再可回滚替换装配目录；失败不删除用户配置或以产品默认值掩盖损坏的用户 bundle。
+
+5. **案例**：新 Profile 插入一次默认 Office；已有 Office Profile 仍只保留原插件及设置；用户明确停用后不插入另一份默认插件。来源损坏先报错，修复后重复启动恢复，用户数据保持不变。
+
+6. **必需测试**：双变体 product-bundle-defaults.spec.ts 覆盖实际磁盘 Profile 的默认/已有/停用组合、重复启动和损坏后恢复；office-bundle.test.mjs 覆盖合成运行依赖的重复装配、失败保留/重试、缺失/未锁定依赖和工程外来源拒绝。仍运行产品 build/check、变体一致性与类型检查；这些合成测试不代表真实商业 Office 的安装与授权验收。
+
+7. **错误与正确**：错误是在产品与用户 bundle 中无条件插入两个同名插件，或删除用户配置来消除重复。正确是组合前仅过滤有用户声明/停用状态的产品默认项，并验证原 Profile 文件字节保持不变。未确认第三方分发授权时不将真实商业运行时装入可分发产物。

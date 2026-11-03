@@ -4,6 +4,8 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { buildBrand, buildProductPlugins, capabilityPlugins, desktop, desktopPackage, desktopRequire, installBrand, linkProductDependencies, product, productRoot, root } from './build.mjs'
 
+import { stageOfficeBundle } from './office-bundle.mjs'
+
 const command = process.argv[2]
 const productConfigPath = join(root, '.build', 'seal-harness-product.json')
 mkdirSync(join(root, '.build'), { recursive: true })
@@ -44,7 +46,7 @@ if (command === 'build' || command === 'dev') {
   linkProductDependencies()
   const decisionTests = join(root, 'packages/dsh-plugin-ask-jev/tests')
   run(process.execPath, ['--test', ...readdirSync(decisionTests).filter(file => file.endsWith('.test.mjs')).map(file => join(decisionTests, file))])
-  run(process.execPath, ['--test', join(productRoot, 'scripts/product.test.mjs'), join(productRoot, 'scripts/model-reasoning.test.mjs')])
+  run(process.execPath, ['--test', join(productRoot, 'scripts/product.test.mjs'), join(productRoot, 'scripts/model-reasoning.test.mjs'), join(productRoot, 'scripts/office-bundle.test.mjs')])
   for (const folder of ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'capability-shared', 'session-context-selector', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop', 'acp', 'superagent']) {
     const tests = join(productRoot, 'plugins', folder, 'tests')
     run(process.execPath, ['--test', ...readdirSync(tests).filter(file => file.endsWith('.test.mjs')).map(file => join(tests, file))])
@@ -57,6 +59,7 @@ if (command === 'build' || command === 'dev') {
   if (['win', 'linux'].includes(command) && process.arch !== 'x64') throw new Error('Windows/Linux 发行包需要 x64 Node。')
   if (command !== 'dir') run('corepack', ['yarn', 'aa:prepare-release', '--verify-release'])
   await build()
+  stageOfficeBundle(root, desktop, join(desktop, 'node_modules/seal-harness-desktop'))
   run(process.execPath, [join(productRoot, 'scripts/verify.mjs')])
   run('corepack', ['yarn', 'workspace', desktopPackage, 'prepare:electron-native'])
   if (command === 'mac') {

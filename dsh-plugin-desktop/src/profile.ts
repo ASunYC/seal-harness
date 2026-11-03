@@ -29,6 +29,7 @@ import {
 } from '@deepseek-ai/dsh-app-boot'
 import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 import { DESKTOP_PRODUCT } from './product-config.ts'
+import { selectProductBundleDefaults } from './product-bundle-defaults.ts'
 import { isMap, isPair, isScalar, parseAllDocuments, parseDocument, type Pair, type YAMLMap } from 'yaml'
 import { findOverlayPackage, resolveOverlayPackage } from './package-overlay.ts'
 import { removeLinkProjectionsSafely } from './link-projections.ts'
@@ -90,7 +91,7 @@ const OBSOLETE_DESKTOP_BUNDLE_SET = new Set(['@deepseek-ai/dsh-desktop-app'])
 const INSTALL_ANCHOR = fileURLToPath(new URL('../package.json', import.meta.url))
 const DESKTOP_PATCH_PATH = fileURLToPath(new URL('../cordis.patch.yml', import.meta.url))
 
-function productBundlePatches(): PatchOptions[] {
+function productBundlePatches(profile: Profile, disabledBundles: ReadonlySet<string>): PatchOptions[] {
   if (DESKTOP_PRODUCT.bundle === null) return []
   const manifestPath = createRequire(INSTALL_ANCHOR).resolve(`${DESKTOP_PRODUCT.bundle}/package.json`)
   const manifest: unknown = JSON.parse(readFileSync(manifestPath, 'utf8'))
@@ -105,7 +106,10 @@ function productBundlePatches(): PatchOptions[] {
     || !patch.every((path): path is string => typeof path === 'string' && path.length > 0)) {
     throw new Error(`${BIN_NAME}: product bundle ${DESKTOP_PRODUCT.bundle} has invalid patch paths`)
   }
-  return bundlePatchPaths(dirname(manifestPath), { patch }).flatMap(path => loadOverlayPatches(BIN_NAME, path))
+  return selectProductBundleDefaults(
+    bundlePatchPaths(dirname(manifestPath), { patch }).flatMap(path => loadOverlayPatches(BIN_NAME, path)),
+    profile, disabledBundles,
+  )
 }
 
 const DIRECTORY_PICKER_ROW_ID = 'directory-picker'
@@ -1121,7 +1125,7 @@ export function prepareDesktopProfile(
     writeFileSync(rootConfig, '[]\n')
   }
 
-  const desktopPatches = [...loadOverlayPatches(BIN_NAME, DESKTOP_PATCH_PATH), ...productBundlePatches()]
+  const desktopPatches = [...loadOverlayPatches(BIN_NAME, DESKTOP_PATCH_PATH), ...productBundlePatches(profile, disabledBundles)]
   const bundlePatches: PatchOptions[] = []
   let aaLayer: Profile['layers'][number] | undefined
   let dshMarketPatches: PatchOptions[] | undefined

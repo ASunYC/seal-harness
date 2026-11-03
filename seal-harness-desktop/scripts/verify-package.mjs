@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { desktop, desktopRequire, product, productPlugins } from './build.mjs'
+import { officePackage, verifyOfficeBundle } from './office-bundle.mjs'
 
 export async function verifyDistributionArtifacts(result, target) {
   if (target === 'dir') return
@@ -60,6 +61,12 @@ export default async function verifyPackage(result) {
   for (const context of resolveFinalPackagedRuntimeContexts(checked)) {
     const appRoot = resolvePackagedApplicationRoot(context)
     const require = createRequire(join(appRoot, 'package.json'))
+    verifyOfficeBundle(join(appRoot, 'node_modules', officePackage))
+    const brandRoot = join(appRoot, 'node_modules/seal-harness-desktop')
+    const brandManifest = JSON.parse(readFileSync(join(brandRoot, 'package.json'), 'utf8'))
+    assert.ok(brandManifest.dsh.bundle.patch.includes('./office.patch.yml'))
+    assert.match(readFileSync(join(brandRoot, 'office.patch.yml'), 'utf8'), /telemetry: false/)
+    assert.ok(readFileSync(join(brandRoot, 'THIRD_PARTY_NOTICES.md'), 'utf8').length > 0)
     assert.equal(JSON.parse(readFileSync(join(appRoot, 'package.json'), 'utf8')).version, product.version)
     const manifest = JSON.parse(readFileSync(require.resolve('seal-harness-desktop/package.json'), 'utf8'))
     assert.equal(manifest.dsh.client.platform, 'web')
