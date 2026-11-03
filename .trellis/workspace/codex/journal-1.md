@@ -857,3 +857,39 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 33: Office随包机制与用户Profile保护检查点
+<!-- trellis-session: v=2 fp=17a3389578ff496d -->
+
+**Date**: 2026-11-03
+**Task**: Office随包机制与用户Profile保护检查点
+**Branch**: `codex/upgrade-dsh-rc5-univer`
+
+### Summary
+
+两品牌默认插件去重、装配门禁和双语文档已本地保存；AE代码a89d9ed、文档512c015。两品牌产品build/check、双变体类型及Profile回归通过；根layout仍因原内核pin未暂存失败，包完整套件仍有Windows权限和原基线失败。真实Office授权与安装包未完成，无推送。
+
+### Main Changes
+
+- 默认插件让位于用户已有配置及禁用选择；缺失或未锁定Office不生成可用配置
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a548d2d8` | feat: 增加 Office 装配门禁并保留用户插件配置 |
+| `cec3bbf3` | docs: 补齐英文说明并核对双语一致性记录 |
+
+### Testing
+
+- [OK] 两仓库两变体各64项Profile回归通过，Office装配4项合成回归通过
+- [OK] Seal和AE最终产品build/check通过；完整包门禁Beta24失败、Stable25失败，未声称整体通过
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 等待Office许可/替代路线决定；分阶段核实原内核升级和剩余整体门禁后才考虑主分支推送
