@@ -2,6 +2,8 @@
 
 [中文](CODE_OF_CONDUCT.md) | English
 
+This Code of Conduct applies to [Seal Harness](https://github.com/ASunYC/seal-harness) project spaces and is enforced by this repository’s maintainers.
+
 ## Our Pledge
 
 We as members, contributors, and leaders pledge to make participation in our
@@ -60,9 +62,12 @@ representative at an online or offline event.
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-[t4wefan@qq.com](mailto:t4wefan@qq.com).
+For abusive, harassing, or otherwise unacceptable behavior, first request a
+private contact channel from this repository’s maintainers through
+[Seal Harness Issues](https://github.com/ASunYC/seal-harness/issues). Do not include incident
+details, reporter identity, or other personal information in the public request.
+Send the full report only after obtaining a private channel; do not send
+Seal Harness reports to upstream project maintainers.
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the

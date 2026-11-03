@@ -1,0 +1,3 @@
+# Verified bilingual document pair; update both documents before refreshing hashes.
+CODE_OF_CONDUCT.md: ceba82f7bc3af7b4dc9d2d7f0e2dd7841d6bcd28
+CODE_OF_CONDUCT.en.md: 0135d4450c21ce35b6512b2b8781723c63de0476

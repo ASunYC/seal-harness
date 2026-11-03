@@ -1,12 +1,16 @@
-# DSH Desktop 文档
+# Seal Harness 文档
+
+本页是 Seal Harness 的文档入口。产品使用与构建请先阅读[项目说明](../README.md)和[产品指南](../seal-harness-desktop/README.md)；问题反馈、使用交流与协作请到 [Seal Harness Issues](https://github.com/ASunYC/seal-harness/issues)，发布版本见 [Seal Harness Releases](https://github.com/ASunYC/seal-harness/releases)。
+
+下文保留的 DSH Desktop 文档是上游技术参考，其中原版产品的下载、更新、账号和服务说明不代表 Seal Harness。上游隐私政策也只适用于其声明的服务范围。
 
 [English documentation](README.en.md)
 
-这里是 DSH Desktop 的产品与开发文档入口。根目录的 [`README.md`](../README.md) 适合第一次了解项目；本目录解释项目为什么存在、如何使用，以及如何为 Desktop 编写插件。想参与贡献？见[参与贡献](../CONTRIBUTING.md)。
+以下是继承的 DSH Desktop 技术文档索引，供理解桌面机制和插件合同。参与 Seal Harness 的维护请阅读[参与贡献](../CONTRIBUTING.md)。
 
 ## 按目标阅读
 
-普通用户从[用户指南](user-guide.md)开始即可，不需要阅读开发者文档。
+普通用户先阅读 [Seal Harness 产品指南](../seal-harness-desktop/README.md)；下方上游文档用于技术参考。
 
 ### 用户文档
 

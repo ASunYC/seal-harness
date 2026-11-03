@@ -1,59 +1,63 @@
 # 参与贡献
 
-感谢你愿意参与 DSH Desktop。这是一个社区项目，无论你是普通用户、插件作者还是开发者，都有适合你的贡献方式。
+[English](CONTRIBUTING.en.md) | 中文
+
+感谢你愿意参与 Seal Harness。无论你是普通用户、插件作者还是开发者，都可以在[本仓库](https://github.com/ASunYC/seal-harness)参与反馈、讨论和贡献。
 
 ## 普通用户：使用、反馈与传播
 
-- 遇到问题或异常，[提 issue](https://github.com/anywhere-labs/deepseek-harness-desktop/issues)：说明操作系统（macOS / Windows）、应用版本和复现步骤。
-- 有功能想法或改进建议，也欢迎提 issue 讨论。
-- 参与[社区交流](README.md#社区交流)（微信群、QQ 群、Discord），帮助其他用户解决问题。
-- 写使用教程、体验文章，或帮助完善和翻译文档。
-- 在[友情链接](README.md#友情链接)中收录生态项目。
+- 遇到问题或异常，请在 [Seal Harness Issues](https://github.com/ASunYC/seal-harness/issues/new/choose) 提交反馈，说明操作系统、Seal Harness 与内核版本、复现步骤和错误信息。
+- 功能建议、使用求助和生态项目推荐统一在[本仓库 Issues](https://github.com/ASunYC/seal-harness/issues)交流；提交前先搜索已有问题。
+- 发布版本及安装包见 [Seal Harness Releases](https://github.com/ASunYC/seal-harness/releases)，以实际发布的资产和说明为准。
+- 欢迎提交使用教程、体验文章，以及文档和翻译改进。项目说明见 [README](README.md)。
+- 附加日志或截图前，请移除 API Key、令牌、账号信息和其他敏感数据。
 
 ## 插件作者：扩展生态
 
-DSH 的核心是插件。如果你写插件，请先阅读：
+Seal Harness 沿用 DSH 的插件、bundle 与 Profile 机制。编写插件前，可以参考：
 
-- [插件开发](docs/plugin-development.md)：如何编写普通 DSH 插件和 Desktop 插件。
-- [DSH 插件生态倡议书](docs/plugin-ecosystem.md)：开放、可组合、可持续的生态愿景，以及组合优先、声明清晰、兼容优先三条原则。
-- [DSH Community Fabric Draft](dsh-community-fabric/README.zh.md)：参与 Manifest、Capability、Host Descriptor 和事件 contract 的公开讨论。
-- [Community Market 设计](dsh-community-market/docs/market-shell.zh.md)：未来市场如何发现插件，以及为什么收录不等于安全审核。
+- [Seal Harness 产品与构建说明](seal-harness-desktop/README.md)：产品身份、插件组合及验证边界。
+- [插件开发](docs/plugin-development.md)：继承的 DSH Host、Web Client 与 Desktop 扩展合同。
+- [DSH 插件生态倡议书](docs/plugin-ecosystem.md)：组合优先、声明清晰、兼容优先。
+- [Community Market](dsh-community-market/README.zh.md)：市场的目录来源、安装确认与安全边界。
 
-遵循倡议书的插件更容易与其他插件共存，也会在未来上线时更容易在插件市场中被发现和信任。
+插件应尽量依赖公开合同，遵守用户授权和账号隔离，并保留第三方来源、许可证及通知。针对 Seal Harness 的改进请提交到本仓库；只涉及上游项目的问题，请在确认可以独立复现后提交到相应上游。
 
 ## 开发者：贡献代码
 
 ### 开发环境
 
+要求 Node.js `^22.19.0` 或 `>=24.0.0`，以及根 Yarn `4.18.0`。先阅读根目录 [AGENTS.md](AGENTS.md) 和 [Trellis 工作流](.trellis/workflow.md)，再执行：
+
 ```sh
-git submodule update --init --recursive
+git clone --recurse-submodules https://github.com/ASunYC/seal-harness.git
+cd seal-harness
 corepack yarn install --immutable
-corepack yarn check   # 完整 headless gate：构建、类型检查、测试与冒烟
-corepack yarn dev     # 有图形环境时启动应用
+corepack yarn seal-harness:build
+corepack yarn seal-harness:check
+corepack yarn seal-harness:dev
 ```
 
-### 仓库边界（开始前务必了解）
+`seal-harness:dev` 会打开图形应用；构建、类型检查和其他自动化验证应保持 headless-safe。
 
-- `deepseek-harness/` 是固定版本的上游子模块，**桌面开发不修改其中的任何文件**；上游内容更新走独立的 pin 提交。
-- 桌面代码位于 `dsh-plugin-desktop/`；`dsh-community-fabric/` 保存社区标准 Draft，`dsh-community-market/` 保存市场壳设计。两个社区 package 当前都只有文档、尚不可加载，三个自有 package 共用外层 Yarn workspace。
-- 构建、类型检查、单元测试和冒烟检查必须保持 headless-safe。
+### 仓库边界
+
+- `seal-harness-desktop/` 维护产品身份、业务插件、组合与打包入口。产品自有包不加入根 Yarn workspaces，不另建锁文件。
+- `deepseek-harness/` 是固定提交的只读上游子模块；不要在桌面功能修改中编辑其源码，更新 pin 应独立提交。
+- `dsh-plugin-desktop-beta/`、`dsh-plugin-desktop/` 和 `dsh-desktop-next/` 是继承的桌面包。共享 Desktop 行为按 Beta 先行，并同步 Stable；Seal 专属功能优先放在产品插件中。
+- 优先使用公开服务、事件、slot 和 bundle。详细边界及验证要求见[桌面构建契约](.trellis/spec/general/desktop-build.md)。
 
 ### 提交与 PR
 
-与桌面版必要功能无关的 PR，以及其他插件收录相关的 PR，我们可能不会接受。
+- 向 [Seal Harness](https://github.com/ASunYC/seal-harness/compare) 提交 PR，描述问题、改动原因、验证结果和已知限制。
+- 提交信息使用 Conventional Commits，说明使用中文，例如 `fix: 修复模型列表重叠`。
+- 运行受影响功能的检查及产品检查；合并前运行 `corepack yarn check`。如有平台或环境限制，如实记录，不能把未执行或失败的检查写成通过。
+- 共享 Desktop 修改需运行 `corepack yarn check:desktop-variants` 并验证两个变体；依赖变更同时核对锁文件和第三方许可通知。
+- 文档修改同步中英文，并更新对应的 `*.i18n.yaml` 双语哈希记录。
+- 不提交凭据、账号数据库、个人 Profile、临时文件或构建产物。
 
-目前我们接受与桌面版必要功能相关的 PR（如问题修复、新功能等），非常欢迎各位开发者提出此类 PR。
+## 联系与行为准则
 
-- 提交信息使用 conventional commits 风格（例如 `fix(desktop): ...`、`docs: ...`）。
-- 提交前运行 `yarn check` 并保证全绿。
-- 变更生产依赖后，运行 `yarn workspace dsh-plugin-desktop verify:notices` 刷新第三方许可清单，并提交更新后的 `dsh-plugin-desktop/THIRD_PARTY_NOTICES.md`。
-- 文档改动请中英同步，并更新 `README.i18n.yaml` 的双语 hash 记录。
-- PR 描述说明改动内容、动机和验证方式；CI 通过后再合并。
+参与维护、协作和一般问题可在[本仓库 Issues](https://github.com/ASunYC/seal-harness/issues)联系维护者。上游项目的邮箱和交流群不作为 Seal Harness 的维护渠道。
 
-## 加入技术团队
-
-如果你希望加入我们的技术团队，欢迎通过 [t4wefan@qq.com](mailto:t4wefan@qq.com) 联系我们。
-
-## 行为准则
-
-请保持友善与尊重，就事论事。我们希望这是一个欢迎新人的社区。完整的[参与者公约](CODE_OF_CONDUCT.md)适用于所有项目空间。
+请保持友善与尊重，就事论事。[参与者公约](CODE_OF_CONDUCT.md)适用于本项目空间；涉及私密信息的报告请先请求私密联系渠道，不在公开 Issue 中披露事件细节。

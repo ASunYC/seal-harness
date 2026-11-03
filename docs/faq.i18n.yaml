@@ -1,0 +1,3 @@
+# Verified bilingual document pair; update both documents before refreshing hashes.
+faq.md: ab03f2d3b4ef5ee759b9b100014b23c346b87b49
+faq.en.md: 2b6361f1e6133ff23c512534ad4cff06390d6c34

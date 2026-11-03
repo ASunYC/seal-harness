@@ -1,12 +1,16 @@
-# DSH Desktop Documentation
+# Seal Harness Documentation
+
+This is the Seal Harness documentation entry point. Start with the [project overview](../README.en.md) and [product guide](../seal-harness-desktop/README.md). Use [Seal Harness Issues](https://github.com/ASunYC/seal-harness/issues) for reports, questions, and collaboration, and [Seal Harness Releases](https://github.com/ASunYC/seal-harness/releases) for published versions.
+
+The DSH Desktop documents retained below are upstream technical references. Their original-product downloads, updates, accounts, and services do not describe Seal Harness. The upstream privacy policy applies only to its stated services.
 
 [中文文档](README.md)
 
-This directory is the product and developer documentation index for DSH Desktop. The root [`README.en.md`](../README.en.md) is the short product entry point; these pages explain why the project exists, how to use it, and how to build plugins for it. Want to contribute? See [Contributing](../CONTRIBUTING.en.md).
+The inherited DSH Desktop references below explain desktop mechanisms and plugin contracts. See [Contributing](../CONTRIBUTING.en.md) to help maintain Seal Harness.
 
 ## Read by goal
 
-Ordinary users can start with the [user guide](user-guide.en.md) and never need the developer documentation.
+Users should start with the [Seal Harness product guide](../seal-harness-desktop/README.md); the upstream documents below are technical references.
 
 ### User documentation
 

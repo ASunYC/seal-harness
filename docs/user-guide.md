@@ -1,5 +1,7 @@
 # DSH Desktop 用户指南
 
+> 上游技术参考：以下 DSH Desktop 命令、下载与更新服务属于原版桌面工程。Seal Harness 使用独立产品身份与更新渠道；请先查看[产品指南](../seal-harness-desktop/README.md)。Seal Harness 的[下载](https://github.com/ASunYC/seal-harness/releases)和[问题反馈](https://github.com/ASunYC/seal-harness/issues)均在本仓库。
+
 ## 安装与首次启动
 
 从产品下载入口获取 macOS 或 Windows 安装包。安装后的 DSH Desktop 自带运行所需的 Electron、Node 和 DSH 依赖，普通用户不需要另行安装 Node.js 或 pnpm。

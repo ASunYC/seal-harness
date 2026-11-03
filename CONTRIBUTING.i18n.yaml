@@ -1,0 +1,3 @@
+# Verified bilingual document pair; update both documents before refreshing hashes.
+CONTRIBUTING.md: c860e4da754ee9513632bd9b9982b221865c2bdf
+CONTRIBUTING.en.md: b1cc459611ac9bb5caaa8ee5e52076cff264a042

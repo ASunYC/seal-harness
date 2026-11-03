@@ -11,6 +11,11 @@ This repository imports the downstream source supplied by the user. It preserves
 
 We thank both upstream projects and their contributors. Seal Harness is an independent downstream product; this attribution does not imply authorization, partnership, or endorsement by either upstream project. Third-party licenses and notices are linked under “License and attribution” below.
 
+## Project links
+
+- [Repository](https://github.com/ASunYC/seal-harness) · [Issues and usage questions](https://github.com/ASunYC/seal-harness/issues) · [Releases and downloads](https://github.com/ASunYC/seal-harness/releases)
+- [Contributing](CONTRIBUTING.en.md) · [Code of conduct](CODE_OF_CONDUCT.en.md) · [Documentation](docs/README.en.md)
+
 ## Structure
 
 | Path | Responsibility |

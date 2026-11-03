@@ -11,6 +11,11 @@ Seal Harness 是基于 [DSH Desktop](https://github.com/anywhere-labs/dsh-deskto
 
 感谢两个上游项目及其贡献者。Seal Harness 是独立的下游产品；上述来源说明不表示上游项目对本产品提供授权、合作或背书。第三方许可与声明见下方“许可证与来源”。
 
+## 项目入口
+
+- [代码仓库](https://github.com/ASunYC/seal-harness) · [问题反馈与使用交流](https://github.com/ASunYC/seal-harness/issues) · [发布记录与下载](https://github.com/ASunYC/seal-harness/releases)
+- [参与贡献](CONTRIBUTING.md) · [行为准则](CODE_OF_CONDUCT.md) · [文档入口](docs/README.md)
+
 ## 工程结构
 
 | 路径 | 职责 |

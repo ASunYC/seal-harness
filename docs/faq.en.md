@@ -1,5 +1,7 @@
 # DSH Desktop FAQ
 
+> Upstream reference: this page describes the original DSH Desktop. See the [project overview](../README.en.md) and [product guide](../seal-harness-desktop/README.md) for Seal Harness. Use the Seal Harness repository for [downloads](https://github.com/ASunYC/seal-harness/releases) and [feedback](https://github.com/ASunYC/seal-harness/issues).
+
 [中文](faq.md)
 
 This page answers common questions about installation, supported platforms, the bundled runtime, and plugins in the current stable release. The [latest GitHub Release](https://github.com/anywhere-labs/deepseek-harness-desktop/releases/latest) and [user guide](user-guide.en.md) define the shipped product scope.

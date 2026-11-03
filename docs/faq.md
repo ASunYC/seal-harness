@@ -1,5 +1,7 @@
 # DSH Desktop 常见问题
 
+> 上游参考：本文保留 DSH Desktop 的原版说明。Seal Harness 的产品与使用入口见[项目说明](../README.md)和[产品指南](../seal-harness-desktop/README.md)；[下载](https://github.com/ASunYC/seal-harness/releases)与[反馈](https://github.com/ASunYC/seal-harness/issues)请使用 Seal Harness 仓库。
+
 [English](faq.en.md)
 
 本页回答当前正式版本最常见的安装、平台、运行环境和插件问题。功能范围以[最新 GitHub Release](https://github.com/anywhere-labs/deepseek-harness-desktop/releases/latest)和[用户指南](user-guide.md)为准。

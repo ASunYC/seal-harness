@@ -1,5 +1,7 @@
 # DSH Desktop User Guide
 
+> Upstream technical reference: the DSH Desktop commands, downloads, and update services below belong to the original desktop project. Seal Harness has its own identity and update channel; start with the [product guide](../seal-harness-desktop/README.md). Seal Harness [downloads](https://github.com/ASunYC/seal-harness/releases) and [issue reports](https://github.com/ASunYC/seal-harness/issues) belong in this repository.
+
 ## Installation and first launch
 
 Download the macOS or Windows installer from the product download page. DSH Desktop includes Electron, Node, and its pinned DSH dependencies, so normal users do not need to install Node.js or pnpm separately.
