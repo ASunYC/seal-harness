@@ -65,7 +65,7 @@ export function OfficePanel({ api }) {
         {busy&&<p className="office-processing" role="status">正在本地处理…</p>}
       </article>
     </main>
-    <details className="office-help"><summary>使用说明与文件保存</summary><p>文件保存在运行 Seal Harness 的设备上，按账号隔离。导入文件会传到该设备，每次保存生成新版本，保留导入原件。</p><p>当前支持结构化文本与单元格编辑，不重现完整 Office 排版，不重算公式或生成 PDF。修改文本块会沿用该块首个文本片段的格式；复杂表格等对象保留原件。</p><p>处理内核来源：genspark-ai/genoffice（Apache-2.0）。未包含企业版或原版桌面应用。</p></details>
+    <details className="office-help"><summary>使用说明与文件保存</summary><p>文件保存在运行 Seal Harness 的设备上，按账号隔离。导入文件会传到该设备，每次保存生成新版本，保留导入原件。</p><p>当前支持结构化文本与单元格编辑，不重现完整 Office 排版，不重算公式或生成 PDF。修改文本块会沿用该块首个文本片段的格式；复杂表格等对象保留原件。</p></details>
   </section>
 }
 export function apply(ctx) {
