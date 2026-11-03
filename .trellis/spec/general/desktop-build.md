@@ -15,7 +15,7 @@ Electron 44 内置 Node 24.18.1；Stable/Beta 必须直接使用支持它的 `no
 ## Electron 浏览器 MCP 子进程
 
 1. **范围与触发**：内置 Playwright MCP provider 用 `process.execPath` 运行 npm CLI。进程内 Electron Host 的该路径不是普通 Node；缺少子进程模式标志会导致 Connection closed，继而阻断 standard 会话创建。
-2. **接口**：沿官方 `mountSessionMcp(ctx, { command, args, env })`，在 `dsh-experimental-browser-use-playwright-mcp@0.2.1-rc.2` 的 Yarn 补丁中补齐环境；不编辑只读子模块，不更改 provider Config 或 MCP 协议。
+2. **接口**：沿官方 `mountSessionMcp(ctx, { command, args, env })`，在活动 Beta 版本的 `dsh-experimental-browser-use-playwright-mcp` Yarn 补丁中补齐环境（当前为 0.2.1-rc.5）；不编辑只读子模块，不更改 provider Config 或 MCP 协议。
 3. **契约**：当且仅当 `process.versions.electron !== undefined` 时，在该 MCP 的 `env` 写入 `ELECTRON_RUN_AS_NODE=1`。不向主进程全局环境写入该值，以免 Chromium、GPU 和网络子进程误入 Node 模式。
 4. **错误矩阵**：普通 Node 不额外添加标志；Electron 的该 npm 子进程携带标志。真实 MCP 启动/同步错误仍由原来的 failOnStartupError 返回，不吞错、不禁用浏览器。
 5. **案例**：同一 CLI 在普通 Electron 模式关闭连接；带局部标志后返回真实浏览器工具。标准会话创建成功且包含 browser_snapshot，不能只把 Renderer healthy 当成会话可用。
@@ -35,6 +35,8 @@ Electron 44 内置 Node 24.18.1；Stable/Beta 必须直接使用支持它的 `no
 DSH rc.2 的 `webServer.port` 在监听完成前可为 `undefined`。Desktop 通过 `requireDesktopWebPort` 验证后再生成渲染器 URL 或附加 LAN 边缘，不回退到默认端口；Market 路由在每次请求时读取绑定端口，未绑定或 Host/Origin 不匹配时拒绝。对应回归为两变体 `desktop-network.spec.ts` 和 Market `market-host-lifecycle.spec.ts` 的延迟绑定案例。
 
 ## AA 构建与版本来源
+
+Beta 升级到 0.2.1-rc.5 后，侧栏公开声明引用 `dsh-client-product-analytics/client` 的 `ProductEventMap`。独立 Market 类型图须显式提供同版本开发依赖，不能依赖其他包偶然提升的模块；该类型依赖不代表启用产品遥测。内核升级须校验官方原始包、移植每个现有补丁，并验证真实 Electron 会话和 Profile HMR，不能只验证普通 Node 导入。
 
 AA 产物准备时，临时构建项目将 `@deepseek-ai/*` 解析约束到 AA 源码的 `devDependencies` 类型图，运行时兼容范围仍由两通道的 `runtimePeers` 单独决定。否则放宽 peer 后可能加载两份 schemastery 全局声明并触发 TS6200。来源标记校验同时接受正式源版本的 `x.y.z-desktop.c<commit>.r<hash>` 和预发布源版本的 `x.y.z-alpha.desktop.c<commit>.r<hash>`；提交号和产物 SHA 校验必须保留。`scripts/agents-anywhere-release-policy.test.mjs` 覆盖这两种版本形式及构建/运行依赖分离。
 
