@@ -4511,12 +4511,12 @@ __metadata:
 
 "@deepseek-ai/dsh-client-ui-settings-general@patch:@deepseek-ai/dsh-client-ui-settings-general@file%3Avendor/dsh-runtime/0.2.1-rc.5/deepseek-ai-dsh-client-ui-settings-general-0.2.1-rc.5.tgz#./patches/dsh-client-ui-settings-general@0.2.1-rc.5.patch::locator=seal-harness%40workspace%3A.":
   version: 0.2.1-rc.5
-  resolution: "@deepseek-ai/dsh-client-ui-settings-general@patch:@deepseek-ai/dsh-client-ui-settings-general@file%3Avendor/dsh-runtime/0.2.1-rc.5/deepseek-ai-dsh-client-ui-settings-general-0.2.1-rc.5.tgz%23vendor/dsh-runtime/0.2.1-rc.5/deepseek-ai-dsh-client-ui-settings-general-0.2.1-rc.5.tgz%3A%3Ahash=413977&locator=seal-harness%2540workspace%253A.#./patches/dsh-client-ui-settings-general@0.2.1-rc.5.patch::version=0.2.1-rc.5&hash=fbab0a&locator=seal-harness%40workspace%3A."
+  resolution: "@deepseek-ai/dsh-client-ui-settings-general@patch:@deepseek-ai/dsh-client-ui-settings-general@file%3Avendor/dsh-runtime/0.2.1-rc.5/deepseek-ai-dsh-client-ui-settings-general-0.2.1-rc.5.tgz%23vendor/dsh-runtime/0.2.1-rc.5/deepseek-ai-dsh-client-ui-settings-general-0.2.1-rc.5.tgz%3A%3Ahash=413977&locator=seal-harness%2540workspace%253A.#./patches/dsh-client-ui-settings-general@0.2.1-rc.5.patch::version=0.2.1-rc.5&hash=682f6c&locator=seal-harness%40workspace%3A."
   dependencies:
     "@deepseek-ai/schemastery": "npm:~3.18.5"
   peerDependencies:
     "@deepseek-ai/cordis": ~4.0.5
-  checksum: 10c0/c1849b2d8f62d4545bf28b8dbd5cf8eebd4e3e1f2da50b1ca3aa0b86e30e32f2a55679ff44f9321a28e5b64ef93bc54741ed18b7248a43d96d969e65487d87c9
+  checksum: 10c0/bf8cd4cca8996f27302db11f098a916c4b53e34b09249fa727f666c6f6fa7c4ed7c444ad9f8f0c0807b132709b8de3dd5b27735b4d109909d85c17d42994e5c8
   languageName: node
   linkType: hard
 

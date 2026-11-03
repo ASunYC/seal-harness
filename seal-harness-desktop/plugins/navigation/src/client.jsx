@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useSyncExternalStore } from 'react'
 import { createNavigationState } from './model.js'
 import { styles } from './styles.js'
+import { registerSettingsPage, SETTINGS_PANEL_ID } from './settings-page.jsx'
 
 export const inject = ['slots', 'layout', 'sessions']
 
@@ -40,6 +41,7 @@ export function apply(ctx) {
   const resources = createNavigationState()
   let openSettings = null
   ctx.provide('sealHarnessNavigation', resources)
+  registerSettingsPage(ctx)
   ctx.effect(() => () => resources.dispose(), 'seal-harness: navigation state')
   ctx.effect(() => resources.register({ id: 'plugins', label: '插件', order: 60, icon: 'plugins', description: '管理桌面插件和扩展', Panel() { return null } }), 'seal-harness: plugin manager home entry')
   ctx.effect(() => {
@@ -135,7 +137,7 @@ export function apply(ctx) {
     return <><nav className="seal-nav-rail" aria-label="一级导航" data-home-active={homeActive} data-capabilities-active={capabilitiesActive}>
       {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : item.id === CAPABILITIES ? capabilitiesActive ? 'page' : undefined : activePanelId === item.id ? 'page' : undefined} onClick={() => { resources.leaveDecision(); if (item.id === HOME) resources.select(null); ctx.layout.selectPanel(item.id === HOME ? null : item.id === CAPABILITIES ? 'plugins' : item.id) }}><NavGlyph name={item.icon} /></button>)}
       <div className="seal-nav-rail__footer">
-        <button type="button" title="设置" aria-label="设置" onClick={() => { if (!openSettings) throw new Error('设置入口未加载。'); openSettings() }}><NavGlyph name="settings" /></button>
+        <button type="button" title="设置" aria-label="设置" aria-current={activePanelId === SETTINGS_PANEL_ID ? 'page' : undefined} onClick={() => { if (!openSettings) throw new Error('设置入口未加载。'); openSettings() }}><NavGlyph name="settings" /></button>
         <button type="button" title="账户" aria-label="账户" aria-current={activePanelId === 'seal-harness-user' ? 'page' : undefined} onClick={() => activateExisting('.seal-harness-user-footer', '账户')}><NavGlyph name="account" /></button>
       </div>
     </nav>{capabilitiesActive && <aside className="seal-nav-secondary" aria-label="能力菜单">

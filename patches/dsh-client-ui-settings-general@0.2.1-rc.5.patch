@@ -1,7 +1,7 @@
 diff --git a/lib/client.js b/lib/client.js
 --- a/lib/client.js
 +++ b/lib/client.js
-@@ -238,6 +238,32 @@ window.__ModuleLoader__.load({
+@@ -238,6 +238,32 @@
  		* to the step, so a mounted-but-deciding step paints nothing here.
  		*/
  		const RECOVERY_CONFIRMATION_MS = 2e3;
@@ -34,14 +34,82 @@ diff --git a/lib/client.js b/lib/client.js
  		/** Minimum visible time for the connecting pill; shorter attempts read as flicker. */
  		const CONNECTING_MIN_VISIBLE_MS = 800;
  		/** Nav glyph by section id; unknown ids fall back to the settings gear. */
-@@ -262,6 +288,10 @@ window.__ModuleLoader__.load({
- 				className: SettingsRoot_module_css_default.navIcon,
+@@ -259,6 +285,10 @@
  				size: 16
  			});
-+			if (id === "desktop") return (0, react_jsx_runtime.jsx)(IconDesktopSettings, {
+ 			if (id === "archived-sessions") return (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconArchiveOutlineMedium, {
 +				className: SettingsRoot_module_css_default.navIcon,
 +				size: 16
 +			});
- 			return (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconSettingsOutlineMedium, {
++			if (id === "desktop") return (0, react_jsx_runtime.jsx)(IconDesktopSettings, {
  				className: SettingsRoot_module_css_default.navIcon,
  				size: 16
+ 			});
+@@ -479,13 +509,21 @@
+ 						})
+ 					]
+ 				}),
+-				open && (0, react_jsx_runtime.jsx)(SettingsPanel, {
++				open && renderSlot("settings.presentation", {
++					rows,
++					activeId,
++					onSelect: actions.select,
++					onClose: close,
++					renderSection: (id, closeSection) => renderSlot("settings.section", { close: closeSection }, { only: id }),
++					renderActions: () => renderSlot("settings.action", {}),
++					renderHeader: () => renderSlot("settings.header", {})
++				}, { fallback: (0, react_jsx_runtime.jsx)(SettingsPanel, {
+ 					rows,
+ 					renderSlot,
+ 					activeId,
+ 					onSelect: actions.select,
+ 					onClose: close
+-				}),
++				}) }),
+ 				onboardingStep !== void 0 && renderSlot("settings.onboarding", {
+ 					stepId: onboardingStep.id,
+ 					explicit: requestedOnboarding !== void 0,
+@@ -1265,6 +1303,10 @@
+ 							kind: "list",
+ 							scope: "root"
+ 						},
++						"settings.presentation": {
++							kind: "single",
++							scope: "root"
++						},
+ 						"settings.onboarding": {
+ 							kind: "list",
+ 							scope: "root"
+diff --git a/lib/types/client/index.d.ts b/lib/types/client/index.d.ts
+--- a/lib/types/client/index.d.ts
++++ b/lib/types/client/index.d.ts
+@@ -8,6 +8,7 @@
+  * Feature-owned rows and sections stay with their features.
+  * Export discipline: packages/client/AGENTS.md.
+  */
++import type { ReactNode } from 'react';
+ import type { Context as ClientContext } from '@deepseek-ai/cordis';
+ import { type SettingsKey } from './locales.ts';
+ export type { CloseLabelProps, HeaderContentProps, TriggerContentProps, } from './chrome.tsx';
+@@ -17,6 +18,21 @@
+ export { SettingsDocumentStore } from './settings-document-store.ts';
+ export type { SettingsKey } from './locales.ts';
+ declare module '@deepseek-ai/dsh-client-ui-slots' {
++    interface SlotMap {
++        /** Optional product settings presentation; the shell retains state, shortcuts and sections. */
++        'settings.presentation': {
++            kind: 'single'; scope: 'root'; owner: {
++                rows: readonly { id: string; label: string; order: number }[];
++                activeId: string | undefined;
++                onSelect: (id: string) => void;
++                onClose: () => void;
++                renderSection: (id: string, close: () => void) => ReactNode;
++                renderActions: () => ReactNode;
++                renderHeader: () => ReactNode;
++            };
++        };
++    }
++
+     interface LocaleNamespaceMap {
+         /** Shell chrome + shell-owned General section copy. */
+         settings: SettingsKey;

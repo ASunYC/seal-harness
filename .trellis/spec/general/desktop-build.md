@@ -190,3 +190,19 @@ POST `/api/seal-harness-scheduled-tasks/{action}` 使用现有 client-request/se
 产品默认 insert 在用户已声明同名 bundle、手工插入同名插件或明确停用时让位，不改写用户 Profile、entry ID、配置与显式选择。Stable/Beta 的 `selectProductBundleDefaults` 保持镜像；使用不依赖第三方运行时的合成插件验证默认、已有、停用、重复启动和失败恢复。
 
 Univer Office 已从产品集成中移除，不再声明默认依赖、装配专用 payload 或生成 Office patch。该插件的历史研究与安装记录仅作审计资料，不表示当前产品支持或分发它。保留通用插件组合保护和其他独立内核升级。
+
+## Seal 设置全页呈现
+
+点击设置在main的`seal-harness-settings`页呈现，保留一级导航并高亮底部设置按钮；设置内左分类、右内容，按窗口自适应，不再有固定方形/16:9或顶层modal遮罩/inert/focus trap。各业务二级编辑/确认弹窗仍由原功能管理。
+
+rc5官方settings shell缺少非模态呈现出口；现有`patches/dsh-client-ui-settings-general@0.2.1-rc.5.patch`新增可选`settings.presentation`single/root slot，保留已有桌面图标补丁。owner提供rows/activeId/onSelect/onClose及授权的renderSection/renderActions/renderHeader回调；未注册产品呈现时仍fallback原SettingsPanel。原store、快捷键、指定分类、onboarding及连接/更新状态继续由官方壳拥有。产品navigation只负责转主面板、呈现及离开清理。不要克隆sidebar.settings的child声明，真实SlotCore会拒绝重复slot且renderSlot受登记者authority约束；也不要修改第三方entry元数据或移动其DOM绕过。锁文件记录Yarnpatchhash，不能只改node_modules。
+
+菜单动态读取useSections，保留条件账号项/未来插件和locale变化，不能写死截图中的10项。设置页统一inset/根宽度和标题，不重置二级dialog与局部列表/表格滚动；内容ResizeObserver提供wide/narrow/tight，不使用CSScontainment改变fixed弹窗包含块。精确作用域需高于一级页面通用样式，以免Token根padding和height重新生效。
+
+验证包括真实Cordis/SlotRegistry/原生settings shell回归（store适配夹具边界明确）、原modalfallback、全页非modal、sections/actions/保存回调、离开/HMR/晚注册；逐菜单宽/1000/700视口检查、内容滚动及二级VMdialog取消；产品build/check/Profile与Desktop双变体检查。CDP合成按键不能等同硬件快捷键实测，原生shortcut回调通过原壳测试覆盖。
+
+### 内置插件清单网格
+
+设置全页不能只解除settings.section顶层宽度限制：内置plugin-inventory tab另有760px cap。产品样式以plugins作用域的公开data-slot/aria-busy/data-plugin-scope/data-plugin-module节点覆盖，不依赖CSSmodulehash，也不改业务tab的hidden/visited语义。清单使用原有inline-size container；其container-name会被CSSmodule重命名，外层适配应使用匿名container query。实际内容640/980/1320px阈值对应2/3/4列，默认单列。统一closed卡片最小高度/间距，所有卡片align-self:start使展开详情不拉高旁卡，不能沿用原仅针对两列的odd邻卡推导。
+
+验证需测量清单宽度等于内容可用宽度，检查1～4列、搜索、展开与market往返的状态保留。Windows运行中重装含native/runtime资源的产品包可能遇到目录占用；装配失败必须检查命令退出码，关闭所属应用后完成装配并verify，再启动，不把后续测试成功当成安装成功。

@@ -45,6 +45,7 @@ test('home resources share the sidebar with native workspaces and sessions', asy
       },
     },
     layout: {
+      panelInfo: { getSnapshot: () => ({ activePanelId }), subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener) } },
       selectPanel(id) { activePanelId = id; for (const listener of listeners) listener() },
       toggleSidebar() { assert.fail('页面切换不能改写用户的侧栏收起偏好') },
     },
