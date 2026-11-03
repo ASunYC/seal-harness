@@ -120,7 +120,7 @@ export function apply(ctx) {
       return ctx.slots.inject('sidebar.workspaces', () => ctx.slots.register({ name: 'sidebar.workspaces', priority: -100 }, EmptyMenu))
     }, [homeActive])
     const items = [
-      { id: HOME, label: '首页', icon: 'home' },
+      { id: HOME, label: '办公', icon: 'home' },
       { id: CAPABILITIES, label: '能力', icon: 'apps' },
       ...entries.filter(entry => entry.primary && entry.id === 'knowledge').map(({ id, label, icon }) => ({ id, label, icon })),
       { id: NATIVE_SCHEDULES, label: '自动化任务', icon: 'schedules' },
@@ -160,7 +160,7 @@ export function apply(ctx) {
   }
 
   function SpacesPanel() {
-    return <main className="seal-nav-page" data-seal-nav-panel="spaces"><h1>空间</h1><p>空间功能尚未开放。工作区和会话请在首页管理。</p></main>
+    return <main className="seal-nav-page" data-seal-nav-panel="spaces"><h1>空间</h1><p>空间功能尚未开放。工作区和会话请在“办公”中管理。</p></main>
   }
 
   function SchedulesPanel() {
