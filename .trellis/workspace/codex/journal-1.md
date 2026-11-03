@@ -893,3 +893,35 @@
 ### Next Steps
 
 - 等待Office许可/替代路线决定；分阶段核实原内核升级和剩余整体门禁后才考虑主分支推送
+
+
+## Session 34: rc5升级门禁修复与交付边界
+<!-- trellis-session: v=2 fp=e42a4c75baeac828 -->
+
+**Date**: 2026-11-03
+**Task**: rc5升级门禁修复与交付边界
+**Branch**: `codex/upgrade-dsh-rc5-univer`
+
+### Summary
+
+完成rc5运行依赖、ABI、日志轮转、Windows隔离CLI和双通道回归修复；整体门禁及Office授权仍未完成。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f35d7085` | fix: 完善 rc5 运行依赖与安装验证 |
+| `53399025` | chore: 固定已升级的 DSH rc5 内核提交 |
+
+### Testing
+
+- [OK] 完整typecheck、两产品build/check、layout/immutable通过；Stable/Beta独立closure/cli/loader/profile/aa/licenses/operations通过。
+- [OK] 完整单元Beta1569通过16失败13跳过；Stable1587通过17失败13跳过；Beta旧图标断言随后2项通过，末次合同52项通过。根Market285通过1失败。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- Office许可路线待用户决定；symlink权限和Linux fixture门禁未解决，不push、不分发Pro、不归档。

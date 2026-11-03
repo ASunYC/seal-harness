@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 33
+- **Total Sessions**: 34
 - **Last Active**: 2026-11-03
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~895 | Active |
+| `journal-1.md` | ~927 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 34 | 2026-11-03 | rc5升级门禁修复与交付边界 | `f35d7085`, `53399025` | `codex/upgrade-dsh-rc5-univer` |
 | 33 | 2026-11-03 | Office随包机制与用户Profile保护检查点 | `a548d2d8`, `cec3bbf3` | `codex/upgrade-dsh-rc5-univer` |
 | 32 | 2026-10-28 | 按功能提交全部改动并同步main | `b444d54f`, `6b740a44`, `a0ec5e75`, `846cd152`, `20f47ec9`, `a2019c6d`, `a098b842`, `dd2e5ee6`, `57656999`, `1d0e4242` | `main` |
 | 31 | 2026-10-28 | 修正专家顺序及旧Host接口404并实测窗口 | - | `main` |
