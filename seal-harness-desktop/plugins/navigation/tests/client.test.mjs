@@ -10,7 +10,7 @@ import { createRoot } from 'react-dom/client'
 const require = createRequire(import.meta.url)
 
 test('home resources share the sidebar with native workspaces and sessions', async t => {
-  const dom = new JSDOM('<!doctype html><html><head></head><body><main></main><div id="root"><div data-slot="sidebar"><button aria-label="自动化任务">上游入口</button><button class="dshMarketLauncher">旧市场入口</button></div></div><div data-slot="sidebar.settings"><button aria-haspopup="menu">上游账户菜单</button></div><button class="seal-harness-user-footer">原生账号</button></body></html>')
+  const dom = new JSDOM('<!doctype html><html><head></head><body><main></main><div id="root"><div data-slot="sidebar"><button aria-label="自动化任务">上游入口</button><button class="dshMarketLauncher">旧市场入口</button><span data-native-more-anchor><button aria-label="更多" aria-haspopup="menu">更多</button></span></div></div><div data-slot="sidebar.settings"><button aria-haspopup="menu">上游账户菜单</button></div><button class="seal-harness-user-footer">原生账号</button></body></html>')
   const previous = { window: globalThis.window, document: globalThis.document }
   globalThis.window = dom.window; globalThis.document = dom.window.document
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -83,6 +83,8 @@ test('home resources share the sidebar with native workspaces and sessions', asy
   )))
   assert.equal(dom.window.getComputedStyle(document.querySelector('[data-slot="sidebar"] button[aria-label="自动化任务"]')).display, 'none')
   assert.equal(dom.window.getComputedStyle(document.querySelector('.dshMarketLauncher')).display, 'none')
+  assert.equal(dom.window.getComputedStyle(document.querySelector('[data-native-more-anchor]')).display, 'none')
+  assert.equal(dom.window.getComputedStyle(document.querySelector('[data-native-more-anchor] button')).display, 'none')
   assert.equal(document.querySelector('button[aria-label="对话"]'), null)
   assert.deepEqual([...document.querySelectorAll('.seal-nav-rail > button')].map(button => button.getAttribute('aria-label')), ['办公', '能力', '自动化任务', '空间'])
   assert.deepEqual([...document.querySelectorAll('.seal-nav-rail__footer button')].map(button => button.getAttribute('aria-label')), ['设置', '账户'])

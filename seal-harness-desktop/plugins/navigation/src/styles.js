@@ -11,6 +11,10 @@ export const styles = `
 #root :has(> [data-shell-overlay]):has(.seal-nav-rail[data-home-active="false"]) > [data-side="sidebar"] { display: none; }
 #root :has(> [data-shell-overlay]):has(.seal-nav-rail[data-capabilities-active="true"]) > :has([data-slot="main"]) { margin-left: 260px; min-width: 0; }
 #root .dshMarketLauncher { display: none !important; }
+/* 左侧不再提供原生插件推广/创建的“更多”入口；不影响其他区域菜单。 */
+#root [data-slot="sidebar"] span:has(> button[aria-haspopup="menu"]:is([aria-label="更多"],[aria-label="More"])),
+#root [data-slot="sidebar"] button[aria-haspopup="menu"]:is([aria-label="更多"],[aria-label="More"]) { display:none !important; }
+
 #root [data-slot="sidebar"] button[aria-label="插件"], #root [data-slot="sidebar"] button[aria-label="Plugins"] { display: none !important; }
 #root [data-slot="sidebar"] button[aria-label="自动化任务"], #root [data-slot="sidebar"] button[aria-label="Automation tasks"] { display: none !important; }
 .seal-nav-rail { position: absolute; z-index: 2; inset: 0 auto 0 0; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 56px; padding: 48px 7px 14px; box-sizing: border-box; overflow-y: auto; scrollbar-width: none; border-right: 1px solid var(--dsw-alias-border-l1,#34363b); background: var(--dsw-alias-bg-layer-1,#1c1d20); color: var(--dsw-alias-label-secondary,#a6a8ae); pointer-events: auto; -webkit-app-region: no-drag; }

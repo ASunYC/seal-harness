@@ -17,7 +17,7 @@ const CAPABILITY_IDS = ['plugins', 'skills', 'connectors', 'apps']
 function NavGlyph({ name, size = 20 }) {
   const paths = {
     apps: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>,
-    home: <><path d="m3 10 9-7 9 7v10H3V10Z" /><path d="M9 20v-7h6v7" /></>,
+    office: <><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12a20 20 0 0 0 18 0M10 12v3h4v-3" /></>,
     spaces: <><path d="M3 7V5h7l2 2h9v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /></>,
     market: <><path d="M3 10v10h18V10M2 9l2-6h16l2 6a3 3 0 0 1-5 2 3 3 0 0 1-5 0 3 3 0 0 1-5 0 3 3 0 0 1-5-2Z" /><path d="M9 20v-6h6v6" /></>,
     schedules: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
@@ -122,7 +122,7 @@ export function apply(ctx) {
       return ctx.slots.inject('sidebar.workspaces', () => ctx.slots.register({ name: 'sidebar.workspaces', priority: -100 }, EmptyMenu))
     }, [homeActive])
     const items = [
-      { id: HOME, label: '办公', icon: 'home' },
+      { id: HOME, label: '办公', icon: 'office' },
       { id: CAPABILITIES, label: '能力', icon: 'apps' },
       ...entries.filter(entry => entry.primary && entry.id === 'knowledge').map(({ id, label, icon }) => ({ id, label, icon })),
       { id: NATIVE_SCHEDULES, label: '自动化任务', icon: 'schedules' },
