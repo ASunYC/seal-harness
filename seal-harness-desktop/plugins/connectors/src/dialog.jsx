@@ -29,7 +29,10 @@ export const dialogStyles = `
 .zz-resource-page .zz-directory-search {display:flex;align-items:center;gap:var(--sp-3);min-width:240px;width:min(360px,32vw);height:var(--ctl-h-lg);box-sizing:border-box;flex:1 1 300px;padding:0 var(--sp-3);border:var(--bw) solid var(--line-strong);border-radius:var(--r-md);background:var(--panel);color:var(--muted2)}
 .zz-resource-page .zz-directory-search > span {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .zz-resource-page .zz-search-clear {display:grid;width:32px;height:32px;min-width:32px;border-radius:var(--r-sm);flex:0 0 auto;place-items:center;padding:0;border:0;background:transparent;color:var(--muted2);cursor:pointer}
-.zz-resource-page .zz-directory-search input {width:100%;min-width:0;align-self:stretch;padding:0;border:0;background:transparent;color:var(--ink);outline-offset:5px}
+.zz-resource-page .zz-directory-search input {width:100%;min-width:0;align-self:stretch;padding:0;border:0;background:transparent;color:var(--ink)}
+/* 复合搜索框由外层提供完整的圆角焦点线，避免内层矩形 outline 越界。 */
+.zz-resource-page .zz-directory-search:focus-within {outline:2px solid var(--dsw-alias-label-secondary,var(--ink));outline-offset:2px}
+.zz-resource-page .zz-directory-search input:focus-visible {outline:none;box-shadow:none}
 .zz-resource-page .zz-directory-search input::-webkit-search-cancel-button {display:none;appearance:none}
 .zz-resource-page .zz-search-clear:hover {color:var(--ink);background:var(--sunken)}
 .zz-resource-page .zz-installed-drawer .zz-directory-search {width:100%}

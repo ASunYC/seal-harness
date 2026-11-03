@@ -27,7 +27,20 @@ export const pageStyles = `
 #root [data-testid="task-manager-page"] > div:first-child > div:first-child { scrollbar-gutter: stable; }
 #root [data-testid="task-manager-page"] > div:first-child > div:first-child > div:first-child { box-sizing: border-box; max-width: none; width: 100%; margin: 0; padding: 28px 12px 18px; }
 #root [data-testid="task-manager-page"] > div:first-child > div:first-child > div:first-child > div:has(> h1) { gap: 8px; margin: 0 8px 18px; padding-top: 0; }
-#root [data-testid="task-manager-page"] h1 { align-self: flex-start; font-size: 19px; line-height: 1.3; }
+#root [data-testid="task-manager-page"] h1 { align-self: flex-start; }
+/* 任务栏的输入与空态操作需要可见的实体边框，焦点线由复合搜索框外层承载。 */
+#root [data-testid="task-manager-page"] > div:first-child { --seal-task-control-border:color-mix(in srgb,var(--dsw-alias-label-secondary) 80%,var(--dsw-alias-bg-layer-1)); }
+#root [data-testid="task-manager-page"] > div:first-child div:has(> span > input[type="search"]) {
+  box-sizing:border-box; height:36px; border:1px solid var(--seal-task-control-border); border-radius:9px; background:var(--dsw-alias-bg-base);
+}
+#root [data-testid="task-manager-page"] > div:first-child span:has(> input[type="search"]) { border:0; background:transparent; }
+#root [data-testid="task-manager-page"] > div:first-child input[type="search"] { height:100%; border:0; outline:none; box-shadow:none; background:transparent; }
+#root [data-testid="task-manager-page"] > div:first-child div:has(> span > input[type="search"]):hover { border-color:var(--dsw-alias-label-secondary); }
+#root [data-testid="task-manager-page"] > div:first-child div:has(> span > input[type="search"]):focus-within { outline:2px solid var(--dsw-alias-label-secondary); outline-offset:2px; }
+#root [data-testid="task-manager-page"] > div:first-child [role="status"] > button {
+  border:1px solid var(--seal-task-control-border); background:var(--dsw-alias-bg-layer-2); color:var(--dsw-alias-label-primary);
+}
+#root [data-testid="task-manager-page"] > div:first-child [role="status"] > button:hover:not(:disabled) { border-color:var(--dsw-alias-label-secondary); background:var(--dsw-alias-interactive-bg-hover); }
 #root [data-testid="task-manager-page"] > aside { flex: 1 1 auto; min-width: 0; border-left: 0; }
 #root [data-testid="task-manager-page"]:not(:has(> aside))::after { content: '选择左侧任务查看详情'; display: grid; flex: 1; min-width: 0; place-items: center; color: var(--dsw-alias-label-secondary,#aaa); }
 @media (max-width: 620px) { #root [data-testid="task-manager-page"] { flex-direction: column; } #root [data-testid="task-manager-page"] > div:first-child { flex: 0 0 35vh; width: 100%; border-right: 0; border-bottom: 1px solid var(--dsw-alias-border-l1,#34363b); } #root [data-testid="task-manager-page"] > aside { flex: 1 1 auto; min-height: 0; } }
