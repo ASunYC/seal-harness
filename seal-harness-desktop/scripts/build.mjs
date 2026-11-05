@@ -97,7 +97,7 @@ export async function buildProductPlugins() {
         opencode: 'opencode.svg', codebuddy: 'codebuddy.png', claude: 'anthropic.png', codex: 'openai.png',
         kimi: 'moonshot.png', cursor: 'cursor.png', pi: 'pi.png', custom: 'custom-provider.svg',
       }).map(([id, file]) => [id, `data:image/${file.endsWith('.svg') ? 'svg+xml' : 'png'};base64,${readFileSync(join(cwd, 'assets', file)).toString('base64')}`])) : null
-      await build({ ...common, entry: { client: 'src/client.jsx' }, format: 'cjs', platform: 'browser', target: 'es2022', deps: { neverBundle: [/^react(?:-dom)?(?:\/|$)/] },
+      await build({ ...common, entry: { client: 'src/client.jsx' }, format: 'cjs', platform: 'browser', target: 'es2022', deps: { neverBundle: [/^react(?:-dom)?(?:\/|$)/], ...(folder === 'workspace-word' ? { alwaysBundle: ['@deepseek-ai/dsh-util-workspace-path'] } : {}) },
         define: {
           'process.env.NODE_ENV': JSON.stringify('production'),
           ...(folder === 'identity' ? { __SEAL_HARNESS_ICON__: JSON.stringify(`data:image/png;base64,${readFileSync(join(productRoot, 'assets/icons/128x128.png')).toString('base64')}`) } : {}),

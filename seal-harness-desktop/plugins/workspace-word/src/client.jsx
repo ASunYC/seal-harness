@@ -1,8 +1,9 @@
 import React from 'react'
+import { parseFileAddress, sessionFileAddress } from '@deepseek-ai/dsh-util-workspace-path'
 import { WordEditor } from './word-editor.jsx'
 import { BlockEditor } from './block-editor.jsx'
 import { WorkspaceFileActions } from './workspace-file-actions.jsx'
-import { changedOfficePath, completedTurnFromChange, generatedOfficePath } from './generated-office.js'
+import { changedOfficePath, completedTurnFromChange, generatedOfficePath, workspaceOfficePath } from './generated-office.js'
 import { styles } from './styles.js'
 import { workspaceFileActionStyles } from './workspace-file-actions-styles.js'
 
@@ -29,7 +30,13 @@ export function apply(ctx) {
   }, 'seal-harness-workspace-word: styles')
 
   ctx.effect(() => ctx.sidebarRightTabs.register({
-    id: tabId, kind: tabKind, multiple: true, keepMounted: true, title: () => '办公文档',
+    id: tabId, kind: tabKind, multiple: true, keepMounted: true,
+    patterns: ['dsh-resource://file/[\\s\\S]+'], priority: 'extension',
+    canOpen: address => {
+      const file = parseFileAddress(address)
+      return file?.scope === 'session' && officeFile.test(file.path)
+    },
+    title: address => parseFileAddress(address)?.path.split(/[\\/]/u).at(-1) ?? '办公文档',
   }), 'seal-harness-workspace-word: sidebar tab')
   ctx.effect(() => ctx.sidebarRight.registerCloseHandler(tabKind, (sessionId, tab) => {
     const key = `${sessionId}:${tab.id}`
@@ -41,7 +48,10 @@ export function apply(ctx) {
   function EditorTab({ useTabInfo, sessionId }) {
     const { tab } = useTabInfo()
     const target = tab.navigation.params
-    const path = target?.path
+    const file = parseFileAddress(tab.contentId ?? '')
+    const cwd = ctx.sessions.list.getSnapshot().byId[sessionId]?.cwd
+    const path = file?.scope === 'session' && file.sessionId === sessionId
+      ? workspaceOfficePath(file.path, cwd) : file ? undefined : target?.path
     if (typeof path !== 'string' || !officeFile.test(path))
       return <p className="seal-workspace-word-error" role="alert">文档地址不可用，请从工作区重新打开。</p>
     const key = `${sessionId}:${tab.id}`
@@ -64,7 +74,7 @@ export function apply(ctx) {
     return <button type="button" className="seal-workspace-word-edit-action" onClick={open}>编辑</button>
   }
   function openEditor({ sessionId, path }) {
-    ctx.sidebarRight.openTabIn(sessionId, tabKind, { params: { sessionId, path } })
+    ctx.sidebarRight.openResourceIn(sessionId, sessionFileAddress(sessionId, path))
   }
   function AutoOpenGeneratedOffice({ sessionId, turn, seq }) {
     React.useEffect(() => {

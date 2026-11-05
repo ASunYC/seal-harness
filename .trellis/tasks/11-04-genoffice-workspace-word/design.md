@@ -1,5 +1,11 @@
 # 设计与来源
 
+## 2026-11-05 修复边界
+
+实测卡片点击走原生 Office→PDF，而自动打开走 workspace-word。使用公开 sidebarRightTabs 的 patterns/canOpen 认领会话 DOCX/XLSX/PPTX，复用官方 workspace-path 地址编解码，自动/手动入口统一 openResourceIn 并按资源地址去重。保留既有 Host 授权、Worker、保存与未保存保护。
+
+修改 workspace-word/client.jsx、package.json（声明已安装的官方路径工具 peer）、styles.js、word-editor.jsx 及客户端回归测试。文档头部收紧，格式工具默认折叠且分组可换行；不改 vendored GenOffice 模型或上游实现。真实 Electron 重测生成→自动打开、关闭→卡片重开、保存，以及宽窄侧栏。仅保留未提交改动。
+
 ## Stratex 当前实现
 
 - `src/renderer/src/components/workspace/WorkspaceFilePreview.vue` 在工作区预览识别可编辑 Office 文件，并用当前 primary binding 打开；会话目录与当前工作台目录不一致时锁编辑。
@@ -19,3 +25,5 @@
 ## 边界
 
 Stratex 的 Electron 子窗口、Vue 工作台、账号/AI/渠道 IPC 不移入 Seal；用 Seal 的 Cordis 插件、Client slot、原生会话和本地认证接入。DOCX 编辑不能用“先转 HTML 再保存”替代，因为那会丢失 OOXML 结构。未知或复杂块保持只读原始锚点，编辑保护文档拒绝保存。
+
+打包补充：官方路径工具是纯浏览器工具包，并无独立 DSH Client 入口；在产品 build.mjs 中显式 alwaysBundle，防止新增 peer 被外置到浏览器 Loader。客户端回归限制运行时 require 为 React，覆盖真实启动曾暴露的外置依赖错误。

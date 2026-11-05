@@ -51,7 +51,10 @@ test('Office preview edit opens a session right tab and saves spreadsheet cell u
   const loaded = {}
   dom.window.__ModuleLoader__ = { load({ id, factory }) {
     assert.equal(id, '@seal-harness/workspace-word')
-    Object.assign(loaded, factory(require))
+    Object.assign(loaded, factory(id => {
+      assert.match(id, /^react(?:-dom)?(?:\/|$)/u, 'browser bundle must not require a Node-only dependency')
+      return require(id)
+    }))
   } }
   runInNewContext(readFileSync(new URL('../lib/client.js', import.meta.url), 'utf8'), {
     window: dom.window, self: dom.window, document: dom.window.document, navigator: dom.window.navigator,
@@ -86,7 +89,7 @@ test('Office preview edit opens a session right tab and saves spreadsheet cell u
         : method.endsWith('/edit') ? { ok: true, value: { saved: true, view: { kind: 'xlsx', readOnly: false, blocks: [{ id: '["Sheet1","A1"]', label: 'Sheet1!A1', text: '新值', editable: true }], totalBlocks: 1, truncated: false } } }
           : { ok: true, value: { saved: true } } } } },
     sessions: { binding: () => ({ eventSource }), list: { getSnapshot: () => ({ byId: { one: { cwd: 'C:\\workspace' } } }) } },
-    sidebarRight: { mounted: { getSnapshot: () => 'one' }, openTabIn: (sessionId, kind, options) => openedTabs.push({ sessionId, kind, options }), registerCloseHandler: (_kind, handler) => { closeHandler = handler; return () => {} } },
+    sidebarRight: { mounted: { getSnapshot: () => 'one' }, openResourceIn: (sessionId, address) => openedTabs.push({ sessionId, address }), registerCloseHandler: (_kind, handler) => { closeHandler = handler; return () => {} } },
     sidebarRightTabs: { register: definition => { tabTypes.push(definition); return () => {} } },
     effect: callback => callback(),
   })
@@ -98,6 +101,16 @@ test('Office preview edit opens a session right tab and saves spreadsheet cell u
   assert(autoOpen)
   assert.deepEqual(tabTypes.map(item => item.kind), ['seal-workspace-office'])
   assert.equal(tabTypes[0].keepMounted, true)
+  const definition = tabTypes[0]
+  assert.equal(definition.priority, 'extension')
+  for (const name of ['memo.docx', 'sheet.XLSX', 'deck.pptx', 'report%20%23%3F.docx']) {
+    const address = `dsh-resource://file/session/one/C:/workspace/${name}`
+    assert.equal(definition.canOpen(address), true)
+  }
+  assert.equal(definition.title('dsh-resource://file/session/one/C:/workspace/report%20%23%3F.docx'), 'report #?.docx')
+  for (const address of ['dsh-resource://file/session/one/C:/workspace/plain.txt', 'dsh-resource://file/absolute/C:/workspace/memo.docx', 'https://example.com/memo.docx'])
+    assert.equal(definition.canOpen(address), false)
+
   await act(async () => root.render(React.createElement(autoOpen.component, {
     sessionId: 'one', turn: { turn: 7, data: new Map([['deliverables', { produced: [{ seq: 5, path: 'generated.docx' }] }]]) }, seq: 8,
   })))
@@ -107,7 +120,7 @@ test('Office preview edit opens a session right tab and saves spreadsheet cell u
     for (const listener of eventListeners) listener()
     await Promise.resolve()
   })
-  assert.equal(JSON.stringify(openedTabs[0]), JSON.stringify({ sessionId: 'one', kind: 'seal-workspace-office', options: { params: { sessionId: 'one', path: 'C:\\workspace\\generated.docx' } } }))
+  assert.equal(JSON.stringify(openedTabs[0]), JSON.stringify({ sessionId: 'one', address: 'dsh-resource://file/session/one/C:/workspace/generated.docx' }))
   assert.equal(openedTabs.length, 1)
   change = { kind: 'replace', entries: [] }
   await act(async () => root.render(React.createElement(autoOpen.component, {
@@ -119,12 +132,12 @@ test('Office preview edit opens a session right tab and saves spreadsheet cell u
     for (const listener of eventListeners) listener()
     await new Promise(resolve => setTimeout(resolve, 0))
   })
-  assert.equal(openedTabs[1]?.options.params.path, 'C:\\workspace\\generated-from-shell.docx')
+  assert.equal(openedTabs[1]?.address, 'dsh-resource://file/session/one/C:/workspace/generated-from-shell.docx')
   await act(async () => root.render(React.createElement(action.component, { absolutePath: 'C:\\workspace\\memo.xlsx', sessionId: 'one' })))
   const button = document.querySelector('button')
   assert.equal(button?.textContent, '编辑')
   await act(async () => button.click())
-  assert.equal(JSON.stringify(openedTabs[2]), JSON.stringify({ sessionId: 'one', kind: 'seal-workspace-office', options: { params: { sessionId: 'one', path: 'C:\\workspace\\memo.xlsx' } } }))
+  assert.equal(JSON.stringify(openedTabs[2]), JSON.stringify({ sessionId: 'one', address: 'dsh-resource://file/session/one/C:/workspace/memo.xlsx' }))
   await act(async () => root.render(React.createElement(action.component, { absolutePath: 'C:\\workspace\\plain.txt', sessionId: 'one' })))
   assert.equal(document.querySelector('button'), null)
   await act(async () => root.render(React.createElement(action.component, { absolutePath: 'C:\\workspace\\memo.xlsx' })))
@@ -147,7 +160,7 @@ test('Office preview edit opens a session right tab and saves spreadsheet cell u
   await act(async () => [...document.querySelectorAll('button')].find(item => item.textContent === '关闭').click())
   assert.equal(closed, true)
   await act(async () => root.render(React.createElement(editorTab.component, {
-    sessionId: 'one', useTabInfo: () => ({ tab: { id: 'office-tab-2', navigation: { params: { path: 'C:\\workspace\\memo.docx' } }, actions: { close: () => { closed = true } } } }),
+    sessionId: 'one', useTabInfo: () => ({ tab: { id: 'office-tab-2', contentId: 'dsh-resource://file/session/one/C:/workspace/memo.docx', navigation: {} , actions: { close: () => { closed = true } } } }),
   })))
   assert.match(document.body.textContent, /工作区 Word 内容/u)
   assert.equal(document.querySelector('.seal-workspace-word-paper .tiptap')?.getAttribute('contenteditable'), 'true')
@@ -159,4 +172,12 @@ test('Office preview edit opens a session right tab and saves spreadsheet cell u
   await act(async () => new Promise(resolve => setTimeout(resolve, 0)))
   assert.equal(calls.find(item => item.method.endsWith('/save'))?.payload?.leaseId, 'word-lease')
   assert.equal(calls.find(item => item.method.endsWith('/save'))?.payload?.data, 'AQID')
+  assert.equal(document.querySelector('.seal-workspace-word-tools').open, false)
+  assert.equal(document.querySelector('.seal-workspace-word-tools > summary').textContent, '格式与插入')
+  const opensBeforeForeignFile = calls.filter(item => item.method.endsWith('/open')).length
+  await act(async () => root.render(React.createElement(editorTab.component, {
+    sessionId: 'one', useTabInfo: () => ({ tab: { id: 'foreign', contentId: 'dsh-resource://file/session/two/C:/workspace/memo.docx', navigation: {} } }),
+  })))
+  assert.match(document.querySelector('[role="alert"]').textContent, /文档地址不可用/u)
+  assert.equal(calls.filter(item => item.method.endsWith('/open')).length, opensBeforeForeignFile)
 })

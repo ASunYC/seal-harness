@@ -185,7 +185,9 @@ export function WordEditor({ target, api, setDirty, close }) {
     <DocumentHeader title={title} path={target.path} format="docx" status={status} dirty={dirty} saving={saving}
       canSave={ready && dirty && !saving} canExport={ready && !dirty && !saving}
       onSave={() => void save()} onExport={() => void download()} onClose={leave} />
-    {editor && <WordRibbon editor={editor} disabled={!ready || saving} onImage={() => imageInput.current?.click()} onError={setError} />}
+    {editor && <details className="seal-workspace-word-tools"><summary>格式与插入</summary>
+      <WordRibbon editor={editor} disabled={!ready || saving} onImage={() => imageInput.current?.click()} onError={setError} />
+    </details>}
     <input ref={imageInput} type="file" accept="image/png,image/jpeg,image/gif" hidden onChange={event => void insertImage(event)} />
     {error && <p className="seal-workspace-word-error" role="alert">{error}</p>}
     <div className="seal-workspace-word-paper-scroll"><div className="seal-workspace-word-paper" style={pageStyle}><EditorContent editor={editor} /></div></div>

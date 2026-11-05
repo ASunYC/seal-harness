@@ -79,10 +79,13 @@ local-data v7 统一创建用量及 Runner 表，不允许插件另建数据库�
 
 `office` 保留账号文档库 Host 及创建、导入、编辑、版本和导出 RPC，不再注册独立的聊天侧栏页面。原文档库 Client 组件仅供回归测试，不能作为用户当前的 Office 入口；修改文档库行为时仍须验证账号隔离、文件保留和结构化编辑限制。
 
-工作区 Office 由 `workspace-word` 插件接入 DSH 的文件树、DOCX/XLSX/PPTX 文档预览和聊天轮次公开 slot。文件预览中的“编辑”以及本轮成功生成的 Office 文件在右侧打开会话页签，不占用聊天整页导航；DOCX 使用 Stratex 的 Word 模型与浏览器 GenOffice Worker，XLSX/PPTX 使用本地 GenOffice core 的有界结构化编辑。文件树当前目录可新建或导入三格式，编辑页签可保存原文件或导出字节。Host 限定当前本机会话工作区、账号 epoch、普通文件、大小和版本冲突，新建/导入拒绝覆盖。工作区文件不进入账号文档库、不创建库内版本；`office` Host 继续提供受限 worker 转换接缝。不能把结构化编辑宣称为 Stratex 完整的表格/演示渲染。
+工作区 Office 由 `workspace-word` 插件接入 DSH 的文件树、DOCX/XLSX/PPTX 文档预览和聊天轮次公开 slot。通过公开 sidebarRightTabs 的资源 patterns/canOpen 认领会话 DOCX/XLSX/PPTX，聊天卡片、文件树和本轮成功生成统一按官方 file resource 地址打开并去重；不能让卡片再次落入依赖 Office→PDF 的预览。既有文件预览中的“编辑”保留兼容入口，右侧资源页签继续使用同一未保存关闭保护。格式工具可展开且分组换行，窄侧栏不得依赖横向滚动。Office 文件在右侧打开会话页签，不占用聊天整页导航；DOCX 使用 Stratex 的 Word 模型与浏览器 GenOffice Worker，XLSX/PPTX 使用本地 GenOffice core 的有界结构化编辑。文件树当前目录可新建或导入三格式，编辑页签可保存原文件或导出字节。Host 限定当前本机会话工作区、账号 epoch、普通文件、大小和版本冲突，新建/导入拒绝覆盖。工作区文件不进入账号文档库、不创建库内版本；`office` Host 继续提供受限 worker 转换接缝。不能把结构化编辑宣称为 Stratex 完整的表格/演示渲染。
 
 技能及连接器管理页和会话选择器共用 capability-shared/src/directory.js 的系统/个人规则。技能origin.kind为system/store时属系统，其余管理技能属个人；无管理记录的bundled/runtime属系统，工作区/用户目录属个人。连接器有catalogId或source时属系统，其余属个人。分类不改变运行时source、技能插入或连接器选择/权限。
 
 原生会话技能目录DTO不含source。通过产品只读sessionSources路由从公开scoped skills服务读取来源，以name/path匹配目录；不按名称或路径猜测来源，不读取技能正文。查询绑定当前账号epoch、请求及插件生命周期，冷会话释放observation与preset lease；不占用技能管理写入队列，避免preset加载重入死锁。
 
 Token页的直接子元素不参与纵向flex压缩，纵向滚动由页面承载，汇总表仅需横向溢出能力，不能压成独立小滚动框。知识库头部刷新/设置使用34px图标按钮，保留aria-label及title悬浮提示。远程主机不提供本机屏幕控制或mobile占位入口。
+
+
+Office 资源页签从 `useTabInfo().tab.contentId` 读取官方 file address，不能从 navigation 中虚构 address 字段；自动打开和手动卡片必须使用同一 sessionFileAddress/openResourceIn 路径。纯工具包 `@deepseek-ai/dsh-util-workspace-path` 在 workspace-word 浏览器产物中显式 alwaysBundle，不向 DSH Client Loader 留下无 Client 入口的运行时 require。回归应模拟真实 tab.contentId，并拒绝浏览器产物新增非 React 外部依赖。真实检查覆盖新生成→自动打开、关闭→卡片/正文链接重开、重复打开去重、未保存取消关闭及落盘后重开；展开的格式工具在360/420/650px宽度不得横向溢出。
