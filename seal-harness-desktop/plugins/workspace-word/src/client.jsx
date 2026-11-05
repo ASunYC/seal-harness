@@ -3,9 +3,11 @@ import { parseFileAddress, sessionFileAddress } from '@deepseek-ai/dsh-util-work
 import { WordEditor } from './word-editor.jsx'
 import { BlockEditor } from './block-editor.jsx'
 import { WorkspaceFileActions } from './workspace-file-actions.jsx'
+import { RightGuide } from './right-guide.jsx'
 import { changedOfficePath, completedTurnFromChange, generatedOfficePath, workspaceOfficePath } from './generated-office.js'
 import { styles } from './styles.js'
 import { workspaceFileActionStyles } from './workspace-file-actions-styles.js'
+import { rightGuideStyles } from './right-guide-styles.js'
 
 export const inject = ['slots', 'connection', 'sessions', 'sidebarRight', 'sidebarRightTabs']
 
@@ -24,7 +26,7 @@ export function apply(ctx) {
   ctx.effect(() => {
     const element = document.createElement('style')
     element.dataset.sealWorkspaceWord = ''
-    element.textContent = styles + workspaceFileActionStyles
+    element.textContent = styles + workspaceFileActionStyles + rightGuideStyles
     document.head.append(element)
     return () => element.remove()
   }, 'seal-harness-workspace-word: styles')
@@ -67,6 +69,11 @@ export function apply(ctx) {
     name: 'sidebar.right.pane.tab', key: tabId,
     inject: sessionId => ({ sessionId }),
   }, EditorTab))
+  ctx.slots.inject('sidebar.right.tab.guide', () => ctx.slots.register({
+    name: 'sidebar.right.tab.guide', id: 'seal-right-workspace-guide', order: 20,
+    select: () => ({}),
+    inject: sessionId => ({ sessionId, tabs: ctx.sidebarRightTabs, right: ctx.sidebarRight }),
+  }, RightGuide))
 
   function EditAction({ absolutePath, sessionId }) {
     if (!sessionId || !officeFile.test(absolutePath ?? '')) return null

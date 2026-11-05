@@ -68,7 +68,16 @@ test('Office preview edit opens a session right tab and saves spreadsheet cell u
   })
   const entries = []
   const openedTabs = []
+  const openedKinds = []
   const tabTypes = []
+  const guideEntries = [
+    { kind: 'files', id: 'files', title: () => '工作区文件', description: () => '浏览会话工作区的文件' },
+    { kind: 'browser', id: 'browser', title: () => '浏览器', description: () => '浏览网页' },
+  ]
+  const openTabInventory = [
+    { sessionId: 'one', tabId: 'office-1', kind: 'seal-workspace-office', contentId: 'dsh-resource://file/session/one/C:/workspace/memo.docx' },
+    { sessionId: 'two', tabId: 'office-2', kind: 'seal-workspace-office', contentId: 'dsh-resource://file/session/two/C:/workspace/private.docx' },
+  ]
   const calls = []
   let closeHandler
   let change = { kind: 'replace', entries: [] }
@@ -89,16 +98,55 @@ test('Office preview edit opens a session right tab and saves spreadsheet cell u
         : method.endsWith('/edit') ? { ok: true, value: { saved: true, view: { kind: 'xlsx', readOnly: false, blocks: [{ id: '["Sheet1","A1"]', label: 'Sheet1!A1', text: '新值', editable: true }], totalBlocks: 1, truncated: false } } }
           : { ok: true, value: { saved: true } } } } },
     sessions: { binding: () => ({ eventSource }), list: { getSnapshot: () => ({ byId: { one: { cwd: 'C:\\workspace' } } }) } },
-    sidebarRight: { mounted: { getSnapshot: () => 'one' }, openResourceIn: (sessionId, address) => openedTabs.push({ sessionId, address }), registerCloseHandler: (_kind, handler) => { closeHandler = handler; return () => {} } },
-    sidebarRightTabs: { register: definition => { tabTypes.push(definition); return () => {} } },
+    sidebarRight: { mounted: { getSnapshot: () => 'one' }, openTabs: { getSnapshot: () => openTabInventory, subscribe: () => () => {} }, openResourceIn: (sessionId, address) => openedTabs.push({ sessionId, address }), registerCloseHandler: (_kind, handler) => { closeHandler = handler; return () => {} } },
+    sidebarRightTabs: { register: definition => { tabTypes.push(definition); return () => {} }, guide: () => guideEntries, subscribe: () => () => {} },
     effect: callback => callback(),
   })
   const action = entries.find(entry => entry.meta.id === 'seal-workspace-word-edit')
   const editorTab = entries.find(entry => entry.meta.name === 'sidebar.right.pane.tab')
   const autoOpen = entries.find(entry => entry.meta.id === 'seal-workspace-office-auto-open')
+  const guide = entries.find(entry => entry.meta.name === 'sidebar.right.tab.guide')
   assert(action)
   assert(editorTab)
   assert(autoOpen)
+  assert(guide)
+  assert.equal(Object.keys(guide.meta.select()).length, 0)
+  await act(async () => root.render(React.createElement(guide.component, {
+    ...guide.meta.inject('one'),
+    useTabInfo: () => ({ tab: { actions: { openTab: (kind, options) => openedKinds.push({ kind, options }) } } }),
+  })))
+  assert.match(document.body.textContent, /工作区文件/u)
+  assert.match(document.body.textContent, /memo.docx/u)
+  assert.doesNotMatch(document.body.textContent, /private.docx/u)
+  const more = document.querySelector('.seal-right-guide-more')
+  await act(async () => more.querySelector('summary').click())
+  assert.equal(more.open, true)
+  const descriptionsToggle = [...more.querySelectorAll('button')].find(item => item.textContent.includes('显示工具说明'))
+  await act(async () => descriptionsToggle.click())
+  assert.equal(descriptionsToggle.getAttribute('aria-pressed'), 'false')
+  assert.equal(document.querySelector('.seal-right-guide-tool-copy small'), null)
+  const documentsToggle = [...more.querySelectorAll('button')].find(item => item.textContent.includes('显示已打开文档'))
+  await act(async () => documentsToggle.click())
+  assert.equal(document.querySelector('.seal-right-guide-documents'), null)
+  await act(async () => documentsToggle.click())
+  assert.match(document.querySelector('.seal-right-guide-documents').textContent, /memo.docx/u)
+  await act(async () => document.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })))
+  assert.equal(more.open, false)
+  await act(async () => more.querySelector('summary').click())
+  await act(async () => document.body.dispatchEvent(new dom.window.Event('pointerdown', { bubbles: true })))
+  assert.equal(more.open, false)
+  await act(async () => document.querySelector('.seal-right-guide-tool').click())
+  assert.equal(openedKinds[0].kind, 'files')
+  assert.equal(openedKinds[0].options.replaceTab, true)
+  await act(async () => document.querySelector('.seal-right-guide-document').click())
+  assert.equal(openedTabs.at(-1)?.address, openTabInventory[0].contentId)
+  await act(async () => document.querySelector('.seal-right-guide-address button').click())
+  assert.equal(openedKinds.at(-1)?.kind, 'browser')
+  const addressInput = document.querySelector('.seal-right-guide-address input')
+  await act(async () => Simulate.change(addressInput, { target: { value: 'https://example.com' } }))
+  await act(async () => Simulate.submit(document.querySelector('.seal-right-guide-address')))
+  assert.equal(openedKinds.at(-1)?.options.params?.url, 'https://example.com')
+  openedTabs.length = 0
   assert.deepEqual(tabTypes.map(item => item.kind), ['seal-workspace-office'])
   assert.equal(tabTypes[0].keepMounted, true)
   const definition = tabTypes[0]

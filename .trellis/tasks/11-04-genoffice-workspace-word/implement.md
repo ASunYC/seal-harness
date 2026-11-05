@@ -22,3 +22,14 @@
 - 布局实测：650px侧栏，工具栏clientWidth/scrollWidth均650；420px视口内工具栏415/415；360px视口内355/355。所有按钮、fieldset和select均无越界。头部宽栏由约141px降至102px；窄栏132px。恢复原视口；截图 .build/office-fix-auto-open-final.png、office-fix-reopen-saved-final.png、office-fix-expanded-wide.png、office-fix-expanded-420.png、office-fix-expanded-360.png；指标 office-fix-layout-metrics.json。
 - 环境边界：系统默认TEMP为ADMINI~1短路径，未改动的两项Host新建测试曾报outsideWorkspace；只将验证进程TEMP/TMP设为用户长路径Temp后，完整检查及11项Office回归通过。未改系统配置、Host授权边界或这两项用例。Windows短路径工作区兼容性留待专项处理。
 - 限制：没有验证macOS/Linux、复杂Word排版、Excel/PPT真实窗口，也未进行Codex窗口像素级对照。此次采用右侧文件页签、紧凑操作区及按需格式工具的交互。验证阶段未提交、推送或运行自动提交/归档脚本。用户随后明确授权本机提交并推送；沿用既有线上 main 目标，不打包、部署或操作其他工作机。
+
+## 2026-11-05 右侧开始页补齐
+
+- 用户指出之前仅实现 Office 文件编辑页签，没有实现 Codex 风格的右侧开始页。使用 DSH 公开的 `sidebar.right.tab.guide` chain 插槽替换正文，保留框架页签栏、拆分和收起操作。
+- 从 `sidebarRightTabs.guide()` 读取实际安装的工具入口；浏览器网址提交到原生 browser 页签；从 `sidebarRight.openTabs` 读取当前会话已打开的 Office 文档并可切回。文档列表不宣称跨会话历史。
+- 增加开始页工具、浏览器网址和文档切换回归。`corepack yarn seal-harness:build`、`corepack yarn seal-harness:check`、`node --test seal-harness-desktop/plugins/workspace-word/tests/client.test.mjs` 均通过；后者在扩充网址断言后再次通过。未做真实窗口视觉对照，不修改并发存在的 Blender/连接器等工作区文件。
+
+### 更多设置
+
+- 用户补充 Codex 参考图的网址栏右侧“⋯”菜单。DSH 原生 Browser 当前公开工具栏只有后退、前进、刷新、地址跳转与外部打开；Seal 开始页增加真实工具入口和工具说明、已打开文档区的显示开关，未复制无实现的浏览器菜单项。
+- 菜单支持点击外部或 Escape 收起；Client 回归 1/1 通过。`corepack yarn seal-harness:build` 和 `corepack yarn seal-harness:check` 均通过，检查包含 22 个业务插件及 Electron Profile 启动/HMR。已重启本机 Seal，新 Electron 主进程正常启动；用户将窗口最小化，严格后台 CUA 无法点击“+”或抓取页面，故新菜单未做原生窗口视觉确认。

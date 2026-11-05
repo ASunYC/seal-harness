@@ -89,3 +89,7 @@ Token页的直接子元素不参与纵向flex压缩，纵向滚动由页面承�
 
 
 Office 资源页签从 `useTabInfo().tab.contentId` 读取官方 file address，不能从 navigation 中虚构 address 字段；自动打开和手动卡片必须使用同一 sessionFileAddress/openResourceIn 路径。纯工具包 `@deepseek-ai/dsh-util-workspace-path` 在 workspace-word 浏览器产物中显式 alwaysBundle，不向 DSH Client Loader 留下无 Client 入口的运行时 require。回归应模拟真实 tab.contentId，并拒绝浏览器产物新增非 React 外部依赖。真实检查覆盖新生成→自动打开、关闭→卡片/正文链接重开、重复打开去重、未保存取消关闭及落盘后重开；展开的格式工具在360/420/650px宽度不得横向溢出。
+
+右侧开始页可由 `workspace-word` 通过公开 `sidebar.right.tab.guide` chain 插槽替换正文；DSH 继续拥有页签栏、布局和浏览器实现。工具卡片从 `sidebarRightTabs.guide()` 读取有效注册项，网址入口只在 browser 类型存在时显示，已打开文档从 `sidebarRight.openTabs` 按会话和 Office kind 筛选。标题应明确区分“已打开”与历史“最近”，不能用占位应用伪造推荐列表；点击文档用 `openResourceIn` 回到同一资源页签。
+
+开始页网址栏右端的“更多设置”仅操作开始页本身及已注册的右侧工具，不能呈现 DSH Browser 尚未实现的网页查找、打印、缩放或浏览历史。菜单需可键盘访问、支持外部点击及 Escape 收起；不改 Browser 原生工具栏或浏览器安全边界。
