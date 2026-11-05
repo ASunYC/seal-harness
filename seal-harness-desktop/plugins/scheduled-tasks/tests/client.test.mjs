@@ -40,6 +40,7 @@ test('scheduled task content uses the existing rail and refreshes native session
   const root = require('react-dom/client').createRoot(document.querySelector('main'))
   t.after(async () => { await act(async () => root.unmount()); for (const dispose of disposers) dispose?.(); dom.window.close(); Object.assign(globalThis, previous); delete globalThis.IS_REACT_ACT_ENVIRONMENT })
   await act(async () => root.render(React.createElement(entry.Panel)))
+  await act(async () => document.querySelector('.seal-schedules__row').click())
   const open = [...document.querySelectorAll('button')].find(button => button.textContent === '打开最近会话')
   assert(open)
   await act(async () => open.click())

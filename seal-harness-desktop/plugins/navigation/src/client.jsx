@@ -125,7 +125,7 @@ export function apply(ctx) {
       { id: HOME, label: '办公', icon: 'office' },
       { id: CAPABILITIES, label: '能力', icon: 'apps' },
       ...entries.filter(entry => entry.primary && entry.id === 'knowledge').map(({ id, label, icon }) => ({ id, label, icon })),
-      { id: NATIVE_SCHEDULES, label: '自动化任务', icon: 'schedules' },
+      { id: SCHEDULES, label: '自动化任务', icon: 'schedules' },
       ...entries.filter(entry => entry.primary && entry.id !== 'knowledge').map(({ id, label, icon }) => ({ id, label, icon })),
       { id: SPACES, label: '空间', icon: 'spaces' },
     ]
@@ -135,7 +135,7 @@ export function apply(ctx) {
       button.click()
     }
     return <><nav className="seal-nav-rail" aria-label="一级导航" data-home-active={homeActive} data-capabilities-active={capabilitiesActive}>
-      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : item.id === CAPABILITIES ? capabilitiesActive ? 'page' : undefined : activePanelId === item.id ? 'page' : undefined} onClick={() => { resources.leaveDecision(); if (item.id === HOME) resources.select(null); ctx.layout.selectPanel(item.id === HOME ? null : item.id === CAPABILITIES ? 'plugins' : item.id) }}><NavGlyph name={item.icon} /></button>)}
+      {items.map(item => <button key={item.label} type="button" title={item.label} aria-label={item.label} aria-current={item.id === HOME ? homeActive ? 'page' : undefined : item.id === CAPABILITIES ? capabilitiesActive ? 'page' : undefined : activePanelId === item.id || item.id === SCHEDULES && activePanelId === NATIVE_SCHEDULES ? 'page' : undefined} onClick={() => { resources.leaveDecision(); if (item.id === HOME) resources.select(null); ctx.layout.selectPanel(item.id === HOME ? null : item.id === CAPABILITIES ? 'plugins' : item.id) }}><NavGlyph name={item.icon} /></button>)}
       <div className="seal-nav-rail__footer">
         <button type="button" title="设置" aria-label="设置" aria-current={activePanelId === SETTINGS_PANEL_ID ? 'page' : undefined} onClick={() => { if (!openSettings) throw new Error('设置入口未加载。'); openSettings() }}><NavGlyph name="settings" /></button>
         <button type="button" title="账户" aria-label="账户" aria-current={activePanelId === 'seal-harness-user' ? 'page' : undefined} onClick={() => activateExisting('.seal-harness-user-footer', '账户')}><NavGlyph name="account" /></button>

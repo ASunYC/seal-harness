@@ -20,7 +20,7 @@ export function apply(ctx) {
   function Panel() {
     const status = useSyncExternalStore(ctx.sealHarnessAuthClient.subscribe, ctx.sealHarnessAuthClient.getStatus)
     const workspaces = useSyncExternalStore(listener => ctx.workspaces.list.subscribe(listener), () => ctx.workspaces.list.getSnapshot())
-    return status?.user ? <ScheduledTasksPanel key={`${status.accountId}:${status.epoch}`} api={api} workspaces={workspaces.items} openSession={openSession} /> : <main className="seal-schedules"><h1>定时任务</h1><p>请先登录本地账号。</p></main>
+    return status?.user ? <ScheduledTasksPanel key={`${status.accountId}:${status.epoch}`} api={api} workspaces={workspaces.items} openSession={openSession} openReminders={() => ctx.layout.selectPanel('schedules')} /> : <main className="seal-schedules"><h1>定时任务</h1><p>请先登录本地账号。</p></main>
   }
   ctx.effect(() => {
     const element = document.createElement('style')

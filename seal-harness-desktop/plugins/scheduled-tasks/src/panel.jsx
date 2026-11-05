@@ -24,10 +24,14 @@ function payload(form) {
     workspaceId: form.workspaceId, enabled: form.enabled, schedule }
 }
 
-export function ScheduledTasksPanel({ api, workspaces, openSession }) {
+export function ScheduledTasksPanel({ api, workspaces, openSession, openReminders }) {
   const [tasks, setTasks] = useState([]), [loading, setLoading] = useState(true)
   const [form, setForm] = useState(null), [busy, setBusy] = useState(false), [error, setError] = useState('')
   const [historyId, setHistoryId] = useState(null), [runs, setRuns] = useState([]), [deleteId, setDeleteId] = useState(null)
+  const [selectedId, setSelectedId] = useState(null), [search, setSearch] = useState(''), [filter, setFilter] = useState('all')
+  const filtered = tasks.filter(task => (filter === 'all' || task.enabled === (filter === 'active')) && `${task.name} ${task.prompt}`.toLowerCase().includes(search.trim().toLowerCase()))
+  const selected = filtered.find(task => task.id === selectedId)
+  const create = () => { setForm(blank(workspaces)); setDeleteId(null); setError('') }
   const refresh = async () => {
     const result = await api('list')
     setTasks(result)
@@ -58,17 +62,22 @@ export function ScheduledTasksPanel({ api, workspaces, openSession }) {
     event.preventDefault()
     void action(async () => {
       if (form.kind === 'weekly' && !form.weekdays.length) throw new Error('请至少选择一天。')
-      await api('save', payload(form)); setForm(null)
+      const saved = await api('save', payload(form)); setSelectedId(saved.id); setSearch(''); setFilter('all'); setForm(null)
     })
   }
   return <main className="seal-schedules" data-seal-nav-panel="schedules">
-    <header className="seal-schedules__header"><div><p>SEAL HARNESS / AUTOMATIONS</p><h1>定时任务</h1><span>把重复的工作交给计划，每次执行都会创建独立会话。</span></div>
-      <button className="seal-schedules__primary" disabled={busy || !workspaces.length} onClick={() => { setForm(blank(workspaces)); setDeleteId(null) }}>创建任务</button></header>
-    <p className="seal-schedules__hint">应用运行且账号已登录时执行；关闭、休眠或退出登录期间错过的计划不会补跑。使用当前默认模型与权限策略，超过 30 分钟将请求停止。</p>
-    {!workspaces.length && <p role="status">请先在首页创建工作区，再创建定时任务。</p>}
+    <aside className="seal-schedules__sidebar">
+      <header className="seal-schedules__header"><h1>自动化任务</h1><button className="seal-schedules__primary" disabled={busy || !workspaces.length} onClick={create}>＋ 新建</button></header>
+      <div className="seal-schedules__filters" role="group" aria-label="任务状态">{[['all','全部'],['active','已开启'],['inactive','已停用']].map(([value,label]) => <button key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</button>)}</div>
+      <label className="seal-schedules__search"><span>搜索自动化任务</span><input type="search" placeholder="搜索自动化任务" value={search} onChange={event => setSearch(event.target.value)} /></label>
+      <div className="seal-schedules__catalog">{loading ? <p role="status">正在读取任务…</p> : filtered.length ? filtered.map(task => <button className="seal-schedules__row" key={task.id} aria-current={selectedId === task.id && !form ? 'page' : undefined} onClick={() => { setSelectedId(task.id); setForm(null); setDeleteId(null); setError('') }}><strong>{task.name}</strong><span>{task.enabled ? describe(task.schedule) : '已停用'}</span><small>下次执行：{task.enabled ? date(task.nextRunAt) : '—'}</small></button>) : <section className="seal-schedules__catalog-empty"><p>{tasks.length ? '没有匹配的自动化任务' : '还没有自动化任务'}</p><button disabled={busy || !workspaces.length} onClick={create}>新建自动化任务</button></section>}</div>
+      {openReminders && <button className="seal-schedules__reminders" onClick={openReminders}>查看会话提醒</button>}
+    </aside>
+    <section className="seal-schedules__content" aria-label="自动化任务内容">
+    {!workspaces.length && <p role="status">请先在办公页面创建工作区，再创建定时任务。</p>}
     {error && <div className="seal-schedules__error" role="alert">{error}<button disabled={busy} onClick={() => action(refresh)}>重试</button></div>}
     {form && <section className="seal-schedules__editor" role="dialog" aria-label={form.id ? '编辑定时任务' : '创建定时任务'}>
-      <h2>{form.id ? '编辑任务' : '创建任务'}</h2><form onSubmit={submit}>
+      <h2>{form.id ? '编辑任务' : '新建自动化任务'}</h2><p className="seal-schedules__muted">设置执行内容和时间，保存后按计划运行。</p><form onSubmit={submit}>
         <label>任务名称<input required maxLength={120} value={form.name} onChange={event => change('name', event.target.value)} placeholder="例如：每天检查项目状态" /></label>
         <label>工作区<select required value={form.workspaceId} onChange={event => change('workspaceId', event.target.value)}><option value="">选择工作区</option>{workspaces.map(workspace => <option key={workspace.workspaceId} value={workspace.workspaceId}>{workspace.title || workspace.path}</option>)}</select></label>
         <label className="seal-schedules__wide">执行内容<textarea required rows={5} maxLength={30000} value={form.prompt} onChange={event => change('prompt', event.target.value)} placeholder="描述每次执行时要完成的工作，以及期望输出。" /></label>
@@ -80,8 +89,8 @@ export function ScheduledTasksPanel({ api, workspaces, openSession }) {
         <label className="seal-schedules__check seal-schedules__wide"><input type="checkbox" checked={form.enabled} onChange={event => change('enabled', event.target.checked)} />保存后启用计划</label>
         <div className="seal-schedules__actions seal-schedules__wide"><button type="button" disabled={busy} onClick={() => setForm(null)}>取消</button><button className="seal-schedules__primary" disabled={busy} type="submit">{busy ? '保存中…' : '保存任务'}</button></div>
       </form></section>}
-    {loading ? <p role="status">正在读取任务…</p> : !tasks.length ? <section className="seal-schedules__empty"><h2>当前没有定时任务</h2><p>创建一个计划，指定工作区和执行内容。</p></section> :
-      <div className="seal-schedules__list">{tasks.map(task => <article key={task.id} className="seal-schedules__task"><div className="seal-schedules__task-title"><h2>{task.name}</h2><span className="seal-schedules__badge">{task.enabled ? '已启用' : '已暂停'}</span></div>
+    {!form && (!selected ? <section className="seal-schedules__empty"><h2>安排下一项工作</h2><p>选择左侧任务查看详情，或直接新建自动化定时任务。</p></section> :
+      <div className="seal-schedules__list">{[selected].map(task => <article key={task.id} className="seal-schedules__task"><div className="seal-schedules__task-title"><h2>{task.name}</h2><span className="seal-schedules__badge">{task.enabled ? '已启用' : '已暂停'}</span></div>
         <p>{describe(task.schedule)}</p><p className="seal-schedules__muted">工作区：{workspaces.find(workspace => workspace.workspaceId === task.workspaceId)?.title || '工作区已移除'} · 下次执行：{task.enabled ? date(task.nextRunAt) : '—'}</p>
         <p className="seal-schedules__prompt">{task.prompt}</p>
         {task.lastRun && <p className="seal-schedules__muted">最近执行：{statusNames[task.lastRun.status]} · {date(task.lastRun.startedAt)} {task.lastRun.error && <span>{task.lastRun.error}</span>}</p>}
@@ -95,6 +104,8 @@ export function ScheduledTasksPanel({ api, workspaces, openSession }) {
         </div>
         {deleteId === task.id && <div role="alert"><p>删除计划与执行记录，已创建的会话仍会保留。</p><button disabled={busy} onClick={() => action(async () => { await api('delete', { id: task.id }); setDeleteId(null); if (historyId === task.id) { setHistoryId(null); setRuns([]) } })}>确认删除</button><button onClick={() => setDeleteId(null)}>取消删除</button></div>}
         {historyId === task.id && <section className="seal-schedules__history" aria-label={`${task.name}执行记录`}><h3>执行记录</h3>{!runs.length ? <p>尚无执行记录。</p> : runs.map(run => <div className="seal-schedules__run" key={run.id}><div><strong>{statusNames[run.status]}</strong><span>{date(run.startedAt)}{run.finishedAt ? ` → ${date(run.finishedAt)}` : ''}</span>{run.error && <p>{run.error}</p>}</div>{run.sessionId && <button disabled={busy} onClick={() => action(() => openSession(run.sessionId))}>打开会话</button>}</div>)}</section>}
-      </article>)}</div>}
+      </article>)}</div>)}
+    <p className="seal-schedules__hint">应用运行且账号已登录时执行；关闭、休眠或退出登录期间错过的计划不会补跑。每次执行创建独立会话，使用默认模型与权限策略；超过 30 分钟将请求停止。</p>
+    </section>
   </main>
 }
