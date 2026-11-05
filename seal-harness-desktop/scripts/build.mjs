@@ -16,7 +16,7 @@ export const product = {
   displayVersion: desktopRequire('@deepseek-ai/dsh/package.json').version,
 }
 export const capabilityPlugins = ['store', 'connectors', 'skills', 'experts']
-export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop', 'acp', 'superagent', 'office', 'computer-use']
+export const productPlugins = ['local-data', 'identity', 'user', 'navigation', 'scheduled-tasks', 'organization', ...capabilityPlugins, 'session-context-selector', 'image-generation', 'apps', 'weknora', 'token-stats', 'knowledge', 'remote-desktop', 'acp', 'superagent', 'office', 'workspace-word', 'computer-use']
 
 export function linkProductDependencies() {
   const link = join(productRoot, 'node_modules')
@@ -56,6 +56,12 @@ export async function buildProductPlugins() {
     rmSync(join(cwd, 'lib'), { recursive: true, force: true })
     if (folder === 'office') await (await import(pathToFileURL(join(cwd, 'scripts/build-core.mjs')).href)).buildCore()
     const common = { config: false, cwd, outDir: join(cwd, 'lib'), clean: false, dts: false, sourcemap: true }
+    let wordWorkerSource
+    if (folder === 'workspace-word') {
+      await build({ ...common, entry: { 'docx-worker': 'src/word-worker.ts' }, format: 'esm', platform: 'browser', target: 'es2022',
+        deps: { alwaysBundle: ['utif2'] }, outputOptions: { entryFileNames: 'docx-worker.js' } })
+      wordWorkerSource = readFileSync(join(cwd, 'lib/docx-worker.js'), 'utf8')
+    }
     if (folder === 'weknora') cpSync(join(cwd, 'upstream'), join(cwd, 'lib/upstream'), { recursive: true })
     await build({ ...common, entry: { index: 'src/index.js', ...(folder === 'experts' ? { runtime: 'src/runtime.js' } : {}), ...(folder === 'office' ? { worker: 'src/worker.js' } : {}) }, format: 'esm', platform: 'node', fixedExtension: false,
       deps: { neverBundle: [/^@deepseek-ai\//, /^@seal-harness\//, '@agentclientprotocol/sdk', 'zod', 'yaml', 'adm-zip', 'unzipper', 'pdfjs-dist', '@silurus/ooxml', 'ssf', 'ssh2', 'koffi'] } })
@@ -75,6 +81,16 @@ export async function buildProductPlugins() {
       mkdirSync(notices, { recursive: true })
       cpSync(join(cwd, 'assets/OCTOP-LICENSE.txt'), join(notices, 'LICENSE.txt'))
     }
+    if (folder === 'workspace-word') {
+      const notices = join(cwd, 'lib/third-party/genoffice-stratex')
+      mkdirSync(notices, { recursive: true })
+      for (const file of ['LICENSE.txt', 'NOTICE.txt', 'SOURCE.txt']) cpSync(join(cwd, 'third-party/genoffice', file), join(notices, file))
+      for (const file of ['docx-engine/PROVENANCE.md', 'docs/PROVENANCE.md']) {
+        const target = join(notices, file)
+        mkdirSync(join(target, '..'), { recursive: true })
+        cpSync(join(cwd, 'src/vendor/office', file), target)
+      }
+    }
     if (folder === 'computer-use') await prepareDriver()
     if (manifest.dsh?.client) {
       const acpIcons = folder === 'acp' ? Object.fromEntries(Object.entries({
@@ -86,6 +102,7 @@ export async function buildProductPlugins() {
           'process.env.NODE_ENV': JSON.stringify('production'),
           ...(folder === 'identity' ? { __SEAL_HARNESS_ICON__: JSON.stringify(`data:image/png;base64,${readFileSync(join(productRoot, 'assets/icons/128x128.png')).toString('base64')}`) } : {}),
           ...(acpIcons ? { __SEAL_ACP_ICONS__: JSON.stringify(acpIcons) } : {}),
+          ...(wordWorkerSource ? { __SEAL_OFFICE_WORKER_SOURCE__: JSON.stringify(wordWorkerSource) } : {}),
         },
         outputOptions: {
           entryFileNames: folder === 'weknora' ? 'settings-client.js' : 'client.js',

@@ -1,7 +1,5 @@
-import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react'
-import { registerPanel } from '../../capability-shared/src/client.jsx'
+import React, { useEffect, useRef, useState } from 'react'
 
-export const inject = ['slots', 'connection', 'layout', 'sealHarnessAuthClient', 'sealHarnessNavigation']
 const labels = { docx: 'Word 文档', xlsx: 'Excel 表格', pptx: 'PowerPoint 演示' }
 import { styles } from './styles.js'
 
@@ -27,7 +25,7 @@ export function OfficePanel({ api }) {
   }
   async function importFile(event) {
     const file=event.target.files?.[0];event.target.value='';if(!file)return
-    if(file.size>8*1024*1024){setError('文件超过 8 MB 限制。');return}
+    if(file.size>64*1024*1024){setError('文件超过 64 MiB 限制。');return}
     const bytes=new Uint8Array(await file.arrayBuffer());if(lifetime.current.signal.aborted)return
     let binary='';for(let i=0;i<bytes.length;i+=16384)binary+=String.fromCharCode(...bytes.subarray(i,i+16384))
     await run('import',{name:file.name,base64:btoa(binary)})
@@ -41,7 +39,7 @@ export function OfficePanel({ api }) {
   const beginCreate = (nextKind = 'docx') => { setKind(nextKind); setCreating(true); setError('') }
   const hints = { docx: '每行文字会创建一个段落。', xlsx: '使用 CSV 格式，逗号分列、换行分行。', pptx: '使用独立一行 --- 分隔幻灯片，最多 50 张。' }
   return <section className="seal-office"><style>{styles}</style>
-    <header className="office-header"><div><h2>办公文档</h2><p>创建、导入和编辑 Word、Excel 与演示文档。</p></div>
+    <header className="office-header"><div><h2>办公文档</h2><p>管理账号文档库；工作区的 Word、Excel 和演示文档可在文件预览中打开编辑。</p></div>
       <div className="office-actions"><input ref={fileInput} className="office-file-input" aria-label="导入 Office 文档" type="file" accept=".docx,.xlsx,.pptx" disabled={busy} onChange={event=>void importFile(event)} />
         <button disabled={busy} onClick={()=>fileInput.current.click()}>导入文档</button><button className="office-primary" disabled={busy} onClick={()=>beginCreate()}>新建文档</button></div></header>
     {error&&<p className="office-alert" role="alert">{error}</p>}
@@ -65,11 +63,6 @@ export function OfficePanel({ api }) {
         {busy&&<p className="office-processing" role="status">正在本地处理…</p>}
       </article>
     </main>
-    <details className="office-help"><summary>使用说明与文件保存</summary><p>文件保存在运行 Seal Harness 的设备上，按账号隔离。导入文件会传到该设备，每次保存生成新版本，保留导入原件。</p><p>当前支持结构化文本与单元格编辑，不重现完整 Office 排版，不重算公式或生成 PDF。修改文本块会沿用该块首个文本片段的格式；复杂表格等对象保留原件。</p></details>
+    <details className="office-help"><summary>使用说明与文件保存</summary><p>这里创建或导入的文件保存在运行 Seal Harness 的设备上，按账号隔离。每次保存生成新版本，保留导入原件。</p><p>工作区的 DOCX、XLSX、PPTX 请从文件预览点击“编辑”；修改会保存回工作区原文件，不进入上述文档库。也可在工作区文件树当前目录新建或导入。</p><p>文档库当前支持结构化文本与单元格编辑，不重现完整 Office 排版，不重算公式或生成 PDF。修改文本块会沿用该块首个文本片段的格式；复杂表格等对象保留原件。</p></details>
   </section>
-}
-export function apply(ctx) {
-  const api=async(action,payload={},signal)=>{const result=await ctx.connection.rpc.call('/api',`seal-harness-office/${action}`,payload,signal);if(!result.ok)throw new Error(result.error.message);return result.value}
-  function Panel(){const status=useSyncExternalStore(ctx.sealHarnessAuthClient.subscribe,ctx.sealHarnessAuthClient.getStatus);return <OfficePanel key={JSON.stringify([status?.accountId,status?.epoch])} api={api}/>}
-  registerPanel(ctx,{id:'office-documents',label:'办公文档',order:45,icon:'knowledge',description:'本地 Word、Excel 与演示文档'},Panel)
 }

@@ -6,7 +6,7 @@ Runtime needs existing Electron/Node24 and the generated core CJS bundle. Build 
 
 ## Supported operations and boundaries
 
-Open the product's **办公文档** page after local login. Create a DOCX from paragraphs, an XLSX from CSV, or a PPTX from text sections separated by a standalone `---` line (at most 50 slides). Import `.docx`, `.xlsx` and `.pptx`, edit supported text/cells, then export the new revision. Input files are limited to 8 MB. The preview exposes at most 300 blocks; other content remains in the source file. This is a structured text preview, not a page or slide renderer.
+The account document library retains its Host API for creating, importing, editing, versioning, and exporting DOCX/XLSX/PPTX. Seal's visible Office workflow now stays in the native chat and workspace right sidebar, through `@seal-harness/workspace-word`; the former full-page library entry is no longer registered. The earlier 8 MiB file gate has been removed; the current whole-file transport and ZIP expansion budget limit input files to 64 MiB. The account-library structured preview exposes at most 300 blocks; other content remains in the source file.
 
 DOCX editing targets ordinary paragraphs/headings/list items; PPTX editing targets top-level text boxes/shapes. Replaced text uses the first run's formatting. Complex objects are not exposed as a full editing surface. Documents declaring editing protection are read-only here. XLSX formulas are stored for a compatible spreadsheet application to recalculate. Long integer identifiers, leading zeros and overflowing numbers remain text during editing. No macro or embedded document code is executed.
 

@@ -37,6 +37,16 @@ for(const kind of ['docx','xlsx','pptx'])test(`${kind}: real create/import/edit/
   if(kind==='xlsx')assert.ok(reopened.view.blocks.some(b=>b.text==='病房'))
   if(kind==='pptx')assert.ok(reopened.view.blocks.some(b=>b.text==='Untouched slide'))
 })
+test('DOCX larger than the old 8 MiB gate imports and exports unchanged', async t => {
+  const {service}=fixture(t)
+  const created=await service.create({kind:'docx',name:'large',content:'Large attachment'})
+  const zip=await JSZip.loadAsync(Buffer.from(service.download({id:created.document.id}).base64,'base64'))
+  zip.file('word/media/large.bin',require('node:crypto').randomBytes(9*1024*1024),{compression:'STORE'})
+  const bytes=await zip.generateAsync({type:'nodebuffer',compression:'DEFLATE'})
+  assert.ok(bytes.length>8*1024*1024)
+  const imported=await service.import({name:'large.docx',base64:bytes.toString('base64')})
+  assert.equal(service.download({id:imported.document.id}).base64,bytes.toString('base64'))
+})
 test('XLSX formulas are stored, and never reported as locally recalculated',async t=>{
   const {service}=fixture(t),doc=await service.create({kind:'xlsx',name:'formula',content:'1,2'})
   const result=await service.edit({id:doc.document.id,hash:doc.document.hash,updates:[{id:JSON.stringify(['Sheet1','C1']),text:'=SUM(A1:B1)'}]})

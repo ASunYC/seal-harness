@@ -4,7 +4,8 @@ import { join } from 'node:path'
 import { Worker } from 'node:worker_threads'
 import { z } from 'zod'
 
-const MAX_FILE = 8 * 1024 * 1024
+// Input/output stays within the GenOffice core's 64 MiB ZIP expansion budget.
+const MAX_FILE = 64 * 1024 * 1024
 const kind = z.enum(['docx','xlsx','pptx'])
 const name = z.string().trim().min(1).max(120).refine(s => !/[\\/\x00-\x1f]/u.test(s))
 const id = z.string().uuid()
@@ -16,13 +17,18 @@ const schemas = {
   download: z.strictObject({ id }),
   edit: z.strictObject({ id, hash: z.string().regex(/^[a-f0-9]{64}$/u), updates: z.array(z.strictObject({ id: z.string().max(500), text: z.string().max(20000) })).min(1).max(300) }),
 }
+const transformInput = z.discriminatedUnion('action', [
+  z.strictObject({ action: z.literal('create'), kind, content: z.string().max(64000) }),
+  z.strictObject({ action: z.literal('inspect'), kind, bytes: z.instanceof(Uint8Array).refine(bytes => bytes.length > 0 && bytes.length <= MAX_FILE) }),
+  z.strictObject({ action: z.literal('edit'), kind, bytes: z.instanceof(Uint8Array).refine(bytes => bytes.length > 0 && bytes.length <= MAX_FILE), updates: schemas.edit.shape.updates }),
+])
 const hash = bytes => createHash('sha256').update(bytes).digest('hex')
 export class OfficeError extends Error {
   constructor(code, message) { super(message); this.code = code }
 }
 
 export class OfficeService {
-  constructor({ root, identity, timeoutMs = 20000 }) {
+  constructor({ root, identity, timeoutMs = 60000 }) {
     Object.assign(this, { root, identity, timeoutMs }); this.closed = false; this.operations = new Set()
     this.unsubscribe = identity.subscribe(() => {
       const owner = identity.getSession()
@@ -78,7 +84,7 @@ export class OfficeService {
     try {
       active.throwIfAborted()
       const result = await new Promise((resolve, reject) => {
-        const worker = new Worker(new URL('./worker.js', import.meta.url), { workerData: data, resourceLimits: { maxOldGenerationSizeMb: 256 } })
+        const worker = new Worker(new URL('./worker.js', import.meta.url), { workerData: data, resourceLimits: { maxOldGenerationSizeMb: 512 } })
         let settled = false
         const finish = (error, value) => {
           if (settled) return; settled = true; clearTimeout(timer); active.removeEventListener('abort', abort)
@@ -95,9 +101,14 @@ export class OfficeService {
       this.same(owner); return result
     } finally { this.operations.delete(op) }
   }
+  // Shared, account-bound GenOffice worker seam for authorized workspace documents.
+  async transform(input, signal) {
+    const owner = this.account()
+    return this.process(owner, transformInput.parse(input), signal)
+  }
   store(owner, bytes, details, view) {
     this.same(owner); bytes = Buffer.from(bytes)
-    if (bytes.length > MAX_FILE) throw new OfficeError('tooLarge', '文件超过 8 MB 限制。')
+    if (bytes.length > MAX_FILE) throw new OfficeError('tooLarge', '文件超过 64 MiB 限制。')
     const folder = this.folder(owner), documentId = randomUUID()
     const meta = { ...details, id: documentId, accountId: owner.accountId, hash: hash(bytes), size: bytes.length, createdAt: new Date().toISOString() }
     const path = join(folder, `${documentId}.${meta.kind}`)

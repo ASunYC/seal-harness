@@ -132,6 +132,23 @@ test('组织架构作为独立 Host/Client 插件装配', () => {
   assert.equal(entry.name, manifest.name)
 })
 
+test('Stratex 工作区 Word 与账号办公文档库分别装配', () => {
+  const manifest = JSON.parse(readFileSync(join(productRoot, 'plugins/workspace-word/package.json'), 'utf8'))
+  const officeManifest = JSON.parse(readFileSync(join(productRoot, 'plugins/office/package.json'), 'utf8'))
+  assert.equal(manifest.name, '@seal-harness/workspace-word')
+  assert.equal(manifest.dsh.client.platform, 'web')
+  assert.equal(officeManifest.dsh?.client, undefined)
+  assert.equal(productPlugins.includes('workspace-word'), true)
+  assert.equal(productPlugins.includes('office'), true)
+  const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))
+  const entries = patch.flatMap(row => row.insert ?? [])
+  assert.equal(entries.find(row => row.id === 'seal-harness-workspace-word')?.name, manifest.name)
+  assert.equal(entries.find(row => row.id === 'seal-harness-office')?.name, '@seal-harness/office')
+  const installed = join(root, 'dsh-plugin-desktop-beta/node_modules/@seal-harness/workspace-word/lib')
+  assert.match(readFileSync(join(installed, 'client.js'), 'utf8'), /seal-office-docx/u)
+  assert.match(readFileSync(join(installed, 'third-party/genoffice-stratex/SOURCE.txt'), 'utf8'), /953595e2f1635140e2a6c1f86c2fa12b0cca77b8/u)
+})
+
 test('产品关闭首次模型凭据弹窗但保留模型设置插件', () => {
   const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))
   const models = patch.find(row => row.id === 'ui-settings-models')

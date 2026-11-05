@@ -20,7 +20,7 @@ test('actual Office panel creates, edits, imports and exports through authentica
   const dom=new JSDOM('<!doctype html><html><head></head><body><div id="app"></div></body></html>',{url:'http://localhost'})
   const oldWindow=globalThis.window,oldDocument=globalThis.document
   globalThis.window=dom.window;globalThis.document=dom.window.document;globalThis.IS_REACT_ACT_ENVIRONMENT=true
-  const root=createRoot(document.getElementById('app')),disposers=[],listeners=new Set(),routes=new Map(),provided=new Map(),panels=[]
+  const root=createRoot(document.getElementById('app')),disposers=[],listeners=new Set(),routes=new Map(),provided=new Map()
   let status={accountId:'account-a',epoch:1},downloaded=''
   const identity={getSession:()=>status,subscribe:f=>{listeners.add(f);return()=>listeners.delete(f)}}
   const context={connection:{fetch:{register:route=>routes.set(route.path,route)}},sealHarnessIdentity:identity,sealHarnessDatabase:{path:join(temp,'home','seal.sqlite')},provide:(name,value)=>provided.set(name,value),effect:f=>disposers.push(f())}
@@ -35,9 +35,9 @@ test('actual Office panel creates, edits, imports and exports through authentica
   const module={exports:{}}
   dom.window.HTMLAnchorElement.prototype.click=function(){downloaded=this.download}
   runInNewContext(await readFile(join(temp,'ui/client.cjs'),'utf8'),{module,exports:module.exports,require:createRequire(import.meta.url),document:dom.window.document,AbortController,Blob,Uint8Array,atob,btoa,setTimeout,URL:{createObjectURL:()=> 'blob:local-office-test',revokeObjectURL(){}}})
-  module.exports.apply({connection:{rpc:{call:rpc}},sealHarnessAuthClient:{subscribe:identity.subscribe,getStatus:()=>status},sealHarnessNavigation:{register:meta=>{panels.push(meta);return()=>{}}},effect:f=>disposers.push(f()),layout:{},slots:{}})
-  assert.equal(panels[0].id,'office-documents')
-  await act(async()=>root.render(React.createElement(panels[0].Panel)))
+  const api=async(action,payload={},signal)=>{const result=await rpc('/api',`seal-harness-office/${action}`,payload,signal);if(!result.ok)throw new Error(result.error.message);return result.value}
+  function Panel(){const current=React.useSyncExternalStore(identity.subscribe,()=>status);return React.createElement(module.exports.OfficePanel,{key:JSON.stringify([current?.accountId,current?.epoch]),api})}
+  await act(async()=>root.render(React.createElement(Panel)))
   async function waitFor(check){const until=Date.now()+10000;while(Date.now()<until){await act(async()=>await new Promise(r=>setTimeout(r,20)));if(check())return}throw new Error('UI condition timed out')}
   const button=text=>[...document.querySelectorAll('button')].find(b=>b.textContent===text)
   await waitFor(()=>calls.includes('seal-harness-office/snapshot'))

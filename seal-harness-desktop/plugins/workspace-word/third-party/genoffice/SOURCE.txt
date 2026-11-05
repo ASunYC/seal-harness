@@ -1,0 +1,22 @@
+GenOffice source and adaptation record for Seal Harness Office
+
+Upstream project: https://github.com/genspark-ai/genoffice
+Pinned commit: 953595e2f1635140e2a6c1f86c2fa12b0cca77b8
+License: Apache License 2.0
+
+Seal Harness vendors the DOCX engine under
+  seal-harness-desktop/plugins/workspace-word/src/vendor/office/docx-engine/
+and the Stratex editing adapter under
+  seal-harness-desktop/plugins/workspace-word/src/vendor/office/docs/
+
+The source was copied from the Stratex project's Office extraction, then
+adapted to the Seal Harness Cordis Host and DSH Client plugin architecture.
+Stratex's original engine and adapter provenance records are retained beside
+the vendored source and included in the Office plugin's packaged notices.
+The Seal-specific entry points are src/index.js, src/service.js, src/client.jsx,
+src/word-editor.jsx, src/word-worker.ts, and src/word-worker-client.js.
+
+The upstream Apache-2.0 LICENSE and NOTICE are reproduced in this directory
+as LICENSE.txt and NOTICE.txt. This distribution includes the DOCX/Word
+components only; it does not include GenOffice's spreadsheet or presentation
+applications.

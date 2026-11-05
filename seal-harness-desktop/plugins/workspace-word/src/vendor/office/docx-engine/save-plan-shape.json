@@ -1,0 +1,1011 @@
+{
+  "roots": { "SaveBlock": 0, "SaveOptions": 167 },
+  "descriptors": [
+    { "union": [1, 12, 138, 146, 155] },
+    {
+      "object": {
+        "kind": { "type": 2, "optional": false },
+        "docxIndex": { "type": 3, "optional": false },
+        "revision": { "type": 4, "optional": true }
+      }
+    },
+    { "literal": "original" },
+    { "kind": "number" },
+    { "union": [5, 6] },
+    { "kind": "undefined" },
+    {
+      "object": {
+        "kind": { "type": 7, "optional": false },
+        "author": { "type": 10, "optional": false },
+        "date": { "type": 11, "optional": true },
+        "id": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [8, 9] },
+    { "literal": "ins" },
+    { "literal": "del" },
+    { "kind": "string" },
+    { "union": [5, 10] },
+    {
+      "object": {
+        "kind": { "type": 13, "optional": false },
+        "block": { "type": 14, "optional": false },
+        "revision": { "type": 4, "optional": true }
+      }
+    },
+    { "literal": "generated" },
+    {
+      "object": {
+        "type": { "type": 15, "optional": false },
+        "level": { "type": 19, "optional": true },
+        "outlineOnly": { "type": 20, "optional": true },
+        "styleId": { "type": 11, "optional": true },
+        "list": { "type": 23, "optional": true },
+        "format": { "type": 28, "optional": true },
+        "rawPPr": { "type": 11, "optional": true },
+        "bookmarks": { "type": 77, "optional": true },
+        "hiddenBookmarks": { "type": 77, "optional": true },
+        "commentStarts": { "type": 77, "optional": true },
+        "commentEnds": { "type": 77, "optional": true },
+        "runs": { "type": 79, "optional": false },
+        "sdtShell": { "type": 127, "optional": true },
+        "pPrChange": { "type": 134, "optional": true },
+        "blockRevision": { "type": 136, "optional": true }
+      }
+    },
+    { "union": [16, 17, 18] },
+    { "literal": "paragraph" },
+    { "literal": "heading" },
+    { "literal": "listItem" },
+    { "union": [5, 3] },
+    { "union": [5, 21, 22] },
+    { "literal": false },
+    { "literal": true },
+    { "union": [5, 24] },
+    {
+      "object": {
+        "kind": { "type": 25, "optional": false },
+        "numId": { "type": 10, "optional": false },
+        "ilvl": { "type": 3, "optional": false }
+      }
+    },
+    { "union": [26, 27] },
+    { "literal": "bullet" },
+    { "literal": "ordered" },
+    { "union": [5, 29] },
+    {
+      "object": {
+        "align": { "type": 30, "optional": true },
+        "lineSpacing": { "type": 19, "optional": true },
+        "lineRule": { "type": 36, "optional": true },
+        "lineRawTwips": { "type": 19, "optional": true },
+        "indentLeft": { "type": 19, "optional": true },
+        "indentRight": { "type": 19, "optional": true },
+        "indentFirstLine": { "type": 19, "optional": true },
+        "charIndents": { "type": 40, "optional": true },
+        "spaceBefore": { "type": 19, "optional": true },
+        "spaceAfter": { "type": 19, "optional": true },
+        "spaceBeforeAuto": { "type": 20, "optional": true },
+        "spaceAfterAuto": { "type": 20, "optional": true },
+        "pageBreakBefore": { "type": 20, "optional": true },
+        "keepNext": { "type": 20, "optional": true },
+        "keepLines": { "type": 20, "optional": true },
+        "widowControl": { "type": 20, "optional": true },
+        "snapToGrid": { "type": 20, "optional": true },
+        "autoSpace": { "type": 20, "optional": true },
+        "wordWrap": { "type": 20, "optional": true },
+        "overflowPunct": { "type": 20, "optional": true },
+        "eastAsiaLang": { "type": 11, "optional": true },
+        "contextualSpacing": { "type": 20, "optional": true },
+        "shadingFill": { "type": 11, "optional": true },
+        "shadingDisplay": { "type": 11, "optional": true },
+        "borders": { "type": 11, "optional": true },
+        "borderStyle": { "type": 42, "optional": true },
+        "borderLines": { "type": 44, "optional": true },
+        "borderReset": { "type": 11, "optional": true },
+        "tabStops": { "type": 47, "optional": true },
+        "dropCap": { "type": 63, "optional": true },
+        "frame": { "type": 67, "optional": true },
+        "bidi": { "type": 20, "optional": true },
+        "emptyRunSizeHalfPoints": { "type": 19, "optional": true },
+        "emptyRunFontFamily": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 31, 32, 33, 34, 35] },
+    { "literal": "left" },
+    { "literal": "center" },
+    { "literal": "right" },
+    { "literal": "justify" },
+    { "literal": "distribute" },
+    { "union": [5, 37, 38, 39] },
+    { "literal": "auto" },
+    { "literal": "atLeast" },
+    { "literal": "exact" },
+    { "union": [5, 41] },
+    {
+      "object": {
+        "left": { "type": 19, "optional": true },
+        "right": { "type": 19, "optional": true },
+        "firstLine": { "type": 19, "optional": true },
+        "hanging": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [5, 43] },
+    {
+      "object": {
+        "color": { "type": 11, "optional": true },
+        "szEighths": { "type": 19, "optional": true },
+        "spacePt": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [5, 45] },
+    {
+      "object": {
+        "t": { "type": 46, "optional": true },
+        "b": { "type": 46, "optional": true },
+        "l": { "type": 46, "optional": true },
+        "r": { "type": 46, "optional": true }
+      }
+    },
+    {
+      "object": {
+        "color": { "type": 11, "optional": true },
+        "szPt": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [5, 48] },
+    { "array": 49 },
+    {
+      "object": {
+        "pos": { "type": 3, "optional": false },
+        "val": { "type": 50, "optional": false },
+        "leader": { "type": 54, "optional": true },
+        "rel": { "type": 61, "optional": true }
+      }
+    },
+    { "union": [31, 32, 33, 51, 52, 53] },
+    { "literal": "decimal" },
+    { "literal": "bar" },
+    { "literal": "clear" },
+    { "union": [5, 55, 56, 57, 58, 59, 60] },
+    { "literal": "none" },
+    { "literal": "dot" },
+    { "literal": "hyphen" },
+    { "literal": "underscore" },
+    { "literal": "heavy" },
+    { "literal": "middleDot" },
+    { "union": [5, 62] },
+    { "literal": "margin" },
+    { "union": [5, 64] },
+    {
+      "object": {
+        "type": { "type": 65, "optional": false },
+        "lines": { "type": 3, "optional": false }
+      }
+    },
+    { "union": [62, 66] },
+    { "literal": "drop" },
+    { "union": [5, 68] },
+    {
+      "object": {
+        "wTwips": { "type": 3, "optional": false },
+        "hTwips": { "type": 19, "optional": true },
+        "hRule": { "type": 69, "optional": true },
+        "xTwips": { "type": 3, "optional": false },
+        "yTwips": { "type": 3, "optional": false },
+        "hAnchor": { "type": 70, "optional": true },
+        "vAnchor": { "type": 70, "optional": true },
+        "wrap": { "type": 73, "optional": true }
+      }
+    },
+    { "union": [5, 38, 39] },
+    { "union": [5, 62, 71, 72] },
+    { "literal": "page" },
+    { "literal": "text" },
+    { "union": [5, 37, 55, 74, 75, 76] },
+    { "literal": "around" },
+    { "literal": "through" },
+    { "literal": "notBeside" },
+    { "union": [5, 78] },
+    { "array": 10 },
+    { "array": 80 },
+    {
+      "object": {
+        "text": { "type": 10, "optional": false },
+        "rawRPr": { "type": 11, "optional": true },
+        "styleId": { "type": 11, "optional": true },
+        "bold": { "type": 20, "optional": true },
+        "italic": { "type": 20, "optional": true },
+        "underline": { "type": 20, "optional": true },
+        "strike": { "type": 20, "optional": true },
+        "color": { "type": 11, "optional": true },
+        "sizeHalfPoints": { "type": 19, "optional": true },
+        "font": { "type": 11, "optional": true },
+        "eaSlotEmpty": { "type": 20, "optional": true },
+        "fontAscii": { "type": 11, "optional": true },
+        "eastAsiaFont": { "type": 11, "optional": true },
+        "eastAsiaLang": { "type": 11, "optional": true },
+        "fontCs": { "type": 11, "optional": true },
+        "themeRFonts": { "type": 81, "optional": true },
+        "themeColor": { "type": 11, "optional": true },
+        "csFont": { "type": 11, "optional": true },
+        "rtl": { "type": 20, "optional": true },
+        "charSpacingTwips": { "type": 19, "optional": true },
+        "kernHalfPoints": { "type": 19, "optional": true },
+        "caps": { "type": 83, "optional": true },
+        "vanish": { "type": 20, "optional": true },
+        "charScalePct": { "type": 19, "optional": true },
+        "highlight": { "type": 11, "optional": true },
+        "shading": { "type": 11, "optional": true },
+        "cs": { "type": 20, "optional": true },
+        "vertAlign": { "type": 86, "optional": true },
+        "em": { "type": 89, "optional": true },
+        "link": { "type": 93, "optional": true },
+        "commentIds": { "type": 77, "optional": true },
+        "ins": { "type": 95, "optional": true },
+        "del": { "type": 95, "optional": true },
+        "noteRef": { "type": 97, "optional": true },
+        "xeTerm": { "type": 11, "optional": true },
+        "refField": { "type": 11, "optional": true },
+        "refInstr": { "type": 11, "optional": true },
+        "instrField": { "type": 11, "optional": true },
+        "fldBeginXml": { "type": 11, "optional": true },
+        "rPrChange": { "type": 102, "optional": true },
+        "math": { "type": 106, "optional": true },
+        "ruby": { "type": 108, "optional": true },
+        "image": { "type": 110, "optional": true }
+      }
+    },
+    { "union": [5, 82] },
+    {
+      "object": {
+        "font": { "type": 11, "optional": true },
+        "fontAscii": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 55, 84, 85] },
+    { "literal": "all" },
+    { "literal": "small" },
+    { "union": [5, 87, 88] },
+    { "literal": "superscript" },
+    { "literal": "subscript" },
+    { "union": [5, 56, 90, 91, 92] },
+    { "literal": "comma" },
+    { "literal": "circle" },
+    { "literal": "underDot" },
+    { "union": [5, 94] },
+    {
+      "object": {
+        "href": { "type": 10, "optional": false },
+        "rId": { "type": 11, "optional": true },
+        "tooltip": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 96] },
+    {
+      "object": {
+        "author": { "type": 10, "optional": false },
+        "date": { "type": 11, "optional": true },
+        "id": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 98] },
+    {
+      "object": {
+        "kind": { "type": 99, "optional": false },
+        "id": { "type": 10, "optional": false }
+      }
+    },
+    { "union": [100, 101] },
+    { "literal": "footnote" },
+    { "literal": "endnote" },
+    { "union": [5, 103] },
+    {
+      "object": {
+        "author": { "type": 10, "optional": false },
+        "date": { "type": 11, "optional": true },
+        "id": { "type": 11, "optional": true },
+        "old": { "type": 104, "optional": true }
+      }
+    },
+    { "union": [5, 105] },
+    {
+      "object": {
+        "bold": { "type": 20, "optional": true },
+        "italic": { "type": 20, "optional": true },
+        "underline": { "type": 20, "optional": true },
+        "strike": { "type": 20, "optional": true },
+        "color": { "type": 11, "optional": true },
+        "sizeHalfPoints": { "type": 19, "optional": true },
+        "font": { "type": 11, "optional": true },
+        "fontAscii": { "type": 11, "optional": true },
+        "charSpacingTwips": { "type": 19, "optional": true },
+        "charScalePct": { "type": 19, "optional": true },
+        "highlight": { "type": 11, "optional": true },
+        "vertAlign": { "type": 86, "optional": true },
+        "styleId": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 107] },
+    { "object": { "omml": { "type": 10, "optional": false } } },
+    { "union": [5, 109] },
+    {
+      "object": {
+        "rt": { "type": 10, "optional": false },
+        "xml": { "type": 10, "optional": false }
+      }
+    },
+    { "union": [5, 111] },
+    {
+      "object": {
+        "dataUrl": { "type": 10, "optional": false },
+        "widthPx": { "type": 19, "optional": true },
+        "heightPx": { "type": 19, "optional": true },
+        "xml": { "type": 10, "optional": false },
+        "wrap": { "type": 112, "optional": true },
+        "offsetXEmu": { "type": 19, "optional": true },
+        "offsetYEmu": { "type": 19, "optional": true },
+        "wrapDistTopEmu": { "type": 19, "optional": true },
+        "wrapDistBottomEmu": { "type": 19, "optional": true },
+        "wrapDistLeftEmu": { "type": 19, "optional": true },
+        "wrapDistRightEmu": { "type": 19, "optional": true },
+        "noOverlap": { "type": 20, "optional": true },
+        "border": { "type": 122, "optional": true },
+        "lineCenterV": { "type": 20, "optional": true },
+        "rotDeg": { "type": 19, "optional": true },
+        "flipH": { "type": 20, "optional": true },
+        "flipV": { "type": 20, "optional": true },
+        "rule": { "type": 124, "optional": true }
+      }
+    },
+    { "union": [5, 113, 114, 115, 116, 117, 118, 119, 120, 121] },
+    { "literal": "square-left" },
+    { "literal": "square-right" },
+    { "literal": "tight-left" },
+    { "literal": "tight-right" },
+    { "literal": "through-left" },
+    { "literal": "through-right" },
+    { "literal": "topBottom" },
+    { "literal": "behind" },
+    { "literal": "front" },
+    { "union": [5, 123] },
+    {
+      "object": {
+        "color": { "type": 10, "optional": false },
+        "widthPt": { "type": 3, "optional": false }
+      }
+    },
+    { "union": [5, 125] },
+    {
+      "object": {
+        "colorHex": { "type": 11, "optional": true },
+        "thicknessPx": { "type": 19, "optional": true },
+        "sizeHalfPoints": { "type": 19, "optional": true },
+        "widthPx": { "type": 19, "optional": true },
+        "align": { "type": 126, "optional": true }
+      }
+    },
+    { "union": [5, 32, 33] },
+    { "union": [5, 128] },
+    {
+      "object": {
+        "alias": { "type": 10, "optional": false },
+        "tag": { "type": 10, "optional": false },
+        "controlType": { "type": 129, "optional": false },
+        "openXml": { "type": 10, "optional": false },
+        "closeXml": { "type": 10, "optional": false },
+        "group": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [72, 130, 131, 132, 133] },
+    { "literal": "date" },
+    { "literal": "dropdown" },
+    { "literal": "checkbox" },
+    { "literal": "unknown" },
+    { "union": [5, 135, 10] },
+    { "kind": "null" },
+    { "union": [5, 135, 137] },
+    {
+      "object": {
+        "kind": { "type": 7, "optional": false },
+        "author": { "type": 10, "optional": false },
+        "date": { "type": 11, "optional": true },
+        "id": { "type": 11, "optional": true }
+      }
+    },
+    {
+      "object": {
+        "kind": { "type": 139, "optional": false },
+        "xml": { "type": 10, "optional": false },
+        "docxIndex": { "type": 19, "optional": true },
+        "replaceImage": { "type": 140, "optional": true },
+        "revision": { "type": 4, "optional": true }
+      }
+    },
+    { "literal": "xml" },
+    { "union": [5, 141] },
+    {
+      "object": {
+        "base64": { "type": 10, "optional": false },
+        "mime": { "type": 142, "optional": false }
+      }
+    },
+    { "union": [143, 144, 145] },
+    { "literal": "image/png" },
+    { "literal": "image/jpeg" },
+    { "literal": "image/gif" },
+    {
+      "object": {
+        "kind": { "type": 147, "optional": false },
+        "image": { "type": 148, "optional": false },
+        "revision": { "type": 4, "optional": true }
+      }
+    },
+    { "literal": "image" },
+    {
+      "object": {
+        "base64": { "type": 10, "optional": false },
+        "mime": { "type": 142, "optional": false },
+        "widthPx": { "type": 3, "optional": false },
+        "heightPx": { "type": 3, "optional": false },
+        "align": { "type": 149, "optional": true },
+        "wrap": { "type": 112, "optional": true },
+        "posOffsetEmu": { "type": 150, "optional": true },
+        "zOrder": { "type": 19, "optional": true },
+        "paraSpacing": { "type": 153, "optional": true },
+        "rotDeg": { "type": 19, "optional": true },
+        "flipH": { "type": 20, "optional": true },
+        "flipV": { "type": 20, "optional": true }
+      }
+    },
+    { "union": [5, 31, 32, 33] },
+    { "union": [5, 151] },
+    {
+      "object": {
+        "x": { "type": 3, "optional": false },
+        "y": { "type": 3, "optional": false },
+        "relativeTo": { "type": 152, "optional": true }
+      }
+    },
+    { "union": [5, 71] },
+    { "union": [5, 154] },
+    {
+      "object": {
+        "beforeTwips": { "type": 19, "optional": true },
+        "afterTwips": { "type": 19, "optional": true },
+        "lineTwips": { "type": 19, "optional": true },
+        "lineRule": { "type": 69, "optional": true }
+      }
+    },
+    {
+      "object": {
+        "kind": { "type": 156, "optional": false },
+        "chart": { "type": 157, "optional": false },
+        "extentPx": { "type": 165, "optional": true },
+        "revision": { "type": 4, "optional": true }
+      }
+    },
+    { "literal": "chart" },
+    {
+      "object": {
+        "kind": { "type": 158, "optional": false },
+        "title": { "type": 11, "optional": true },
+        "categories": { "type": 78, "optional": false },
+        "series": { "type": 161, "optional": false }
+      }
+    },
+    { "union": [52, 159, 160] },
+    { "literal": "line" },
+    { "literal": "pie" },
+    { "array": 162 },
+    {
+      "object": {
+        "name": { "type": 10, "optional": false },
+        "values": { "type": 163, "optional": false }
+      }
+    },
+    { "array": 164 },
+    { "union": [135, 3] },
+    { "union": [5, 166] },
+    { "object": { "w": { "type": 3, "optional": false }, "h": { "type": 3, "optional": false } } },
+    {
+      "object": {
+        "savedAt": { "type": 11, "optional": true },
+        "section": { "type": 168, "optional": true },
+        "sectionStartType": { "type": 196, "optional": true },
+        "pgNumType": { "type": 202, "optional": true },
+        "pageColor": { "type": 134, "optional": true },
+        "header": { "type": 204, "optional": true },
+        "footer": { "type": 204, "optional": true },
+        "headerFirst": { "type": 204, "optional": true },
+        "footerFirst": { "type": 204, "optional": true },
+        "headerEven": { "type": 204, "optional": true },
+        "footerEven": { "type": 204, "optional": true },
+        "titlePg": { "type": 20, "optional": true },
+        "sectionHf": { "type": 240, "optional": true },
+        "evenAndOddHeaders": { "type": 20, "optional": true },
+        "hfAllSections": { "type": 20, "optional": true },
+        "numbering": { "type": 246, "optional": true },
+        "styleUpserts": { "type": 258, "optional": true },
+        "partXml": { "type": 268, "optional": true },
+        "partBinary": { "type": 268, "optional": true },
+        "comments": { "type": 270, "optional": true },
+        "protection": { "type": 273, "optional": true },
+        "writeProtection": { "type": 275, "optional": true },
+        "removePersonalInfo": { "type": 20, "optional": true },
+        "footnotes": { "type": 277, "optional": true },
+        "endnotes": { "type": 277, "optional": true },
+        "watermark": { "type": 134, "optional": true },
+        "inks": { "type": 287, "optional": true },
+        "sources": { "type": 290, "optional": true },
+        "themeFonts": { "type": 293, "optional": true },
+        "themeColors": { "type": 295, "optional": true }
+      }
+    },
+    { "union": [5, 169] },
+    {
+      "object": {
+        "pageWidth": { "type": 3, "optional": false },
+        "pageHeight": { "type": 3, "optional": false },
+        "orientation": { "type": 170, "optional": false },
+        "marginTop": { "type": 3, "optional": false },
+        "marginRight": { "type": 3, "optional": false },
+        "marginBottom": { "type": 3, "optional": false },
+        "marginLeft": { "type": 3, "optional": false },
+        "pageBorder": { "type": 173, "optional": false },
+        "pageBorderProps": { "type": 174, "optional": true },
+        "columns": { "type": 3, "optional": false },
+        "colSpace": { "type": 19, "optional": true },
+        "colWidths": { "type": 183, "optional": true },
+        "bidi": { "type": 20, "optional": true },
+        "headerDist": { "type": 19, "optional": true },
+        "footerDist": { "type": 19, "optional": true },
+        "vAlign": { "type": 185, "optional": true },
+        "docGrid": { "type": 189, "optional": true },
+        "textDirection": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [171, 172] },
+    { "literal": "portrait" },
+    { "literal": "landscape" },
+    { "kind": "boolean" },
+    { "union": [5, 175] },
+    {
+      "object": {
+        "display": { "type": 176, "optional": true },
+        "offsetFrom": { "type": 179, "optional": true },
+        "spacePt": { "type": 3, "optional": false },
+        "widthPt": { "type": 3, "optional": false },
+        "color": { "type": 11, "optional": true },
+        "sides": { "type": 180, "optional": true }
+      }
+    },
+    { "union": [5, 177, 178] },
+    { "literal": "firstPage" },
+    { "literal": "notFirstPage" },
+    { "union": [5, 71, 72] },
+    { "union": [5, 181] },
+    {
+      "object": {
+        "left": { "type": 182, "optional": true },
+        "right": { "type": 182, "optional": true },
+        "top": { "type": 182, "optional": true },
+        "bottom": { "type": 182, "optional": true }
+      }
+    },
+    {
+      "object": {
+        "val": { "type": 10, "optional": false },
+        "widthPt": { "type": 3, "optional": false },
+        "spacePt": { "type": 3, "optional": false },
+        "color": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 184] },
+    { "array": 3 },
+    { "union": [5, 32, 186, 187, 188] },
+    { "literal": "top" },
+    { "literal": "bottom" },
+    { "literal": "both" },
+    { "union": [5, 190] },
+    {
+      "object": {
+        "type": { "type": 191, "optional": false },
+        "linePitch": { "type": 19, "optional": true },
+        "charSpace": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [192, 193, 194, 195] },
+    { "literal": "default" },
+    { "literal": "lines" },
+    { "literal": "linesAndChars" },
+    { "literal": "snapToChars" },
+    { "union": [5, 197, 198, 199, 200, 201] },
+    { "literal": "nextPage" },
+    { "literal": "continuous" },
+    { "literal": "evenPage" },
+    { "literal": "oddPage" },
+    { "literal": "nextColumn" },
+    { "union": [5, 203] },
+    {
+      "object": {
+        "fmt": { "type": 11, "optional": true },
+        "start": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [5, 205] },
+    {
+      "object": {
+        "text": { "type": 10, "optional": false },
+        "pageNumber": { "type": 20, "optional": true },
+        "paras": { "type": 206, "optional": true }
+      }
+    },
+    { "union": [5, 207] },
+    { "array": 208 },
+    {
+      "object": {
+        "frameXAlign": { "type": 149, "optional": true },
+        "boxAnchored": { "type": 20, "optional": true },
+        "box": { "type": 209, "optional": true },
+        "ptabAligns": { "type": 219, "optional": true },
+        "runs": { "type": 79, "optional": false },
+        "cells": { "type": 221, "optional": true },
+        "row": { "type": 235, "optional": true },
+        "align": { "type": 30, "optional": true },
+        "lineSpacing": { "type": 19, "optional": true },
+        "lineRule": { "type": 36, "optional": true },
+        "lineRawTwips": { "type": 19, "optional": true },
+        "indentLeft": { "type": 19, "optional": true },
+        "indentRight": { "type": 19, "optional": true },
+        "indentFirstLine": { "type": 19, "optional": true },
+        "charIndents": { "type": 40, "optional": true },
+        "spaceBefore": { "type": 19, "optional": true },
+        "spaceAfter": { "type": 19, "optional": true },
+        "spaceBeforeAuto": { "type": 20, "optional": true },
+        "spaceAfterAuto": { "type": 20, "optional": true },
+        "pageBreakBefore": { "type": 20, "optional": true },
+        "keepNext": { "type": 20, "optional": true },
+        "keepLines": { "type": 20, "optional": true },
+        "widowControl": { "type": 20, "optional": true },
+        "snapToGrid": { "type": 20, "optional": true },
+        "autoSpace": { "type": 20, "optional": true },
+        "wordWrap": { "type": 20, "optional": true },
+        "overflowPunct": { "type": 20, "optional": true },
+        "eastAsiaLang": { "type": 11, "optional": true },
+        "contextualSpacing": { "type": 20, "optional": true },
+        "shadingFill": { "type": 11, "optional": true },
+        "shadingDisplay": { "type": 11, "optional": true },
+        "borders": { "type": 11, "optional": true },
+        "borderStyle": { "type": 42, "optional": true },
+        "borderLines": { "type": 44, "optional": true },
+        "borderReset": { "type": 11, "optional": true },
+        "tabStops": { "type": 47, "optional": true },
+        "dropCap": { "type": 63, "optional": true },
+        "frame": { "type": 67, "optional": true },
+        "bidi": { "type": 20, "optional": true },
+        "emptyRunSizeHalfPoints": { "type": 19, "optional": true },
+        "emptyRunFontFamily": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 210] },
+    {
+      "object": {
+        "id": { "type": 3, "optional": false },
+        "insets": { "type": 211, "optional": true },
+        "vAlign": { "type": 213, "optional": true },
+        "nowrap": { "type": 20, "optional": true },
+        "autofit": { "type": 20, "optional": true },
+        "anchorPara": { "type": 19, "optional": true },
+        "behind": { "type": 20, "optional": true },
+        "widthPx": { "type": 19, "optional": true },
+        "heightPx": { "type": 19, "optional": true },
+        "posH": { "type": 149, "optional": true },
+        "posV": { "type": 213, "optional": true },
+        "posXPx": { "type": 19, "optional": true },
+        "posYPx": { "type": 19, "optional": true },
+        "posHRel": { "type": 214, "optional": true },
+        "posVRel": { "type": 215, "optional": true },
+        "wrap": { "type": 216, "optional": true }
+      }
+    },
+    { "union": [5, 212] },
+    { "tuple": [3, 3, 3, 3] },
+    { "union": [5, 32, 186, 187] },
+    { "union": [5, 62, 71] },
+    { "union": [5, 16, 62, 71] },
+    { "union": [5, 55, 75, 119, 217, 218] },
+    { "literal": "square" },
+    { "literal": "tight" },
+    { "union": [5, 220] },
+    { "array": 149 },
+    { "union": [5, 222] },
+    { "array": 223 },
+    {
+      "object": {
+        "paras": { "type": 224, "optional": false },
+        "paraProps": { "type": 225, "optional": true },
+        "align": { "type": 30, "optional": true },
+        "widthPct": { "type": 19, "optional": true },
+        "widthTwips": { "type": 19, "optional": true },
+        "fill": { "type": 11, "optional": true },
+        "borders": { "type": 229, "optional": true },
+        "vAlign": { "type": 213, "optional": true },
+        "marTwips": { "type": 233, "optional": true }
+      }
+    },
+    { "array": 79 },
+    { "union": [5, 226] },
+    { "array": 227 },
+    { "union": [5, 228] },
+    {
+      "object": {
+        "align": { "type": 30, "optional": true },
+        "indentLeft": { "type": 19, "optional": true },
+        "indentFirstLine": { "type": 19, "optional": true },
+        "tabStops": { "type": 47, "optional": true },
+        "spaceBefore": { "type": 19, "optional": true },
+        "spaceAfter": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [5, 230] },
+    {
+      "object": {
+        "top": { "type": 231, "optional": true },
+        "left": { "type": 231, "optional": true },
+        "bottom": { "type": 231, "optional": true },
+        "right": { "type": 231, "optional": true }
+      }
+    },
+    { "union": [5, 232] },
+    {
+      "object": {
+        "style": { "type": 10, "optional": false },
+        "szEighths": { "type": 19, "optional": true },
+        "color": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 234] },
+    {
+      "object": {
+        "top": { "type": 19, "optional": true },
+        "left": { "type": 19, "optional": true },
+        "bottom": { "type": 19, "optional": true },
+        "right": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [5, 236] },
+    {
+      "object": {
+        "heightTwips": { "type": 19, "optional": true },
+        "heightRule": { "type": 69, "optional": true },
+        "indentTwips": { "type": 19, "optional": true },
+        "tabOverflow": { "type": 237, "optional": true },
+        "bidiVisual": { "type": 20, "optional": true }
+      }
+    },
+    { "union": [5, 238, 239] },
+    { "literal": "wrap" },
+    { "literal": "clip" },
+    { "union": [5, 241] },
+    { "array": 242 },
+    {
+      "object": {
+        "lastBlockIndex": { "type": 3, "optional": false },
+        "kind": { "type": 243, "optional": false },
+        "hf": { "type": 205, "optional": false }
+      }
+    },
+    { "union": [244, 245] },
+    { "literal": "header" },
+    { "literal": "footer" },
+    { "union": [5, 247] },
+    {
+      "object": {
+        "newDefs": { "type": 248, "optional": true },
+        "restartNums": { "type": 254, "optional": true }
+      }
+    },
+    { "union": [5, 249] },
+    { "array": 250 },
+    {
+      "object": {
+        "numId": { "type": 10, "optional": false },
+        "kind": { "type": 25, "optional": false },
+        "levels": { "type": 251, "optional": true }
+      }
+    },
+    { "union": [5, 252] },
+    { "array": 253 },
+    {
+      "object": {
+        "numFmt": { "type": 10, "optional": false },
+        "lvlText": { "type": 10, "optional": false },
+        "indentLeft": { "type": 3, "optional": false },
+        "hanging": { "type": 19, "optional": true },
+        "start": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [5, 255] },
+    { "array": 256 },
+    {
+      "object": {
+        "numId": { "type": 10, "optional": false },
+        "abstractNumId": { "type": 10, "optional": false },
+        "startOverrides": { "type": 257, "optional": false }
+      }
+    },
+    { "object": {}, "numberIndex": 3 },
+    { "union": [5, 259] },
+    { "array": 260 },
+    {
+      "object": {
+        "styleId": { "type": 10, "optional": false },
+        "type": { "type": 261, "optional": false },
+        "name": { "type": 10, "optional": false },
+        "basedOn": { "type": 11, "optional": true },
+        "rPr": { "type": 263, "optional": true },
+        "pPr": { "type": 265, "optional": true }
+      }
+    },
+    { "union": [16, 262] },
+    { "literal": "character" },
+    { "union": [5, 264] },
+    {
+      "object": {
+        "bold": { "type": 20, "optional": true },
+        "italic": { "type": 20, "optional": true },
+        "underline": { "type": 20, "optional": true },
+        "strike": { "type": 20, "optional": true },
+        "color": { "type": 11, "optional": true },
+        "sizeHalfPoints": { "type": 19, "optional": true },
+        "font": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 266] },
+    {
+      "object": {
+        "align": { "type": 267, "optional": true },
+        "spaceBeforeTwips": { "type": 19, "optional": true },
+        "spaceAfterTwips": { "type": 19, "optional": true },
+        "lineSpacing": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [5, 31, 32, 33, 34] },
+    { "union": [5, 269] },
+    { "object": {}, "index": 10 },
+    { "union": [5, 271] },
+    { "array": 272 },
+    {
+      "object": {
+        "id": { "type": 10, "optional": false },
+        "author": { "type": 10, "optional": false },
+        "initials": { "type": 11, "optional": true },
+        "date": { "type": 11, "optional": true },
+        "text": { "type": 10, "optional": false },
+        "parentId": { "type": 11, "optional": true },
+        "done": { "type": 20, "optional": true },
+        "paraId": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 135, 274] },
+    {
+      "object": {
+        "edit": { "type": 10, "optional": false },
+        "enforced": { "type": 173, "optional": false },
+        "hash": { "type": 11, "optional": true },
+        "salt": { "type": 11, "optional": true },
+        "spinCount": { "type": 19, "optional": true },
+        "algorithmSid": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [5, 135, 276] },
+    {
+      "object": {
+        "recommended": { "type": 20, "optional": true },
+        "hash": { "type": 11, "optional": true },
+        "salt": { "type": 11, "optional": true },
+        "spinCount": { "type": 19, "optional": true },
+        "algorithmSid": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [5, 278] },
+    { "array": 279 },
+    {
+      "object": {
+        "id": { "type": 10, "optional": false },
+        "text": { "type": 10, "optional": false },
+        "richParas": { "type": 280, "optional": true },
+        "noRefMark": { "type": 284, "optional": true },
+        "styleId": { "type": 11, "optional": true },
+        "spacing": { "type": 285, "optional": true }
+      }
+    },
+    { "union": [5, 281] },
+    { "array": 282 },
+    { "array": 283 },
+    {
+      "object": {
+        "text": { "type": 10, "optional": false },
+        "bold": { "type": 20, "optional": true },
+        "italic": { "type": 20, "optional": true },
+        "underline": { "type": 20, "optional": true },
+        "strike": { "type": 20, "optional": true },
+        "color": { "type": 11, "optional": true },
+        "sizeHalfPoints": { "type": 19, "optional": true },
+        "fontAscii": { "type": 11, "optional": true },
+        "font": { "type": 11, "optional": true },
+        "caps": { "type": 83, "optional": true }
+      }
+    },
+    { "union": [5, 22] },
+    { "union": [5, 286] },
+    {
+      "object": {
+        "beforeTwips": { "type": 19, "optional": true },
+        "afterTwips": { "type": 19, "optional": true },
+        "lineRule": { "type": 36, "optional": true },
+        "lineRawTwips": { "type": 19, "optional": true }
+      }
+    },
+    { "union": [5, 288] },
+    { "array": 289 },
+    {
+      "object": {
+        "blockIndex": { "type": 3, "optional": false },
+        "base64": { "type": 10, "optional": false },
+        "widthPx": { "type": 3, "optional": false },
+        "heightPx": { "type": 3, "optional": false },
+        "offsetXPx": { "type": 3, "optional": false },
+        "offsetYPx": { "type": 3, "optional": false },
+        "payload": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 291] },
+    { "array": 292 },
+    {
+      "object": {
+        "tag": { "type": 10, "optional": false },
+        "type": { "type": 10, "optional": false },
+        "author": { "type": 10, "optional": false },
+        "title": { "type": 10, "optional": false },
+        "year": { "type": 10, "optional": false },
+        "publisher": { "type": 11, "optional": true },
+        "url": { "type": 11, "optional": true }
+      }
+    },
+    { "union": [5, 294] },
+    {
+      "object": {
+        "major": { "type": 10, "optional": false },
+        "minor": { "type": 10, "optional": false },
+        "eastAsia": { "type": 11, "optional": true },
+        "majorEastAsia": { "type": 11, "optional": true },
+        "majorCs": { "type": 11, "optional": true },
+        "minorCs": { "type": 11, "optional": true },
+        "eaLang": { "type": 11, "optional": true },
+        "bidiLang": { "type": 11, "optional": true },
+        "majorScripts": { "type": 268, "optional": true },
+        "minorScripts": { "type": 268, "optional": true }
+      }
+    },
+    { "union": [5, 296] },
+    {
+      "object": {
+        "name": { "type": 11, "optional": true },
+        "dk1": { "type": 11, "optional": true },
+        "lt1": { "type": 11, "optional": true },
+        "hlink": { "type": 11, "optional": true },
+        "folHlink": { "type": 11, "optional": true },
+        "dk2": { "type": 11, "optional": true },
+        "lt2": { "type": 11, "optional": true },
+        "accent1": { "type": 11, "optional": true },
+        "accent2": { "type": 11, "optional": true },
+        "accent3": { "type": 11, "optional": true },
+        "accent4": { "type": 11, "optional": true },
+        "accent5": { "type": 11, "optional": true },
+        "accent6": { "type": 11, "optional": true }
+      }
+    }
+  ]
+}

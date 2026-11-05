@@ -1,0 +1,42 @@
+{
+  "name": "@seal-harness/workspace-word",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Seal Harness 工作区 Office 编辑插件（Stratex GenOffice 适配）",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-sidebar-right",
+        "@deepseek-ai/dsh-client-ui-sidebar-files",
+        "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+        "@deepseek-ai/dsh-client-ui-chat",
+        "@deepseek-ai/dsh-client-ui-deliverables",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-client-connection",
+        "@seal-harness/identity"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-client-connection": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-sidebar-right": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-sidebar-files": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-sidebar-documentpreview": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-chat": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-deliverables": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-api-session-controller": "0.2.1-rc.5",
+    "@seal-harness/office": "0.1.0",
+    "@seal-harness/identity": "0.1.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

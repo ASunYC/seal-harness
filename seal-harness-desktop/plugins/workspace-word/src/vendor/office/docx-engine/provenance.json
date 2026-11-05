@@ -1,0 +1,253 @@
+{
+  "commit": "953595e2f1635140e2a6c1f86c2fa12b0cca77b8",
+  "geometry": {
+    "local_path": "../geometry/custgeom.ts",
+    "local_sha256": "2cf810b5826e407c989e5d2c8dc62e7b514344aabc83d87f6d3116ee3e7149a0",
+    "source": "packages/pptx-engine/src/custgeom.ts",
+    "upstream_sha256": "dcdf8707d0801f1a09afb90eb278bbfa54aa71583f1ebd83454507e3d17dc61a"
+  },
+  "local_additions": [
+    "required-value.ts",
+    "save-plan-validation.ts",
+    "save-plan-shape.json",
+    "roundtrip.test.ts"
+  ],
+  "upstream": "https://github.com/genspark-ai/genoffice",
+  "license": "Apache-2.0",
+  "files": [
+    {
+      "upstream_sha256": "2465303a194d635a1496a22a3267f25f6ab947bf9fb7328c69c85def58260474",
+      "local_sha256": "1513ab9e0c497e393cdb3de239dc1821a7efee4a2ba5886c77a2b66c921a9681",
+      "local_path": "blank.ts",
+      "upstream_path": "packages/docx-engine/src/blank.ts"
+    },
+    {
+      "upstream_sha256": "170ddba543f570198bc666e822f30e369e4f7d0c3afab9cad5eaf36afe078aef",
+      "local_sha256": "7884c7b0d05861785eb3967bcb852bd82847908a5671bbf19c93e47d3a7a13b2",
+      "local_path": "chart.ts",
+      "upstream_path": "packages/docx-engine/src/chart.ts"
+    },
+    {
+      "upstream_sha256": "8ae3d76d7fc78dc70626ea5feb3568dceac62da40f5c94dca03efc1d447d25cd",
+      "local_sha256": "135b7f5eea7d15fb5282e8b798175058515ef8aed5f34b8b924c84dfd7697d5d",
+      "local_path": "font-table.ts",
+      "upstream_path": "packages/docx-engine/src/font-table.ts"
+    },
+    {
+      "upstream_sha256": "4f03caee2fe556bbbab77079b85139ae43bc4567675a5a6a61d74bf6ed630d24",
+      "local_sha256": "adf6649fc430072b91786fbfe56fbc5c3f9b2a2a45493f0d6dedf4514a4babf7",
+      "local_path": "generate.ts",
+      "upstream_path": "packages/docx-engine/src/generate.ts"
+    },
+    {
+      "upstream_sha256": "7dee8fd4fbbe317c9cb63371c03d805e80c11579dd9d2b4e46691e9fd9a8ddf3",
+      "local_sha256": "5166cec5104d82f9958a885581495b7e9d9d7f32a11014ebe687edb72e639bcd",
+      "local_path": "index.ts",
+      "upstream_path": "packages/docx-engine/src/index.ts"
+    },
+    {
+      "upstream_sha256": "d17b27a57c3d30b3462856b6921bc7be0801c1f69686f89633e965936d84109a",
+      "local_sha256": "ad3ff9f08648758eeb5f6f6873d1cead6ba23fa1a14191868750e6383cfb1a2f",
+      "local_path": "ink.ts",
+      "upstream_path": "packages/docx-engine/src/ink.ts"
+    },
+    {
+      "upstream_sha256": "82cbd1abe2ac96c55adc397b9c9b5a1a22677f94c0bba1f608dd0fa55ceeb8da",
+      "local_sha256": "1ebbb672d94c9c14f75ec57b4b410c778d1927aac3e8926ba1414223729c95a7",
+      "local_path": "list-markers.ts",
+      "upstream_path": "packages/docx-engine/src/list-markers.ts"
+    },
+    {
+      "upstream_sha256": "4d022f70389796db09cd7956657ed140195e58e1490c8b395fb086bce2b2eed0",
+      "local_sha256": "019268f381315d7b69c7f8bc1b8e9209d9b9e49f5bb297f7f24523e39294d1e4",
+      "local_path": "math.ts",
+      "upstream_path": "packages/docx-engine/src/math.ts"
+    },
+    {
+      "upstream_sha256": "b55eb9f483c5ed14793aa211e1b9156d66d486f928b6daeb2504aff62c735128",
+      "local_sha256": "0e7f582eacd463a35a5a55be2189ae16dffe1cca655bad150997474ab3ed6a11",
+      "local_path": "metafile.ts",
+      "upstream_path": "packages/docx-engine/src/metafile.ts"
+    },
+    {
+      "upstream_sha256": "6f82175f4a70bf46984880ba468a72997194a3b8b2af9fdd7e3b35bdd3c9d1f8",
+      "local_sha256": "4f77a5d68ee4732d694ecde6b53c0817a64634aac0cf6e9c93d1e1f8a9dc2b0c",
+      "local_path": "notes.ts",
+      "upstream_path": "packages/docx-engine/src/notes.ts"
+    },
+    {
+      "upstream_sha256": "1ba2768129b9c3c0fa6d1abd4c8bf7915382873f6fc0f31d5911e7f390103e5b",
+      "local_sha256": "fe9f02f474a2dfc923838f0bf685c1254bf999b7f57a5163e584a9afefae4439",
+      "local_path": "ooxml-normalize.ts",
+      "upstream_path": "packages/docx-engine/src/ooxml-normalize.ts"
+    },
+    {
+      "upstream_sha256": "866e63e4b173843447b32414a9ac4e4c372b1c2eb10a11171ea57f4f20ef3a0b",
+      "local_sha256": "850841633ef00e8cc1a27799ebef474bf756a20a76f0c3a67a5b0b7f1bee2f0b",
+      "local_path": "parse-block-passes.ts",
+      "upstream_path": "packages/docx-engine/src/parse-block-passes.ts"
+    },
+    {
+      "upstream_sha256": "7429c844c09854b96b108fa8a985311f469655ecb49cec6223aa894012500462",
+      "local_sha256": "54122163d7d7a049149af88515a608b28120f4fce2096e15402aa4104abf6374",
+      "local_path": "parse-drawing-geometry.ts",
+      "upstream_path": "packages/docx-engine/src/parse-drawing-geometry.ts"
+    },
+    {
+      "upstream_sha256": "43b0bc9340e33a41857646deac84535775a8f3180b5e4a2e21e34369b782cbf3",
+      "local_sha256": "47117a81e078e740403dace846e817ab3efd37f8fa4a912542930d8421e34a81",
+      "local_path": "parse-fields.ts",
+      "upstream_path": "packages/docx-engine/src/parse-fields.ts"
+    },
+    {
+      "upstream_sha256": "08d23dec81c67fef9b5a30641204d68bfa595035d8a41915fea7f6cb087822a5",
+      "local_sha256": "29fa031f8cb9d0b5ede2d59bbec595dcc515cfc5a24507c73343eee5ced4ca62",
+      "local_path": "parse-package.ts",
+      "upstream_path": "packages/docx-engine/src/parse-package.ts"
+    },
+    {
+      "upstream_sha256": "ed090c6aa172152f3d3b5c8371f458a5aca924f6d045a3ca95239ec0b76235b7",
+      "local_sha256": "530d2a0cf48511bf065a964d30faad375e13fd6f0960be397ef682d23b134546",
+      "local_path": "parse-props.ts",
+      "upstream_path": "packages/docx-engine/src/parse-props.ts"
+    },
+    {
+      "upstream_sha256": "cd8ca690f9db8a37bb5c49996a74c1a399eef802467420965dfb94fa75d2f6f2",
+      "local_sha256": "322f333749b215fc4aa35dc1b224c84df33cb95a7ba65a1215f0ba45fe046e58",
+      "local_path": "parse-sdt.ts",
+      "upstream_path": "packages/docx-engine/src/parse-sdt.ts"
+    },
+    {
+      "upstream_sha256": "bb373b3e51d5e16654245bfd11b8990fa4f73638151dda945f600dfe3167f4e8",
+      "local_sha256": "1e3f8d6807e9e0e78fe4c42976f217274c4232a54a2287551e11391cc53c43a2",
+      "local_path": "parse-styles.ts",
+      "upstream_path": "packages/docx-engine/src/parse-styles.ts"
+    },
+    {
+      "upstream_sha256": "8f4e6203cdd52e4387cdf38bd4701c30aa836b8d3d1dc05bf3ad334d75c9f1f0",
+      "local_sha256": "7f19c36a903e34a4a0adbca9ef9f1556a4eff6274688e4316fdbcd6c6d7c9421",
+      "local_path": "parse-vml.ts",
+      "upstream_path": "packages/docx-engine/src/parse-vml.ts"
+    },
+    {
+      "upstream_sha256": "a6dabc3addda484d0a0ba39e94e59f9691ec86f42bcedaa7716693507ca3c817",
+      "local_sha256": "d598be4c62efcd89a113bd1dff700a83f7ac93f4937ed417d1ecaddb002b4320",
+      "local_path": "parse-xml-text.ts",
+      "upstream_path": "packages/docx-engine/src/parse-xml-text.ts"
+    },
+    {
+      "upstream_sha256": "bf79d264b4e7f69079bbb773bd6a4806c245659ecdc0855f4cc6c5f83c3c111d",
+      "local_sha256": "1dec5fd36c9b585b0d59beb031069aaa5a18b5dde0293aa895384295ee7baaad",
+      "local_path": "parse.ts",
+      "upstream_path": "packages/docx-engine/src/parse.ts"
+    },
+    {
+      "upstream_sha256": "a92b27989e90b8c1fed9f8fa7977ad80a0a41d1212557230a0d1f1ebd0afda25",
+      "local_sha256": "126f2cb020ee103e41ca438d8ba9b68d5bf51daf26fd407655d9557268872ff0",
+      "local_path": "patch.ts",
+      "upstream_path": "packages/docx-engine/src/patch.ts"
+    },
+    {
+      "upstream_sha256": "9ff9c9233d38dd66dd4ee93ede9bae51ee1f7433310335cec9b061b52fddbfe3",
+      "local_sha256": "ecdbe2b8cadd692714dcbc4bf66acf256f3df1cba40001421729730b811e0a91",
+      "local_path": "protection.ts",
+      "upstream_path": "packages/docx-engine/src/protection.ts"
+    },
+    {
+      "upstream_sha256": "51f9f0d1282ea688071ecdceb5b4e40760c51b70a7c16c9d0ba20d8011fb6df8",
+      "local_sha256": "bc4579921377d747736fddb2c5a55711146b6e96fa5bc6ed354627776c633a6d",
+      "local_path": "resource-cleanup.ts",
+      "upstream_path": "packages/docx-engine/src/resource-cleanup.ts"
+    },
+    {
+      "upstream_sha256": "2f4231d13fb63fe69ac73883eae9ad8bfb3c5c3fc24c6d6401eeef2e3df0667a",
+      "local_sha256": "6443cbd66ee6efe51480c7709e86a96f6306cfd1c2edd93ad33c930cac2b2007",
+      "local_path": "scan.ts",
+      "upstream_path": "packages/docx-engine/src/scan.ts"
+    },
+    {
+      "upstream_sha256": "83af13d81f846ebd0ae41fae9cb7d045e874d38a77c7da2925dbbe9865feff49",
+      "local_sha256": "86b566a833fdaa71e9fa7d9e1c2daaf63d51b5ca519db802ac971f2888ea9468",
+      "local_path": "section.ts",
+      "upstream_path": "packages/docx-engine/src/section.ts"
+    },
+    {
+      "upstream_sha256": "839d62b2e2b2bf53b1ab264cd91f136c64632d52be7393861959f7496c77b0f6",
+      "local_sha256": "ec9a412238028d6a2ce885973d4ed901c5bec6df32668b52cd59605d740da558",
+      "local_path": "sources.ts",
+      "upstream_path": "packages/docx-engine/src/sources.ts"
+    },
+    {
+      "upstream_sha256": "a3da41140a8e104068fb55d92ad67244f5a811be83d562bdbbe95131b985c5a9",
+      "local_sha256": "e58679d31d545e9c25bf324a2efdd10294e801e460c0ca982d2cc4ea9131acad",
+      "local_path": "symbol-fonts.ts",
+      "upstream_path": "packages/docx-engine/src/symbol-fonts.ts"
+    },
+    {
+      "upstream_sha256": "36bf587bca2a21ad81d6c6e0ad6b1ca8919105ec41caa919429c89737bc346d4",
+      "local_sha256": "b712ee0724fe419837f1af1ce1c77e9d544dd33b61f8d96f1ab62f7201301af7",
+      "local_path": "text-patch.ts",
+      "upstream_path": "packages/docx-engine/src/text-patch.ts"
+    },
+    {
+      "upstream_sha256": "fb77ba3abd19af1ecd92022110aaaf3674c1f33a9ddef36c69303f1c58391a9b",
+      "local_sha256": "04f9f0a19bce52aba05fe0fa8c4746704ebe4a6ec37bc7a423d792291695af9a",
+      "local_path": "theme.ts",
+      "upstream_path": "packages/docx-engine/src/theme.ts"
+    },
+    {
+      "upstream_sha256": "f597f8afb98c9c0a9a98948419ce29581d8eca5220ab8bd36bdd2a8df26a1782",
+      "local_sha256": "5f46eea6e1bbcd36f42faee883c74090b78e2471d84a142a38376be4a338fc87",
+      "local_path": "tiff.ts",
+      "upstream_path": "packages/docx-engine/src/tiff.ts"
+    },
+    {
+      "upstream_sha256": "1dcc11586565258985bf50db7c8505e1f57c6697d8b2b8ac05510aa5547c21d6",
+      "local_sha256": "86d92a9cc89fb8e264b2dcf7bed6b40d47961599dc46bc2752d84c946acf9048",
+      "local_path": "types.ts",
+      "upstream_path": "packages/docx-engine/src/types.ts"
+    },
+    {
+      "upstream_sha256": "90ac6d8280158b41664e57720d0a40227e1ae9f16385113d0024dea0fccc6a37",
+      "local_sha256": "e547fdcd8da35e82f7425aa218e6cd3749762181b3d4a67a319252b7c0e14f90",
+      "local_path": "watermark.ts",
+      "upstream_path": "packages/docx-engine/src/watermark.ts"
+    },
+    {
+      "upstream_sha256": "838c23df106ac27b998349335fe3fc0e7baae849b326dc28c080ff05afb72bbe",
+      "local_sha256": "ac4721c3f225000662a0fdeeb676a658842eeb10b88f9481c404ce0ccb61762b",
+      "local_path": "xml-utils.ts",
+      "upstream_path": "packages/docx-engine/src/xml-utils.ts"
+    },
+    {
+      "upstream_sha256": "45cb7e44d47c2319b7c679a01fcd5132e6287e5217db1456c080bd6a8782fabe",
+      "local_sha256": "59f8ed6eacb035ac775d4c3a6b1ee9cf47336d841224d55f2fb548af6f47a0fc",
+      "local_path": "zip-load.ts",
+      "upstream_path": "packages/docx-engine/src/zip-load.ts"
+    },
+    {
+      "upstream_sha256": "efd275a358536126169900442fcec9557a9b8a0c4ce6bd6e428723289625f0e0",
+      "local_sha256": "9a35a85e7079edf51c2dce78e09428463441b318680e1c96aab3ba176dae78b7",
+      "local_path": "vendor/emf-converter/index.d.mts",
+      "upstream_path": "packages/docx-engine/src/vendor/emf-converter/index.d.mts"
+    },
+    {
+      "upstream_sha256": "d836dc8dc003ebdcb8567ff480ab7a0f04a52207fd7b60f455ed013b3fd78cbc",
+      "local_sha256": "9755cc99df56c068131820ede61de62c5afc4d1e3c3c1b4326c9d1725be73335",
+      "local_path": "vendor/emf-converter/index.mjs",
+      "upstream_path": "packages/docx-engine/src/vendor/emf-converter/index.mjs"
+    },
+    {
+      "upstream_sha256": "2c27550900d2cabf83527a04600ba8042e3ba89e70ec077ff220afa48c8230a7",
+      "local_sha256": "2c27550900d2cabf83527a04600ba8042e3ba89e70ec077ff220afa48c8230a7",
+      "local_path": "vendor/emf-converter/LICENSE",
+      "upstream_path": "packages/docx-engine/src/vendor/emf-converter/LICENSE"
+    },
+    {
+      "upstream_sha256": "ec07bf4527bf628b662e7e547ebe31fdac6e9d787b1f00ef08f777ef3258ba97",
+      "local_sha256": "ec07bf4527bf628b662e7e547ebe31fdac6e9d787b1f00ef08f777ef3258ba97",
+      "local_path": "vendor/emf-converter/README.md",
+      "upstream_path": "packages/docx-engine/src/vendor/emf-converter/README.md"
+    }
+  ]
+}
