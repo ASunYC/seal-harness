@@ -4,13 +4,29 @@ import { createHash } from 'node:crypto'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import test from 'node:test'
+import { pathToFileURL } from 'node:url'
 import vm from 'node:vm'
 import configuration from './electron-builder.mjs'
 import { verifyDistributionArtifacts } from './verify-package.mjs'
 import { buildBrand, desktopRequire, product, productPlugins, productRoot, root } from './build.mjs'
 import { archiveConflictingElectronLink } from '../src/windows-shell-link.js'
+
+test('Seal 首次工作区目录使用产品名而不改动 Documents 与默认末段', async () => {
+  const controllerDir = dirname(desktopRequire.resolve('@deepseek-ai/dsh-api-workspace-controller'))
+  const { defaultWorkspaceDirectory } = await import(pathToFileURL(join(controllerDir, 'types/default-directory.js')).href)
+  const signal = new AbortController().signal
+  for (const [platform, documents, expected] of [
+    ['win32', 'C:\\Users\\Tester\\Documents', 'C:\\Users\\Tester\\Documents\\seal-harness\\default-workspace'],
+    ['darwin', '/Users/tester/Documents', '/Users/tester/Documents/seal-harness/default-workspace'],
+    ['linux', '/home/tester/Documents', '/home/tester/Documents/seal-harness/default-workspace'],
+  ]) {
+    assert.equal(await defaultWorkspaceDirectory(documents, signal, { platform }), expected)
+  }
+  const runtime = readFileSync(join(controllerDir, 'index.js'), 'utf8')
+  assert.match(runtime, /paths\.join\(directory, "seal-harness", DEFAULT_WORKSPACE_DIRECTORY\)/)
+})
 
 test('Seal Harness构建依赖由根工作区持有，不污染 Stable 或 Beta Desktop', () => {
   const workspace = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))

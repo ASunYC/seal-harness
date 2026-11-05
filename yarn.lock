@@ -2388,6 +2388,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@deepseek-ai/dsh-api-workspace-controller@patch:@deepseek-ai/dsh-api-workspace-controller@file%3Avendor/dsh-runtime/0.2.1-rc.5/deepseek-ai-dsh-api-workspace-controller-0.2.1-rc.5.tgz#./patches/dsh-api-workspace-controller@0.2.1-rc.5.patch::locator=seal-harness%40workspace%3A.":
+  version: 0.2.1-rc.5
+  resolution: "@deepseek-ai/dsh-api-workspace-controller@patch:@deepseek-ai/dsh-api-workspace-controller@file%3Avendor/dsh-runtime/0.2.1-rc.5/deepseek-ai-dsh-api-workspace-controller-0.2.1-rc.5.tgz%23vendor/dsh-runtime/0.2.1-rc.5/deepseek-ai-dsh-api-workspace-controller-0.2.1-rc.5.tgz%3A%3Ahash=f5924e&locator=seal-harness%2540workspace%253A.#./patches/dsh-api-workspace-controller@0.2.1-rc.5.patch::version=0.2.1-rc.5&hash=2f5f4b&locator=seal-harness%40workspace%3A."
+  dependencies:
+    "@deepseek-ai/dsh-deque": "npm:0.2.1-rc.5"
+    "@deepseek-ai/dsh-native-command": "npm:0.2.1-rc.5"
+    "@deepseek-ai/schemastery": "npm:~3.18.5"
+    zod: "npm:4.4.3"
+  peerDependencies:
+    "@deepseek-ai/cordis": ~4.0.5
+    "@deepseek-ai/dsh-api-gateway": 0.2.1-rc.5
+    "@deepseek-ai/dsh-client-connection": 0.2.1-rc.5
+    "@deepseek-ai/dsh-host-directory-picker": 0.2.1-rc.5
+    "@deepseek-ai/dsh-session": 0.2.1-rc.5
+    "@deepseek-ai/dsh-storage-domain": 0.2.1-rc.5
+    "@deepseek-ai/dsh-typert-protocol": 0.2.1-rc.5
+    "@deepseek-ai/dsh-workspace": 0.2.1-rc.5
+  checksum: 10c0/b706364e9700e52e1612a52012e0eb5d3fd396cf294fa8270bab9760348bc6b9c1ac50047cdf4aebb3ad15e1bff681b70ac047d677d30a08328d88064c6daa97
+  languageName: node
+  linkType: hard
+
 "@deepseek-ai/dsh-api-workspace-files@file:vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-api-workspace-files-0.1.7-alpha.2.tgz::locator=seal-harness%40workspace%3A.":
   version: 0.1.7-alpha.2
   resolution: "@deepseek-ai/dsh-api-workspace-files@file:vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-api-workspace-files-0.1.7-alpha.2.tgz#vendor/dsh-runtime/0.1.7-alpha.2/deepseek-ai-dsh-api-workspace-files-0.1.7-alpha.2.tgz::hash=a9e895&locator=seal-harness%40workspace%3A."

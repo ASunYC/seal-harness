@@ -12,6 +12,8 @@ Electron 44 内置 Node 24.18.1；Stable/Beta 必须直接使用支持它的 `no
 
 `product.json` 是产品名、应用 ID、数据目录与更新渠道的来源。名称是 Seal Harness，应用 ID 是 `com.seal-harness.desktop`，默认 Home 是 `~/.seal-harness`；显式 `DSH_HOME` 覆盖保留。社区 DSH 更新渠道不得作用于产品。海豹图标原图和派生资源由 `assets/`、`icon-provenance.json` 和 `scripts/export-product-icons.py` 管理；保留 Git LFS 与来源记录。构建产物不入库。
 
+首次工作区目录使用 `<Documents>/seal-harness/default-workspace`。DSH 工作区控制器 0.2.1-rc.5 内部固定了 `deepseek-harness` 路径片段，公开的 `documentsDirectory` 不能改这一层；产品通过 `patches/dsh-api-workspace-controller@0.2.1-rc.5.patch` 修改当前运行包的 Host 与类型 JS 两处路径。升级运行时须核对并迁移此补丁。已经登记的工作区和历史会话保留原路径，不在初始化时自动移动。
+
 ## Electron 浏览器 MCP 子进程
 
 1. **范围与触发**：内置 Playwright MCP provider 用 `process.execPath` 运行 npm CLI。进程内 Electron Host 的该路径不是普通 Node；缺少子进程模式标志会导致 Connection closed，继而阻断 standard 会话创建。

@@ -1,0 +1,16 @@
+diff --git a/lib/index.js b/lib/index.js
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -638,3 +638,3 @@
+ 	directory = validateDocumentsDirectory(directory, platform);
+ 	signal.throwIfAborted();
+-	return paths.join(directory, "deepseek-harness", DEFAULT_WORKSPACE_DIRECTORY);
++	return paths.join(directory, "seal-harness", DEFAULT_WORKSPACE_DIRECTORY);
+diff --git a/lib/types/default-directory.js b/lib/types/default-directory.js
+--- a/lib/types/default-directory.js
++++ b/lib/types/default-directory.js
+@@ -61,3 +61,3 @@
+     directory = validateDocumentsDirectory(directory, platform);
+     signal.throwIfAborted();
+-    return paths.join(directory, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY);
++    return paths.join(directory, 'seal-harness', DEFAULT_WORKSPACE_DIRECTORY);
