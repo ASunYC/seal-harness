@@ -1,7 +1,16 @@
 import snapshot from '../catalog/cc-haha.json' with { type: 'json' }
 
 export const catalogSource = { repository: snapshot.repository, commit: snapshot.commit }
-export const connectorCatalog = snapshot.connectors
+export const blenderConnector = {
+  id: 'blender-mcp', displayName: 'Blender MCP', transport: 'local-mcp', source: 'product',
+  category: 'development', version: '2.2.6', license: 'MIT',
+  homepage: 'https://github.com/ahujasid/mcp-for-blender',
+  description: '通过 MCP 在 Blender 中创建和编辑 3D 场景。',
+  requirements: '需要 Blender 3.0+ 和 uv。安装时会将官方插件复制到当前系统用户的 Blender 插件目录；随后在 Blender 中启用 Interface: MCP for Blender，并启动 MCP Server。',
+  example: '请在 Blender 中创建一个简单的立方体场景。',
+  icon: `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 3 28 10v12l-12 7L4 22V10zM4 10l12 7 12-7M16 17v12" fill="none" stroke="#6d78e8" stroke-width="2.2" stroke-linejoin="round"/></svg>')}`,
+}
+export const connectorCatalog = [...snapshot.connectors, blenderConnector]
 export const skillCatalog = [
   ...snapshot.connectors.filter(item => item.transport === 'skills').map(item => ({ id: `bundle:${item.id}`, name: item.displayName,
     summary: item.description, category: item.category, version: item.version, icon: item.icon, source: 'bundle',

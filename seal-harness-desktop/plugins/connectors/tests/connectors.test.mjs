@@ -13,6 +13,7 @@ import { credentialKey } from '@deepseek-ai/dsh-credentials'
 import { Session } from '@deepseek-ai/dsh-session'
 import { createScope, scopeTarget } from '@deepseek-ai/dsh-scope'
 import { createModule } from '../src/module.js'
+import { blenderConfiguration } from '../src/blender.js'
 import { fromDescriptor } from '../src/schema.js'
 import { capabilityOptions } from '../../experts/src/capabilities.js'
 import { createArchive } from '../../skills/src/package.js'
@@ -25,7 +26,7 @@ test('system MCP catalog installs per account and sends query credentials only t
     getSession: () => account, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener) },
   }))
   const installed = await handlers.installCatalog({ id: 'tencent-maps' })
-  assert.equal(installed.catalog.length, 55)
+  assert.equal(installed.catalog.length, 56)
   const entry = installed.items[0]
   assert.equal(entry.catalogId, 'tencent-maps')
   assert.equal(entry.enabled, false)
@@ -49,14 +50,55 @@ test('system MCP catalog installs per account and sends query credentials only t
   assert.notEqual((await handlers.installCatalog({ id: 'tencent-maps' })).items[0].id, entry.id)
 })
 
-async function host(t, backend = {}, prepare) {
+test('built-in Blender installation saves only the signed-in account after addon preparation', async t => {
+  let account = { accountId: 'blender-owner', epoch: 1 }
+  const listeners = new Set()
+  let prepared = 0
+  const { handlers } = await host(t, {}, ctx => ctx.provide('sealHarnessIdentity', {
+    getSession: () => account, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener) },
+  }), { blender: { async prepare() { prepared++; return blenderConfiguration(process.execPath) } } })
+  const installed = await handlers.installCatalog({ id: 'blender-mcp' })
+  assert.equal(prepared, 1)
+  assert.equal(installed.catalog.find(item => item.id === 'blender-mcp').installed, true)
+  assert.equal(installed.items[0].command, process.execPath)
+  assert.deepEqual(installed.items[0].args, ['--python', '3.11', '--from', 'mcp-for-blender==2.2.6', 'mcp-for-blender'])
+  assert.equal(installed.items[0].enabled, false)
+  assert.equal((await handlers.installCatalog({ id: 'blender-mcp' })).items.length, 1)
+  assert.equal(prepared, 1)
+  account = { accountId: 'another-owner', epoch: 2 }
+  for (const listener of listeners) listener()
+  assert.equal((await handlers.list()).items.length, 0)
+  assert.equal((await handlers.list()).catalog.find(item => item.id === 'blender-mcp').installed, false)
+})
+
+test('failed Blender addon preparation leaves no installed connector', async t => {
+  const { handlers } = await host(t, {}, ctx => ctx.provide('sealHarnessIdentity', {
+    getSession: () => ({ accountId: 'blender-owner', epoch: 1 }), subscribe() { return () => {} },
+  }), { blender: { async prepare() { throw new Error('addon failed') } } })
+  await assert.rejects(handlers.installCatalog({ id: 'blender-mcp' }), /addon failed/)
+  assert.equal((await handlers.list()).catalog.find(item => item.id === 'blender-mcp').installed, false)
+})
+
+test('Blender installation does not persist after the local account changes', async t => {
+  let account = { accountId: 'first-owner', epoch: 1 }
+  const { handlers } = await host(t, {}, ctx => ctx.provide('sealHarnessIdentity', {
+    getSession: () => account, subscribe() { return () => {} },
+  }), { blender: { async prepare() {
+    account = { accountId: 'second-owner', epoch: 2 }
+    return blenderConfiguration(process.execPath)
+  } } })
+  await assert.rejects(handlers.installCatalog({ id: 'blender-mcp' }), /账号已变化/)
+  assert.equal((await handlers.list()).catalog.find(item => item.id === 'blender-mcp').installed, false)
+})
+
+async function host(t, backend = {}, prepare, options = {}) {
   const home = await mkdtemp(join(tmpdir(), 'seal-harness-connectors-'))
   const ctx = new Context()
   await ctx.plugin(SystemPrompt).await()
   await ctx.plugin(ToolRuntime).await()
   await ctx.plugin(LocalCredentials, { dshHome: home, watch: false }).await()
   await prepare?.(ctx)
-  const module = await createModule(ctx, { home, backend })
+  const module = await createModule(ctx, { home, backend, ...options })
   t.after(async () => { await module.dispose(); await ctx.fiber.dispose(); ctx.sealHarnessDatabase?.close(); await rm(home, { recursive: true, force: true }) })
   return { ctx, home, module, handlers: module.handlers }
 }

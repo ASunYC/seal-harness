@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 const categories = { office: '办公', development: '开发', dev: '开发', search: '搜索', maps: '地图', data: '数据', design: '设计', productivity: '效率', finance: '财务', legal: '法律', agent: '智能体', coding: '编码', research: '研究', content: '内容', automation: '自动化', tools: '工具', media: '设计与多媒体', marketing: '营销电商', professional: '行业专业', life: '生活', security: '安全运维' }
-const sources = { bundle: '固定技能包', clawhub: 'ClawHub', skillhub: 'SkillHub' }
+const sources = { bundle: '固定技能包', clawhub: 'ClawHub', skillhub: 'SkillHub', product: 'Seal 内置' }
 function CatalogImage({ item }) {
   const [failed, setFailed] = useState(false)
   const url = item.icon ?? (/^https:\/\//.test(item.iconUrl ?? '') ? item.iconUrl : null)

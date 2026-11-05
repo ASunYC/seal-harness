@@ -2,14 +2,20 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
-import { connectorCatalog, skillCatalog, skillBundles, remoteConfiguration, remoteUrl } from '../src/catalog.js'
+import { blenderConnector, connectorCatalog, skillCatalog, skillBundles, remoteConfiguration, remoteUrl } from '../src/catalog.js'
 import { downloadPinnedFiles, downloadMarketSkill, boundedDownload } from '../src/catalog-download.js'
 import { configSchema, validateTransport } from '../../connectors/src/schema.js'
 import { getArtifactPins } from '../vendor/cc-haha/managedRuntime.ts'
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex')
-test('all 55 connectors, 398 market skills and 29 pinned skills have complete source records and icons', async () => {
-  assert.equal(connectorCatalog.length, 55)
+test('55 sourced connectors keep their provenance alongside the built-in Blender entry', async () => {
+  const sourced = connectorCatalog.filter(item => item.source !== 'product')
+  assert.equal(sourced.length, 55)
+  assert.equal(connectorCatalog.length, 56)
+  assert.equal(blenderConnector.id, 'blender-mcp')
+  assert.equal(blenderConnector.version, '2.2.6')
+  assert.equal(blenderConnector.license, 'MIT')
+  assert.match(decodeURIComponent(blenderConnector.icon), /<svg/)
   assert.equal(connectorCatalog.filter(item => item.transport === 'mcp').length, 43)
   assert.equal(connectorCatalog.filter(item => item.transport === 'cli').length, 3)
   assert.equal(skillBundles.length, 9)
@@ -17,7 +23,7 @@ test('all 55 connectors, 398 market skills and 29 pinned skills have complete so
   assert.equal(new Set(skillCatalog.map(item => item.id)).size, 407)
   assert.equal(skillBundles.flatMap(recipe => recipe.files.filter(file => file.target.endsWith('/SKILL.md'))).length, 29)
   const provenance = JSON.parse(await readFile(new URL('../catalog/cc-haha-provenance.json', import.meta.url), 'utf8'))
-  for (const item of connectorCatalog) {
+  for (const item of sourced) {
     assert(item.displayName)
     assert.equal(hash(Buffer.from(item.icon.split(',')[1], 'base64')), provenance.sourceHashes[`desktop/public/connectors/${item.id}.svg`])
     assert(Buffer.from(item.icon.split(',')[1], 'base64').toString('utf8').includes('<svg'))

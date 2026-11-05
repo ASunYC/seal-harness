@@ -1,6 +1,7 @@
 import { hasCompletionMarker, prepareWorkspace } from './workspace.js'
 import { resolveStdioRuntime } from './runtime.js'
 import { connectorCatalog, catalogConnector, remoteConfiguration, remoteUrl, skillBundles } from '../../capability-shared/src/catalog.js'
+import { createBlenderIntegration } from './blender.js'
 import { nativeAdapter } from './native.js'
 import * as nativePlugin from './native.js'
 import { join, relative, isAbsolute } from 'node:path'
@@ -46,7 +47,7 @@ const capabilities = {
  * @param {import('@deepseek-ai/cordis').Context} ctx
  * @param {{home: string, backend: import('../backend.js').CapabilityBackend}} options
  */
-export async function createModule(ctx, { home, backend }) {
+export async function createModule(ctx, { home, backend, blender = createBlenderIntegration() }) {
   const credentials = ctx.get('credentials')
   const tools = ctx.get('tools')
   const running = new Map()
@@ -557,6 +558,9 @@ export async function createModule(ctx, { home, backend }) {
           const installed = await native.adapter.prepare(signal ?? AbortSignal.timeout(600000), () => {})
           config = { id: `cc-${id}`, catalogId: id, nativeCli: true, name: item.displayName, summary: '使用官方办公 CLI；请先在访问凭据中授权。', category: 'office',
             transport: 'stdio', command: installed.command, args: installed.args, env: installed.env, installed: true, enabled: false }
+        } else if (item.transport === 'local-mcp') {
+          requireStorage()
+          config = await blender.prepare(signal)
         } else config = remoteConfiguration(id)
         const current = await currentSession()
         if (current?.accountId !== account.accountId || current?.epoch !== account.epoch) throw new ConnectorError('当前账号已变化，请重新安装。')
