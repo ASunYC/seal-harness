@@ -5,3 +5,5 @@
 本机程序只使用已安装的 `uvx`。运行 `uvx --python 3.11 --from mcp-for-blender==2.2.6 mcp-for-blender install-addon`，由上游负责 Blender 用户插件的备份和复制。安装成功后记录 `uvx` 绝对路径与同版本的 MCP 启动参数。默认 disabled，避免在 Blender 尚未启用插件时呈现可用状态。插件安装会影响当前系统用户下的 Blender 插件目录，目录卡片明确说明。
 
 来源：`https://github.com/ahujasid/mcp-for-blender`，检查提交 `992233bb258975a05eec8b5691465c50c2831e34`，PyPI 版本 `2.2.6`，MIT。真实 Blender 不随 Seal 分发。
+
+目录图标使用同一提交的 `integrations/codex/plugins/mcp-for-blender/assets/logo.png`。以带来源和 SHA256 的本地 data URI 随目录打包，使目录卡片与已安装项复用同一图标；MIT 许可原文收录在产品第三方声明中。

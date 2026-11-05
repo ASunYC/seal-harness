@@ -97,6 +97,20 @@ test('installed connector still opens runtime and local credential management', 
   assert.equal(calls.some(call => call.endpoint.startsWith('store/')), false)
 })
 
+test('Blender catalog icon also appears in the installed summary and card', async t => {
+  const blender = connectorCatalog.find(item => item.id === 'blender-mcp')
+  const item = { id: 'blender-owner', catalogId: blender.id, catalogIcon: blender.icon, name: blender.displayName,
+    summary: blender.description, category: 'development', transport: 'stdio', command: 'uvx',
+    enabled: false, installed: true, status: 'disabled', tools: [], revision: 0 }
+  await mount(t, async endpoint => {
+    if (endpoint === 'connectors/list') return { items: [item], catalog: connectorCatalog.map(entry => ({ ...entry, installed: entry.id === blender.id })) }
+    throw new Error(endpoint)
+  })
+  assert.equal(document.querySelector('.cap-catalog__card:last-child .cap-catalog__icon img')?.getAttribute('src'), blender.icon)
+  assert.equal(document.querySelector('.resource-installed__icon img')?.getAttribute('src'), blender.icon)
+  assert.equal(document.querySelector('.mcp-installed-card__icon img')?.getAttribute('src'), blender.icon)
+})
+
 test('system connector catalog contains all cards and installs into the native credential manager', async t => {
   const calls = []
   let snapshot = { items: [], catalog: connectorCatalog.map(item => ({ ...item, supported: true, installed: false })) }
@@ -117,6 +131,8 @@ test('system connector catalog contains all cards and installs into the native c
   assert.match(emptyInstalled.querySelector('summary').textContent, /已安装\s*0\s*暂无/)
   assert.equal(document.querySelectorAll('input[type="search"]').length, 1)
   assert.equal(document.querySelectorAll('.cap-catalog__card').length, 56)
+  const blenderCard = [...document.querySelectorAll('.cap-catalog__card')].find(card => card.textContent.includes('Blender MCP'))
+  assert.equal(blenderCard.querySelector('.cap-catalog__icon img')?.getAttribute('src'), connectorCatalog.find(item => item.id === 'blender-mcp').icon)
   await click('安装 Blender MCP')
   assert.match(document.querySelector('[role="dialog"]').textContent, /Blender 插件目录/)
   assert.match(document.querySelector('[role="dialog"]').textContent, /Seal 内置/)

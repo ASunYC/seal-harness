@@ -60,6 +60,7 @@ test('built-in Blender installation saves only the signed-in account after addon
   const installed = await handlers.installCatalog({ id: 'blender-mcp' })
   assert.equal(prepared, 1)
   assert.equal(installed.catalog.find(item => item.id === 'blender-mcp').installed, true)
+  assert.equal(installed.items[0].catalogIcon, installed.catalog.find(item => item.id === 'blender-mcp').icon)
   assert.equal(installed.items[0].command, process.execPath)
   assert.deepEqual(installed.items[0].args, ['--python', '3.11', '--from', 'mcp-for-blender==2.2.6', 'mcp-for-blender'])
   assert.equal(installed.items[0].enabled, false)
