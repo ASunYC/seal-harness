@@ -29,6 +29,9 @@ export const styles = `
 .seal-apps-installed-card strong { font-size:14px; }
 .seal-apps-installed-card p { margin:4px 0 0; color:var(--muted2); font-size:12px; }
 .seal-apps-installed-card button { flex:none; background:var(--raised); color:var(--ink); cursor:pointer; }
+.seal-app-local-path { display:grid; gap:8px; margin-top:18px; color:var(--muted2); font-size:12px; }
+.seal-app-local-path input { width:100%; min-width:0; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--ink); font:inherit; }
+.seal-app-local-path input:focus { outline:2px solid #8caeff; outline-offset:1px; }
 .seal-apps-empty { min-height:110px; display:grid; place-items:center; align-content:center; gap:4px; color:var(--muted2); text-align:center; }
 .seal-apps-empty strong { color:var(--ink); font-size:14px; }
 .seal-apps-empty p { margin:0; font-size:12px; }

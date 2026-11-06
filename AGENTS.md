@@ -10,6 +10,7 @@
 
 - 尽量不修改继承的上游实现。优先使用公开的插件服务、事件、slot、bundle 和 profile；只有确认公开扩展无法满足当前需求时，才记录缺口并做最小必要修改。
 - `seal-harness-desktop/` 放Seal Harness产品身份、图标、产品组合、品牌插件和启动/打包接入。产品插件先在此目录实现，出现真实独立、可复用功能后才加入根 `packages/`，不预建空包。
+- 独立桌面应用与插件分层：应用有自己的发布物、进程、界面和数据；Seal 插件只承担接入。新增内置应用前须遵守 [独立应用接入规范](.trellis/spec/general/application-architecture.md)，不能把网页入口或插件页面当作已完成的应用交付。
 - `deepseek-harness/` 保持只读的固定提交子模块。更新 pin 单独提交，不与产品行为混合。
 - 根 `dsh-plugin-desktop/`、`dsh-plugin-desktop-beta/`、`dsh-desktop-next/` 等是继承的上游包。必须修改共享 Desktop 行为时，遵守下方 Beta 先行和双变体检查规则；Seal Harness专属代码不镜像到这些目录。
 - 根 Yarn `4.18.0` 与 Node `^22.19.0 || >=24.0.0` 保持不变。`seal-harness-desktop/` 是产品自有包，不并入根 Yarn workspaces；复用已安装的 Desktop 工具和上游构建链，不复制运行时、不另建包装仓库或第二套锁文件。

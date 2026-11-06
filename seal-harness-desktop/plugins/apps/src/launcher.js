@@ -36,3 +36,32 @@ export async function assertDbxStopped(executable) {
     if (process.path && await identity(process.path) === expected) throw new AppError('请先退出 DBX（包括托盘），再卸载。')
   }
 }
+
+async function buildingBuiltProcesses() {
+  if (process.platform !== 'win32') return []
+  let output
+  try {
+    output = await execute('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+      `[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); @(Get-CimInstance Win32_Process -Filter "Name = 'BuildingBuilt.exe'" | ForEach-Object { @{ path = $_.ExecutablePath; commandLine = $_.CommandLine } }) | ConvertTo-Json -Compress`],
+    { windowsHide: true, timeout: 20000, maxBuffer: 65536 })
+  } catch (cause) { throw new AppError('无法核对 BuildingBuilt 运行状态，请稍后重试。', { cause }) }
+  const value = output.stdout.trim() ? JSON.parse(output.stdout) : []
+  return Array.isArray(value) ? value : [value]
+}
+
+export async function buildingBuiltRunning(executable) {
+  const expected = await identity(executable)
+  let own = false
+  for (const process of await buildingBuiltProcesses()) {
+    if (!process.path || await identity(process.path) !== expected) throw new AppError('另一份 BuildingBuilt 正在运行，请先退出后再打开本账号的应用。')
+    if (!/(?:^|\s)--cli(?:\s|$)/i.test(process.commandLine ?? '')) own = true
+  }
+  return own
+}
+
+export async function assertBuildingBuiltStopped(executable) {
+  const expected = await identity(executable)
+  for (const process of await buildingBuiltProcesses()) {
+    if (process.path && await identity(process.path) === expected) throw new AppError('请先退出 BuildingBuilt，再卸载或更新。')
+  }
+}

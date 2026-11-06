@@ -1,6 +1,8 @@
 # 本机应用管理
 
-`@seal-harness/apps` 在首页资源列表注册 `apps` 二级菜单。首版固定 DBX Windows x64/ARM64 便携版 0.6.48 与 MCP 0.4.124，不接受客户端提供任意下载地址或可执行文件路径。
+本文记录当前应用管理实现及回归要求。新应用应先符合 [独立应用接入规范](application-architecture.md)；DBX 的固定包版本与 MCP，以及 BuildingBuilt 的本地发布目录，是各自的适配方式，不是所有应用的通用接口。
+
+`@seal-harness/apps` 在首页资源列表注册 `apps` 二级菜单。DBX 固定 Windows x64/ARM64 便携版 0.6.48 与 MCP 0.4.124。BuildingBuilt 首版固定 Windows x64 本地发布物 0.1.0，用户提供已解压的发布目录作为输入；只有 `release.json` 与 Seal 固定摘要完全匹配、且每个文件校验通过后，才复制安装到账号目录。客户端不能提供任意下载地址或要启动的可执行文件路径。
 
 ## 存储和路径
 
@@ -8,7 +10,9 @@
 
 ## 状态和 RPC
 
-POST /api/seal-harness-apps/{list,install,open,uninstall,reconnect} 使用标准 client-request/server-response envelope。list 接收空对象，其余只接受 `{ id: 'dbx' }`。所有操作要求当前本地账号；长操作返回 accepted，界面轮询 list。安装中显示进度和禁用操作；安装完成隐藏“＋ 安装”，显示打开/卸载；成功卸载后恢复安装按钮。MCP 失败时必须区分“应用已安装”和“MCP 未就绪”，提供重连。中断操作保留可重试状态，不能伪报完成。
+POST /api/seal-harness-apps/{list,install,open,uninstall,reconnect} 使用标准 client-request/server-response envelope。list 接收空对象；DBX 安装、打开和卸载接收 `{ id: 'dbx' }`，BuildingBuilt 安装接收 `{ id: 'buildingbuilt', sourcePath }`，打开和卸载接收 `{ id: 'buildingbuilt' }`；reconnect 只适用于 DBX。所有操作要求当前本地账号；长操作返回 accepted，界面轮询 list。安装中显示进度和禁用操作；安装完成隐藏安装按钮，显示打开/卸载；成功卸载后恢复安装按钮。MCP 失败时必须区分“应用已安装”和“MCP 未就绪”，提供重连。中断操作保留可重试状态，不能伪报完成。
+
+BuildingBuilt 的程序位于 `applications/<账号 SHA-256>/buildingbuilt/runtime`，任务、模型、3D Tiles、Pi 会话和 WebView2 数据位于相邻的 `data`。其桌面进程只绑定本机回环地址，使用随机端口和会话令牌保护本地接口；不装配 BuildingBuilt MCP。应用安装包独立于 Seal 分发，普通卸载保留数据。
 
 ## MCP 和卸载
 

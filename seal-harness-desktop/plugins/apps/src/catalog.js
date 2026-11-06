@@ -4,6 +4,15 @@ export const dbx = Object.freeze({
   source: 'https://github.com/t8y2/dbx', license: 'Apache-2.0',
 })
 
+// The release is distributed separately from Seal. Only a directory whose
+// release.json matches this pinned digest may be installed.
+export const buildingBuilt = Object.freeze({
+  id: 'buildingbuilt', name: 'BuildingBuilt',
+  description: '从 GIS/OSM 矢量数据生成模型与本地 3D Tiles。',
+  version: '0.1.0', platform: 'win32', arch: 'x64', installMode: 'local-release',
+  manifestSha256: '4d957909256e71a06d120cfbaa18f3b452fff1a845798664d31074e1d1ce8f9c',
+})
+
 // 官方 release asset 摘要，固定版本；应用和 MCP 的发布标签分别管理。
 export function dbxArtifacts(platform = process.platform, arch = process.arch) {
   if (platform !== 'win32' || !['x64', 'arm64'].includes(arch)) throw new Error('DBX 首版仅支持 Windows x64 / ARM64。')

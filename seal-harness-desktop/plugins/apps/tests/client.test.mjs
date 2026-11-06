@@ -6,6 +6,7 @@ import { runInNewContext } from 'node:vm'
 import { JSDOM } from 'jsdom'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Simulate } from 'react-dom/test-utils'
 
 const require = createRequire(import.meta.url)
 test('app card hides installation plus after install and restores it after uninstall', async t => {
@@ -55,4 +56,36 @@ test('app card hides installation plus after install and restores it after unins
   assert.match(document.querySelector('[aria-label="已安装应用"] summary').textContent, /已安装\s*0/)
   assert.equal(button('打开'), undefined)
   assert.equal(document.querySelector('[role="dialog"]'), null)
+})
+
+test('BuildingBuilt requires a local release directory and routes install by its own ID', async t => {
+  const dom = new JSDOM('<!doctype html><html><head></head><body><main></main></body></html>')
+  const previous = { window: globalThis.window, document: globalThis.document }
+  globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true
+  const root = createRoot(document.querySelector('main'))
+  const loaded = {}
+  runInNewContext(await readFile(new URL('../lib/client.js', import.meta.url), 'utf8'), {
+    window: { __ModuleLoader__: { load({ factory }) { Object.assign(loaded, factory(require)) } } },
+    AbortController, document: dom.window.document, setTimeout, clearTimeout,
+  })
+  t.after(async () => { await act(async () => root.unmount()); dom.window.close(); Object.assign(globalThis, previous); delete globalThis.IS_REACT_ACT_ENVIRONMENT })
+  let installed = false
+  const calls = []
+  const api = async (action, payload) => {
+    calls.push({ action, payload })
+    if (action === 'install') installed = true
+    return { items: [{ id: 'buildingbuilt', name: 'BuildingBuilt', installed, state: installed ? 'installed' : 'uninstalled', supported: true, version: '0.1.0', description: 'GIS 建模工作台' }] }
+  }
+  await act(async () => root.render(React.createElement(loaded.ApplicationsPage, { api })))
+  const button = [...document.querySelectorAll('button')].find(item => item.textContent.includes('从本地发布包安装'))
+  assert(button.disabled)
+  const input = document.querySelector('.seal-app-local-path input')
+  await act(async () => {
+    Simulate.change(input, { target: { value: 'C:\\Downloads\\BuildingBuilt' } })
+  })
+  assert.equal(button.disabled, false)
+  await act(async () => button.click())
+  assert.equal(calls.find(call => call.action === 'install')?.payload.id, 'buildingbuilt')
+  assert.equal(calls.find(call => call.action === 'install')?.payload.sourcePath, 'C:\\Downloads\\BuildingBuilt')
+  assert(document.querySelector('[aria-label="BuildingBuilt 应用"] button')?.textContent.includes('打开'))
 })

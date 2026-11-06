@@ -10,6 +10,7 @@ export function ApplicationsPage({ api }) {
   const [loadError, setLoadError] = useState('')
   const [tab, setTab] = useState('system')
   const [loading, setLoading] = useState(true)
+  const [localPath, setLocalPath] = useState('')
   useEffect(() => {
     const controller = new AbortController()
     let timer
@@ -23,10 +24,10 @@ export function ApplicationsPage({ api }) {
     void refresh()
     return () => { controller.abort(); clearTimeout(timer) }
   }, [api])
-  async function act(action) {
+  async function act(action, id, extra = {}) {
     setBusy(true); setError(''); setConfirm(false)
     try {
-      await api(action, { id: 'dbx' })
+      await api(action, { id, ...extra })
       setItems((await api('list')).items)
     } catch (cause) { setError(cause.message) }
     finally { setBusy(false) }
@@ -38,13 +39,24 @@ export function ApplicationsPage({ api }) {
     <div className="seal-apps-content">
       {(error || loadError) && <p role="alert" className="seal-apps-error">{error || loadError}</p>}
       <nav className="seal-apps-tabs" aria-label="应用分类"><button aria-pressed={tab === 'system'} onClick={() => setTab('system')}>系统</button><button aria-pressed={tab === 'personal'} onClick={() => setTab('personal')}>个人</button></nav>
-      <div aria-label="已安装应用"><InstalledSection key={tab} label="应用" icons={installedIcons} loading={loading}>{loading ? <p role="status">正在读取应用…</p> : installed.length ? <div className="seal-apps-installed-list">{installed.map(item => <article className="seal-apps-installed-card" key={item.id}><div><strong>{item.name}</strong><p>{item.description}</p></div><button disabled={busy || ['install', 'uninstall', 'connect'].includes(item.state)} onClick={() => void act('open')}>打开</button></article>)}</div> : <div className="seal-apps-empty"><strong>还没有安装应用</strong><p>{tab === 'system' ? '点击应用卡片上的安装按钮开始安装。' : '暂无个人应用。'}</p></div>}</InstalledSection></div>
+       <div aria-label="已安装应用"><InstalledSection key={tab} label="应用" icons={installedIcons} loading={loading}>{loading ? <p role="status">正在读取应用…</p> : installed.length ? <div className="seal-apps-installed-list">{installed.map(item => <article className="seal-apps-installed-card" key={item.id}><div><strong>{item.name}</strong><p>{item.description}</p></div><button disabled={busy || ['install', 'uninstall', 'connect'].includes(item.state)} onClick={() => void act('open', item.id)}>打开</button></article>)}</div> : <div className="seal-apps-empty"><strong>还没有安装应用</strong><p>{tab === 'system' ? '点击应用卡片上的安装按钮开始安装。' : '暂无个人应用。'}</p></div>}</InstalledSection></div>
       {tab === 'system' ? <>
       {!items.length && loading && <p role="status">正在读取应用…</p>}
       <div className="seal-apps-grid">{items.map(item => {
         const processing = ['install', 'uninstall', 'connect'].includes(item.state)
         const disabled = busy || processing
         const percent = item.progress?.total ? Math.min(100, Math.round(item.progress.received / item.progress.total * 100)) : null
+        if (item.id === 'buildingbuilt') return <article className="seal-app-card" key={item.id} aria-label="BuildingBuilt 应用">
+          <div className="seal-app-card-header"><span className="seal-app-logo" aria-hidden="true">◈</span><div><h2>BuildingBuilt</h2><p>GIS 建模工作台</p></div><span className="seal-app-platform">Windows x64</span></div>
+          <p className="seal-app-description">{item.description}</p>
+          <div className="seal-app-meta"><span>v{item.version}</span><span>独立发布包</span></div>
+          {!item.installed && <label className="seal-app-local-path">已解压发布目录<input type="text" value={localPath} onChange={event => setLocalPath(event.target.value)} placeholder="例如 C:\\Downloads\\BuildingBuilt" autoComplete="off" /></label>}
+          {!item.installed && <p className="seal-apps-help">发布包单独分发，不包含在 Seal 安装包内。选择的目录须含 release.json。</p>}
+          {processing && <div role="status" className="seal-app-progress"><p>{item.state === 'uninstall' ? '正在卸载…' : item.progress?.phase ?? '正在验证发布包…'}{percent !== null ? ` ${percent}%` : ''}</p><progress max="100" {...(percent !== null ? { value: percent } : {})}/></div>}
+          {item.error && <p role="alert" className="seal-apps-error">{item.error}</p>}
+          {!item.supported && <p className="seal-apps-error">当前发布包仅支持 Windows x64。</p>}
+          <footer>{item.installed ? <><button className="seal-app-primary" disabled={disabled} onClick={() => void act('open', item.id)}>打开</button><button className="seal-app-uninstall" disabled={disabled} onClick={() => setConfirm(item.id)}>卸载</button></> : <button className="seal-app-primary" disabled={disabled || !item.supported || !localPath.trim()} onClick={() => void act('install', item.id, { sourcePath: localPath.trim() })}>{processing ? '正在安装…' : '从本地发布包安装'}</button>}</footer>
+        </article>
         return <article className="seal-app-card" key={item.id} aria-label="DBX 应用">
           <div className="seal-app-card-header"><span className="seal-app-logo" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7"><ellipse cx="16" cy="7" rx="10" ry="4"/><path d="M6 7v18c0 5 20 5 20 0V7M6 16c0 5 20 5 20 0"/></svg></span><div><h2>DBX</h2><p>数据库工作台</p></div><span className="seal-app-platform">Windows</span></div>
           <p className="seal-app-description">{item.description}</p>
@@ -53,13 +65,13 @@ export function ApplicationsPage({ api }) {
           {processing && <div role="status" className="seal-app-progress"><p>{item.state === 'uninstall' ? '正在卸载…' : item.state === 'connect' ? '正在连接 MCP…' : item.progress?.phase ?? '正在准备安装…'}{percent !== null ? ` ${percent}%` : ''}</p><progress max="100" {...(percent !== null ? { value: percent } : {})}/></div>}
           {item.error && <p role="alert" className="seal-apps-error">{item.error}</p>}
           {!item.supported && <p className="seal-apps-error">首版仅支持 Windows x64 / ARM64。</p>}
-          <footer>{item.installed ? <><button className="seal-app-primary" disabled={disabled} onClick={() => void act('open')}>打开</button>{item.mcpStatus !== 'active' && <button disabled={disabled} onClick={() => void act('reconnect')}>连接 MCP</button>}<button className="seal-app-uninstall" disabled={disabled} onClick={() => setConfirm(true)}>卸载</button></> : <button className="seal-app-primary" disabled={disabled || !item.supported} onClick={() => void act('install')}>{processing ? '正在安装…' : <><span aria-hidden="true">＋</span> 安装</>}</button>}</footer>
+          <footer>{item.installed ? <><button className="seal-app-primary" disabled={disabled} onClick={() => void act('open', item.id)}>打开</button>{item.mcpStatus !== 'active' && <button disabled={disabled} onClick={() => void act('reconnect', item.id)}>连接 MCP</button>}<button className="seal-app-uninstall" disabled={disabled} onClick={() => setConfirm(item.id)}>卸载</button></> : <button className="seal-app-primary" disabled={disabled || !item.supported} onClick={() => void act('install', item.id)}>{processing ? '正在安装…' : <><span aria-hidden="true">＋</span> 安装</>}</button>}</footer>
         </article>
       })}</div>
       <p className="seal-apps-help">安装后打开 DBX，添加数据库连接，并在「设置 → MCP」中选择允许访问的连接。随后在会话输入框的「连接器」中选中 DBX，即可让助手查询数据。</p>
       </> : <div className="seal-apps-empty"><strong>暂无个人应用</strong><p>当前应用目录仅提供系统应用。</p></div>}
     </div>
-    {confirm && <div className="seal-app-dialog-backdrop"><section className="seal-app-dialog" role="dialog" aria-modal="true" aria-labelledby="seal-app-uninstall-title"><h2 id="seal-app-uninstall-title">卸载 DBX？</h2><p>将移除应用程序及关联的 MCP 连接器，保留 DBX 的连接配置。请先退出 DBX（包括托盘）。</p><footer><button autoFocus onClick={() => setConfirm(false)}>取消</button><button className="seal-app-primary" onClick={() => void act('uninstall')}>确认卸载</button></footer></section></div>}
+    {confirm && <div className="seal-app-dialog-backdrop"><section className="seal-app-dialog" role="dialog" aria-modal="true" aria-labelledby="seal-app-uninstall-title"><h2 id="seal-app-uninstall-title">卸载 {confirm === 'dbx' ? 'DBX' : 'BuildingBuilt'}？</h2><p>{confirm === 'dbx' ? '将移除应用程序及关联的 MCP 连接器，保留 DBX 的连接配置。请先退出 DBX（包括托盘）。' : '将移除应用程序，保留 BuildingBuilt 的任务、输出和配置。请先退出 BuildingBuilt。'}</p><footer><button autoFocus onClick={() => setConfirm(false)}>取消</button><button className="seal-app-primary" onClick={() => void act('uninstall', confirm)}>确认卸载</button></footer></section></div>}
   </main>
 }
 
