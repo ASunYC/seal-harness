@@ -29,7 +29,7 @@ function NavGlyph({ name, size = 20 }) {
     experts: <><rect x="4" y="7" width="16" height="13" rx="2" /><path d="M9 7V4h6v3M9 12h.01M15 12h.01M9 16h6" /></>,
     organization: <><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M8 7V3h8v4M8 12h2m4 0h2M8 16h2m4 0h2M11 21v-4h2v4" /></>,
     skills: <><path d="m12 2 9 5v10l-9 5-9-5V7l9-5Z" /><path d="m3 7 9 5 9-5M12 12v10" /></>,
-    connectors: <><path d="M8 3v5m8-5v5M6 8h12v5a6 6 0 0 1-12 0V8Zm6 11v3" /></>,
+    connectors: <><path d="M7 3v5m10-5v5M4 8h16v5a8 8 0 0 1-16 0V8Zm8 12v2" /></>,
     plugins: <><path d="M9 3h6v4a2 2 0 1 0 2 2h4v6h-4a2 2 0 1 0-2 2v4H9v-4a2 2 0 1 0-2-2H3V9h4a2 2 0 1 0 2-2V3Z" /></>,
     settings: <><circle cx="12" cy="12" r="3" /><path d="M10 2h4l.6 2.3 1.7 1 2.3-.7 2 3.4-1.7 1.7v2l1.7 1.7-2 3.4-2.3-.7-1.7 1L14 20h-4l-.6-2.3-1.7-1-2.3.7-2-3.4 1.7-1.7v-2L3.4 8.6l2-3.4 2.3.7 1.7-1L10 2Z" /></>,
     account: <><circle cx="12" cy="7" r="4" /><path d="M4 22v-3a8 8 0 0 1 16 0v3" /></>,
@@ -145,8 +145,8 @@ export function apply(ctx) {
       {CAPABILITY_IDS.map(id => {
         const entry = entries.find(item => item.id === id)
         if (!entry) return null
-        return <React.Fragment key={id}><button type="button" aria-current={activePanelId === id ? 'page' : undefined} onClick={() => ctx.layout.selectPanel(id)}><NavGlyph name={id} size={18} />{entry.label}</button>
-          {id === 'plugins' && market && <button className="seal-nav-secondary__nested" type="button" aria-current={activePanelId === MARKET ? 'page' : undefined} onClick={() => ctx.layout.selectPanel(MARKET)}><NavGlyph name="market" size={18} />插件市场</button>}
+        return <React.Fragment key={id}><button type="button" aria-current={activePanelId === id ? 'page' : undefined} onClick={() => ctx.layout.selectPanel(id)}><span className="seal-nav-secondary__icon"><NavGlyph name={id} size={18} /></span>{entry.label}</button>
+          {id === 'plugins' && market && <button className="seal-nav-secondary__nested" type="button" aria-current={activePanelId === MARKET ? 'page' : undefined} onClick={() => ctx.layout.selectPanel(MARKET)}><span className="seal-nav-secondary__icon"><NavGlyph name="market" size={18} /></span>插件市场</button>}
         </React.Fragment>
       })}
     </aside>}</>

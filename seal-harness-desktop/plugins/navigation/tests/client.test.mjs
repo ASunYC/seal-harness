@@ -169,6 +169,8 @@ test('home resources share the sidebar with native workspaces and sessions', asy
     }))
   })
   assert.deepEqual([...document.querySelectorAll('.seal-nav-secondary button')].map(button => button.textContent), ['插件', '技能', '连接器', '应用'])
+  assert.equal(document.querySelectorAll('.seal-nav-secondary > button > .seal-nav-secondary__icon').length, 4)
+  assert([...document.querySelectorAll('.seal-nav-secondary__icon svg')].every(icon => icon.getAttribute('width') === '18' && icon.getAttribute('height') === '18'))
   assert.deepEqual(registrations('sidebar.panellist').map(entry => entry.options.id), [])
   for (const [id, label] of [['skills', '技能'], ['connectors', '连接器'], ['apps', '应用']]) {
     await act(async () => document.querySelector('.seal-nav-secondary button:nth-of-type(' + (['skills', 'connectors', 'apps'].indexOf(id) + 2) + ')').click())

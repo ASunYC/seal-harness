@@ -3,7 +3,8 @@ import { pageStyles } from './page-styles.js'
 export const styles = `
 /* The public shell.overlay owns the product rail; Desktop keeps its own sidebar and main slots. */
 #root :has(> [data-shell-overlay]) { box-sizing: border-box; padding-left: 56px; }
-#root :has(> [data-shell-overlay]) > [data-side="sidebar"] { transform: translateX(56px); }
+/* Grid-area handles are positioned from the padded content edge; move only the right handle back to its visible divider. */
+#root :has(> [data-shell-overlay]) > [data-side="rightbar"] { transform: translateX(-56px); }
 /* 保留侧栏挂载和用户宽度偏好；主内容跨过其轨道，固定设置面板仍能打开。 */
 #root :has(> [data-shell-overlay]):has(.seal-nav-rail[data-home-active="false"]) > :has([data-slot="sidebar"]) { grid-column: 1; grid-row: 1; width: 0; min-width: 0; overflow: hidden; border: 0; }
 #root :has(> [data-shell-overlay]):has(.seal-nav-rail[data-home-active="false"]) > :has([data-slot="main"]) { grid-column: 1 / 3; }
@@ -29,6 +30,8 @@ export const styles = `
 .seal-nav-secondary header span { color: var(--dsw-alias-label-tertiary,#92949a); font-size: 10px; font-weight: 700; letter-spacing: .14em; }
 .seal-nav-secondary h2 { margin: 5px 0 0; font-size: 19px; line-height: 1.3; }
 .seal-nav-secondary button { display: flex; width: 100%; min-height: 40px; align-items: center; gap: 11px; padding: 8px 12px; border: 0; border-radius: 9px; background: transparent; color: var(--dsw-alias-label-secondary,#b2b4ba); font: inherit; text-align: left; cursor: pointer; }
+.seal-nav-secondary__icon { display: grid; flex: 0 0 20px; width: 20px; height: 20px; place-items: center; }
+.seal-nav-secondary__icon svg { display: block; }
 .seal-nav-secondary button:hover, .seal-nav-secondary button[aria-current="page"] { background: var(--dsw-alias-interactive-bg-hover,#303137); color: var(--dsw-alias-label-primary,#fff); }
 .seal-nav-secondary__nested { padding-left: 34px !important; font-size: 13px !important; }
 .seal-nav-secondary__empty { margin: 10px 12px; color: var(--dsw-alias-label-secondary,#b2b4ba); font-size: 13px; }
@@ -57,7 +60,7 @@ export const styles = `
 .seal-nav-page__empty h2 { margin: 4px 0; color: var(--dsw-alias-label-primary,#fff); font-size: 20px; }
 .seal-nav-page__empty p { margin: 0; }
 .seal-nav-page__error { color: var(--dsw-alias-state-error-primary,#e15a5a) !important; }
-@media (max-width: 800px) { .seal-nav-rail { width: 48px; padding-inline: 3px; } #root :has(> [data-shell-overlay]) { padding-left: 48px; } #root :has(> [data-shell-overlay]) > [data-side="sidebar"] { transform: translateX(48px); } .seal-nav-secondary { left: 48px; width: 210px; } #root :has(> [data-shell-overlay]):has(.seal-nav-rail[data-capabilities-active="true"]) > :has([data-slot="main"]) { margin-left: 210px; } .seal-nav-page { padding: 24px; } .seal-nav-page__heading { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 800px) { .seal-nav-rail { width: 48px; padding-inline: 3px; } #root :has(> [data-shell-overlay]) { padding-left: 48px; } #root :has(> [data-shell-overlay]) > [data-side="rightbar"] { transform: translateX(-48px); } .seal-nav-secondary { left: 48px; width: 210px; } #root :has(> [data-shell-overlay]):has(.seal-nav-rail[data-capabilities-active="true"]) > :has([data-slot="main"]) { margin-left: 210px; } .seal-nav-page { padding: 24px; } .seal-nav-page__heading { align-items: flex-start; flex-direction: column; } }
 #root [data-sidebar-collapsed] .seal-nav-compact-tabs { display: flex; }
 #root [data-sidebar-collapsed] .seal-nav-plugin-tabs { position: absolute; z-index: 3; top: 0; right: 0; left: 112px; display: flex; pointer-events: auto; }
 #root [data-sidebar-collapsed]:has(.seal-nav-plugin-tabs) [data-plugin-panel] { padding-top: 52px; }
