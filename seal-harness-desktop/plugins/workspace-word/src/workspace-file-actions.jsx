@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { WorkspaceFileRowActions } from './workspace-file-row-actions.jsx'
 
 const formats = [
   { kind: 'docx', label: 'Word 文档' },
@@ -21,7 +22,7 @@ function encode(bytes) {
   return btoa(binary)
 }
 
-export function WorkspaceFileActions({ sessionId, absolutePath, api, onOpen }) {
+export function WorkspaceFileActions({ sessionId, absolutePath, api, onOpen, onPreview }) {
   const [creating, setCreating] = useState(false)
   const [kind, setKind] = useState('docx')
   const [name, setName] = useState('新建文档')
@@ -30,6 +31,7 @@ export function WorkspaceFileActions({ sessionId, absolutePath, api, onOpen }) {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const fileInput = useRef(null)
+  const hostRef = useRef(null)
 
   if (!sessionId || !absolutePath) return null
 
@@ -71,9 +73,29 @@ export function WorkspaceFileActions({ sessionId, absolutePath, api, onOpen }) {
     finally { setBusy(false) }
   }
 
-  return <div className="seal-workspace-office-file-actions">
-    <button type="button" disabled={busy} onClick={() => { setError(''); setCreating(true) }}>新建 Office</button>
-    <button type="button" disabled={busy} onClick={() => fileInput.current?.click()}>导入 Office</button>
+  async function runFileAction(action, path) {
+    if (busy) return
+    setBusy(true)
+    setError('')
+    try {
+      const result = await api(action, { sessionId, path })
+      if (action === 'saveCopy' && !result.cancelled) setNotice(`已保存到 ${result.path}`)
+      if (action === 'trash') {
+        setNotice('文件已移到回收站。')
+        hostRef.current?.closest('[data-files-state="tree"]')?.querySelector('[data-files-reload]')?.click()
+      }
+    } catch (cause) { setError(cause.message) }
+    finally { setBusy(false) }
+  }
+
+  return <div ref={hostRef} className="seal-workspace-office-file-actions">
+    <WorkspaceFileRowActions hostRef={hostRef} busy={busy} onPreview={path => onPreview({ sessionId, path })} onOpen={path => onOpen({ sessionId, path })} run={runFileAction} />
+    <button type="button" className="seal-workspace-office-file-action" aria-label="新建 Office 文档" title="新建 Office 文档（Word、Excel、PPT）" disabled={busy} onClick={() => { setError(''); setCreating(true) }}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10l-7-7Z" /><path d="M13 3v7h7M12 13v6M9 16h6" /></svg>
+    </button>
+    <button type="button" className="seal-workspace-office-file-action" aria-label="导入 Office 文档" title="导入 Office 文档（DOCX、XLSX、PPTX）" disabled={busy} onClick={() => fileInput.current?.click()}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3" /></svg>
+    </button>
     <input ref={fileInput} type="file" accept=".docx,.xlsx,.pptx" hidden onChange={event => void importFile(event)} />
     {notice && <span role="status" className="seal-workspace-office-file-notice">{notice}</span>}
     {(creating || error) && createPortal(<div className="seal-workspace-office-dialog-backdrop" onMouseDown={event => {

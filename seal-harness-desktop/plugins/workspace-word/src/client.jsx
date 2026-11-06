@@ -117,6 +117,6 @@ export function apply(ctx) {
   }, EditAction))
   ctx.slots.inject('sidebar.right.tab.files.actions', () => ctx.slots.register({
     name: 'sidebar.right.tab.files.actions', id: 'seal-workspace-word-file-actions', order: 20,
-    inject: sessionId => ({ sessionId, api, onOpen: openEditor }),
+    inject: sessionId => ({ sessionId, api, onOpen: openEditor, onPreview: openEditor }),
   }, WorkspaceFileActions))
 }

@@ -21,7 +21,7 @@ test('workspace file actions create and import Office files in the selected dire
     format: 'cjs', platform: 'browser', target: 'es2022', dts: false,
     deps: { neverBundle: [/^react(?:-dom)?(?:\/|$)/] },
   })
-  const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>', { url: 'http://localhost' })
+  const dom = new JSDOM('<!doctype html><html><body><div data-files-state="tree"><div id="root"></div><button data-files-reload>刷新</button><ul><li data-files-entry="file" data-files-path="C:\\work\\reports\\example.docx"><button>example.docx</button></li><li data-files-entry="file" data-files-path="C:\\work\\reports\\notes.txt"><button>notes.txt</button></li></ul></div></body></html>', { url: 'http://localhost' })
   const previous = { window: globalThis.window, document: globalThis.document }
   globalThis.window = dom.window
   globalThis.document = dom.window.document
@@ -37,14 +37,23 @@ test('workspace file actions create and import Office files in the selected dire
   const module = { exports: {} }
   runInNewContext(await readFile(join(temporary, 'actions.cjs'), 'utf8'), {
     module, exports: module.exports, require: createRequire(import.meta.url),
-    document: dom.window.document, btoa,
+    window: dom.window, document: dom.window.document, MutationObserver: dom.window.MutationObserver, btoa,
   })
-  const calls = [], opened = []
-  const api = async (action, payload) => { calls.push({ action, payload }); return { kind: 'xlsx' } }
+  const calls = [], opened = [], previewed = []
+  const api = async (action, payload) => { calls.push({ action, payload }); return action === 'saveCopy' ? { path: 'C:\\Users\\test\\Downloads\\example.docx' } : { kind: 'xlsx' } }
   await act(async () => root.render(React.createElement(module.exports.WorkspaceFileActions, {
-    sessionId: 'session-one', absolutePath: 'C:\\work\\reports', api, onOpen: target => opened.push(target),
+    sessionId: 'session-one', absolutePath: 'C:\\work\\reports', api, onOpen: target => opened.push(target), onPreview: target => previewed.push(target),
   })))
-  await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === '新建 Office').click())
+  const createButton = document.querySelector('button[aria-label="新建 Office 文档"]')
+  const importButton = document.querySelector('button[aria-label="导入 Office 文档"]')
+  assert(createButton && importButton)
+  assert.equal(createButton.textContent, '')
+  assert.equal(importButton.textContent, '')
+  assert.match(createButton.title, /Word、Excel、PPT/u)
+  assert.match(importButton.title, /DOCX、XLSX、PPTX/u)
+  assert.equal(createButton.querySelector('svg')?.getAttribute('aria-hidden'), 'true')
+  assert.equal(importButton.querySelector('svg')?.getAttribute('aria-hidden'), 'true')
+  await act(async () => createButton.click())
   const name = document.querySelector('input[maxlength="120"]')
   const kind = document.querySelector('select')
   await act(async () => Simulate.change(name, { target: { value: '预算' } }))
@@ -54,6 +63,10 @@ test('workspace file actions create and import Office files in the selected dire
   assert.deepEqual(JSON.parse(JSON.stringify(opened[0])), { sessionId: 'session-one', path: 'C:\\work\\reports\\预算.xlsx' })
 
   const fileInput = document.querySelector('input[type=file]')
+  let pickerOpened = 0
+  fileInput.click = () => { pickerOpened++ }
+  await act(async () => importButton.click())
+  assert.equal(pickerOpened, 1)
   const bytes = Uint8Array.of(1, 2, 3)
   Object.defineProperty(fileInput, 'files', { configurable: true, value: [{
     name: 'existing.pptx', size: bytes.length,
@@ -62,4 +75,24 @@ test('workspace file actions create and import Office files in the selected dire
   await act(async () => Simulate.change(fileInput, { target: fileInput }))
   assert.deepEqual(JSON.parse(JSON.stringify(calls[1])), { action: 'import', payload: { sessionId: 'session-one', path: 'C:\\work\\reports\\existing.pptx', data: 'AQID' } })
   assert.deepEqual(JSON.parse(JSON.stringify(opened[1])), { sessionId: 'session-one', path: 'C:\\work\\reports\\existing.pptx' })
+
+  assert.equal(document.querySelectorAll('.seal-workspace-file-row-actions').length, 2)
+  await act(async () => document.querySelector('button[aria-label="打开方式 example.docx"]').click())
+  await act(async () => [...document.querySelectorAll('[role="menuitem"]')].find(button => button.textContent === '在右侧编辑').click())
+  assert.deepEqual(JSON.parse(JSON.stringify(opened.at(-1))), { sessionId: 'session-one', path: 'C:\\work\\reports\\example.docx' })
+  await act(async () => document.querySelector('button[aria-label="打开方式 notes.txt"]').click())
+  await act(async () => [...document.querySelectorAll('[role="menuitem"]')].find(button => button.textContent === '在右侧打开').click())
+  assert.deepEqual(JSON.parse(JSON.stringify(previewed.at(-1))), { sessionId: 'session-one', path: 'C:\\work\\reports\\notes.txt' })
+  await act(async () => document.querySelector('button[aria-label="下载 example.docx"]').click())
+  assert.deepEqual(JSON.parse(JSON.stringify(calls.at(-1))), { action: 'saveCopy', payload: { sessionId: 'session-one', path: 'C:\\work\\reports\\example.docx' } })
+  let refreshes = 0
+  document.querySelector('[data-files-reload]').addEventListener('click', () => refreshes++)
+  dom.window.confirm = () => false
+  const beforeCancel = calls.length
+  await act(async () => document.querySelector('button[aria-label="删除 notes.txt"]').click())
+  assert.equal(calls.length, beforeCancel)
+  dom.window.confirm = () => true
+  await act(async () => document.querySelector('button[aria-label="删除 notes.txt"]').click())
+  assert.deepEqual(JSON.parse(JSON.stringify(calls.at(-1))), { action: 'trash', payload: { sessionId: 'session-one', path: 'C:\\work\\reports\\notes.txt' } })
+  assert.equal(refreshes, 1)
 })

@@ -2,6 +2,7 @@ import { dirname } from 'node:path'
 import { z } from 'zod'
 import { clientRequestSchema } from '@deepseek-ai/dsh-client-connection'
 import { OfficeError, OfficeService } from './service.js'
+import { WorkspaceFileError, WorkspaceFileService } from './workspace-file-service.js'
 
 export const name = 'seal-harness-workspace-word'
 export const inject = ['connection', 'sessions', 'sandboxPolicy', 'fs', 'sealHarnessIdentity', 'sealHarnessDatabase', 'sealHarnessOffice']
@@ -13,6 +14,17 @@ export function apply(ctx) {
     identity: ctx.sealHarnessIdentity, home: dirname(ctx.sealHarnessDatabase.path),
     transform: (input, signal) => ctx.sealHarnessOffice.transform(input, signal),
   })
+  const files = new WorkspaceFileService({
+    sessions: ctx.sessions, sandboxPolicy: ctx.sandboxPolicy, fs: ctx.fs,
+    native: {
+      openPath: async path => (await import('electron')).shell.openPath(path),
+      savePath: async name => {
+        const result = await (await import('electron')).dialog.showSaveDialog({ defaultPath: name })
+        return result.canceled ? undefined : result.filePath
+      },
+      trashItem: async path => (await import('electron')).shell.trashItem(path),
+    },
+  })
   ctx.effect(() => () => service.dispose(), 'seal-harness-workspace-word: document leases')
   const handlers = {
     open: input => service.open(input),
@@ -22,6 +34,9 @@ export function apply(ctx) {
     import: input => service.import(input),
     download: input => service.download(input),
     close: input => service.close(input),
+    openSystem: input => files.openSystem(input),
+    saveCopy: input => files.saveCopy(input),
+    trash: input => files.trash(input),
   }
   for (const [action, handler] of Object.entries(handlers)) {
     const endpoint = `seal-harness-workspace-word/${action}`
@@ -35,10 +50,10 @@ export function apply(ctx) {
       try { result = { ok: true, value: await handler(message.payload ?? {}) } }
       catch (error) {
         const workerError = workerCodes.has(error?.code)
-        if (!(error instanceof OfficeError || error instanceof z.ZodError || workerError)) ctx.logger?.error(error)
+        if (!(error instanceof OfficeError || error instanceof WorkspaceFileError || error instanceof z.ZodError || workerError)) ctx.logger?.error(error)
         result = { ok: false, error: {
-          code: error instanceof OfficeError || workerError ? error.code : error instanceof z.ZodError ? 'invalidRequest' : 'officeFailed',
-          message: error instanceof OfficeError || workerError ? error.message : error instanceof z.ZodError ? '文档请求参数无效。' : '文档操作失败，请查看插件日志。',
+          code: error instanceof OfficeError || error instanceof WorkspaceFileError || workerError ? error.code : error instanceof z.ZodError ? 'invalidRequest' : 'officeFailed',
+          message: error instanceof OfficeError || error instanceof WorkspaceFileError || workerError ? error.message : error instanceof z.ZodError ? '文档请求参数无效。' : '文档操作失败，请查看插件日志。',
           details: {},
         } }
       }
