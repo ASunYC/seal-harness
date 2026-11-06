@@ -75,3 +75,7 @@ The Office plugin ships original LICENSE/NOTICE and exact dependency notices und
 ## Stratex Word workspace adapter
 
 The independent workspace Word editor follows Stratex's DOCX editing adapter and bundles its browser-safe GenOffice extraction from commit `953595e2f1635140e2a6c1f86c2fa12b0cca77b8` (Apache-2.0). Its LICENSE, NOTICE, source record and modification provenance ship under `@seal-harness/workspace-word/lib/third-party/genoffice-stratex/`. This editor works on a file in the active DSH workspace; the Office document library above retains separate account-scoped files and revisions.
+
+## XLSX and PPTX visual previews
+
+The workspace spreadsheet and presentation previews use `@silurus/ooxml` 0.75.5 (MIT), following Stratex's Worker and Canvas preview integration. The published package, including its LICENSE and THIRD_PARTY_NOTICES.md, ships with `@seal-harness/workspace-word`; Seal serves its ESM and WASM assets locally without modification. Source: https://github.com/yukiyokotani/office-open-xml-viewer.

@@ -156,6 +156,7 @@ test('workspace Office RPC creates, imports, edits and exports real XLSX and PPT
     const edited = await rpc('edit', { leaseId: created.value.leaseId, updates: [{ id: editable.id, text: replacement }] })
     assert.equal(edited.ok, true, JSON.stringify(edited.error))
     assert.ok(edited.value.view.blocks.some(block => block.text.includes(replacement)))
+    assert.equal(Buffer.from(edited.value.data, 'base64').equals(await readFile(path)), true)
     assert.equal((await readFile(path)).equals(original), false)
     const downloaded = await rpc('download', { leaseId: created.value.leaseId })
     assert.equal(downloaded.ok, true)

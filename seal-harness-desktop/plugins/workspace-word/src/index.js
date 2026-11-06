@@ -3,12 +3,14 @@ import { z } from 'zod'
 import { clientRequestSchema } from '@deepseek-ai/dsh-client-connection'
 import { OfficeError, OfficeService } from './service.js'
 import { WorkspaceFileError, WorkspaceFileService } from './workspace-file-service.js'
+import { registerPptxAssets } from './pptx-assets.js'
 
 export const name = 'seal-harness-workspace-word'
 export const inject = ['connection', 'sessions', 'sandboxPolicy', 'fs', 'sealHarnessIdentity', 'sealHarnessDatabase', 'sealHarnessOffice']
 const workerCodes = new Set(['loginRequired', 'accountChanged', 'cancelled', 'timeout', 'busy', 'readOnlyDocument', 'invalidDocument', 'closed'])
 
 export function apply(ctx) {
+  registerPptxAssets(ctx.connection.fetch)
   const service = new OfficeService({
     sessions: ctx.sessions, sandboxPolicy: ctx.sandboxPolicy, fs: ctx.fs,
     identity: ctx.sealHarnessIdentity, home: dirname(ctx.sealHarnessDatabase.path),

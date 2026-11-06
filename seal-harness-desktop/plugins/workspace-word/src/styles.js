@@ -62,11 +62,45 @@ export const styles = `
 .seal-workspace-word-sheet th, .seal-workspace-word-sheet td { border: 1px solid #46464c; padding: 5px; }
 .seal-workspace-word-sheet th { width: 45px; color: #aaa; font-size: 12px; font-weight: 500; }
 .seal-workspace-word-sheet textarea { min-height: 36px; resize: vertical; }
-.seal-workspace-word-slide { margin: 0 0 22px; padding: 18px; border: 1px solid #46464c; border-radius: 8px; background: #222226; }
-.seal-workspace-word-slide h2 { margin: 0 0 16px; font-size: 15px; }
+.seal-workspace-word-blocks.seal-xlsx-workspace { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+.seal-xlsx-actions { display: flex; flex: none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; padding: 7px 12px; font-size: 12px; border-bottom: 1px solid var(--dsw-alias-border-l2, #303034); }
+.seal-xlsx-actions button { color: inherit; background: transparent; border: 1px solid var(--dsw-alias-border-l2, #46464c); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+.seal-xlsx-actions button:disabled { opacity: .5; cursor: default; }
+.seal-xlsx-preview { position: relative; flex: 1; min-width: 0; min-height: 0; }
+.seal-xlsx-viewer { position: absolute; inset: 0; overflow: hidden; }
+.seal-xlsx-preview-message { position: absolute; inset: 12px 16px auto; margin: 0; padding: 8px; background: var(--dsw-alias-bg-layer-1, #151515); pointer-events: none; }
+.seal-xlsx-edit { flex: 1; min-height: 0; overflow: auto; padding: 12px; }
+.seal-workspace-word-blocks--pptx { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+.seal-pptx-preview { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.seal-pptx-preview-toolbar { display: flex; flex: none; align-items: center; gap: 6px; min-height: 42px; padding: 5px 12px; border-bottom: 1px solid var(--dsw-alias-border-l2, #303034); color: var(--dsw-alias-label-secondary, #bbb); font-size: 12px; }
+.seal-pptx-preview-toolbar > span { margin-right: auto; white-space: nowrap; }
+.seal-pptx-preview-toolbar button, .seal-pptx-preview-toolbar select { min-width: 28px; min-height: 28px; border: 1px solid var(--dsw-alias-border-l1, #45454b); border-radius: 7px; background: var(--dsw-alias-bg-layer-2, #28282c); color: inherit; cursor: pointer; }
+.seal-pptx-preview-toolbar .seal-pptx-nav-button { padding: 0; font-size: 19px; line-height: 1; }
+.seal-pptx-preview-toolbar .seal-pptx-play-button { padding: 0; font-size: 12px; }
+.seal-pptx-preview-toolbar select { padding: 0 5px; font-size: 11px; }
+.seal-pptx-preview-toolbar button:disabled { opacity: .4; cursor: default; }
+.seal-pptx-preview-toolbar button:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover, #39393d); color: #fff; }
+.seal-pptx-preview-toolbar button:focus-visible, .seal-pptx-preview-toolbar select:focus-visible, .seal-pptx-thumbnail:focus-visible { outline: 2px solid var(--dsw-focus-ring-color, #bf3540); outline-offset: 1px; }
+.seal-pptx-preview-body { display: grid; grid-template-columns: 136px minmax(0, 1fr); flex: 1; min-height: 0; }
+.seal-pptx-thumbnails { min-height: 0; padding: 10px 7px; overflow-y: auto; border-right: 1px solid var(--dsw-alias-border-l2, #303034); background: var(--dsw-alias-bg-layer-2, #202024); }
+.seal-pptx-thumbnail { display: grid; grid-template-columns: 14px minmax(0, 1fr); width: 100%; align-items: start; gap: 3px; padding: 4px; margin-bottom: 5px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--dsw-alias-label-secondary, #bbb); text-align: left; cursor: pointer; }
+.seal-pptx-thumbnail:hover, .seal-pptx-thumbnail[aria-current=page] { border-color: #4979d6; background: #24334e; color: #fff; }
+.seal-pptx-thumbnail canvas { display: block; width: 100%; background: #fff; object-fit: contain; border-radius: 3px; }
+.seal-pptx-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; min-height: 0; padding: 18px; overflow: auto; outline: none; background: var(--dsw-alias-bg-base, #171719); }
+.seal-pptx-stage canvas { display: block; height: auto; max-width: none; flex: none; background: #fff; box-shadow: 0 12px 35px #0007; }
+.seal-pptx-stage p { font-size: 12px; color: var(--dsw-alias-label-secondary, #bbb); }
+.seal-pptx-stage:fullscreen { background: #101012; }
+.seal-pptx-stage:fullscreen canvas { width: auto !important; max-width: 96vw; max-height: 96vh; }
+.seal-pptx-edit-pane { flex: none; max-height: 38%; overflow-y: auto; border-top: 1px solid var(--dsw-alias-border-l2, #303034); }
+.seal-pptx-edit-pane summary { padding: 9px 14px; color: var(--dsw-alias-label-secondary, #bbb); font-size: 12px; cursor: pointer; }
+.seal-pptx-edit-content { padding: 6px 16px 16px; }
+.seal-pptx-edit-content .seal-workspace-word-block { margin-bottom: 10px; }
 @container (max-width: 420px) {
   .seal-workspace-word-header { grid-template-columns: minmax(0, 1fr); }
   .seal-workspace-word-buttons { grid-column: 1; grid-row: auto; }
+  .seal-pptx-preview-body { grid-template-columns: 76px minmax(0, 1fr); }
+  .seal-pptx-thumbnail { grid-template-columns: 1fr; }
+  .seal-pptx-thumbnail > span { display: none; }
 }
 @container (max-width: 600px) {
   .seal-workspace-word-header { padding: 10px 12px; }

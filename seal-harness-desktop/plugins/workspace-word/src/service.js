@@ -240,7 +240,7 @@ export class OfficeService {
     const candidate = Buffer.from(result.bytes)
     await this.#validate(lease.kind, candidate, lease)
     await this.#commit(leaseId, lease, candidate)
-    return { saved: true, view: result.view }
+    return { saved: true, view: result.view, data: candidate.toString('base64') }
   }
 
   async #publishNew(sessionId, path, candidate, owner) {

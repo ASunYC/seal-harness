@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { DocumentHeader } from './document-header.jsx'
+import { PptxPreview } from './pptx-preview.jsx'
+import { XlsxPreview } from './xlsx-preview.jsx'
 
 function downloadFile(name, base64) {
   const bytes = Uint8Array.from(atob(base64), character => character.charCodeAt(0))
@@ -48,6 +50,8 @@ export function BlockEditor({ target, api, close, setDirty }) {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [selectedSheet, setSelectedSheet] = useState('')
+  const [selectedSlide, setSelectedSlide] = useState(0)
+  const [editingSheet, setEditingSheet] = useState(false)
   const lease = useRef(null)
   const changesRef = useRef(changes)
   changesRef.current = changes
@@ -59,6 +63,7 @@ export function BlockEditor({ target, api, close, setDirty }) {
       lease.current = value.leaseId
       if (controller.signal.aborted) { void api('close', { leaseId: value.leaseId }).catch(() => {}); return }
       setOpened(value)
+      setSelectedSlide(0)
       setStatus('已装载 · 修改仅保存在本机工作区')
     }).catch(cause => { if (!controller.signal.aborted) { setError(cause.message); setStatus('装载失败') } })
     return () => {
@@ -77,7 +82,7 @@ export function BlockEditor({ target, api, close, setDirty }) {
     setError('')
     try {
       const result = await api('edit', { leaseId: lease.current, updates })
-      setOpened(current => ({ ...current, view: result.view ?? current.view }))
+      setOpened(current => ({ ...current, view: result.view ?? current.view, data: result.data ?? current.data }))
       setChanges(current => {
         const next = { ...current }
         for (const { id, text } of updates) if (next[id] === text) delete next[id]
@@ -102,6 +107,8 @@ export function BlockEditor({ target, api, close, setDirty }) {
   const view = opened?.view
   const groups = groupedBlocks(view?.blocks)
   const activeSheet = groups.find(group => group.name === selectedSheet) ?? groups[0]
+  const grid = editingSheet && activeSheet ? sheetGrid(activeSheet.items) : null
+  const activeSlide = groups.find(group => Number(group.name) === selectedSlide)
   const dirty = Object.keys(changes).length > 0
   return <div className="seal-workspace-word-editor">
     <DocumentHeader title={opened?.displayName ?? '办公文档'} path={target.path} format={view?.kind ?? 'xlsx'}
@@ -109,26 +116,40 @@ export function BlockEditor({ target, api, close, setDirty }) {
       canExport={Boolean(opened) && !dirty && !saving} onSave={() => void save()}
       onExport={() => void download()} onClose={leave} />
     {error && <p className="seal-workspace-word-error" role="alert">{error}</p>}
-    {view && <div className="seal-workspace-word-blocks">
-      <p className="seal-workspace-word-block-note">结构化编辑仅支持文字与单元格内容；复杂排版、公式与媒体请用外部 Office 编辑。</p>
+    {view && <div className={`seal-workspace-word-blocks${view.kind === 'pptx' ? ' seal-workspace-word-blocks--pptx' : ''}${view.kind === 'xlsx' ? ' seal-xlsx-workspace' : ''}`}>
+      {view.kind === 'xlsx' && <div className="seal-xlsx-actions">
+        <span>{editingSheet ? '编辑已有单元格' : dirty ? '预览 · 已保存版本' : '表格预览'}</span>
+        <button type="button" disabled={saving || view.readOnly} title={view.readOnlyReason} onClick={() => setEditingSheet(value => !value)}>
+          {editingSheet ? '返回预览' : '编辑单元格'}
+        </button>
+      </div>}
       {view.readOnly && <p className="seal-workspace-word-block-note">{view.readOnlyReason ?? '此文档为只读'}</p>}
-      {view.kind === 'xlsx' ? <>
+      {view.kind === 'xlsx' ? editingSheet ? <div className="seal-xlsx-edit">
+        <p className="seal-workspace-word-block-note">以 = 开头可编辑公式。保存后可返回预览查看结果。</p>
         <nav className="seal-workspace-word-sheets" aria-label="工作表">{groups.map(group =>
           <button key={group.name} type="button" aria-current={group === activeSheet ? 'page' : undefined}
             onClick={() => setSelectedSheet(group.name)}>{group.name}</button>)}</nav>
-        {activeSheet && <div className="seal-workspace-word-sheet-scroll"><table className="seal-workspace-word-sheet"><thead><tr><th scope="col">#</th>
-          {sheetGrid(activeSheet.items).columns.map(column => <th scope="col" key={column}>{column}</th>)}</tr></thead><tbody>
-          {sheetGrid(activeSheet.items).rows.map(([row, cells]) => <tr key={row}><th scope="row">{row}</th>
-            {sheetGrid(activeSheet.items).columns.map(column => <td key={column}>{cells.has(column)
+        {grid && <div className="seal-workspace-word-sheet-scroll"><table className="seal-workspace-word-sheet"><thead><tr><th scope="col">#</th>
+          {grid.columns.map(column => <th scope="col" key={column}>{column}</th>)}</tr></thead><tbody>
+          {grid.rows.map(([row, cells]) => <tr key={row}><th scope="row">{row}</th>
+            {grid.columns.map(column => <td key={column}>{cells.has(column)
               ? <Cell block={cells.get(column)} changes={changes} setChanges={setChanges} disabled={view.readOnly || saving} /> : null}</td>)}
           </tr>)}
-        </tbody></table><p className="seal-workspace-word-block-note">以 = 开头可编辑公式；仅显示已有单元格。</p></div>}
-      </> : view.kind === 'pptx' ? groups.map(group => <section className="seal-workspace-word-slide" key={group.name}>
-        <h2>第 {Number(group.name) + 1} 页</h2>
-        {group.items.map(block => <label className="seal-workspace-word-block" key={block.id}><span>{block.label} · 文本框 {block.address}</span>
-          <Cell block={block} changes={changes} setChanges={setChanges} disabled={view.readOnly || saving} /></label>)}
-      </section>) : null}
-      {view.truncated && <p className="seal-workspace-word-block-note">仅显示前 {view.blocks.length} 项，共 {view.totalBlocks} 项。</p>}
+        </tbody></table></div>}
+        {!grid && <p className="seal-workspace-word-block-note">工作簿中没有已有单元格可编辑。</p>}
+      </div> : <XlsxPreview base64={opened.data} selectedSheet={selectedSheet} onSheetChange={setSelectedSheet} /> : view.kind === 'pptx' ? <>
+        <PptxPreview base64={opened.data} index={selectedSlide} onSelect={setSelectedSlide} />
+        <details className="seal-pptx-edit-pane">
+          <summary>编辑第 {selectedSlide + 1} 页文字</summary>
+          <div className="seal-pptx-edit-content">
+            <p className="seal-workspace-word-block-note">修改文字后点击右上角保存；复杂排版和媒体将保留原样。</p>
+            {activeSlide?.items.map(block => <label className="seal-workspace-word-block" key={block.id}><span>{block.label} · 文本框 {block.address}</span>
+              <Cell block={block} changes={changes} setChanges={setChanges} disabled={view.readOnly || saving} /></label>)}
+            {!activeSlide?.items.length && <p className="seal-workspace-word-block-note">这一页没有可编辑的文字。</p>}
+          </div>
+        </details>
+      </> : null}
+      {view.truncated && (view.kind !== 'xlsx' || editingSheet) && <p className="seal-workspace-word-block-note">仅显示前 {view.blocks.length} 项，共 {view.totalBlocks} 项。</p>}
     </div>}
   </div>
 }

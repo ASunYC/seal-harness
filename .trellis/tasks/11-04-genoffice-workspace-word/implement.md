@@ -1,5 +1,16 @@
 # 实施记录
 
+## 2026-11-07 Excel 预览与桌面资源传输
+
+- XLSX 默认进入 Worker 画布预览。保留已有单元格编辑，并用保存后的字节刷新画布。
+- 桌面 HTTP bridge 在流式模式下给 GET 附加请求体，导致 XLSX/PPTX 的 ESM 和 WASM 无法加载。为预览路由指定 buffered 模式，以已认证的 loopback HTTP 回归复现并验证修复；用户原工作簿的 3 张表均经修复后的通道在 Chromium 渲染。
+
+## 2026-11-06 PPTX 预览补齐
+
+1. [x] 核对 Stratex `WorkspaceOfficeViewer`、`OfficeDocumentRenderer`：使用 `@silurus/ooxml` 的 Worker 模式将 PPTX 渲染为 ImageBitmap，而结构化文字仅服务编辑。
+2. [x] 在 Seal 右侧 PPTX 页签提供本地 ESM/WASM、画布、缩略图与翻页，并保留文字编辑。
+3. [x] 保存后通过编辑结果的 PPTX 新字节重新装载画布；两页真实 PPTX 的右侧 React 组件浏览器冒烟验证画布、缩略图、翻页和字节更新后的重绘，13 项插件回归、产品 build/check 均通过。尚未在用户的原生 Seal 窗口中做视觉确认。
+
 1. [x] 核对 Stratex GenOffice 来源、Word 工作区入口、编辑 Worker、保存链路与 Seal 的 DSH 扩展点。
 2. [x] 在远端 Office 文档库之外装配独立的工作区 Word 插件及 Stratex GenOffice 许可证、固定来源、运行依赖。
 3. [x] Host 实现当前会话工作区授权的 DOCX 读取/安全保存与冲突检测。

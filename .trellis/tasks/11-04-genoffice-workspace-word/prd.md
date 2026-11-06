@@ -1,5 +1,17 @@
 # GenOffice 工作区 Office 编辑
 
+## 2026-11-07 Excel 预览与桌面资源传输
+
+- 右侧 XLSX 页签默认用 Stratex 同款 `XlsxViewer`，支持滚动、缩放和切换工作表；单元格编辑从独立按钮进入，保存后返回预览可查看更新。
+- XLSX 和 PPTX 预览资源经实际桌面 HTTP 通道加载，回归覆盖已认证的 GET 请求及 WASM 资源。
+
+## 2026-11-06 PPTX 画布预览补齐
+
+- 用户要求参考 Stratex 的完整幻灯片预览：右侧 PPTX 页签应呈现原始版式的幻灯片画布和逐页导航，而非仅列出文本框。
+- 复用 Stratex 使用的 `@silurus/ooxml` PPTX Worker 渲染路径；本地提供其 ESM/WASM 资源，保留来源与许可证。
+- 页面缩略图、当前页画布、适应窗口及翻页需可用；已有文字编辑、保存回原文件和导出继续可用，保存后预览更新。
+- 以真实 PPTX 验证画面渲染，并覆盖资源路由、修改后数据回传和既有 Office 回归。
+
 ## 2026-11-05 实测修复
 
 - 聊天 Office 文件卡片、工作区文件、成功生成后的自动打开统一使用产品右侧编辑器，不依赖 Office 转 PDF 服务。
@@ -32,4 +44,4 @@
 
 ## 合并后的范围
 
-远端 `@seal-harness/office` 是账号级 DOCX/XLSX/PPTX 文档库，Host 能力保留。`@seal-harness/workspace-word` 作为独立的工作区 Office 插件，工作区 DOCX 以 Stratex 的 Word 编辑模型为主；XLSX/PPTX 先复用已装配的本地 GenOffice core 的有界结构化编辑。Office 不再注册聊天侧栏的整页入口；工作区文件的“编辑”动作与聊天本轮产物都打开右侧编辑页签。Stratex 的 PDF、Markdown 编辑由其他引擎实现，不属于本次 GenOffice 三格式迁移。
+远端 `@seal-harness/office` 是账号级 DOCX/XLSX/PPTX 文档库，Host 能力保留。`@seal-harness/workspace-word` 作为独立的工作区 Office 插件，工作区 DOCX 以 Stratex 的 Word 编辑模型为主；XLSX 复用本地 GenOffice core 的有界结构化编辑，PPTX 在结构化文字编辑之外使用 Stratex 同款 `@silurus/ooxml` Worker 渲染幻灯片画布。Office 不再注册聊天侧栏的整页入口；工作区文件的“编辑”动作与聊天本轮产物都打开右侧编辑页签。Stratex 的 PDF、Markdown 编辑由其他引擎实现，不属于本次 GenOffice 三格式迁移。

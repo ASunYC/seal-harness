@@ -198,6 +198,11 @@ test('Office preview edit opens a session right tab and saves spreadsheet cell u
   await act(async () => root.render(React.createElement(editorTab.component, {
     sessionId: 'one', useTabInfo: () => ({ tab: { id: 'office-tab-1', navigation: { params: { path: 'C:\\workspace\\memo.xlsx' } }, actions: { close: () => { closed = true } } } }),
   })))
+  assert(document.querySelector('section[aria-label="Excel 预览"]'))
+  assert.equal(document.querySelector('textarea[aria-label="Sheet1!A1"]'), null)
+  const editCells = [...document.querySelectorAll('button')].find(button => button.textContent === '编辑单元格')
+  assert(editCells)
+  await act(async () => editCells.click())
   assert.match(document.body.textContent, /Sheet1/u)
   const cell = document.querySelector('textarea[aria-label="Sheet1!A1"]')
   assert.equal(cell?.value, '旧值')
@@ -218,6 +223,8 @@ test('Office preview edit opens a session right tab and saves spreadsheet cell u
   await act(async () => saveButton.click())
   assert.equal(exportButton.disabled, false)
   assert.equal(JSON.stringify(calls.find(item => item.method.endsWith('/edit'))?.payload), JSON.stringify({ leaseId: 'test-lease', updates: [{ id: '["Sheet1","A1"]', text: '新值' }] }))
+  await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent === '返回预览').click())
+  assert(document.querySelector('section[aria-label="Excel 预览"]'))
   await act(async () => closeButton.click())
   assert.equal(closed, true)
   await act(async () => root.render(React.createElement(editorTab.component, {

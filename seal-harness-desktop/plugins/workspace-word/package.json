@@ -26,6 +26,9 @@
       "platform": "web"
     }
   },
+  "dependencies": {
+    "@silurus/ooxml": "0.75.5"
+  },
   "peerDependencies": {
     "@deepseek-ai/dsh-client-connection": "0.2.1-rc.5",
     "@deepseek-ai/dsh-client-ui-sidebar-right": "0.2.1-rc.5",
