@@ -4,10 +4,12 @@ export const rightGuideStyles = `
 .seal-right-guide button, .seal-right-guide input { font: inherit; }
 .seal-right-guide-toolbar { display: flex; align-items: center; gap: 10px; max-width: 720px; margin: 0 auto 32px; }
 .seal-right-guide-address { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; min-height: 42px; padding: 0 8px 0 14px; border: 1px solid var(--dsw-alias-border-l1, #454549); border-radius: 22px; background: var(--dsw-alias-bg-layer-2, #2b2b2d); }
-.seal-right-guide-address svg { width: 18px; height: 18px; flex: none; color: #aaa; }
+.seal-right-guide-address > svg { width: 18px; height: 18px; flex: none; color: #aaa; }
 .seal-right-guide-address input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: inherit; font-size: 13px; }
 .seal-right-guide-address input::placeholder { color: var(--dsw-alias-label-tertiary, #888); }
-.seal-right-guide-address button { border: 0; border-radius: 16px; padding: 5px 11px; background: #46464a; color: #eee; cursor: pointer; font-size: 11px; }
+.seal-right-guide-address button { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border: 0; border-radius: 50%; padding: 0; background: transparent; color: #bbb; cursor: pointer; }
+.seal-right-guide-address button:hover { background: #48484c; color: #fff; }
+.seal-right-guide-address button svg { width: 17px; height: 17px; }
 .seal-right-guide-more { position: relative; flex: none; margin-left: auto; }
 .seal-right-guide-more summary { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--dsw-alias-bg-layer-2, #2b2b2d); color: #ddd; cursor: pointer; font-size: 22px; line-height: 1; list-style: none; }
 .seal-right-guide-more summary::-webkit-details-marker { display: none; }

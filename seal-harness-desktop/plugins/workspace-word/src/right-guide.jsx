@@ -54,7 +54,11 @@ export function RightGuide({ useTabInfo, sessionId, tabs, right }) {
       {hasBrowser && <form className="seal-right-guide-address" onSubmit={openBrowser} role="search">
         <GuideIcon kind="browser" />
         <input type="text" aria-label="网址" placeholder="输入网址" value={address} onChange={event => setAddress(event.target.value)} />
-        <button type="submit" aria-label="打开网址">前往</button>
+        <button type="submit" aria-label="打开网址" title="打开网址">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14m-6-6 6 6-6 6" />
+          </svg>
+        </button>
       </form>}
       <details className="seal-right-guide-more" ref={moreRef}>
         <summary aria-label="更多设置" title="更多设置">⋯</summary>
