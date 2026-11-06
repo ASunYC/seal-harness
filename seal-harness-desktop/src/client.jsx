@@ -1,6 +1,7 @@
 import { createElement, useLayoutEffect, useRef } from 'react'
 import { registerModelReasoningSettings } from './model-reasoning.jsx'
 import { modelMenuStyle } from './model-menu-style.js'
+import { brandRunningStatus } from './running-status.js'
 
 const productName = __SEAL_HARNESS_NAME__
 const brandIcon = __SEAL_HARNESS_ICON__
@@ -88,6 +89,7 @@ function HeroMark() {
 
 export function apply(ctx) {
   registerModelReasoningSettings(ctx)
+  ctx.effect(() => brandRunningStatus(document), 'seal-harness: chat running status')
   ctx.slots.inject('settings.onboarding', () => ctx.slots.register({
     name: 'settings.onboarding',
     id: 'welcome-notice',

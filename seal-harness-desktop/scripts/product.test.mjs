@@ -238,6 +238,28 @@ test('标准客户端模块注册品牌及模型设置扩展 slot，并在卸载
     },
   })
   assert.equal(document.title, 'Seal Harness')
+  const running = document.createElement('div')
+  running.dataset.chatRunning = ''
+  running.innerHTML = `<span role="status">深度求索中</span><span aria-hidden="true"></span><span>
+    <span aria-hidden="true"><svg></svg></span><span data-shimmer="true"><span><span>深度求索中</span></span>
+    <span aria-hidden="true"><span><span><span data-shimmer-text="深度求索中"></span></span></span></span></span></span>`
+  document.body.append(running)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  const accessible = running.querySelector('[role="status"]')
+  const visible = running.querySelector('[data-shimmer] > :first-child > span')
+  const highlight = running.querySelector('[data-shimmer-text]')
+  assert.equal(accessible.textContent, '正在处理')
+  assert.equal(visible.textContent, '正在处理')
+  assert(running.hasAttribute('data-seal-running'))
+  for (const duration of ['5秒', '1分6秒']) {
+    const original = `深度求索中，用时 ${duration} ···`
+    visible.firstChild.data = original
+    highlight.setAttribute('data-shimmer-text', original)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    assert.equal(visible.textContent, `正在处理，用时 ${duration} …`)
+    assert.equal(highlight.getAttribute('data-shimmer-text'), visible.textContent)
+    assert.equal(accessible.textContent, '正在处理')
+  }
   assert.equal(registrations.size, 5)
   assert.equal(typeof registrations.get('settings.models.footer'), 'function')
   const modelMenuFix = document.querySelector('style[data-seal-model-menu]')
@@ -285,6 +307,10 @@ test('标准客户端模块注册品牌及模型设置扩展 slot，并在卸载
   await new Promise(resolve => setTimeout(resolve, 0))
   assert.equal(document.title, 'Next session — Seal Harness')
   for (const dispose of disposers) dispose()
+  assert.equal(document.querySelector('style[data-seal-running-style]'), null)
+  assert.equal(running.hasAttribute('data-seal-running'), false)
+  assert.equal(accessible.textContent, '深度求索中')
+  assert.equal(visible.textContent, '深度求索中，用时 1分6秒 ···')
   assert.equal(document.querySelector('style[data-seal-model-menu]'), null)
   assert.equal(pluginRefresh.classList.contains('resource-sync-button'), false)
   assert.equal(pluginPanel.querySelector('[data-seal-harness-plugin-sync-state]'), null)
