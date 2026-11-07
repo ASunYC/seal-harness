@@ -1,25 +1,36 @@
 const runningRow = '[data-chat-running]'
 const brandedRow = `${runningRow}[data-seal-running]`
 const icon = `${brandedRow} > :last-child:has(> [data-shimmer]) > [aria-hidden="true"]`
-const seal = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 18" fill="none" stroke="black" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M6.2 10.3C9 8.3 12 8.6 14.4 8.9c.5-2.7 2.1-4.4 4.4-4.4 1.7 0 2.6 1 2.9 2.3l1 .5c.6.4.2 1.1-.6 1.5l-1 .4c-1 2.8-3.7 4.5-7.5 4.5-3.3 0-5.6-1-7.4-2.1C4.9 12 3.3 12 2 11.4c1.4-.5 2-1 2.3-1.7C3.5 9.2 3 8.5 2.9 7.6c1.4.2 2.6 1.2 3.3 2.7Z"/>
-  <path d="M15.2 11.4c-1.2 0-2.6.8-3.5 1.9M18.8 7.2h.1M2 15.5c1.1-.7 2.2-.7 3.3 0s2.2.7 3.3 0"/>
+const seal = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 20" fill="none" stroke="black" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M11.3 2.5C5.9 1.8 2 4.8 2 9.4c0 4.7 4.2 7.5 10.4 7.5 5.3 0 8.5-2.1 12.1-3.4 1.5-.5 2.6-.1 3.4.7.7.8 1.8 1 2.5.4-.5-.8-1.1-1.4-1.8-2 .9-.4 1.5-1 1.4-1.8-1.3.5-2.3.6-3.4.2-2.4-.9-3.6-3.2-6.2-4.6-2.7-1.5-5.7-2.9-9.1-3.3Z"/>
+  <path d="M4.4 6.7c.7-.7 1.7-.8 2.4-.4m2.1-.5c.7-.5 1.6-.5 2.3-.1M5.6 12.8c1.6 1.6 3.7 2.3 6.4 2.3"/>
+  <circle cx="7" cy="8.1" r=".7" fill="black" stroke="none"/><circle cx="10.5" cy="7.5" r=".7" fill="black" stroke="none"/>
+  <path d="M9.3 10.2c.7-.6 1.6-.6 2.1 0-.4.8-1.5 1-2.1 0Z" fill="black" stroke="none"/>
+</svg>`
+const flipper = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 20" fill="none" stroke="black" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M14.4 8.4c2.3-2.8 4.8-4.3 7.2-3.6 1.9.5 3.5 1.7 4.5 2.8-1.5 1.1-3.7 1.9-5.7 1.6-2.3-.4-4.2-1.2-6-1.3"/>
 </svg>`
 
 const style = `
-${icon} { width: calc(24px + var(--dsh-content-font-delta, 0px)); height: calc(18px + var(--dsh-content-font-delta, 0px)); }
+${icon} { position: relative; width: calc(32px + var(--dsh-content-font-delta, 0px)); height: calc(20px + var(--dsh-content-font-delta, 0px)); flex: none; }
 ${icon} > * { display: none; }
-${icon}::after {
+${icon}::before, ${icon}::after {
   content: ''; position: absolute; inset: 0; background: currentColor;
-  mask: url("data:image/svg+xml,${encodeURIComponent(seal)}") center / contain no-repeat;
   forced-color-adjust: none;
 }
-@media (prefers-reduced-motion: no-preference) {
-  ${icon}::after { animation: seal-swim 1.8s ease-in-out infinite; }
+${icon}::before {
+  mask: url("data:image/svg+xml,${encodeURIComponent(seal)}") center / contain no-repeat;
 }
-@keyframes seal-swim {
-  0%, 100% { transform: translateY(.5px) rotate(4deg); }
-  50% { transform: translateY(-1px) rotate(-5deg); }
+${icon}::after {
+  mask: url("data:image/svg+xml,${encodeURIComponent(flipper)}") center / contain no-repeat;
+  transform-origin: 45% 42%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  ${icon}::after { animation: seal-pat 1.4s ease-in-out infinite; }
+}
+@keyframes seal-pat {
+  0%, 44%, 100% { transform: rotate(-8deg); }
+  22%, 66% { transform: rotate(23deg); }
 }
 `
 
