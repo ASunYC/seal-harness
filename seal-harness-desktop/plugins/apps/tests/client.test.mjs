@@ -74,7 +74,7 @@ test('BuildingBuilt requires a local release directory and routes install by its
   const api = async (action, payload) => {
     calls.push({ action, payload })
     if (action === 'install') installed = true
-    return { items: [{ id: 'buildingbuilt', name: 'BuildingBuilt', installed, state: installed ? 'installed' : 'uninstalled', supported: true, version: '0.1.0', description: 'GIS 建模工作台' }] }
+    return { items: [{ id: 'buildingbuilt', name: 'BuildingBuilt', installed, state: installed ? 'installed' : 'uninstalled', supported: true, version: '0.1.0', availableVersion: '0.1.1', updateAvailable: installed, description: 'GIS 建模工作台' }] }
   }
   await act(async () => root.render(React.createElement(loaded.ApplicationsPage, { api })))
   const button = [...document.querySelectorAll('button')].find(item => item.textContent.includes('从本地发布包安装'))
@@ -88,4 +88,8 @@ test('BuildingBuilt requires a local release directory and routes install by its
   assert.equal(calls.find(call => call.action === 'install')?.payload.id, 'buildingbuilt')
   assert.equal(calls.find(call => call.action === 'install')?.payload.sourcePath, 'C:\\Downloads\\BuildingBuilt')
   assert(document.querySelector('[aria-label="BuildingBuilt 应用"] button')?.textContent.includes('打开'))
+  const update = [...document.querySelectorAll('[aria-label="BuildingBuilt 应用"] button')].find(item => item.textContent.includes('更新到 v0.1.1'))
+  assert(update)
+  await act(async () => update.click())
+  assert.equal(calls.filter(call => call.action === 'install').length, 2)
 })

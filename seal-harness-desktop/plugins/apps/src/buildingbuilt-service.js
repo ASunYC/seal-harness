@@ -39,12 +39,15 @@ export class BuildingBuiltService {
   }
   list() {
     const account = this.account(), row = this.record(account.accountId), job = this.jobs.get(account.accountId)
+    const installedVersion = row?.state === 'installed' ? JSON.parse(row.manifest_json).version : null
     return { ...this.catalog, supported: this.platform === 'win32' && this.arch === 'x64',
       installed: row?.state === 'installed' || row?.state === 'uninstalling',
       state: job?.busy ? job.action : row?.state === 'installed' ? 'installed' : row ? 'interrupted' : 'uninstalled',
       progress: job?.progress ?? null,
       error: job?.error ?? (row && row.state !== 'installed' && !job?.busy ? '上次操作未完成，请重新安装或卸载。' : ''),
-      version: row?.state === 'installed' ? JSON.parse(row.manifest_json).version : this.catalog.version,
+      version: installedVersion ?? this.catalog.version,
+      availableVersion: this.catalog.version,
+      updateAvailable: installedVersion !== null && installedVersion !== this.catalog.version,
     }
   }
   start(action, sourcePath) {

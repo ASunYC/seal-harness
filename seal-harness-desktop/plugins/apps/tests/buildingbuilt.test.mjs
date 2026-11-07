@@ -76,6 +76,10 @@ test('Seal installs, opens and uninstalls the independent release while retainin
   service.start('install', source)
   await service.jobs.get('first').promise
   assert.equal(service.list().installed, true)
+  assert.equal(service.list().updateAvailable, false)
+  service.catalog = { ...service.catalog, version: '0.1.1' }
+  assert.equal(service.list().updateAvailable, true)
+  assert.equal(service.list().availableVersion, '0.1.1')
   assert.equal(await readFile(join(service.paths('first').runtime, 'BuildingBuilt.exe'), 'utf8'), 'MZfixture')
   await writeFile(join(service.paths('first').data, 'keep.txt'), 'result')
   assert.deepEqual(await service.open(), { opened: true, ready: true })

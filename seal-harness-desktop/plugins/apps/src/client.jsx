@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { registerPanel } from '../../capability-shared/src/client.jsx'
 import { InstalledSection } from '../../capability-shared/src/installed-section.jsx'
 import { styles } from './styles.js'
+import { buildingBuiltIcon } from './buildingbuilt-icon.js'
 
 export const inject = ['slots', 'layout', 'connection', 'sealHarnessNavigation']
 
@@ -33,7 +34,7 @@ export function ApplicationsPage({ api }) {
     finally { setBusy(false) }
   }
   const installed = tab === 'system' ? items.filter(item => item.installed) : []
-  const installedIcons = installed.map(item => ({ key: item.id, label: item.name, icon: item.name.slice(0, 1) }))
+  const installedIcons = installed.map(item => ({ key: item.id, label: item.name, icon: item.id === 'buildingbuilt' ? <img src={buildingBuiltIcon} width={22} height={22} alt="" /> : item.name.slice(0, 1) }))
   return <main className="zz-resource-page seal-apps-page resource-page-shell">
     <header className="seal-apps-nav"><div className="seal-apps-heading"><h1>应用</h1><p>浏览、安装和管理本机应用。</p></div></header>
     <div className="seal-apps-content">
@@ -47,15 +48,21 @@ export function ApplicationsPage({ api }) {
         const disabled = busy || processing
         const percent = item.progress?.total ? Math.min(100, Math.round(item.progress.received / item.progress.total * 100)) : null
         if (item.id === 'buildingbuilt') return <article className="seal-app-card" key={item.id} aria-label="BuildingBuilt 应用">
-          <div className="seal-app-card-header"><span className="seal-app-logo" aria-hidden="true">◈</span><div><h2>BuildingBuilt</h2><p>GIS 建模工作台</p></div><span className="seal-app-platform">Windows x64</span></div>
+          <div className="seal-app-card-header">
+            <span className="seal-app-logo seal-app-logo-buildingbuilt" aria-hidden="true">
+              <img src={buildingBuiltIcon} width={48} height={48} alt="" />
+            </span>
+            <div><h2>BuildingBuilt</h2><p>GIS 建模工作台</p></div>
+            <span className="seal-app-platform">Windows x64</span>
+          </div>
           <p className="seal-app-description">{item.description}</p>
           <div className="seal-app-meta"><span>v{item.version}</span><span>独立发布包</span></div>
-          {!item.installed && <label className="seal-app-local-path">已解压发布目录<input type="text" value={localPath} onChange={event => setLocalPath(event.target.value)} placeholder="例如 C:\\Downloads\\BuildingBuilt" autoComplete="off" /></label>}
-          {!item.installed && <p className="seal-apps-help">发布包单独分发，不包含在 Seal 安装包内。选择的目录须含 release.json。</p>}
+          {(!item.installed || item.updateAvailable) && <label className="seal-app-local-path">已解压发布目录<input type="text" value={localPath} onChange={event => setLocalPath(event.target.value)} placeholder="例如 C:\\Downloads\\BuildingBuilt" autoComplete="off" /></label>}
+          {(!item.installed || item.updateAvailable) && <p className="seal-apps-help">{item.updateAvailable ? `可更新到 v${item.availableVersion}。请先退出旧版 BuildingBuilt。` : '发布包单独分发，不包含在 Seal 安装包内。'}选择的目录须含 release.json。</p>}
           {processing && <div role="status" className="seal-app-progress"><p>{item.state === 'uninstall' ? '正在卸载…' : item.progress?.phase ?? '正在验证发布包…'}{percent !== null ? ` ${percent}%` : ''}</p><progress max="100" {...(percent !== null ? { value: percent } : {})}/></div>}
           {item.error && <p role="alert" className="seal-apps-error">{item.error}</p>}
           {!item.supported && <p className="seal-apps-error">当前发布包仅支持 Windows x64。</p>}
-          <footer>{item.installed ? <><button className="seal-app-primary" disabled={disabled} onClick={() => void act('open', item.id)}>打开</button><button className="seal-app-uninstall" disabled={disabled} onClick={() => setConfirm(item.id)}>卸载</button></> : <button className="seal-app-primary" disabled={disabled || !item.supported || !localPath.trim()} onClick={() => void act('install', item.id, { sourcePath: localPath.trim() })}>{processing ? '正在安装…' : '从本地发布包安装'}</button>}</footer>
+          <footer>{item.installed ? <><button className="seal-app-primary" disabled={disabled} onClick={() => void act('open', item.id)}>打开</button>{item.updateAvailable && <button disabled={disabled || !item.supported || !localPath.trim()} onClick={() => void act('install', item.id, { sourcePath: localPath.trim() })}>更新到 v{item.availableVersion}</button>}<button className="seal-app-uninstall" disabled={disabled} onClick={() => setConfirm(item.id)}>卸载</button></> : <button className="seal-app-primary" disabled={disabled || !item.supported || !localPath.trim()} onClick={() => void act('install', item.id, { sourcePath: localPath.trim() })}>{processing ? '正在安装…' : '从本地发布包安装'}</button>}</footer>
         </article>
         return <article className="seal-app-card" key={item.id} aria-label="DBX 应用">
           <div className="seal-app-card-header"><span className="seal-app-logo" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.7"><ellipse cx="16" cy="7" rx="10" ry="4"/><path d="M6 7v18c0 5 20 5 20 0V7M6 16c0 5 20 5 20 0"/></svg></span><div><h2>DBX</h2><p>数据库工作台</p></div><span className="seal-app-platform">Windows</span></div>
