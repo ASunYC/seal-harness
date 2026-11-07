@@ -9,8 +9,8 @@ export const dbx = Object.freeze({
 export const buildingBuilt = Object.freeze({
   id: 'buildingbuilt', name: 'BuildingBuilt',
   description: '从 GIS/OSM 矢量数据生成模型与本地 3D Tiles。',
-  version: '0.1.6', platform: 'win32', arch: 'x64', installMode: 'local-release',
-  manifestSha256: 'eba32a08af4309966ef2c39c57f81b91bd9061250d5169385abd7262d9e04537',
+  version: '0.1.7', platform: 'win32', arch: 'x64', installMode: 'local-release',
+  manifestSha256: '2b115d6c9ff5124b9d3af3b1b5dc501e4e9fc708b72d37b881f890497e3a976e',
 })
 
 // 官方 release asset 摘要，固定版本；应用和 MCP 的发布标签分别管理。
