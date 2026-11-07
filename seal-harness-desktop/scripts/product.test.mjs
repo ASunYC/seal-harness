@@ -165,6 +165,15 @@ test('Stratex 工作区 Word 与账号办公文档库分别装配', () => {
   assert.match(readFileSync(join(installed, 'third-party/genoffice-stratex/SOURCE.txt'), 'utf8'), /953595e2f1635140e2a6c1f86c2fa12b0cca77b8/u)
 })
 
+test('右侧侧边聊天作为独立产品插件装配', () => {
+  const manifest = JSON.parse(readFileSync(join(productRoot, 'plugins/side-chat/package.json'), 'utf8'))
+  assert.equal(manifest.name, '@seal-harness/side-chat')
+  assert.equal(manifest.dsh.client.platform, 'web')
+  assert.equal(productPlugins.includes('side-chat'), true)
+  const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))
+  assert.equal(patch.flatMap(row => row.insert ?? []).find(row => row.id === 'seal-harness-side-chat')?.name, manifest.name)
+})
+
 test('产品关闭首次模型凭据弹窗但保留模型设置插件', () => {
   const patch = desktopRequire('yaml').parse(readFileSync(join(productRoot, 'cordis.patch.yml'), 'utf8'))
   const models = patch.find(row => row.id === 'ui-settings-models')

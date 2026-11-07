@@ -166,3 +166,5 @@
       name: '@seal-harness/office'
     - id: seal-harness-workspace-word
       name: '@seal-harness/workspace-word'
+    - id: seal-harness-side-chat
+      name: '@seal-harness/side-chat'
